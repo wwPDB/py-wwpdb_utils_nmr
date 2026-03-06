@@ -6254,8 +6254,23 @@ class BaseStackedMRParserListener():
 
                     auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
 
+                    origAtomId = _factor['atom_id'][0] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
+                    mapped_as_is = False
+                    if isinstance(origAtomId, str) and atomSpecified:
+                        origAtomIds = self.__getAtomIdList(_factor, compId, origAtomId)
+                        mapped_as_is = len(origAtomIds) > 1\
+                            and any(_atomId.upper() in origAtomIds for _atomId in _factor['atom_id'])
+                        if not mapped_as_is and len(origAtomIds) == 1:
+                            atomId_ex = toNefEx(toRegEx(origAtomId))
+                            origAtomIds = [_atomId.upper() for _atomId in _factor['atom_id']
+                                           if re.match(atomId_ex, _atomId.upper())]
+                            mapped_as_is = len(origAtomIds) > 1
+
                     for atomId in _factor['atom_id']:
-                        _atomId = atomId.upper() if len(atomId) <= 2 else atomId[:2].upper()
+                        atomId = atomId.upper()
+                        if mapped_as_is and atomId not in origAtomIds:
+                            continue
+                        _atomId = atomId if len(atomId) <= 2 else atomId[:2]
                         if self.with_axis:
                             if _atomId in XPLOR_RDC_PRINCIPAL_AXIS_NAMES:
                                 continue
@@ -6265,7 +6280,6 @@ class BaseStackedMRParserListener():
                                 continue
                         if self.with_axis or self.with_para:
                             updatePolySeqRst(self.__polySeqRst, chainId, seqId, compId)
-
                         origAtomId = _factor['atom_id'] if 'alt_atom_id' not in _factor else _factor['alt_atom_id']
                         # """
                         # if isinstance(origAtomId, str) and origAtomId.startswith('HT')\
@@ -6273,8 +6287,6 @@ class BaseStackedMRParserListener():
                         #     if seqId == 1 or (chainId, seqId - 1) in self.__coordUnobsRes or seqId == min(auth_seq_id_list):
                         #         continue
                         # """
-                        atomId = atomId.upper()
-
                         if not isPolySeq and compId in PARAMAGNETIC_ELEMENTS:
                             if compId not in atomId:
                                 continue

@@ -38,7 +38,8 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (getOneLetterCodeCan,
                                            getScoreOfSeqAlign)
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
-                                              set_sf_tag)
+                                              set_sf_tag,
+                                              has_key_value)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                                        roundString,
                                                        retrieveOriginalFileName)
@@ -60,7 +61,8 @@ except ImportError:
     from nmr.AlignUtil import (getOneLetterCodeCan,
                                getScoreOfSeqAlign)
     from nmr.CifToNmrStar import (get_first_sf_tag,
-                                  set_sf_tag)
+                                  set_sf_tag,
+                                  has_key_value)
     from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                            roundString,
                                            retrieveOriginalFileName)
@@ -83,7 +85,8 @@ class BMRBAnnTasks:
                  '__reg',
                  '__derivedEntryId',
                  '__derivedEntryTitle',
-                 '__defSfLabelTag')
+                 '__defSfLabelTag',
+                 '__update_related_entries')
 
     def __init__(self, registry: NmrDpRegistry):
         self.__class_name__ = self.__class__.__name__
@@ -94,6 +97,11 @@ class BMRBAnnTasks:
         # provenance information to be included in _Related_entries loop if it is not exists
         self.__derivedEntryId = None
         self.__derivedEntryTitle = None
+
+        self.__update_related_entries = True
+        if has_key_value(self.__reg.inputParamDict, 'update_related_entries'):
+            if isinstance(self.__reg.inputParamDict['update_related_entries'], bool):
+                self.__update_related_entries = self.__reg.inputParamDict['update_related_entries']
 
     def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]):
         """ Set provenance information.
@@ -198,7 +206,7 @@ class BMRBAnnTasks:
             except KeyError:
                 pass
 
-            if not self.__reg.internal_mode and self.__derivedEntryId not in EMPTY_VALUE:
+            if not self.__reg.internal_mode and self.__derivedEntryId not in EMPTY_VALUE and self.__update_related_entries:
 
                 lp_category = '_Related_entries'
 
@@ -601,6 +609,8 @@ class BMRBAnnTasks:
                                                 zero_shift_val_err = row[1]
                                             if isotope_number in ALLOWED_ISOTOPE_NUMBERS:
                                                 isotope_nums_with_zero_val_err.add(isotope_number)
+                                            if row[1][0] == '-':
+                                                lp.data[idx][val_err_col] = row[1][1:]
                                         else:
                                             lp.data[idx][val_err_col] = abs(val_err)
                                     except ValueError:
@@ -1437,9 +1447,10 @@ class BMRBAnnTasks:
             self.__reg.pA.doAlign()
 
             myAlign = self.__reg.pA.getAlignment('NAME')
-            matched, _, conflict, _, _ = getScoreOfSeqAlign(myAlign)
+            matched, unmapped, conflict, _, _ = getScoreOfSeqAlign(myAlign)
 
-            return matched > 3 and matched > conflict
+            return (matched > 3 and matched > conflict)\
+                or (matched >= 3 and unmapped == conflict == 0)
 
         if sf_category in self.__reg.sf_category_list:
             sf_list = master_entry.get_saveframes_by_category(sf_category)
@@ -1457,6 +1468,8 @@ class BMRBAnnTasks:
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
+                                if solvent_name.lower() == 'water':
+                                    solvent_name = 'H2O'
                                 if redundant_solvent_pat.match(solvent_name):
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
@@ -1466,6 +1479,8 @@ class BMRBAnnTasks:
                                     and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
+                                if _solvent.lower() == 'water':
+                                    _solvent = 'H2O'
                                 solvent_system[_solvent] = 0
                                 solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent)\
                                     and not perdeuterated_pat.match(_solvent)\
@@ -1485,6 +1500,8 @@ class BMRBAnnTasks:
                             if solvent_with_percent_pat.match(_solvent):
                                 g = solvent_with_percent_pat.search(_solvent).groups()
                                 solvent_name = g[1].strip()
+                                if solvent_name.lower() == 'water':
+                                    solvent_name = 'H2O'
                                 if redundant_solvent_pat.match(solvent_name):
                                     h = redundant_solvent_pat.search(solvent_name)
                                     if h[1] == h[2]:
@@ -1494,6 +1511,8 @@ class BMRBAnnTasks:
                                     and not perdeuterated_pat.match(solvent_name)\
                                     else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                             else:
+                                if _solvent.lower() == 'water':
+                                    _solvent = 'H2O'
                                 solvent_system[_solvent] = 100
                                 solvent_isotope[_solvent] = '[U-2H]' if deuterated_pat.match(_solvent)\
                                     and not perdeuterated_pat.match(_solvent)\
@@ -1510,6 +1529,8 @@ class BMRBAnnTasks:
                         if solvent_with_percent_pat.match(_solvent_system):
                             g = solvent_with_percent_pat.search(_solvent_system).groups()
                             solvent_name = g[1].strip()
+                            if solvent_name.lower() == 'water':
+                                solvent_name = 'H2O'
                             if redundant_solvent_pat.match(solvent_name):
                                 h = redundant_solvent_pat.search(solvent_name)
                                 if h[1] == h[2]:
@@ -1519,6 +1540,8 @@ class BMRBAnnTasks:
                                 and not perdeuterated_pat.match(solvent_name)\
                                 else '[U-?% 2H]' if perdeuterated_pat.match(solvent_name) else 'natural abundance'
                         else:
+                            if _solvent_system.lower() == 'water':
+                                _solvent_system = 'H2O'
                             solvent_system[_solvent_system] = 100
                             solvent_isotope[_solvent_system] = '[U-2H]' if deuterated_pat.match(_solvent_system)\
                                 and not perdeuterated_pat.match(_solvent_system)\
@@ -1653,7 +1676,8 @@ class BMRBAnnTasks:
                                 if row[1] in solvent_isotope:
                                     lp.data[idx][isotopic_labeling_col] = solvent_isotope[row[1]]
                                 lp.data[idx][type_col] = 'solvent'
-                                lp.data[idx][concentration_val_col] = solvent_system[row[1]]
+                                if row[8] in EMPTY_VALUE or row[11] in EMPTY_VALUE or row[11] == '%':
+                                    lp.data[idx][concentration_val_col] = solvent_system[row[1]]
                                 if row[11] in EMPTY_VALUE:
                                     lp.data[idx][concentration_val_units_col] = '%'
                                 if row[1] not in solvent_in_sample_loop:
@@ -1669,15 +1693,16 @@ class BMRBAnnTasks:
                                         or 'ch3coo' in mol_common_name\
                                         or 'citric' in mol_common_name\
                                         or 'hepes' in mol_common_name\
-                                        or 'pipes' in mol_common_name\
+                                        or 'kphos' in mol_common_name\
                                         or 'mes' in mol_common_name\
                                         or 'mops' in mol_common_name\
+                                        or 'naphos' in mol_common_name\
                                         or 'pbs' in mol_common_name\
-                                        or 'tris' in mol_common_name\
                                         or 'phosphate' in mol_common_name\
+                                        or 'pipes' in mol_common_name\
                                         or 'po4' in mol_common_name\
-                                        or 'kphos' in mol_common_name\
-                                        or 'naphos' in mol_common_name:
+                                        or 'tricine' in mol_common_name\
+                                        or 'tris' in mol_common_name:
                                     lp.data[idx][type_col] = 'buffer'
                                     lp.data[idx][isotopic_labeling_col] = '[U-2H]'\
                                         if mol_common_name.startswith('d-')\
@@ -3347,6 +3372,9 @@ class BMRBAnnTasks:
                                     exp_row = exp_rows[0]
                                     set_sf_tag(_sf, 'Experiment_ID', exp_row[0])
                                     set_sf_tag(_sf, 'Experiment_name', exp_row[1])
+
+                                if exp_row is None:
+                                    continue
 
                                 spectrometer_id = exp_row[2]
 

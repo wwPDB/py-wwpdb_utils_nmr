@@ -222,6 +222,8 @@ class NmrDpRegistry:
     star_data_type: List[str] = field(default_factory=list)
     # pynmrstar data
     star_data: List[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]] = field(default_factory=list)
+    # original constraint_statistics saveframe in input NMR cif data file (used only for BMRB internal annotation)
+    orig_cst_sf: [pynmrstar.Saveframe] = None
 
     # history of saveframe name corrections
     sf_name_corrections: List[dict] = field(default_factory=list)

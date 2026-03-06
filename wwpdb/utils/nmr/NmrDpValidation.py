@@ -1576,8 +1576,7 @@ class NmrDpValidation:
                         dst_sf_category_list, _ = self.__reg.nefT.get_inventory_list(self.__reg.star_data[0])
                         if 'assigned_chemical_shifts' in dst_sf_category_list:
                             for sf in self.__reg.star_data[0].get_saveframes_by_category('assigned_chemical_shifts'):
-                                sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-                                self.__reg.star_data[0].remove_saveframe(sf_framecode)
+                                self.__reg.star_data[0].remove_saveframe(sf.name)
                         continue
                     if csListId < len(self.__reg.star_data) and self.__reg.star_data_type[csListId] == 'Entry'\
                        and self.__reg.star_data[csListId] is not None:
@@ -1587,7 +1586,7 @@ class NmrDpValidation:
                         if 'assigned_chemical_shifts' in src_sf_category_list:
                             for _sf in self.__reg.star_data[csListId].get_saveframes_by_category('assigned_chemical_shifts'):
                                 self.__reg.star_data[0].add_saveframe(_sf)
-                                self.__reg.star_data[csListId].remove_saveframe(_sf)
+                                self.__reg.star_data[csListId].remove_saveframe(_sf.name)
 
             if self.__reg.bmrb_only and self.__reg.internal_mode and self.__reg.srcNmrCifPath is not None:
 
@@ -1609,19 +1608,32 @@ class NmrDpValidation:
 
                             self.__reg.nmr_cif_sf_category_list, _ = self.__reg.nefT.get_inventory_list(_star_data)
                             dst_sf_category_list, _ = self.__reg.nefT.get_inventory_list(self.__reg.star_data[0])
+                            self.__reg.orig_cst_sf = None
 
                             # give priority to cs data of the combined file over ones of the cs-annotate file
                             if 'assigned_chemical_shifts' in self.__reg.nmr_cif_sf_category_list:
                                 if 'assigned_chemical_shifts' in dst_sf_category_list:
+                                    dst_sf_tags = []
                                     for sf in self.__reg.star_data[0].get_saveframes_by_category('assigned_chemical_shifts'):
-                                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-                                        self.__reg.star_data[0].remove_saveframe(sf_framecode)
-                                for _sf in _star_data.get_saveframes_by_category('assigned_chemical_shifts'):
+                                        dst_sf_tags.append(copy.copy(sf.tags))
+                                        self.__reg.star_data[0].remove_saveframe(sf.name)
+                                for idx, _sf in enumerate(_star_data.get_saveframes_by_category('assigned_chemical_shifts')):
+                                    if idx < len(dst_sf_tags):
+                                        for tag in dst_sf_tags[idx]:
+                                            if tag[0] not in EMPTY_VALUE and len(get_first_sf_tag(_sf, tag[0])) == 0:
+                                                set_sf_tag(_sf, tag[0], tag[1])
                                     self.__reg.star_data[0].add_saveframe(_sf)
 
                             # move restraints of the combined file to the primary file
                             for src_sf_category in self.__reg.nmr_cif_sf_category_list:
-                                if src_sf_category not in dst_sf_category_list and src_sf_category != 'constraint_statistics':
+                                if src_sf_category == 'assigned_chemical_shifts':
+                                    continue
+                                if src_sf_category == 'constraint_statistics':
+                                    for _sf in _star_data.get_saveframes_by_category(src_sf_category):
+                                        self.__reg.orig_cst_sf = _sf
+                                        break
+                                    continue
+                                if src_sf_category not in dst_sf_category_list:
                                     for _sf in _star_data.get_saveframes_by_category(src_sf_category):
                                         for sf in self.__reg.star_data[0].frame_list:
                                             if sf.name == _sf.name:
@@ -1884,7 +1896,6 @@ class NmrDpValidation:
                         continue
 
                     for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                         if content_subtype == 'chem_shift' and not self.__reg.has_star_chem_shift:
                             if self.__reg.star_data[0] is None:
@@ -1961,7 +1972,7 @@ class NmrDpValidation:
                             except OSError:
                                 pass
 
-                        self.__reg.star_data[file_list_id].remove_saveframe(sf_framecode)
+                        self.__reg.star_data[file_list_id].remove_saveframe(sf.name)
 
                     lp_counts[content_subtype] = 0
 
@@ -1978,8 +1989,7 @@ class NmrDpValidation:
                         continue
 
                     for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
-                        sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
-                        self.__reg.star_data[file_list_id].remove_saveframe(sf_framecode)
+                        self.__reg.star_data[file_list_id].remove_saveframe(sf.name)
 
                     lp_counts[content_subtype] = 0
 

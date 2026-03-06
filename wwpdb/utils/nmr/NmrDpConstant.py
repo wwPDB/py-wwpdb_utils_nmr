@@ -2550,7 +2550,7 @@ DATA_ITEMS = {'nef': {'poly_seq': [{'name': 'linking', 'type': 'enum', 'mandator
                                           ],
                            'chem_shift_ref': [{'name': 'Atom_group', 'type': 'enum', 'mandatory': True,
                                                'enum': ('methyl carbon', 'methyl carbons', 'methyl protons', 'methylene protons',
-                                                        'nitrogen', 'phosphorus', 'protons')},
+                                                        'methylene carbons', 'nitrogen', 'phosphorus', 'protons')},
                                               {'name': 'Chem_shift_val', 'type': 'float', 'mandatory': True},
                                               {'name': 'Chem_shift_units', 'type': 'enum', 'mandatory': True,
                                                'enum': ('ppm', 'Hz'),

@@ -125,6 +125,7 @@
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
 # 27-Jan-2026  M. Yokochi - convert one-letter-code in CS loop if possible (DAOTHER-10487)
+# 05-Mar-2026  M. Yokochi - provide instruction to depositor in case of missing mandatory item error (DAOTHER-10547)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -186,7 +187,10 @@ try:
                                                MAX_CONFLICT_ATTEMPT,
                                                LP_ITEM_TYPES,
                                                SF_TAG_ITEM_TYPES,
-                                               READABLE_ITEM_TYPE)
+                                               READABLE_ITEM_TYPE,
+                                               LP_CATEGORIES,
+                                               KEY_ITEMS,
+                                               DATA_ITEMS)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            letterToDigit,
                                            indexToLetter,
@@ -234,7 +238,10 @@ except ImportError:
                                    MAX_CONFLICT_ATTEMPT,
                                    LP_ITEM_TYPES,
                                    SF_TAG_ITEM_TYPES,
-                                   READABLE_ITEM_TYPE)
+                                   READABLE_ITEM_TYPE,
+                                   LP_CATEGORIES,
+                                   KEY_ITEMS,
+                                   DATA_ITEMS)
     from nmr.AlignUtil import (deepcopy,
                                letterToDigit,
                                indexToLetter,
@@ -377,6 +384,64 @@ def is_good_data(array: list) -> bool:
     """
 
     return not any(d in EMPTY_VALUE or (isinstance(d, str) and BAD_EXPR_PAT.match(d)) for d in array)
+
+
+def specify_missing_tags(lp_category: str, current_tags: List[str], missing_tags: List[str]
+                         ) -> str:
+    """ Return more specific missing tags by taking consideration of existing tags and default tags. (DAOTHER-10547)
+        @return: Instruction message for depositors
+    """
+
+    for tag in current_tags:
+        if tag in missing_tags:
+            missing_tags.remove(tag)
+
+    file_type = 'nef' if 'nef' in lp_category else 'nmr-star'
+
+    if lp_category[0] != '_':
+        lp_category = f'_{lp_category}'
+
+    try:
+        content_subtype = next(k for k, v in LP_CATEGORIES[file_type].items() if v == lp_category)
+    except StopIteration:
+        return ''
+
+    if content_subtype not in KEY_ITEMS[file_type]:
+        return ''
+
+    for key_item in KEY_ITEMS[file_type][content_subtype]:
+        tag = key_item['name']
+        if tag in missing_tags:
+            if 'default' in key_item:
+                missing_tags.remove(tag)
+            if 'default-from' in key_item:
+                if key_item['default-from'] in current_tags:
+                    missing_tags.remove(tag)
+
+    len_missing_tags = len(missing_tags)
+    if len(missing_tags) == 0:
+        return ''
+
+    msg = f"Missing mandatory {missing_tags} tags in {lp_category} loop." if len_missing_tags > 1\
+        else f"Missing mandatory {missing_tags[0]!r} loop tag in {lp_category} loop."
+
+    if len(missing_tags) > 0:
+        extra_tags = []
+        for data_item in DATA_ITEMS[file_type][content_subtype]:
+            if 'default-from' in data_item and data_item['default-from'] in missing_tags:
+                if data_item['name'] in current_tags and data_item['name'] not in extra_tags:
+                    extra_tags.append(data_item['name'])
+
+        len_extra_tags = len(extra_tags)
+        if len_extra_tags > 0:
+            if len_extra_tags == 1:
+                msg += f" On the other hand, ancillary data tag, {extra_tags[0]!r}, is present"
+            else:
+                msg += f" On the other hand, ancillary data tags, {extra_tags}, are present"
+
+            msg += f" for the missing mandatory tag{'' if len_missing_tags == 0 else 's'}. Did you use the tags incorrectly?"
+
+    return msg
 
 
 class NEFTranslator:
@@ -2174,8 +2239,9 @@ class NEFTranslator:
                         seq_data += loop.get_tag(_tags)
 
                 if not _tags_exist:
-                    missing_tags = list(set(tags) - set(loop.tags))
-                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                    msg = specify_missing_tags(lp_category, loop.tags, list(set(tags) - set(loop.tags)))
+                    if len(msg) > 0:
+                        raise LookupError(msg)
 
             if allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
@@ -3732,7 +3798,9 @@ class NEFTranslator:
                                     else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
                         seq_data += seq_data_
                         if _normal_chain_tag:
-                            raise LookupError(f"Missing mandatory {_tags[2]!r} loop tag.")
+                            msg = specify_missing_tags(lp_category, loop.tags, _tags[2])
+                            if len(msg) > 0:
+                                raise LookupError(msg)
                     elif set(_tags_) & set(loop.tags) == set(_tags_):
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_tags_)
@@ -3761,7 +3829,9 @@ class NEFTranslator:
                                     else str(row_[2] if self.__remediation_mode else letterToDigit(row_[2], 1))
                         seq_data += seq_data_
                         if _normal_chain_tag:
-                            raise LookupError(f"Missing mandatory {_alt_tags[2]!r} loop tag.")
+                            msg = specify_missing_tags(lp_category, loop.tags, _alt_tags[2])
+                            if len(msg) > 0:
+                                raise LookupError(msg)
                     elif set(_alt_tags_) & set(loop.tags) == set(_alt_tags_):
                         _tags_exist = True
                         seq_data_ = loop.get_tag(_alt_tags_)
@@ -3775,9 +3845,6 @@ class NEFTranslator:
                         return self.get_star_seq(star_data, lp_category, 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_asym_ID',
                                                  alt_seq_id, alt_seq_id_offset, alt_chain_id,
                                                  allow_empty, allow_gap, check_identity, coord_assembly_checker)
-
-                    # missing_tags = list(set(tags) - set(loop.tags))
-                    # raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
 
             if allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
@@ -4136,8 +4203,9 @@ class NEFTranslator:
                         seq_data += seq_data_
 
                 if not _tags_exist:
-                    missing_tags = list(set(tags) - set(loop.tags))
-                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                    msg = specify_missing_tags(lp_category, loop.tags, list(set(tags) - set(loop.tags)))
+                    if len(msg) > 0:
+                        raise LookupError(msg)
 
             if allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
@@ -4311,8 +4379,9 @@ class NEFTranslator:
                         pair_data += loop.get_tag(_tags)
 
                 if not _tags_exist and lp_category != '_Peak_row_format':
-                    missing_tags = list(set(tags) - set(loop.tags))
-                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                    msg = specify_missing_tags(lp_category, loop.tags, list(set(tags) - set(loop.tags)))
+                    if len(msg) > 0:
+                        raise LookupError(msg)
 
             if allow_empty:
                 # pair_data = list(filter(is_data, pair_data))
@@ -4404,8 +4473,9 @@ class NEFTranslator:
             len_data = len(loop)
 
             if set(tags) & set(loop.tags) != set(tags):
-                missing_tags = list(set(tags) - set(loop.tags))
-                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                msg = specify_missing_tags(lp_category, loop.tags, list(set(tags) - set(loop.tags)))
+                if len(msg) > 0:
+                    raise LookupError(msg)
 
             a_type_data = loop.get_tag(tags)
 
@@ -4501,8 +4571,9 @@ class NEFTranslator:
             len_data = len(loop)
 
             if set(tags) & set(loop.tags) != set(tags):
-                missing_tags = list(set(tags) - set(loop.tags))
-                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                msg = specify_missing_tags(lp_category, loop.tags, list(set(tags) - set(loop.tags)))
+                if len(msg) > 0:
+                    raise LookupError(msg)
 
             ambig_data = loop.get_tag(tags)
 
@@ -4637,7 +4708,7 @@ class NEFTranslator:
             if set(tags) & set(loop.tags) == set(tags):
                 index_data = loop.get_tag(tags)
             else:
-                raise LookupError(f"Missing mandatory {index_id} loop tag.")
+                raise LookupError(f"Missing mandatory {index_id!r} loop tag.")
 
             for idx, i in enumerate(index_data):
                 if i in EMPTY_VALUE and idx < len_data:
@@ -4841,7 +4912,9 @@ class NEFTranslator:
                                     row.append(lv)
                                 loop.add_tag(k['name'])
                             else:
-                                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                                msg = specify_missing_tags(lp_category, loop.tags, missing_tags)
+                                if len(msg) > 0:
+                                    raise LookupError(msg)
 
                 if len(mand_data_names) > 0 and set(mand_data_names) & set(loop.tags) != set(mand_data_names):
                     missing_tags = list(set(mand_data_names) - set(loop.tags))
@@ -4862,7 +4935,9 @@ class NEFTranslator:
                                     row.append(lv)
                                 loop.add_tag(k['name'])
                             else:
-                                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                                msg = specify_missing_tags(lp_category, loop.tags, missing_tags)
+                                if len(msg) > 0:
+                                    raise LookupError(msg)
 
                 if len(_mand_data_names) > 0 and set(_mand_data_names) & set(loop.tags) != set(_mand_data_names):
                     missing_tags = list(set(_mand_data_names) - set(loop.tags))
@@ -4923,8 +4998,9 @@ class NEFTranslator:
                                     if cw not in loop.tags:
                                         set_cw = set(group['coexist-with'])
                                         set_cw.add(name)
-                                        missing_tags = list(set_cw - set(loop.tags))
-                                        raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                                        msg = specify_missing_tags(lp_category, loop.tags, list(set_cw - set(loop.tags)))
+                                        if len(msg) > 0:
+                                            raise LookupError(msg)
 
                         elif group['member-with'] is not None:
                             has_member = False
@@ -4936,8 +5012,9 @@ class NEFTranslator:
                                                           for mw in group['member-with']):
                                 set_mw = set(group['member-with'])
                                 set_mw.add(name)
-                                missing_tags = list(set_mw - set(loop.tags))
-                                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                                msg = specify_missing_tags(lp_category, loop.tags, list(set_mw - set(loop.tags)))
+                                if len(msg) > 0:
+                                    raise LookupError(msg)
 
                 tags = [k['name'] for k in key_items]
                 for data_name in set(data_names) & set(loop.tags):
@@ -6377,7 +6454,9 @@ class NEFTranslator:
                                     row.append(k['default'])
                                 loop.add_tag(k['name'])
                             else:
-                                raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                                msg = specify_missing_tags(lp_category, loop.tags, missing_tags)
+                                if len(msg) > 0:
+                                    raise LookupError(msg)
 
                 len_loop = len(loop)
 
@@ -6447,8 +6526,9 @@ class NEFTranslator:
                 key_len = len(key_items)
 
                 if len(key_names) > 0 and set(key_names) & set(loop.tags) != set(key_names):
-                    missing_tags = list(set(key_names) - set(loop.tags))
-                    raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                    msg = specify_missing_tags(lp_category, loop.tags, list(set(key_names) - set(loop.tags)))
+                    if len(msg) > 0:
+                        raise LookupError(msg)
 
                 len_loop = len(loop)
 
@@ -6571,7 +6651,9 @@ class NEFTranslator:
                                 row.append(k['default'])
                             loop.add_tag(k['name'])
                         else:
-                            raise LookupError(f"Missing mandatory {missing_tags} loop tag(s).")
+                            msg = specify_missing_tags(lp_category, loop.tags, missing_tags)
+                            if len(msg) > 0:
+                                raise LookupError(msg)
 
             len_loop = len(loop)
 
@@ -8218,8 +8300,12 @@ class NEFTranslator:
                         # should not be mapped to 'HN%' because real 'MN' exists
                         pass
                     else:
+                        if atom_id[-1] == "'":
+                            _atom_id = f'H{atom_id[1:]}*'
+                        else:
+                            _atom_id = f'H{atom_id[1:] if len(atom_id) < 3 else atom_id[1:-1]}*'
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, f'H{atom_id[1:] if len(atom_id) < 3 else atom_id[1:-1]}*',
+                            self.get_star_atom(comp_id, _atom_id,
                                                details, leave_unmatched, methyl_only)
                         if details is None and len(atom_list) == 1:
                             atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])
@@ -8726,7 +8812,7 @@ class NEFTranslator:
                         elif atom_id.startswith('M') or (atom_id.startswith('Q') and self.__remediation_mode):  # DAOTHER-8663, 8751
                             if atom_id[-1].isalnum():
                                 _atom_id = f'H{atom_id[1:]}%'
-                            else:
+                            elif atom_id[-1] != "'":
                                 _atom_id = f'H{atom_id[1:-1]}*'
                         elif f'{atom_id}2' in self.__csStat.getAllAtoms(comp_id):
                             _atom_id = f'{atom_id}%'

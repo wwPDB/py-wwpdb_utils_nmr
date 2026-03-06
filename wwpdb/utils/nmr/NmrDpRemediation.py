@@ -62,6 +62,8 @@ try:
                                                GLOBAL_OFFSET_ATTEMPT,
                                                PERIPH_OFFSET_ATTEMPT,
                                                WORK_MODEL_FILE_NAME_PAT,
+                                               INTNL_ANY_MR_FILE_NAME_PAT,
+                                               PDB_MR_FILE_NAME_PAT,
                                                COMMENT_PAT,
                                                SEQ_MISMATCH_WARNING_PAT,
                                                INCONSISTENT_RESTRAINT_WARNING_PAT,
@@ -194,6 +196,8 @@ except ImportError:
                                    GLOBAL_OFFSET_ATTEMPT,
                                    PERIPH_OFFSET_ATTEMPT,
                                    WORK_MODEL_FILE_NAME_PAT,
+                                   INTNL_ANY_MR_FILE_NAME_PAT,
+                                   PDB_MR_FILE_NAME_PAT,
                                    COMMENT_PAT,
                                    SEQ_MISMATCH_WARNING_PAT,
                                    INCONSISTENT_RESTRAINT_WARNING_PAT,
@@ -3466,7 +3470,7 @@ class NmrDpRemediation:
 
         for sf in master_entry.frame_list:
             if sf.name == sf_framecode:
-                master_entry.remove_saveframe(sf_framecode)
+                master_entry.remove_saveframe(sf.name)
                 break
 
         master_entry.add_saveframe(asm_sf)
@@ -3494,8 +3498,7 @@ class NmrDpRemediation:
         ent_sfs = master_entry.get_saveframes_by_category(SF_CATEGORIES[file_type][content_subtype])
 
         for sf in reversed(ent_sfs):
-            sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-            master_entry.remove_saveframe(sf_framecode)
+            master_entry.remove_saveframe(sf.name)
 
         entity_ids = []
 
@@ -16363,6 +16366,7 @@ class NmrDpRemediation:
             cst_sf.add_tag('Derived_paramag_relax_tot_num', Derived_paramag_relax_tot_num)
 
         lp_category = '_Constraint_file'
+
         cf_loop = pynmrstar.Loop.from_scratch(lp_category)
 
         cf_key_items = [{'name': 'ID', 'type': 'int'},
@@ -16731,8 +16735,6 @@ class NmrDpRemediation:
                     set_sf_tag(sf_list[0], 'View_mode', 'PDB/BMRB')
 
         # refresh _Constraint_stat_list saveframe
-
-        sf_framecode = 'constraint_statistics'
 
         cst_sf = pynmrstar.Saveframe.from_scratch(sf_framecode)
         cst_sf.set_tag_prefix('_Constraint_stat_list')
@@ -18093,8 +18095,67 @@ class NmrDpRemediation:
 
         cst_sf.add_loop(cf_loop)
 
-        if len(cf_loop) > 0:
-            master_entry.add_saveframe(cst_sf)
+        if self.__reg.orig_cst_sf is None:
+            if len(cf_loop) > 0:
+                master_entry.add_saveframe(cst_sf)
+        else:
+            _data_file_name = get_first_sf_tag(self.__reg.orig_cst_sf, 'Data_file_name')
+            replace_data_file_name = False
+            if len(_data_file_name) > 0:
+                replace_data_file_name = any(True for _file_name in _data_file_name.split(',')
+                                             if INTNL_ANY_MR_FILE_NAME_PAT.match(_file_name)
+                                             or PDB_MR_FILE_NAME_PAT.match(_file_name))
+            for tag in cst_sf.tags:
+                if tag[0] == 'Data_file_name' and not replace_data_file_name:
+                    continue
+                set_sf_tag(self.__reg.orig_cst_sf, tag[0], tag[1])
+            has_cf_loop = replace_cf_loop = False
+            try:
+                _cf_loop = self.__reg.orig_cst_sf.get_loop('_Constraint_file')
+                has_cf_loop = True
+                if len(_cf_loop) != len(cf_loop):
+                    replace_cf_loop = True
+                else:
+                    tags = ['ID', 'Software_name', 'Block_ID',
+                            'Constraint_type', 'Constraint_subtype', 'Constraint_subsubtype', 'Constraint_number']
+                    _dat = _cf_loop.get_tag(tags)
+                    dat = cf_loop.get_tag(tags)
+                    for _row, row in zip(_dat, dat):
+                        _row = [_col if isinstance(_col, str) else str(_col) for _col in _row]
+                        row = [col if isinstance(col, str) else str(col) for col in row]
+                        if _row != row:
+                            replace_cf_loop = True
+                            break
+                    if not replace_cf_loop:
+                        tags = ['Software_ID', 'Software_label', 'Software_name']
+                        _dat = _cf_loop.get_tag(tags)
+                        dat = cf_loop.get_tag(tags)
+                        software_dict = {}
+                        for row in dat:
+                            if row[2] not in software_dict:
+                                software_dict[row[2]] = (row[0], row[1])
+                        software_id_col = _cf_loop.tags.index('Software_ID')
+                        software_label_col = _cf_loop.tags.index('Software_label')
+                        for idx, _row in enumerate(_dat):
+                            if _row[2] in software_dict:
+                                _cf_loop.data[idx][software_id_col] = software_dict[_row[2]][0]
+                                _cf_loop.data[idx][software_label_col] = software_dict[_row[2]][1]
+                        tags = ['Constraint_filename']
+                        _dat = _cf_loop.get_tag(tags)
+                        dat = cf_loop.get_tag(tags)
+                        _filename_col = _cf_loop.tags.index('Constraint_filename')
+                        filename_col = cf_loop.tags.index('Constraint_filename')
+                        for idx, _row in enumerate(_dat):
+                            if INTNL_ANY_MR_FILE_NAME_PAT.match(_row) or PDB_MR_FILE_NAME_PAT.match(_row):
+                                _cf_loop.data[idx][_filename_col] = cf_loop.data[idx][filename_col]
+            except KeyError:
+                replace_cf_loop = True
+            if replace_cf_loop:
+                if has_cf_loop:
+                    del self.__reg.orig_cst_sf[_cf_loop]
+                self.__reg.orig_cst_sf.add_loop(cf_loop)
+
+            master_entry.add_saveframe(self.__reg.orig_cst_sf)
 
         # resolve CYANA distance subtype
 
@@ -18202,10 +18263,10 @@ class NmrDpRemediation:
                                       f"and re-upload the {READABLE_FILE_TYPE[file_type]} file."
 
                                 self.__reg.report.error.appendDescription('format_issue',
-                                                                          {'file_name': file_name, 'description': err})
+                                                                          {'file_name': _data_file_name, 'description': err})
 
                                 self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - "
-                                                     f"{file_name} {err}\n")
+                                                     f"{_data_file_name} {err}\n")
                                 continue
 
                         master_entry.add_saveframe(sf)
@@ -18300,10 +18361,10 @@ class NmrDpRemediation:
                                       f"and re-upload the {READABLE_FILE_TYPE[file_type]} file."
 
                                 self.__reg.report.error.appendDescription('format_issue',
-                                                                          {'file_name': file_name, 'description': err})
+                                                                          {'file_name': _data_file_name, 'description': err})
 
                                 self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - "
-                                                     f"{file_name} {err}\n")
+                                                     f"{_data_file_name} {err}\n")
                                 continue
 
                         master_entry.add_saveframe(sf)

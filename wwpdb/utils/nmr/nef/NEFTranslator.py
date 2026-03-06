@@ -8217,9 +8217,13 @@ class NEFTranslator:
                         # Reconciled fix for DAOTHER-10105 and D-1300057999, 'MN'
                         # should not be mapped to 'HN%' because real 'MN' exists
                         pass
-                    elif atom_id[-1] != "'":
+                    else:
+                        if atom_id[-1] == "'":
+                            _atom_id = f'H{atom_id[1:]}*'
+                        else:
+                            _atom_id = f'H{atom_id[1:] if len(atom_id) < 3 else atom_id[1:-1]}*'
                         atom_list, ambiguity_code, details =\
-                            self.get_star_atom(comp_id, f'H{atom_id[1:] if len(atom_id) < 3 else atom_id[1:-1]}*',
+                            self.get_star_atom(comp_id, _atom_id,
                                                details, leave_unmatched, methyl_only)
                         if details is None and len(atom_list) == 1:
                             atom_list = self.__ccU.getProtonsInSameGroup(comp_id, atom_list[0])

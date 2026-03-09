@@ -1449,6 +1449,30 @@ class OneDepAnnTasks:
                         except KeyError:
                             pass
 
+                if sf_category == 'experiment_list' and sf_category in self.__reg.sf_category_list:
+                    ordered_sample = ordered_sample_cond = True
+                    exp_ids = []
+                    sample_ids, sample_cond_ids = set(), set()
+                    for row in nmrif.getDictList('pdbx_nmr_exptl'):
+                        exp_ids.append(int(row['experiment_id']))
+                        if row['solution_id'] not in EMPTY_VALUE:
+                            sample_ids.add(int(row['solution_id']))
+                        else:
+                            ordered_sample = False
+                        if row['conditions_id'] not in EMPTY_VALUE:
+                            sample_cond_ids.add(int(row['conditions_id']))
+                        else:
+                            ordered_sample_cond = False
+                    ordered_exp = exp_ids == list(range(1, len(exp_ids) + 1))
+                    if ordered_sample:
+                        ordered_sample = sorted(list(sample_ids)) == list(range(1, len(sample_ids) + 1))
+                    if ordered_sample_cond:
+                        ordered_sample_cond = sorted(list(sample_cond_ids)) == list(range(1, len(sample_cond_ids) + 1))
+                    if ordered_exp and ordered_sample and ordered_sample_cond:
+                        pass
+                    else:
+                        continue
+
                 if new_flag:
                     if sf_category in self.__reg.sf_category_list:
                         if sf_category in ('sample', 'sample_conditions'):

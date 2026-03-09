@@ -18113,7 +18113,7 @@ class NmrDpRemediation:
             try:
                 _cf_loop = self.__reg.orig_cst_sf.get_loop('_Constraint_file')
                 has_cf_loop = True
-                if len(_cf_loop) != len(cf_loop):
+                if len(_cf_loop) != len(cf_loop) and len(cf_loop) > 0:
                     replace_cf_loop = True
                 else:
                     tags = ['ID', 'Software_name', 'Block_ID',
@@ -18127,6 +18127,10 @@ class NmrDpRemediation:
                             replace_cf_loop = True
                             break
                     if not replace_cf_loop:
+                        if all(_row[2] in EMPTY_VALUE for _row in _dat):
+                            block_id_col = _cf_loop.tags.index('Block_ID')
+                            for idx, _row in enumerate(_dat, start=1):
+                                _cf_loop.data[idx][block_id_col] = idx
                         tags = ['Software_ID', 'Software_label', 'Software_name']
                         _dat = _cf_loop.get_tag(tags)
                         dat = cf_loop.get_tag(tags)

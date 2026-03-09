@@ -1743,15 +1743,17 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'bacterial outer membrane'
                                 elif 'bicelle' in mol_common_name or 'phage' in mol_common_name or mol_common_name == 'pf1':
                                     lp.data[idx][type_col] = 'molecular alignment inductor'
-                                elif mol_common_name in ('dpc', 'dpc-d38', 'sds') or 'dodecylphosphocholine' in mol_common_name\
+                                elif mol_common_name in ('dpc', 'dpc-d38', 'sds', 'sodium dodecyl sulfate')\
+                                        or 'dodecylphosphocholine' in mol_common_name\
                                         or 'micelle' in mol_common_name:
                                     lp.data[idx][type_col] = 'micelles'
-                                elif mol_common_name in ('chaps', 'chapso') or mol_common_name.startswith('zwittergent'):
+                                elif mol_common_name in ('chaps', 'chapso')\
+                                        or mol_common_name.startswith('zwittergent'):
                                     lp.data[idx][type_col] = 'detergent'
                                 elif 'phosph' in mol_common_name\
-                                    and ('ylethanolamine' in mol_common_name or 'ylcholine' in mol_common_name
-                                         or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
-                                         or 'lipid' in mol_common_name):
+                                        and ('ylethanolamine' in mol_common_name or 'ylcholine' in mol_common_name
+                                             or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
+                                             or 'lipid' in mol_common_name):
                                     lp.data[idx][type_col] = 'phospholipid'
                                 elif mol_common_name in ('popc', 'pope', 'popg', 'popg-na') or 'lipids' in mol_common_name:
                                     lp.data[idx][type_col] = 'phospholipid'

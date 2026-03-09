@@ -1743,8 +1743,10 @@ class BMRBAnnTasks:
                                     lp.data[idx][type_col] = 'bacterial outer membrane'
                                 elif 'bicelle' in mol_common_name or 'phage' in mol_common_name or mol_common_name == 'pf1':
                                     lp.data[idx][type_col] = 'molecular alignment inductor'
-                                elif mol_common_name in ('dpc', 'dpc-d38', 'sds', 'sodium dodecyl sulfate')\
+                                elif mol_common_name in ('dpc', 'dpc-d38', 'lpg', 'lppg',
+                                                         'sds', 'sodium dodecyl sulfate')\
                                         or 'dodecylphosphocholine' in mol_common_name\
+                                        or 'lysophosph' in mol_common_name\
                                         or 'micelle' in mol_common_name:
                                     lp.data[idx][type_col] = 'micelles'
                                 elif mol_common_name in ('chaps', 'chapso')\

@@ -1750,8 +1750,14 @@ class BMRBAnnTasks:
                                         or 'micelle' in mol_common_name:
                                     lp.data[idx][type_col] = 'micelles'
                                 elif mol_common_name in ('chaps', 'chapso', 'dhpc', 'popc')\
+                                        or ('deuterate' in mol_common_name
+                                            and ('dhpc' in mol_common_name) or 'popc' in mol_common_name)\
                                         or mol_common_name.startswith('zwittergent'):
                                     lp.data[idx][type_col] = 'detergent'
+                                    lp.data[idx][isotopic_labeling_col] = '[U-2H]'\
+                                        if mol_common_name.startswith('d-')\
+                                        or 'deuterate' in mol_common_name\
+                                        or re.match(r'd\d+-.*', mol_common_name) else 'natural abundance'
                                 elif 'phosph' in mol_common_name\
                                         and ('ylethanolamine' in mol_common_name or 'ylcholine' in mol_common_name
                                              or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name

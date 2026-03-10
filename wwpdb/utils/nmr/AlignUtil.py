@@ -3774,13 +3774,13 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
         from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,  # pylint: disable=import-outside-toplevel
                                                     load_from_pickle,
                                                     write_as_pickle)
-        from wwpdb.utils.nmr.NmrMrSplitter import is_binary_file
+        from wwpdb.utils.nmr.NmrMrSplitter import is_binary_file  # pylint: disable=import-outside-toplevel
     except ImportError:
         from nmr.io.CifReader import CifReader  # pylint: disable=import-outside-toplevel
         from nmr.NmrVrptUtility import (uncompress_gzip_file,  # pylint: disable=import-outside-toplevel
                                         load_from_pickle,
                                         write_as_pickle)
-        from nmr.NmrMrSplitter import is_binary_file
+        from nmr.NmrMrSplitter import is_binary_file  # pylint: disable=import-outside-toplevel
 
     first = min(history)
     last = max(history)

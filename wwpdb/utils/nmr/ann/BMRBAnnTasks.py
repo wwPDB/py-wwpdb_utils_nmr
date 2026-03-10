@@ -1434,6 +1434,7 @@ class BMRBAnnTasks:
                or 'pipes' in key\
                or 'mes' in key\
                or 'mops' in key\
+               or ('morpholino' in key and 'propane' in key and 'sulfonic' in key)\
                or 'pbs' in key\
                or 'tris' in key\
                or 'phosphate' in key\
@@ -1696,6 +1697,8 @@ class BMRBAnnTasks:
                                         or 'kphos' in mol_common_name\
                                         or 'mes' in mol_common_name\
                                         or 'mops' in mol_common_name\
+                                        or ('morpholino' in mol_common_name and 'propane' in mol_common_name
+                                            and 'sulfonic' in mol_common_name)\
                                         or 'naphos' in mol_common_name\
                                         or 'pbs' in mol_common_name\
                                         or 'phosphate' in mol_common_name\

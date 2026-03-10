@@ -539,8 +539,11 @@ class BaseTopologyParserListener():
 
             for cmap in compIdMapping:
                 if any(True for ca in self.__chainAssign if ca['test_chain_id'] == cmap['chain_id']):
+                    ca = next(ca for ca in self.__chainAssign if ca['test_chain_id'] == cmap['chain_id'])
                     for k, atomNum in self.atomNumberDict.items():
                         if atomNum['chain_id'] == cmap['chain_id'] and atomNum['seq_id'] == cmap['seq_id']:
+                            if atomNum['chain_id'] != ca['ref_chain_id']:
+                                atomNum['chain_id'] = ca['ref_chain_id']
                             atomNum['comp_id'] = cmap['comp_id']
                             atomNum['auth_comp_id'] = cmap['auth_comp_id']
                             if 'atom_type' in atomNum:

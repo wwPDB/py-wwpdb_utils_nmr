@@ -1749,7 +1749,7 @@ class BMRBAnnTasks:
                                         or 'lysophosph' in mol_common_name\
                                         or 'micelle' in mol_common_name:
                                     lp.data[idx][type_col] = 'micelles'
-                                elif mol_common_name in ('chaps', 'chapso')\
+                                elif mol_common_name in ('chaps', 'chapso', 'dhpc', 'popc')\
                                         or mol_common_name.startswith('zwittergent'):
                                     lp.data[idx][type_col] = 'detergent'
                                 elif 'phosph' in mol_common_name\
@@ -1757,7 +1757,7 @@ class BMRBAnnTasks:
                                              or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
                                              or 'lipid' in mol_common_name):
                                     lp.data[idx][type_col] = 'phospholipid'
-                                elif mol_common_name in ('popc', 'pope', 'popg', 'popg-na') or 'lipids' in mol_common_name:
+                                elif mol_common_name in ('dmpc', 'dopc', 'dppc', 'popg', 'popg-na') or 'lipids' in mol_common_name:
                                     lp.data[idx][type_col] = 'phospholipid'
                                 elif mol_common_name == 'dmso-d6':
                                     lp.data[idx][isotopic_labeling_col] = '[U-2H]'

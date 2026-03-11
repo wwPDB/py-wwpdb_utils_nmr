@@ -388,8 +388,8 @@ def is_good_data(array: list) -> bool:
 
 def specify_missing_tags(lp_category: str, current_tags: List[str], missing_tags: List[str]
                          ) -> str:
-    """ Return more specific missing tags by taking consideration of existing tags and default tags. (DAOTHER-10547)
-        @return: Instruction message for depositors
+    """ Return user friendly instruction about missing mandatory tag issue. (DAOTHER-10547)
+        @return: Instruction in case missing mandatory tag, otherwise empty string
     """
 
     for tag in current_tags:
@@ -419,13 +419,13 @@ def specify_missing_tags(lp_category: str, current_tags: List[str], missing_tags
                     missing_tags.remove(tag)
 
     len_missing_tags = len(missing_tags)
-    if len(missing_tags) == 0:
+    if len_missing_tags == 0:
         return ''
 
     msg = f"Missing mandatory {missing_tags} tags in {lp_category} loop." if len_missing_tags > 1\
         else f"Missing mandatory {missing_tags[0]!r} loop tag in {lp_category} loop."
 
-    if len(missing_tags) > 0:
+    if len_missing_tags > 0:
         extra_tags = []
         for data_item in DATA_ITEMS[file_type][content_subtype]:
             if 'default-from' in data_item and data_item['default-from'] in missing_tags:

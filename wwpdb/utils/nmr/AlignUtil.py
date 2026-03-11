@@ -3774,11 +3774,13 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
         from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,  # pylint: disable=import-outside-toplevel
                                                     load_from_pickle,
                                                     write_as_pickle)
+        from wwpdb.utils.nmr.NmrDpMrSplitter import is_binary_file  # pylint: disable=import-outside-toplevel
     except ImportError:
         from nmr.io.CifReader import CifReader  # pylint: disable=import-outside-toplevel
         from nmr.NmrVrptUtility import (uncompress_gzip_file,  # pylint: disable=import-outside-toplevel
                                         load_from_pickle,
                                         write_as_pickle)
+        from nmr.NmrDpMrSplitter import is_binary_file  # pylint: disable=import-outside-toplevel
 
     first = min(history)
     last = max(history)
@@ -3806,7 +3808,10 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
                 if os.path.exists(loc_cif_path):
                     os.remove(loc_cif_path)
             if not os.path.exists(loc_cif_path):
-                uncompress_gzip_file(loc_cif_gz_path, loc_cif_path)
+                if not is_binary_file(loc_cif_gz_path):
+                    os.remove(loc_cif_gz_path)
+                else:
+                    uncompress_gzip_file(loc_cif_gz_path, loc_cif_path)
         except Exception as e:  # pylint: disable=broad-exception-caught
             try:
                 if os.path.exists(loc_cif_gz_path):

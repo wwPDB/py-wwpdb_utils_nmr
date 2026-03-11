@@ -1434,6 +1434,7 @@ class BMRBAnnTasks:
                or 'pipes' in key\
                or 'mes' in key\
                or 'mops' in key\
+               or ('morpholino' in key and 'propane' in key and 'sulfonic' in key)\
                or 'pbs' in key\
                or 'tris' in key\
                or 'phosphate' in key\
@@ -1696,6 +1697,8 @@ class BMRBAnnTasks:
                                         or 'kphos' in mol_common_name\
                                         or 'mes' in mol_common_name\
                                         or 'mops' in mol_common_name\
+                                        or ('morpholino' in mol_common_name and 'propane' in mol_common_name
+                                            and 'sulfonic' in mol_common_name)\
                                         or 'naphos' in mol_common_name\
                                         or 'pbs' in mol_common_name\
                                         or 'phosphate' in mol_common_name\
@@ -1739,21 +1742,31 @@ class BMRBAnnTasks:
                                     default_internal_reference = mol_common_name.upper()
                                 elif 'pyridostatin' in mol_common_name or mol_common_name in ('pds', 'pypds'):
                                     lp.data[idx][type_col] = 'G-quadruplex stabilizing agent'
-                                elif 'bicelle' in mol_common_name or 'phage' in mol_common_name or mol_common_name == 'pf1':
-                                    lp.data[idx][type_col] = 'molecular alignment inductor'
-                                elif mol_common_name in ('dpc', 'dpc-d38', 'sds') or 'dodecylphosphocholine' in mol_common_name\
-                                        or 'micelle' in mol_common_name:
-                                    lp.data[idx][type_col] = 'micelles'
-                                elif mol_common_name in ('chaps', 'chapso') or mol_common_name.startswith('zwittergent'):
-                                    lp.data[idx][type_col] = 'detergent'
                                 elif 'lps' in mol_common_name or 'lipopolysaccharide' in mol_common_name:
                                     lp.data[idx][type_col] = 'bacterial outer membrane'
+                                elif 'bicelle' in mol_common_name or 'phage' in mol_common_name or mol_common_name == 'pf1':
+                                    lp.data[idx][type_col] = 'molecular alignment inductor'
+                                elif mol_common_name in ('dpc', 'dpc-d38', 'lpg', 'lppg',
+                                                         'sds', 'sodium dodecyl sulfate')\
+                                        or 'dodecylphosphocholine' in mol_common_name\
+                                        or 'lysophosph' in mol_common_name\
+                                        or 'micelle' in mol_common_name:
+                                    lp.data[idx][type_col] = 'micelles'
+                                elif mol_common_name in ('chaps', 'chapso', 'dhpc', 'popc')\
+                                        or ('deuterate' in mol_common_name
+                                            and ('dhpc' in mol_common_name) or 'popc' in mol_common_name)\
+                                        or mol_common_name.startswith('zwittergent'):
+                                    lp.data[idx][type_col] = 'detergent'
+                                    lp.data[idx][isotopic_labeling_col] = '[U-2H]'\
+                                        if mol_common_name.startswith('d-')\
+                                        or 'deuterate' in mol_common_name\
+                                        or re.match(r'd\d+-.*', mol_common_name) else 'natural abundance'
                                 elif 'phosph' in mol_common_name\
-                                    and ('ylethanolamine' in mol_common_name or 'ylcholine' in mol_common_name
-                                         or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
-                                         or 'lipid' in mol_common_name):
+                                        and ('ylethanolamine' in mol_common_name or 'ylcholine' in mol_common_name
+                                             or 'ylserine' in mol_common_name or 'ylinositol' in mol_common_name
+                                             or 'lipid' in mol_common_name):
                                     lp.data[idx][type_col] = 'phospholipid'
-                                elif mol_common_name in ('popc', 'pope', 'popg', 'popg-na') or 'lipids' in mol_common_name:
+                                elif mol_common_name in ('dmpc', 'dopc', 'dppc', 'popg', 'popg-na') or 'lipids' in mol_common_name:
                                     lp.data[idx][type_col] = 'phospholipid'
                                 elif mol_common_name == 'dmso-d6':
                                     lp.data[idx][isotopic_labeling_col] = '[U-2H]'

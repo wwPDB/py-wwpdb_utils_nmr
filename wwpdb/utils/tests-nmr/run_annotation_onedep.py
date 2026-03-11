@@ -970,7 +970,7 @@ class gen_auth_view_onedep:
             print(f'NMR Restraints : {self.__mr_file_path}')
         if len(self.__ar_file_path) > 0:
             for ar_file_path, ar_file_type in zip(self.__ar_file_path, self.__ar_file_type):
-                if ar_file_type.startswith('nm-res'):
+                if not ar_file_type.startswith('nm-pea'):
                     print(f'NMR Restraints : {ar_file_path} ({ar_file_type})')
                 else:
                     print(f'Spectral peaks : {ar_file_path} ({ar_file_type})')

@@ -2367,7 +2367,7 @@ class NEFTranslator:
                      lp_category: str = 'Atom_chem_shift', seq_id: str = 'Comp_index_ID', comp_id: str = 'Comp_ID',
                      chain_id='Entity_assembly_ID', alt_seq_id='Seq_ID', alt_seq_id_offset=0, alt_chain_id='Auth_asym_ID',
                      allow_empty: bool = False, allow_gap: bool = False, check_identity: bool = True,
-                     coord_assembly_checker: Optional[dict] = None) -> List[List[dict]]:
+                     coord_assembly_checker: Optional[dict] = None, nmr_poly_seq: Optional[List[dict]] = None) -> List[List[dict]]:
         """ Extract sequence from any given loops in an NMR-STAR file.
             @change: re-written by Masashi Yokochi
             @return: list of sequence information for each loop
@@ -2571,20 +2571,57 @@ class NEFTranslator:
                             if __auth_comp_id != _auth_comp_id:
                                 loop.data[idx][auth_comp_id_col] = __auth_comp_id
 
-                elif 'Comp_ID' in loop.tags and has_coord and cif_br is None and cif_np is None\
-                        and all(all(self.__csStat.peptideLike(_comp_id) for _comp_id in ps['comp_id']) for ps in cif_ps)\
-                        and all(len(_comp_id) == 1 for _comp_id in loop.get_tag(['Comp_id'])):  # DAOTHER-10487
-                    comp_id_set = set()
-                    for ps in cif_ps:
-                        comp_id_set |= set(_comp_id for _comp_id in ps['comp_id'])
-                    one_letter_code_set = [getOneLetterCode(_comp_id) for _comp_id in comp_id_set]
-                    if one_letter_code_set.count('X') < 2:
-                        pre_seq_data = loop.get_tag(['Comp_ID'])
-                        if all(_comp_id in one_letter_code_set for _comp_id in pre_seq_data):
-                            comp_id_col = loop.tags.index('Comp_ID')
-                            for idx, _comp_id in enumerate(pre_seq_data):
-                                loop.data[idx][comp_id_col] = next(_comp_id_ for _comp_id_ in comp_id_set
-                                                                   if getOneLetterCode(_comp_id_) == _comp_id)
+                if 'Comp_ID' in loop.tags and all(len(_comp_id) == 1 for _comp_id in loop.get_tag(['Comp_id'])):
+                    # DAOTHER-10487
+                    if has_coord and cif_br is None and cif_np is None\
+                            and all(all(self.__csStat.peptideLike(_comp_id) for _comp_id in ps['comp_id']) for ps in cif_ps):
+                        comp_id_set = set()
+                        for ps in cif_ps:
+                            comp_id_set |= set(_comp_id for _comp_id in ps['comp_id'])
+                        one_letter_code_set = [getOneLetterCode(_comp_id) for _comp_id in comp_id_set]
+                        if one_letter_code_set.count('X') < 2:
+                            pre_seq_data = loop.get_tag(['Comp_ID'])
+                            if all(_comp_id in one_letter_code_set for _comp_id in pre_seq_data):
+                                comp_id_col = loop.tags.index('Comp_ID')
+                                for idx, _comp_id in enumerate(pre_seq_data):
+                                    loop.data[idx][comp_id_col] = next(_comp_id_ for _comp_id_ in comp_id_set
+                                                                       if getOneLetterCode(_comp_id_) == _comp_id)
+                    # BMRB Only
+                    elif nmr_poly_seq is not None\
+                            and all(all(self.__csStat.peptideLike(_comp_id) for _comp_id in ps['comp_id']) for ps in nmr_poly_seq):
+                        comp_id_set = set()
+                        for ps in nmr_poly_seq:
+                            comp_id_set |= set(_comp_id for _comp_id in ps['comp_id'])
+                        one_letter_code_set = [getOneLetterCode(_comp_id) for _comp_id in comp_id_set]
+                        if one_letter_code_set.count('X') < 2:
+                            pre_seq_data = loop.get_tag(['Comp_ID'])
+                            if all(_comp_id in one_letter_code_set for _comp_id in pre_seq_data):
+                                comp_id_col = loop.tags.index('Comp_ID')
+                                comp_index_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
+                                seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
+                                atom_id_col = loop.tags.index('Atom_ID') if 'Atom_ID' in loop.tags else -1
+                                if 'Auth_seq_ID' not in loop.tags:
+                                    loop.add_tag('Auth_seq_ID', update_data=True)
+                                if 'Auth_comp_ID' not in loop.tags:
+                                    loop.add_tag('Auth_comp_ID', update_data=True)
+                                if 'Auth_atom_ID' not in loop.tags:
+                                    loop.add_tag('Auth_atom_ID', update_data=True)
+                                auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+                                auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                                auth_atom_id_col = loop.tags.index('Auth_atom_ID')
+                                for idx, _comp_id in enumerate(pre_seq_data):
+                                    if loop.data[idx][auth_comp_id_col] in EMPTY_VALUE:
+                                        loop.data[idx][auth_comp_id_col] = _comp_id
+                                    loop.data[idx][comp_id_col] = next(_comp_id_ for _comp_id_ in comp_id_set
+                                                                       if getOneLetterCode(_comp_id_) == _comp_id)
+                                    if loop.data[idx][auth_seq_id_col] in EMPTY_VALUE:
+                                        if comp_index_id_col != -1 and loop.data[idx][comp_index_id_col] not in EMPTY_VALUE:
+                                            loop.data[idx][auth_seq_id_col] = loop.data[idx][comp_index_id_col]
+                                        elif seq_id_col != -1 and loop.data[idx][seq_id_col] not in EMPTY_VALUE:
+                                            loop.data[idx][auth_seq_id_col] = loop.data[idx][seq_id_col]
+                                    if loop.data[idx][auth_atom_id_col] in EMPTY_VALUE\
+                                       and loop.data[idx][atom_id_col] not in EMPTY_VALUE:
+                                        loop.data[idx][auth_atom_id_col] = loop.data[idx][atom_id_col]
 
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and has_auth_asym_id\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):

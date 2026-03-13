@@ -6082,6 +6082,11 @@ class NmrDpRemediation:
                             row[auth_asym_id_col], row[auth_seq_id_col], \
                             row[auth_comp_id_col], row[auth_atom_id_col]
 
+                    elif self.__reg.bmrb_only and self.__reg.internal_mode:
+                        if auth_seq_id_col != -1 and auth_comp_id_col != -1 and auth_atom_id_col != -1:
+                            _row[17], _row[18], _row[19] =\
+                                row[auth_seq_id_col], row[auth_comp_id_col], row[auth_atom_id_col]
+
                     if has_orig_seq:
                         _row[20], _row[21], _row[22], _row[23] =\
                             row[orig_asym_id_col], row[orig_seq_id_col], \

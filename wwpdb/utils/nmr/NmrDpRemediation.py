@@ -5013,6 +5013,19 @@ class NmrDpRemediation:
                                 has_orig_seq = True
                                 break
 
+            entity_assembly_mappping = {}
+            if self.__reg.bmrb_only and self.__reg.internal_mode:
+                if isinstance(self.__reg.star_data[file_list_id], pynmrstar.Entry):
+                    for asm_sf in self.__reg.star_data[file_list_id].get_saveframes_by_category('assembly'):
+                        try:
+                            ea_loop = asm_sf.get_loop('_Entity_assembly')
+                            dat = ea_loop.get_tag(['ID', 'Entity_ID'])
+                            for row in dat:
+                                entity_assembly_id = row[0] if isinstance(row[0], str) else str(row[0])
+                                entity_assembly_mappping[entity_assembly_id] = row[1]
+                        except KeyError:
+                            continue
+
             chain_id_col = loop.tags.index('Entity_assembly_ID')
             entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
             seq_id_col = loop.tags.index('Comp_index_ID')
@@ -7451,6 +7464,11 @@ class NmrDpRemediation:
                                 seq_id_offset_for_unmapped[_row[1]] = _row[3] - _row[17]
                             elif isinstance(_row[17], str) and _row[17].isdigit():
                                 seq_id_offset_for_unmapped[_row[1]] = _row[3] - int(_row[17])
+
+                    if self.__reg.bmrb_only and self.__reg.internal_mode and _row[1] not in EMPTY_VALUE and _row[2] in EMPTY_VALUE:
+                        entity_assembly_id = _row[1] if isinstance(_row[1], str) else str(_row[1])
+                        if entity_assembly_id in entity_assembly_mappping:
+                            _row[2] = entity_assembly_mappping[entity_assembly_id]
 
                     if isinstance(_row[12], int):
                         comp_id = _row[5]

@@ -5013,6 +5013,19 @@ class NmrDpRemediation:
                                 has_orig_seq = True
                                 break
 
+            entity_assembly_mappping = {}
+            if self.__reg.bmrb_only and self.__reg.internal_mode:
+                if isinstance(self.__reg.star_data[file_list_id], pynmrstar.Entry):
+                    for asm_sf in self.__reg.star_data[file_list_id].get_saveframes_by_category('assembly'):
+                        try:
+                            ea_loop = asm_sf.get_loop('_Entity_assembly')
+                            dat = ea_loop.get_tag(['ID', 'Entity_ID'])
+                            for row in dat:
+                                entity_assembly_id = row[0] if isinstance(row[0], str) else str(row[0])
+                                entity_assembly_mappping[entity_assembly_id] = row[1]
+                        except KeyError:
+                            continue
+
             chain_id_col = loop.tags.index('Entity_assembly_ID')
             entity_id_col = loop.tags.index('Entity_ID') if 'Entity_ID' in loop.tags else -1
             seq_id_col = loop.tags.index('Comp_index_ID')
@@ -5857,13 +5870,15 @@ class NmrDpRemediation:
                             continue
 
                         try:
-                            _auth_seq_id_1 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_1)
-                            _auth_seq_id_2 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_2)
+                            _auth_seq_id_1, _auth_comp_id_1 =\
+                                next((int(row[1]), row[2]) for row in auth_dat if row[0] == _auth_chain_id_1)
+                            _auth_seq_id_2, _auth_comp_id_2 =\
+                                next((int(row[1]), row[2]) for row in auth_dat if row[0] == _auth_chain_id_2)
                         except (ValueError, TypeError):
                             continue
 
-                        _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1, row[2])
-                        _seq_key_2 = (_auth_chain_id_2, _auth_seq_id_2, row[2])
+                        _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1, _auth_comp_id_1)
+                        _seq_key_2 = (_auth_chain_id_2, _auth_seq_id_2, _auth_comp_id_2)
 
                         if _seq_key_1 not in auth_to_entity_type or _seq_key_2 not in auth_to_entity_type:
                             continue
@@ -6082,6 +6097,11 @@ class NmrDpRemediation:
                             row[auth_asym_id_col], row[auth_seq_id_col], \
                             row[auth_comp_id_col], row[auth_atom_id_col]
 
+                    elif self.__reg.bmrb_only and self.__reg.internal_mode:
+                        if auth_seq_id_col != -1 and auth_comp_id_col != -1 and auth_atom_id_col != -1:
+                            _row[17], _row[18], _row[19] =\
+                                row[auth_seq_id_col], row[auth_comp_id_col], row[auth_atom_id_col]
+
                     if has_orig_seq:
                         _row[20], _row[21], _row[22], _row[23] =\
                             row[orig_asym_id_col], row[orig_seq_id_col], \
@@ -6099,7 +6119,7 @@ class NmrDpRemediation:
                         auth_seq_id = row[auth_seq_id_col]
                         auth_comp_id = row[auth_comp_id_col]
 
-                        if valid_auth_seq:
+                        if valid_auth_seq and auth_seq_id not in EMPTY_VALUE:
                             auth_seq_id_ = int(auth_seq_id)
                             seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                             _seq_key = (seq_key[0], seq_key[1])
@@ -6111,6 +6131,7 @@ class NmrDpRemediation:
                                         if atom_id in _coord_atom_site['atom_id']:
                                             _row[19] = atom_id
                             except KeyError:
+                                entity_assembly_id = None
                                 if self.__reg.annotation_mode or self.__reg.native_combined:
                                     auth_asym_id =\
                                         next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -6118,7 +6139,10 @@ class NmrDpRemediation:
                                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                     if seq_key in auth_to_star_seq:
                                         _row[16] = row[auth_asym_id_col] = auth_asym_id
-                                        _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                        if has_orig_seq:
+                                            _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                        else:
+                                            _row[20] = auth_asym_id
                                         _seq_key = (seq_key[0], seq_key[1])
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                     else:
@@ -6129,7 +6153,10 @@ class NmrDpRemediation:
                                         seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                         if seq_key in auth_to_star_seq:
                                             _row[16] = row[auth_asym_id_col] = auth_asym_id
-                                            _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                            if has_orig_seq:
+                                                _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                            else:
+                                                _row[20] = auth_asym_id
                                             _row[5] = row[comp_id_col] = auth_comp_id
                                             _row[18] = row[auth_comp_id_col] = auth_comp_id
                                             comp_id = auth_comp_id
@@ -6146,9 +6173,10 @@ class NmrDpRemediation:
                                     elif seq_key in auth_to_star_seq_ann:
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
 
-                            self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
-                            _row[1], _row[2] = entity_assembly_id, entity_id
-                            _row[3] = _row[4] = seq_id
+                            if entity_assembly_id is not None:
+                                self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                                _row[1], _row[2] = entity_assembly_id, entity_id
+                                _row[3] = _row[4] = seq_id
 
                             if prefer_auth_atom_name:
                                 if has_orig_seq:
@@ -6410,6 +6438,7 @@ class NmrDpRemediation:
                                     if atom_id in _coord_atom_site['atom_id']:
                                         _row[19] = atom_id
                         except KeyError:
+                            entity_assembly_id = None
                             if self.__reg.annotation_mode or self.__reg.native_combined:
                                 auth_asym_id =\
                                     next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
@@ -6417,7 +6446,10 @@ class NmrDpRemediation:
                                 seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                 if seq_key in auth_to_star_seq:
                                     _row[16] = row[auth_asym_id_col] = auth_asym_id
-                                    _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                    if has_orig_seq:
+                                        _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                    else:
+                                        _row[20] = auth_asym_id
                                     _seq_key = (seq_key[0], seq_key[1])
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                 else:
@@ -6428,7 +6460,10 @@ class NmrDpRemediation:
                                     seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
                                     if seq_key in auth_to_star_seq:
                                         _row[16] = row[auth_asym_id_col] = auth_asym_id
-                                        _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                        if has_orig_seq:
+                                            _row[20] = row[orig_asym_id_col] = auth_asym_id
+                                        else:
+                                            _row[20] = auth_asym_id
                                         _row[5] = row[comp_id_col] = auth_comp_id
                                         _row[18] = row[auth_comp_id_col] = auth_comp_id
                                         comp_id = auth_comp_id
@@ -6445,9 +6480,10 @@ class NmrDpRemediation:
                                 elif seq_key in auth_to_star_seq_ann:
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
 
-                        self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
-                        _row[1], _row[2] = entity_assembly_id, entity_id
-                        _row[3] = _row[4] = seq_id
+                        if entity_assembly_id is not None:
+                            self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                            _row[1], _row[2] = entity_assembly_id, entity_id
+                            _row[3] = _row[4] = seq_id
 
                         if prefer_auth_atom_name:
                             if has_orig_seq:
@@ -7446,6 +7482,11 @@ class NmrDpRemediation:
                                 seq_id_offset_for_unmapped[_row[1]] = _row[3] - _row[17]
                             elif isinstance(_row[17], str) and _row[17].isdigit():
                                 seq_id_offset_for_unmapped[_row[1]] = _row[3] - int(_row[17])
+
+                    if self.__reg.bmrb_only and self.__reg.internal_mode and _row[1] not in EMPTY_VALUE and _row[2] in EMPTY_VALUE:
+                        entity_assembly_id = _row[1] if isinstance(_row[1], str) else str(_row[1])
+                        if entity_assembly_id in entity_assembly_mappping:
+                            _row[2] = entity_assembly_mappping[entity_assembly_id]
 
                     if isinstance(_row[12], int):
                         comp_id = _row[5]

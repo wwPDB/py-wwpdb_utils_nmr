@@ -2110,9 +2110,20 @@ class NmrDpUtility:
                                                 allow_gap=True,
                                                 check_identity=check_identity)
 
+        poly_seq = None
+
         if not self.__reg.bmrb_only or not self.__reg.internal_mode:
             if self.__reg.caC is None:
                 self.__retrieveCoordAssemblyChecker__()
+
+        elif self.__reg.caC is None:
+            self.__extractPolymerSequenceInEntityAssembly__(file_list_id)
+
+            input_source = self.__reg.report.input_sources[file_list_id]
+            input_source_dic = input_source.get()
+
+            if has_key_value(input_source_dic, 'polymer_sequence'):
+                poly_seq = input_source_dic['polymer_sequence']
 
         # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
         return self.__reg.nefT.get_star_seq(sf, lp_category=LP_CATEGORIES[file_type][content_subtype],
@@ -2121,7 +2132,8 @@ class NmrDpUtility:
                                             check_identity=check_identity,
                                             coord_assembly_checker=self.__reg.caC if self.__reg.native_combined
                                             or not self.__reg.combined_mode
-                                            or self.__reg.op == 'nmr-str-replace-cs' else None)
+                                            or self.__reg.op == 'nmr-str-replace-cs' else None,
+                                            nmr_poly_seq=poly_seq)
 
     def __extractPolymerSequence(self) -> bool:
         """ Extract reference polymer sequence.

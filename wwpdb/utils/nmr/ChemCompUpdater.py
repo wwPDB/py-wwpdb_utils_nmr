@@ -50,12 +50,13 @@ class ChemCompUpdater:
         self.__url_for_components = 'https://files.wwpdb.org/pub/pdb/data/monomers/' + self.__components_cif_gz
         self.__work_dir = os.path.join(os.path.dirname(__file__), 'ligand_dict')
 
-        self.__src_gsh_cif = os.path.join(self.__work_dir, 'GSH.cif')
-        self.__has_gsh_cif = os.path.exists(self.__src_gsh_cif)
+        # DATAQUALITY-2203
+        # self.__src_gsh_cif = os.path.join(self.__work_dir, 'GSH.cif')
+        # self.__has_gsh_cif = os.path.exists(self.__src_gsh_cif)
 
-        if self.__has_gsh_cif:
-            self.__dst_gsh_cif = os.path.join(self.__work_dir, 'G', 'GSH', 'GSH.cif')
-            self.__tmp_gsh_cif = os.path.join(os.path.dirname(__file__), 'GSH.cif')
+        # if self.__has_gsh_cif:
+        #     self.__dst_gsh_cif = os.path.join(self.__work_dir, 'G', 'GSH', 'GSH.cif')
+        #     self.__tmp_gsh_cif = os.path.join(os.path.dirname(__file__), 'GSH.cif')
 
         self.__force = force
 
@@ -67,16 +68,16 @@ class ChemCompUpdater:
 
         try:
 
-            if self.__has_gsh_cif:
-                shutil.copyfile(self.__src_gsh_cif, self.__tmp_gsh_cif)
+            # if self.__has_gsh_cif:
+            #     shutil.copyfile(self.__src_gsh_cif, self.__tmp_gsh_cif)
 
             if os.path.isdir(self.__work_dir):
                 shutil.rmtree(self.__work_dir)
 
             os.mkdir(self.__work_dir)
 
-            if self.__has_gsh_cif:
-                shutil.copyfile(self.__tmp_gsh_cif, self.__src_gsh_cif)
+            # if self.__has_gsh_cif:
+            #     shutil.copyfile(self.__tmp_gsh_cif, self.__src_gsh_cif)
 
             print(f'Uncompressing {self.__components_cif_gz!r} ...')
 
@@ -103,8 +104,8 @@ class ChemCompUpdater:
                     pdbxW = PdbxWriter(ofh)
                     pdbxW.write([dBlock])
 
-            if self.__has_gsh_cif:
-                shutil.move(self.__src_gsh_cif, self.__dst_gsh_cif)
+            # if self.__has_gsh_cif:
+            #     shutil.move(self.__src_gsh_cif, self.__dst_gsh_cif)
 
             os.remove(self.__components_cif_path)
 

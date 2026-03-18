@@ -5870,13 +5870,15 @@ class NmrDpRemediation:
                             continue
 
                         try:
-                            _auth_seq_id_1 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_1)
-                            _auth_seq_id_2 = next(int(row[1]) for row in auth_dat if row[0] == _auth_chain_id_2)
+                            _auth_seq_id_1, _auth_comp_id_1 =\
+                                next((int(row[1]), row[2]) for row in auth_dat if row[0] == _auth_chain_id_1)
+                            _auth_seq_id_2, _auth_comp_id_2 =\
+                                next((int(row[1]), row[2]) for row in auth_dat if row[0] == _auth_chain_id_2)
                         except (ValueError, TypeError):
                             continue
 
-                        _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1, row[2])
-                        _seq_key_2 = (_auth_chain_id_2, _auth_seq_id_2, row[2])
+                        _seq_key_1 = (_auth_chain_id_1, _auth_seq_id_1, _auth_comp_id_1)
+                        _seq_key_2 = (_auth_chain_id_2, _auth_seq_id_2, _auth_comp_id_2)
 
                         if _seq_key_1 not in auth_to_entity_type or _seq_key_2 not in auth_to_entity_type:
                             continue

@@ -1115,7 +1115,8 @@ class NmrDpUtility:
         self.__reg.nefT.set_remediation_mode(self.__reg.remediation_mode)
         self.__reg.nefT.set_annotation_mode(self.__reg.annotation_mode)
         self.__reg.nefT.set_internal_mode(self.__reg.internal_mode)
-        self.__reg.nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs'))  # DAOTHER-9927
+        self.__reg.nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs',  # DAOTHER-9927
+                                                     'nmr-str2cif-annotate'))  # DAOTHER-10616
         self.__reg.nefT.cache_clear()
 
         if not self.__reg.permit_missing_legacy_dist_restraint and self.__reg.remediation_mode:
@@ -2132,7 +2133,8 @@ class NmrDpUtility:
                                             check_identity=check_identity,
                                             coord_assembly_checker=self.__reg.caC if self.__reg.native_combined
                                             or not self.__reg.combined_mode
-                                            or self.__reg.op == 'nmr-str-replace-cs' else None,
+                                            or self.__reg.op in ('nmr-str-replace-cs',
+                                                                 'nmr-str2cif-annotate') else None,
                                             nmr_poly_seq=poly_seq)
 
     def __extractPolymerSequence(self) -> bool:

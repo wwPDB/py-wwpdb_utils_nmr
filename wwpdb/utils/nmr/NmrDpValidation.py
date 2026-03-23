@@ -14408,6 +14408,10 @@ class NmrDpValidation:
                                         continue
 
                                     atom_id = row[atom_id_name]
+
+                                    if None in (row[iso_number], row[atom_type]):
+                                        continue
+
                                     data_type = str(row[iso_number]) + row[atom_type]
 
                                     if file_type == 'nef' or self.isNmrAtomName(comp_id, atom_id):
@@ -14555,6 +14559,10 @@ class NmrDpValidation:
                                         continue
 
                                     atom_id = row[atom_id_name]
+
+                                    if None in (row[iso_number], row[atom_type]):
+                                        continue
+
                                     data_type = str(row[iso_number]) + row[atom_type]
 
                                     if file_type == 'nef' or self.isNmrAtomName(comp_id, atom_id):
@@ -14687,6 +14695,10 @@ class NmrDpValidation:
                                         continue
 
                                     atom_id = row[atom_id_name]
+
+                                    if None in (row[iso_number], row[atom_type]):
+                                        continue
+
                                     data_type = str(row[iso_number]) + row[atom_type]
 
                                     if file_type == 'nef' or self.isNmrAtomName(comp_id, atom_id):
@@ -14810,6 +14822,10 @@ class NmrDpValidation:
                                         continue
 
                                     atom_id = row[atom_id_name]
+
+                                    if None in (row[iso_number], row[atom_type]):
+                                        continue
+
                                     data_type = str(row[iso_number]) + row[atom_type]
 
                                     if file_type == 'nef' or self.isNmrAtomName(comp_id, atom_id):
@@ -14925,6 +14941,10 @@ class NmrDpValidation:
                                         continue
 
                                     atom_id = row[atom_id_name]
+
+                                    if None in (row[iso_number], row[atom_type]):
+                                        continue
+
                                     data_type = str(row[iso_number]) + row[atom_type]
 
                                     if file_type == 'nef' or self.isNmrAtomName(comp_id, atom_id):

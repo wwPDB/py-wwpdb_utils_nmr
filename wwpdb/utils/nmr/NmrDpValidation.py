@@ -1756,7 +1756,8 @@ class NmrDpValidation:
             data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
             if PDB_MR_FILE_NAME_PAT.match(data_file_name) or INTNL_ANY_MR_FILE_NAME_PAT.match(data_file_name):
                 entry_id = get_first_sf_tag(_sf, 'Entry_ID')
-                if PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id):
+                if (PDB_ID_PAT.match(entry_id) or DEP_ID_PAT.match(entry_id))\
+                   and self.__reg.op != 'nmr-str2cif-annotate':  # DAOTHER-10616
                     self.__reg.remediation_mode = True
                     self.__reg.nefT.set_remediation_mode(True)
 

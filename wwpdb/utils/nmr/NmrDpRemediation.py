@@ -18460,7 +18460,7 @@ class NmrDpRemediation:
         self.__mergeAnyPkAsIs()
 
         if self.__reg.bmrb_only and self.__reg.internal_mode:
-            self.performBMRBjAnnTasks()
+            self.performBmrbJAnnTasks()
 
         try:
 
@@ -18632,7 +18632,7 @@ class NmrDpRemediation:
 
         return True
 
-    def performBMRBjAnnTasks(self, enforce: bool = False) -> bool:
+    def performBmrbJAnnTasks(self, enforce: bool = False) -> bool:
         """ Perform a series of BMRBj specific annotation tasks.
             @note: this method requires additional software packages,
                    network access to PubMed, NCBI Taxonomy, BMRB-API, BMRB ETS, etc
@@ -18645,13 +18645,13 @@ class NmrDpRemediation:
             return False
 
         try:
-            from wwpdb.utils.nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
+            from wwpdb.utils.nmr.ann.BmrbJAnnTasks import BmrbJAnnTasks  # pylint: disable=import-outside-toplevel
         except ImportError:
             try:
-                from nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
+                from nmr.ann.BmrbJAnnTasks import BmrbJAnnTasks  # pylint: disable=import-outside-toplevel
             except ImportError:
                 return False
 
-        ann = BMRBjAnnTasks(self.__reg)
+        ann = BmrbJAnnTasks(self.__reg)
 
         return ann.perform(self.__reg.star_data[0])

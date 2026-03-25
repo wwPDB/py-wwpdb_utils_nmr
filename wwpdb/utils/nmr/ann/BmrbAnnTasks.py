@@ -1,4 +1,4 @@
-# File: BMRBAnnTasks.py
+# File: BmrbAnnTasks.py
 # Date: 24-Dec-2023
 #
 # Updates:
@@ -77,7 +77,7 @@ DEFAULT_SF_LABEL_TAGS = ('_Assigned_chem_shift_list.Sample_condition_list_label'
                          '_Conformer_family_coord_set.Sample_condition_list_label')
 
 
-class BMRBAnnTasks:
+class BmrbAnnTasks:
     """ Wrapper class for BMRB annotation tasks.
     """
     __slots__ = ('__class_name__',

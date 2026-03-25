@@ -446,7 +446,7 @@ try:
                                                        isLikeHis)
     from wwpdb.utils.nmr.pk.BasePKParserListener import guess_primary_dim_transfer_type
     from wwpdb.utils.nmr.ann.OneDepAnnTasks import OneDepAnnTasks
-    from wwpdb.utils.nmr.ann.BMRBAnnTasks import BMRBAnnTasks
+    from wwpdb.utils.nmr.ann.BmrbAnnTasks import BmrbAnnTasks
 except ImportError:
     from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                    ALT_MODEL_FILE_PATH_KEY,
@@ -585,7 +585,7 @@ except ImportError:
                                            isLikeHis)
     from nmr.pk.BasePKParserListener import guess_primary_dim_transfer_type
     from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
-    from nmr.ann.BMRBAnnTasks import BMRBAnnTasks
+    from nmr.ann.BmrbAnnTasks import BmrbAnnTasks
 
 
 class NmrDpUtility:
@@ -792,7 +792,7 @@ class NmrDpUtility:
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
         __mergeCsAndMrTasks.append(self.__remediateRawTextPk)
         __mergeCsAndMrTasks.append(self.__mergeCoordAsNmrIf)  # DAOTHER-8905: NMR data remediation Phase 2 (internal remediation)
-        __mergeCsAndMrTasks.append(self.__performBMRBAnnTasks)
+        __mergeCsAndMrTasks.append(self.__performBmrbAnnTasks)
         __mergeCsAndMrTasks.append(self.__testDataConsistencyInPkLoop)  # refresh statistics of spectral peak list
         __mergeCsAndMrTasks.append(self.__testDataConsistencyInPkAuxLoop)  # refresh statistics of spectral peak list
         __mergeCsAndMrTasks.append(self.__calculateStatsOfExptlData)
@@ -813,20 +813,20 @@ class NmrDpUtility:
         __annotateTasks.extend(__crossCheckTasks)
         __annotateTasks.append(self.__updatePolymerSequence)
         __annotateTasks.append(self.__remediateRawTextPk)
-        __annotateTasks.append(self.__performBMRBAnnTasks)
+        __annotateTasks.append(self.__performBmrbAnnTasks)
         __annotateTasks.append(self.__depositNmrData)
         __annotateTasks.extend(__depositTasks)
         __annotateTasks.append(self.__depositNmrData)
 
         __mergeNmrIfTasks = [self.__parseNmrIf,
                              self.__mergeNmrIf,
-                             self.__performBMRBAnnTasks
+                             self.__performBmrbAnnTasks
                              ]
 
         __replaceCsTasks = copy.copy(__checkTasks)
         __replaceCsTasks.append(self.__replaceCsSf)
         __replaceCsTasks.append(self.__updatePolymerSequence)
-        __replaceCsTasks.append(self.__performBMRBAnnTasks)
+        __replaceCsTasks.append(self.__performBmrbAnnTasks)
         __replaceCsTasks.append(self.__depositNmrData)
 
         # dictionary of processing tasks of each workflow operation
@@ -6478,7 +6478,7 @@ class NmrDpUtility:
 
         self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(master_entry)
 
-        ann = BMRBAnnTasks(self.__reg)
+        ann = BmrbAnnTasks(self.__reg)
 
         if not self.__reg.internal_mode and self.__reg.report.getInputSourceIdOfCoord() >= 0\
            and self.__reg.cR.hasCategory('database_2'):
@@ -13235,7 +13235,7 @@ class NmrDpUtility:
                 self.__reg.dpR.remediateSpectralPeakListSaveframe(master_entry)
 
                 if self.__reg.srcPath is not None:
-                    self.__reg.dpR.performBMRBjAnnTasks(True)
+                    self.__reg.dpR.performBmrbJAnnTasks(True)
 
                     self.__reg.c2S.set_entry_id(master_entry, self.__reg.bmrb_id)
                     self.__reg.c2S.normalize_str(master_entry)
@@ -16375,7 +16375,7 @@ class NmrDpUtility:
 
         return ann.merge(master_entry, self.__nmrIfR, self.__reg.bmrb_only and self.__reg.internal_mode)
 
-    def __performBMRBAnnTasks(self) -> bool:
+    def __performBmrbAnnTasks(self) -> bool:
         """ Perform a series of standalone BMRB annotation tasks.
         """
 
@@ -16395,7 +16395,7 @@ class NmrDpUtility:
             if len(entry) > 0 and 'id' in entry[0]:
                 self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')
 
-        ann = BMRBAnnTasks(self.__reg)
+        ann = BmrbAnnTasks(self.__reg)
 
         if self.__reg.report.getInputSourceIdOfCoord() >= 0 and self.__reg.cR.hasCategory('database_2'):
 

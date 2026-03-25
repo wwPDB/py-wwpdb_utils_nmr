@@ -307,15 +307,15 @@ Import test
 Docker container of py-wwpdb_utils_nmr with reqularly updated CCD is available from the GitHub Container Repository. The container will be published on every Wednesday (03:10~ UTC).
 
 ```shell
-    docker pull ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main
+    docker pull ghcr.io/yokochi47/py-wwpdb_utils_nmr:main
 ```
 
 Then, run your Python script (e.g. app.py). It is recommended to write a wrapper program.
 ```shell
-    docker run --rm -it -v $(pwd)/app.py:/opt/app.py ghcr.io/yokochi47/py-wwpdb_utils_nmr:bmrb-extract_main python /opt/app.py
+    docker run --rm -it -v $(pwd)/app.py:/opt/app.py ghcr.io/yokochi47/py-wwpdb_utils_nmr:main python /opt/app.py
 ```
 
-For more information, see [Docker image in forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr/blob/bmrb-extract_main/Dockerfile)
+For more information, see [Docker image in forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr/blob/main/Dockerfile)
 
 ## Appendix
 

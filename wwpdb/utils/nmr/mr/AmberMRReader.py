@@ -23,7 +23,7 @@ try:
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
@@ -39,7 +39,7 @@ except ImportError:
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID)
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.LexerErrorListener import LexerErrorListener
@@ -81,7 +81,7 @@ class AmberMRReader:
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NefTranslator] = None,
+                 csStat: Optional[BmrbChemShiftStat] = None, nefT: Optional[NefTranslator] = None,
                  atomNumberDict: Optional[dict] = None, auxAtomNumberDict: Optional[dict] = None,
                  reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
@@ -110,7 +110,7 @@ class AmberMRReader:
         self.__caC = caC
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+        self.__csStat = BmrbChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
         # NefTranslator
         self.__nefT = NefTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT

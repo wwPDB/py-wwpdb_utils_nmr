@@ -8,7 +8,7 @@
 import sys
 import unittest
 
-from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
 from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
@@ -30,7 +30,7 @@ class ImportTests(unittest.TestCase):
         _ndp = NmrDpReport()  # noqa: F841
         # _nstc = NmrStarToCif()  # noqa: F841
         _rci = RCI()  # noqa: F841
-        _bmrb = BMRBChemShiftStat()  # noqa: F841
+        _bmrb = BmrbChemShiftStat()  # noqa: F841
 
 
 if __name__ == "__main__":

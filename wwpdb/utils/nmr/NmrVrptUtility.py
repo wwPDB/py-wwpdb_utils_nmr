@@ -60,7 +60,7 @@ try:
                                                ANGLE_ERROR_MAX,
                                                RDC_ERROR_MAX)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
                                               calculate_uninstanced_coord,
                                               to_np_array)
@@ -90,7 +90,7 @@ except ImportError:
                                    ANGLE_ERROR_MAX,
                                    RDC_ERROR_MAX)
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.io.CifReader import (CifReader,
                                   calculate_uninstanced_coord,
                                   to_np_array)
@@ -616,7 +616,7 @@ class NmrVrptUtility:
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None) -> None:
+                 csStat: Optional[BmrbChemShiftStat] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -664,7 +664,7 @@ class NmrVrptUtility:
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+        self.__csStat = BmrbChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
         # ParserListerUtil.coordAssemblyChecker()
         self.__caC = caC

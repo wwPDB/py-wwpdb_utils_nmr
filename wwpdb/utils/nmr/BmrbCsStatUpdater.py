@@ -1,5 +1,5 @@
 ##
-# File: BMRBCsStatUpdater.py
+# File: BmrbCsStatUpdater.py
 # Date: 18-Dec-2025
 #
 # Updates:
@@ -15,13 +15,13 @@ __version__ = "1.0.0"
 
 
 try:
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
 except ImportError:
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
 
 
 if __name__ == '__main__':
-    cs_stat = BMRBChemShiftStat()
+    cs_stat = BmrbChemShiftStat()
 
     cs_stat.updateStatCsvFiles()
 

@@ -1,5 +1,5 @@
 ##
-# File: BMRBChemShiftStat.py
+# File: BmrbChemShiftStat.py
 # Date: 20-Sep-2019
 #
 # Updates:
@@ -19,6 +19,7 @@
 # 22-Apr-2024  M. Yokochi - remap chemical shift statistics in reference to CCD (DAOTHER-9317)
 # 25-Dec-2025  M. Yokochi - allow to ignore specific residues from other chemical shift statistics
 #                           when CCD status is obsolete but not replaced-by (N9K)
+# 25-Mar-2026  M. Yokochi - rename class from BMRBChemShiftStat to BmrbChemShiftStat
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -65,7 +66,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import translateToStdAtomName
 
 
-class BMRBChemShiftStat:
+class BmrbChemShiftStat:
     """ Wrapper class for retrieving BMRB chemical shift statistics.
     """
     __slots__ = ('__class_name__',

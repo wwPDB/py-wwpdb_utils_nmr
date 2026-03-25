@@ -412,7 +412,7 @@ try:
                                              NmrDpReportInputSource,
                                              NmrDpReportOutputStatistics)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            hasLargeInnerSeqGap,
                                            hasLargeSeqGap,
@@ -551,7 +551,7 @@ except ImportError:
                                  NmrDpReportInputSource,
                                  NmrDpReportOutputStatistics)
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.AlignUtil import (deepcopy,
                                hasLargeInnerSeqGap,
                                hasLargeSeqGap,
@@ -619,7 +619,7 @@ class NmrDpUtility:
 
         self.__reg.ccU = ChemCompUtil(verbose, log)
 
-        self.__reg.csStat = BMRBChemShiftStat(verbose, log, self.__reg.ccU)
+        self.__reg.csStat = BmrbChemShiftStat(verbose, log, self.__reg.ccU)
 
         self.__reg.c2S = CifToNmrStar(log)
 

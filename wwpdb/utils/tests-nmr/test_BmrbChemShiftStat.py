@@ -1,5 +1,5 @@
 ##
-# File: test_BMRBChemShiftStat.py
+# File: test_BmrbChemShiftStat.py
 # Date:  29-Jul-2019  M. Yokochi
 #
 # Updates:
@@ -13,15 +13,15 @@
 import unittest
 
 try:
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
 except ImportError:
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
 
 
-class TestBMRBChemShiftStat(unittest.TestCase):
+class TestBmrbChemShiftStat(unittest.TestCase):
 
     def setUp(self):
-        self.bmrb_cs_stat = BMRBChemShiftStat()
+        self.bmrb_cs_stat = BmrbChemShiftStat()
 
     def tearDown(self):
         pass

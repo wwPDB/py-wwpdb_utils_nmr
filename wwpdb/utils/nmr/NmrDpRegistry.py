@@ -192,7 +192,7 @@ class NmrDpRegistry:
     # ChemCompUtil
     ccU = None
 
-    # BMRBChemShiftStat
+    # BmrbChemShiftStat
     csStat = None
 
     # CifToNmrStar

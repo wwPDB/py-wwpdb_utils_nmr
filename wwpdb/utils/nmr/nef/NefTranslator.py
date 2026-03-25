@@ -200,7 +200,7 @@ try:
                                            alignPolymerSequenceWithConflicts,
                                            assignPolymerSequence)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.CifToNmrStar import (CifToNmrStar,
                                               get_first_sf_tag)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
@@ -251,7 +251,7 @@ except ImportError:
                                alignPolymerSequenceWithConflicts,
                                assignPolymerSequence)
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.CifToNmrStar import (CifToNmrStar,
                                   get_first_sf_tag)
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
@@ -486,7 +486,7 @@ class NefTranslator:
                  '__cachedDictForNefAtom')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
+                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BmrbChemShiftStat] = None,
                  c2S: Optional[CifToNmrStar] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
@@ -1498,7 +1498,7 @@ class NefTranslator:
         self.__ccU = ChemCompUtil(self.__verbose, self.__log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(self.__verbose, self.__log, self.__ccU) if csStat is None else csStat
+        self.__csStat = BmrbChemShiftStat(self.__verbose, self.__log, self.__ccU) if csStat is None else csStat
 
         # CifToNmrStar
         self.__c2S = CifToNmrStar(self.__log) if c2S is None else c2S
@@ -1521,8 +1521,8 @@ class NefTranslator:
         return self.__ccU
 
     @property
-    def csStat(self) -> BMRBChemShiftStat:
-        """ Get instance of BMRBChemShiftStat.
+    def csStat(self) -> BmrbChemShiftStat:
+        """ Get instance of BmrbChemShiftStat.
         """
         return self.__csStat
 

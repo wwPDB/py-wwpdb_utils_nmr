@@ -20,7 +20,7 @@ from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker
 try:
     from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
@@ -30,7 +30,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import MAX_ERROR_REPORT
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
@@ -59,7 +59,7 @@ class AriaCSReader:
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
+                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BmrbChemShiftStat] = None,
                  nefT: Optional[NefTranslator] = None,
                  reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
@@ -80,7 +80,7 @@ class AriaCSReader:
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+        self.__csStat = BmrbChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
         # NefTranslator
         self.__nefT = NefTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT

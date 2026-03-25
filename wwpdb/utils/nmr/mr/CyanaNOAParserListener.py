@@ -25,7 +25,7 @@ try:
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP)
     from wwpdb.utils.nmr.AlignUtil import deepcopy
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CyanaNOAParser import CyanaNOAParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -44,7 +44,7 @@ except ImportError:
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP)
     from nmr.AlignUtil import deepcopy
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.CyanaNOAParser import CyanaNOAParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -72,8 +72,8 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 nefT: NefTranslator = None,
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 

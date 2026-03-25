@@ -135,7 +135,8 @@ def to_np_array(a: dict) -> list:
     return numpy.asarray([a['x'], a['y'], a['z']], dtype=float)
 
 
-def get_coordinates(p: list) -> [list, list]:
+def get_coordinates(p: list
+                    ) -> Tuple[list, list]:
     """ Convert list of atoms for RMSD calculation.
         @return: a vector set of the coordinates
     """
@@ -211,7 +212,8 @@ def calculate_rmsd(p: list, q: list) -> float:
     return result_rmsd
 
 
-def calculate_uninstanced_coord(p_coord: list, q_coord: list, s_coord: list) -> [list, float]:
+def calculate_uninstanced_coord(p_coord: list, q_coord: list, s_coord: list
+                                ) -> Tuple[list, float]:
     """ Calculate RMSD of two reference coordinates (p_coord, q_coord)
         and complement missing coordinate (s_coord). (DAOTHER-8945)
         @return: complemented coordinates, RMSD value
@@ -263,7 +265,7 @@ class CifReader:
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  use_cache: bool = True,
-                 sub_dir_name_for_cache: str = '.'):
+                 sub_dir_name_for_cache: str = '.') -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -361,7 +363,8 @@ class CifReader:
                 self.__log.write(f"+{self.__class_name__} ++ Error  - Parse {self.__filePath} failed {str(e)}\n")
             return False
 
-    def __getDataBlockFromFile(self, blockName: Optional[str] = None) -> Optional[DataContainer]:
+    def __getDataBlockFromFile(self, blockName: Optional[str] = None
+                               ) -> Optional[DataContainer]:
         """ Worker method to read CIF file and set the target datablock.
             If no blockName is provided return the first datablock.
             @return: target datablock
@@ -476,7 +479,8 @@ class CifReader:
 
         return self.__dBlockNameList
 
-    def getDataBlock(self, blockName: Optional[str] = None) -> Optional[DataContainer]:
+    def getDataBlock(self, blockName: Optional[str] = None
+                     ) -> Optional[DataContainer]:
         """ Return target datablock.
             Return None in case current blockName does not exist or no blockName does not match.
             @return: target datablock
@@ -492,7 +496,8 @@ class CifReader:
 
         return dBlock if self.__setDataBlock(dBlock) else None
 
-    def getCategoryNameList(self, blockName: Optional[str] = None) -> List[str]:
+    def getCategoryNameList(self, blockName: Optional[str] = None
+                            ) -> List[str]:
         """ Return all category names in a given datablock.
         """
 
@@ -540,7 +545,8 @@ class CifReader:
 
         return itName in catObj.getAttributeList()
 
-    def getAttributeList(self, catName: str, blockName: Optional[str] = None) -> List[str]:
+    def getAttributeList(self, catName: str, blockName: Optional[str] = None
+                         ) -> List[str]:
         """ Return item names of a given category.
         """
 
@@ -574,7 +580,8 @@ class CifReader:
 
         return 0
 
-    def getRowList(self, catName: str, blockName: Optional[str] = None) -> List[list]:
+    def getRowList(self, catName: str, blockName: Optional[str] = None
+                   ) -> List[list]:
         """ Return length of rows of a given category.
         """
 
@@ -591,7 +598,8 @@ class CifReader:
 
         return []
 
-    def getDictList(self, catName: str, blockName: Optional[str] = None) -> List[dict]:
+    def getDictList(self, catName: str, blockName: Optional[str] = None
+                    ) -> List[dict]:
         """ Return a list of dictionaries of a given category.
         """
 
@@ -615,7 +623,8 @@ class CifReader:
         return dList
 
     def getDictListWithFilter(self, catName: str, dataItems: List[dict], filterItems: Optional[List[dict]] = None,
-                              blockName: Optional[str] = None) -> List[dict]:
+                              blockName: Optional[str] = None
+                              ) -> List[dict]:
         """ Return a list of dictionaries of a given category with filter.
         """
 
@@ -777,7 +786,8 @@ class CifReader:
 
     def getPolymerSequence(self, catName: str, keyItems: List[dict],
                            withStructConf: bool = False, withRmsd: bool = False, alias: bool = False,
-                           totalModels: int = 1, effModelIds: Optional[List[int]] = None, repAltId: str = 'A') -> List[dict]:
+                           totalModels: int = 1, effModelIds: Optional[List[int]] = None, repAltId: str = 'A'
+                           ) -> List[dict]:
         """ Extract sequence from a given loop in a CIF file.
         """
 
@@ -1450,7 +1460,8 @@ class CifReader:
 
         return asm
 
-    def __extractStructConf(self, chain_id: str, seq_ids: List[int], label_scheme: bool = True) -> List[Optional[str]]:
+    def __extractStructConf(self, chain_id: str, seq_ids: List[int], label_scheme: bool = True
+                            ) -> List[Optional[str]]:
         """ Extract structure conformational annotations.
         """
 
@@ -1501,7 +1512,8 @@ class CifReader:
     def __calculateRmsd(self, chain_ids: List[str], lengths: List[int], total_models: int = 1,
                         eff_model_ids: Optional[List[str]] = None,
                         atom_sites: Optional[List[dict]] = None, bb_atom_sites: Optional[List[dict]] = None,
-                        randomM: Optional[List[list]] = None) -> Tuple[Optional[List[dict]], Optional[List[dict]]]:
+                        randomM: Optional[List[list]] = None
+                        ) -> Tuple[Optional[List[dict]], Optional[List[dict]]]:
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 

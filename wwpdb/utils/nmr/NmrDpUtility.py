@@ -412,7 +412,7 @@ try:
                                              NmrDpReportInputSource,
                                              NmrDpReportOutputStatistics)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            hasLargeInnerSeqGap,
                                            hasLargeSeqGap,
@@ -437,16 +437,16 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,
                                                 load_from_pickle,
                                                 write_as_pickle)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
-    from wwpdb.utils.nmr.io.mmCIFUtil import abandon_symbolic_labels
+    from wwpdb.utils.nmr.io.PdbxUtil import abandon_symbolic_labels
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
                                                        isLikeHis)
     from wwpdb.utils.nmr.pk.BasePKParserListener import guess_primary_dim_transfer_type
     from wwpdb.utils.nmr.ann.OneDepAnnTasks import OneDepAnnTasks
-    from wwpdb.utils.nmr.ann.BMRBAnnTasks import BMRBAnnTasks
+    from wwpdb.utils.nmr.ann.BmrbAnnTasks import BmrbAnnTasks
 except ImportError:
     from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                    ALT_MODEL_FILE_PATH_KEY,
@@ -551,7 +551,7 @@ except ImportError:
                                  NmrDpReportInputSource,
                                  NmrDpReportOutputStatistics)
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.AlignUtil import (deepcopy,
                                hasLargeInnerSeqGap,
                                hasLargeSeqGap,
@@ -576,16 +576,16 @@ except ImportError:
     from nmr.NmrVrptUtility import (uncompress_gzip_file,
                                     load_from_pickle,
                                     write_as_pickle)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
-    from nmr.io.mmCIFUtil import abandon_symbolic_labels
+    from nmr.io.PdbxUtil import abandon_symbolic_labels
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,
                                            isLikeHis)
     from nmr.pk.BasePKParserListener import guess_primary_dim_transfer_type
     from nmr.ann.OneDepAnnTasks import OneDepAnnTasks
-    from nmr.ann.BMRBAnnTasks import BMRBAnnTasks
+    from nmr.ann.BmrbAnnTasks import BmrbAnnTasks
 
 
 class NmrDpUtility:
@@ -608,7 +608,7 @@ class NmrDpUtility:
                  '__authSeqMap',
                  '__nmrIfR')
 
-    def __init__(self, verbose: bool = False, log: IO = sys.stderr):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -619,11 +619,11 @@ class NmrDpUtility:
 
         self.__reg.ccU = ChemCompUtil(verbose, log)
 
-        self.__reg.csStat = BMRBChemShiftStat(verbose, log, self.__reg.ccU)
+        self.__reg.csStat = BmrbChemShiftStat(verbose, log, self.__reg.ccU)
 
         self.__reg.c2S = CifToNmrStar(log)
 
-        self.__reg.nefT = NEFTranslator(verbose, log, self.__reg.ccU, self.__reg.csStat, self.__reg.c2S)
+        self.__reg.nefT = NefTranslator(verbose, log, self.__reg.ccU, self.__reg.csStat, self.__reg.c2S)
         self.__reg.nefT.permit_missing_dist_restraint(self.__reg.permit_missing_legacy_dist_restraint)
 
         self.__reg.pA = PairwiseAlign()
@@ -792,7 +792,7 @@ class NmrDpUtility:
         __mergeCsAndMrTasks.append(self.__detectSimpleDistanceRestraint)
         __mergeCsAndMrTasks.append(self.__remediateRawTextPk)
         __mergeCsAndMrTasks.append(self.__mergeCoordAsNmrIf)  # DAOTHER-8905: NMR data remediation Phase 2 (internal remediation)
-        __mergeCsAndMrTasks.append(self.__performBMRBAnnTasks)
+        __mergeCsAndMrTasks.append(self.__performBmrbAnnTasks)
         __mergeCsAndMrTasks.append(self.__testDataConsistencyInPkLoop)  # refresh statistics of spectral peak list
         __mergeCsAndMrTasks.append(self.__testDataConsistencyInPkAuxLoop)  # refresh statistics of spectral peak list
         __mergeCsAndMrTasks.append(self.__calculateStatsOfExptlData)
@@ -813,20 +813,20 @@ class NmrDpUtility:
         __annotateTasks.extend(__crossCheckTasks)
         __annotateTasks.append(self.__updatePolymerSequence)
         __annotateTasks.append(self.__remediateRawTextPk)
-        __annotateTasks.append(self.__performBMRBAnnTasks)
+        __annotateTasks.append(self.__performBmrbAnnTasks)
         __annotateTasks.append(self.__depositNmrData)
         __annotateTasks.extend(__depositTasks)
         __annotateTasks.append(self.__depositNmrData)
 
         __mergeNmrIfTasks = [self.__parseNmrIf,
                              self.__mergeNmrIf,
-                             self.__performBMRBAnnTasks
+                             self.__performBmrbAnnTasks
                              ]
 
         __replaceCsTasks = copy.copy(__checkTasks)
         __replaceCsTasks.append(self.__replaceCsSf)
         __replaceCsTasks.append(self.__updatePolymerSequence)
-        __replaceCsTasks.append(self.__performBMRBAnnTasks)
+        __replaceCsTasks.append(self.__performBmrbAnnTasks)
         __replaceCsTasks.append(self.__depositNmrData)
 
         # dictionary of processing tasks of each workflow operation
@@ -877,20 +877,20 @@ class NmrDpUtility:
         # NMRIF reader
         self.__nmrIfR = None
 
-    def setVerbose(self, verbose: bool):
+    def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.
         """
 
         self.__reg.verbose = verbose
         self.__reg.debug = verbose
 
-    def setMrDebugMode(self, debug: bool):
+    def setMrDebugMode(self, debug: bool) -> None:
         """ Set debug mode for MR splitter.
         """
 
         self.__reg.mr_debug = debug
 
-    def setSource(self, fPath: str, originalName: str = None):
+    def setSource(self, fPath: str, originalName: str = None) -> None:
         """ Set primary source file path.
         """
 
@@ -904,7 +904,7 @@ class NmrDpUtility:
         else:
             raise IOError(f"+{self.__class_name__}.setSource() ++ Error  - Could not access to file path {fPath}.")
 
-    def setDestination(self, fPath: str):
+    def setDestination(self, fPath: str) -> None:
         """ Set primary destination file path.
         """
 
@@ -912,14 +912,14 @@ class NmrDpUtility:
             self.__reg.dstPath = os.path.abspath(fPath)
             self.__dstPath__ = copy.copy(self.__reg.dstPath)
 
-    def setLog(self, fPath: str):
+    def setLog(self, fPath: str) -> None:
         """ Set a log file path for the primary input source.
         """
 
         if fPath is not None:
             self.__logPath = os.path.abspath(fPath)
 
-    def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
+    def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file') -> None:  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
         """ Add a named input and value to the dictionary of input parameters.
         """
 
@@ -965,7 +965,7 @@ class NmrDpUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e)) from e
 
-    def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
+    def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file') -> None:  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
         """ Add a named input and value to the dictionary of output parameters.
         """
 
@@ -1115,7 +1115,9 @@ class NmrDpUtility:
         self.__reg.nefT.set_remediation_mode(self.__reg.remediation_mode)
         self.__reg.nefT.set_annotation_mode(self.__reg.annotation_mode)
         self.__reg.nefT.set_internal_mode(self.__reg.internal_mode)
-        self.__reg.nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs'))  # DAOTHER-9927
+        self.__reg.nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs')  # DAOTHER-9927
+                                              or (op == 'nmr-str2cif-annotate'
+                                                  and self.__reg.remediation_mode))  # DAOTHER-10616
         self.__reg.nefT.cache_clear()
 
         if not self.__reg.permit_missing_legacy_dist_restraint and self.__reg.remediation_mode:
@@ -2088,7 +2090,7 @@ class NmrDpUtility:
 
     def __getPolymerSequence__(self, file_list_id: int, sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], content_subtype: str
                                ) -> List[List[dict]]:
-        """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
+        """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NefTranslator.
         """
 
         input_source = self.__reg.report.input_sources[file_list_id]
@@ -2132,7 +2134,10 @@ class NmrDpUtility:
                                             check_identity=check_identity,
                                             coord_assembly_checker=self.__reg.caC if self.__reg.native_combined
                                             or not self.__reg.combined_mode
-                                            or self.__reg.op == 'nmr-str-replace-cs' else None,
+                                            or self.__reg.op == 'nmr-str-replace-cs'
+                                            or (self.__reg.op == 'nmr-str2cif-annotate'
+                                                and self.__reg.remediation_mode)  # DAOTHER-10616
+                                            else None,
                                             nmr_poly_seq=poly_seq)
 
     def __extractPolymerSequence(self) -> bool:
@@ -2437,7 +2442,8 @@ class NmrDpUtility:
 
     def __extractPolymerSequenceInLoop__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
                                          sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                         list_id: int, sf_framecode: str, lp_category: str, poly_seq_list_set: dict) -> bool:
+                                         list_id: int, sf_framecode: str, lp_category: str, poly_seq_list_set: dict
+                                         ) -> bool:
         """ Extract polymer sequence in interesting loops.
         """
 
@@ -3554,7 +3560,8 @@ class NmrDpUtility:
 
         return False
 
-    def __extractPolymerSequenceInEntityLoopOfChain__(self, file_list_id: int, chain_id: str) -> Optional[dict]:
+    def __extractPolymerSequenceInEntityLoopOfChain__(self, file_list_id: int, chain_id: str
+                                                      ) -> Optional[dict]:
         """ Extract polymer sequence in entity loops of a given chain id.
         """
 
@@ -3675,7 +3682,7 @@ class NmrDpUtility:
         return True
 
     def __extractNonStandardResidue__(self, file_name: str, sf_framecode: str, lp_category: str,
-                                      input_source: NmrDpReportInputSource):
+                                      input_source: NmrDpReportInputSource) -> None:
         """ Extract non-standard residue.
         """
 
@@ -4701,7 +4708,7 @@ class NmrDpUtility:
                 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
     def __validateAtomNomenclature(self) -> bool:
-        """ Validate atom nomenclature using NEFTranslator and CCD.
+        """ Validate atom nomenclature using NefTranslator and CCD.
         """
 
         for fileListId in range(self.__reg.file_path_list_len):
@@ -6471,7 +6478,7 @@ class NmrDpUtility:
 
         self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(master_entry)
 
-        ann = BMRBAnnTasks(self.__reg)
+        ann = BmrbAnnTasks(self.__reg)
 
         if not self.__reg.internal_mode and self.__reg.report.getInputSourceIdOfCoord() >= 0\
            and self.__reg.cR.hasCategory('database_2'):
@@ -8335,7 +8342,7 @@ class NmrDpUtility:
 
         return self.__reg.report.getTotalErrors() == __errors
 
-    def __retrieveCoordAssemblyChecker__(self):
+    def __retrieveCoordAssemblyChecker__(self) -> None:
         """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
         """
 
@@ -13228,7 +13235,7 @@ class NmrDpUtility:
                 self.__reg.dpR.remediateSpectralPeakListSaveframe(master_entry)
 
                 if self.__reg.srcPath is not None:
-                    self.__reg.dpR.performBMRBjAnnTasks(True)
+                    self.__reg.dpR.performBmrbJAnnTasks(True)
 
                     self.__reg.c2S.set_entry_id(master_entry, self.__reg.bmrb_id)
                     self.__reg.c2S.normalize_str(master_entry)
@@ -16059,7 +16066,7 @@ class NmrDpUtility:
 
         if self.__reg.dstPath is None:
             raise KeyError(f"+{self.__class_name__}.__translateNef2Str() "
-                           "++ Error  - Could not find destination path as input NEF file for NEFTranslator.")
+                           "++ Error  - Could not find destination path as input NEF file for NefTranslator.")
 
         file_name = os.path.basename(self.__reg.dstPath)
         file_type = input_source_dic['file_type']
@@ -16191,7 +16198,7 @@ class NmrDpUtility:
 
         if self.__reg.dstPath is None:
             raise KeyError(f"+{self.__class_name__}.__translateStr2Nef() "
-                           "++ Error  - Could not find destination path as input NMR-STAR file for NEFTranslator.")
+                           "++ Error  - Could not find destination path as input NMR-STAR file for NefTranslator.")
 
         file_name = os.path.basename(self.__reg.dstPath)
         file_type = input_source_dic['file_type']
@@ -16368,7 +16375,7 @@ class NmrDpUtility:
 
         return ann.merge(master_entry, self.__nmrIfR, self.__reg.bmrb_only and self.__reg.internal_mode)
 
-    def __performBMRBAnnTasks(self) -> bool:
+    def __performBmrbAnnTasks(self) -> bool:
         """ Perform a series of standalone BMRB annotation tasks.
         """
 
@@ -16388,7 +16395,7 @@ class NmrDpUtility:
             if len(entry) > 0 and 'id' in entry[0]:
                 self.__reg.entry_id = entry[0]['id'].strip().replace(' ', '_')
 
-        ann = BMRBAnnTasks(self.__reg)
+        ann = BmrbAnnTasks(self.__reg)
 
         if self.__reg.report.getInputSourceIdOfCoord() >= 0 and self.__reg.cR.hasCategory('database_2'):
 

@@ -63,7 +63,7 @@ try:
                                                 angle_target_values,
                                                 dihedral_angle,
                                                 angle_error)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.GromacsMRParser import GromacsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -128,7 +128,7 @@ except ImportError:
                                     angle_target_values,
                                     dihedral_angle,
                                     angle_error)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.GromacsMRParser import GromacsMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -240,8 +240,8 @@ class GromacsMRParserListener(ParseTreeListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,  # pylint: disable=unused-argument
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
-                 atomNumberDict: Optional[dict] = None):
+                 nefT: NefTranslator = None,
+                 atomNumberDict: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -312,58 +312,58 @@ class GromacsMRParserListener(ParseTreeListener):
         self.__f = []
 
     @property
-    def debug(self):
+    def debug(self) -> bool:
         """ Retrieve debug mode.
         """
 
         return self.__debug
 
     @debug.setter
-    def debug(self, debug: bool):
+    def debug(self, debug: bool) -> None:
         self.__debug = debug
 
     @property
-    def createSfDict(self):
+    def createSfDict(self) -> bool:
         """ Retrieve whether to create saveframe dictionary.
         """
 
         return self.__createSfDict
 
     @createSfDict.setter
-    def createSfDict(self, createSfDict: bool):
+    def createSfDict(self, createSfDict: bool) -> None:
         self.__createSfDict = createSfDict
 
     @property
-    def originalFileName(self):
+    def originalFileName(self) -> str:
         """ Retrieve the original file name.
         """
 
         return self.__originalFileName
 
     @originalFileName.setter
-    def originalFileName(self, originalFileName: str):
+    def originalFileName(self, originalFileName: str) -> None:
         self.__originalFileName = originalFileName
 
     @property
-    def listIdCounter(self):
+    def listIdCounter(self) -> dict:
         """ Retrieve list ID counter dictionary.
         """
 
         return self.__listIdCounter
 
     @listIdCounter.setter
-    def listIdCounter(self, listIdCounter: dict):
+    def listIdCounter(self, listIdCounter: dict) -> None:
         self.__listIdCounter = listIdCounter
 
     @property
-    def entryId(self):
+    def entryId(self) -> str:
         """ Retrieve entry ID.
         """
 
         return self.__entryId
 
     @entryId.setter
-    def entryId(self, entryId: str):
+    def entryId(self, entryId: str) -> None:
         self.__entryId = entryId
 
     def enterGromacs_mr(self, ctx: GromacsMRParser.Gromacs_mrContext):  # pylint: disable=unused-argument
@@ -603,7 +603,8 @@ class GromacsMRParserListener(ParseTreeListener):
 
     def validateDistanceRange(self, index: int, weight: float,
                               lower_limit: Optional[float], upper_limit: Optional[float],
-                              upper_linear_limit: Optional[float], omit_dist_limit_outlier: bool) -> Optional[dict]:
+                              upper_linear_limit: Optional[float], omit_dist_limit_outlier: bool
+                              ) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -1150,7 +1151,8 @@ class GromacsMRParserListener(ParseTreeListener):
             self.numberSelection.clear()
 
     def validateAngleRange(self, weight: float, target_value: Optional[float],
-                           lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+                           lower_limit: Optional[float], upper_limit: Optional[float]
+                           ) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -1451,7 +1453,8 @@ class GromacsMRParserListener(ParseTreeListener):
             self.numberSelection.clear()
 
     def validateRdcRange(self, exp: int, index: int, weight: float, target_value: Optional[float],
-                         lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+                         lower_limit: Optional[float], upper_limit: Optional[float]
+                         ) -> Optional[dict]:
         """ Validate RDC value range.
         """
 
@@ -2010,7 +2013,7 @@ class GromacsMRParserListener(ParseTreeListener):
         return ''
 
     def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
-                rdcCode: Optional[str] = None):
+                rdcCode: Optional[str] = None) -> None:
         content_subtype = contentSubtypeOf(self.__cur_subtype)
 
         if content_subtype is None:

@@ -98,7 +98,7 @@ try:
                                                 angle_target_values,
                                                 dihedral_angle,
                                                 angle_error)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -193,7 +193,7 @@ except ImportError:
                                     angle_target_values,
                                     dihedral_angle,
                                     angle_error)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -427,8 +427,8 @@ class BaseLinearMRParserListener():
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None):
+                 nefT: NefTranslator = None,
+                 reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -654,86 +654,86 @@ class BaseLinearMRParserListener():
         self.f = []
 
     @property
-    def verbose(self):
+    def verbose(self) -> bool:
         """ Retrieve verbose mode.
         """
 
         return self.__verbose
 
     @property
-    def log(self):
+    def log(self) -> IO:
         """ Retrieve current log.
         """
 
         return self.__log
 
     @property
-    def debug(self):
+    def debug(self) -> bool:
         """ Retrieve debug mode.
         """
 
         return self.__debug
 
     @debug.setter
-    def debug(self, debug: bool):
+    def debug(self, debug: bool) -> None:
         self.__debug = debug
 
     @property
-    def remediate(self):
+    def remediate(self) -> bool:
         """ Retrieve remediation mode.
         """
 
         return self.__remediate
 
     @remediate.setter
-    def remediate(self, remediate: bool):
+    def remediate(self, remediate: bool) -> None:
         self.__remediate = remediate
 
     @property
-    def createSfDict(self):
+    def createSfDict(self) -> bool:
         """ Whether to create saveframe dictionary.
         """
 
         return self.__createSfDict
 
     @createSfDict.setter
-    def createSfDict(self, createSfDict: bool):
+    def createSfDict(self, createSfDict: bool) -> None:
         self.__createSfDict = createSfDict
 
     @property
-    def originalFileName(self):
+    def originalFileName(self) -> str:
         """ Retrieve the original file name.
         """
 
         return self.__originalFileName
 
     @originalFileName.setter
-    def originalFileName(self, originalFileName: str):
+    def originalFileName(self, originalFileName: str) -> None:
         self.__originalFileName = originalFileName
 
     @property
-    def listIdCounter(self):
+    def listIdCounter(self) -> dict:
         """ Retrieve list ID counter dictionary.
         """
 
         return self.__listIdCounter
 
     @listIdCounter.setter
-    def listIdCounter(self, listIdCounter: dict):
+    def listIdCounter(self, listIdCounter: dict) -> None:
         self.__listIdCounter = listIdCounter
 
     @property
-    def entryId(self):
+    def entryId(self) -> str:
         """ Retrieve entry ID.
         """
 
         return self.__entryId
 
     @entryId.setter
-    def entryId(self, entryId: str):
+    def entryId(self, entryId: str) -> None:
         self.__entryId = entryId
 
-    def exit(self):
+    def exit(self) -> None:
         """ Common function to exit a parse tree.
         """
 
@@ -1120,7 +1120,8 @@ class BaseLinearMRParserListener():
 
     def validateDistanceRange(self, weight: float, target_value: Optional[float],
                               lower_limit: Optional[float], upper_limit: Optional[float],
-                              target_value_uncertainty: Optional[float], omit_dist_limit_outlier: bool) -> Optional[dict]:
+                              target_value_uncertainty: Optional[float], omit_dist_limit_outlier: bool
+                              ) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -1377,7 +1378,8 @@ class BaseLinearMRParserListener():
         return dstFunc
 
     def validatePeakVolumeRange(self, weight: float, target_value: Optional[float],
-                                lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+                                lower_limit: Optional[float], upper_limit: Optional[float]
+                                ) -> Optional[dict]:
         """ Validate NOESY peak volume value range.
         """
 
@@ -1444,7 +1446,8 @@ class BaseLinearMRParserListener():
         return compId
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str] = None, isPolySeq: bool = True,
-                          isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
+                          isFirstTrial: bool = True
+                          ) -> Tuple[str, int, Optional[str]]:
         """ Return a realistic sequence for a given polymer sequence, sequence code, and residue name.
         """
 
@@ -1501,8 +1504,8 @@ class BaseLinearMRParserListener():
                 pass
         return ps['auth_chain_id'], seqId, None
 
-    def assignCoordPolymerSequence(self, seqId: int, compId: str, atomId: str,
-                                   enableWarning: bool = True) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
+    def assignCoordPolymerSequence(self, seqId: int, compId: str, atomId: str, enableWarning: bool = True
+                                   ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -2171,7 +2174,8 @@ class BaseLinearMRParserListener():
         return list(chainAssign), asis
 
     def assignCoordPolymerSequenceWithChainId(self, refChainId: str, seqId: int, compId: str, atomId: str,
-                                              enableWarning: bool = True) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
+                                              enableWarning: bool = True
+                                              ) -> Tuple[List[Tuple[str, int, str, bool]], bool]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -2914,7 +2918,8 @@ class BaseLinearMRParserListener():
 
         return list(chainAssign), asis
 
-    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None) -> List[Tuple[str, int, str, bool]]:
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None
+                                                ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -4080,7 +4085,7 @@ class BaseLinearMRParserListener():
         return list(chainAssign), asis
 
     def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
-                         allowAmbig: bool = True, enableWarning: bool = True, offset: int = 0):
+                         allowAmbig: bool = True, enableWarning: bool = True, offset: int = 0) -> None:
         """ Select atoms of the coordinates.
         """
 
@@ -4425,7 +4430,7 @@ class BaseLinearMRParserListener():
 
     def selectCoordAtomsWithIndex(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
                                   allowAmbig: bool = True, index: Optional[int] = None, group: Optional[int] = None,
-                                  offset: int = 0):
+                                  offset: int = 0) -> None:
         """ Select atoms of the coordinates.
         """
 
@@ -4692,7 +4697,7 @@ class BaseLinearMRParserListener():
             self.atomSelectionSet.append(atomSelection)
 
     def selectAuxCoordAtomsWithIndex(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
-                                     allowAmbig: bool = True, index: Optional[int] = None, group: Optional[int] = None):
+                                     allowAmbig: bool = True, index: Optional[int] = None, group: Optional[int] = None) -> None:
         """ Select auxiliary atoms of the coordinates.
         """
 
@@ -4767,7 +4772,8 @@ class BaseLinearMRParserListener():
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
                                    seqKey: Tuple[str, int], coordAtomSite: Optional[dict],
-                                   enableWarning: bool = True) -> Tuple[str, bool]:
+                                   enableWarning: bool = True
+                                   ) -> Tuple[str, bool]:
         """ Perform consistency test for each atom in reference to the coordinates.
         """
 
@@ -5038,7 +5044,8 @@ class BaseLinearMRParserListener():
 
     def testCoordAtomIdConsistencyWithIndex(self, chainId: str, seqId: int, compId: str, atomId: str,
                                             seqKey: Tuple[str, int], coordAtomSite: Optional[dict],
-                                            index: Optional[int] = None, group: Optional[int] = None) -> Tuple[str, bool]:
+                                            index: Optional[int] = None, group: Optional[int] = None
+                                            ) -> Tuple[str, bool]:
         """ Perform consistency test for each atom in reference to the coordinates.
         """
 
@@ -5598,7 +5605,8 @@ class BaseLinearMRParserListener():
 
     @functools.lru_cache(maxsize=2048)
     def __getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True,
-                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
+                             __preferAuthSeq: bool = True
+                             ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if cifCheck:
             preferAuthSeq = __preferAuthSeq if asis else not __preferAuthSeq
@@ -5633,7 +5641,8 @@ class BaseLinearMRParserListener():
         return seqKey, None
 
     def validateAngleRange(self, weight: float, target_value: Optional[float],
-                           lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+                           lower_limit: Optional[float], upper_limit: Optional[float]
+                           ) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -5726,7 +5735,8 @@ class BaseLinearMRParserListener():
         return dstFunc
 
     def validateAngleRangeWithIndex(self, index: int, weight: float, target_value: Optional[float],
-                                    lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+                                    lower_limit: Optional[float], upper_limit: Optional[float]
+                                    ) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -5819,7 +5829,8 @@ class BaseLinearMRParserListener():
         return dstFunc
 
     def validateRdcRange(self, weight: float, orientation: int, target_value: Optional[float],
-                         lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+                         lower_limit: Optional[float], upper_limit: Optional[float]
+                         ) -> Optional[dict]:
         """ Validate RDC value range.
         """
 
@@ -5937,7 +5948,8 @@ class BaseLinearMRParserListener():
         return True
 
     def validateCoupRangeWithIndex(self, index: int, weight: float, target_value: Optional[float],
-                                   lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+                                   lower_limit: Optional[float], upper_limit: Optional[float]
+                                   ) -> Optional[dict]:
         """ Validate scalar J-coupling value range.
         """
 
@@ -6020,7 +6032,8 @@ class BaseLinearMRParserListener():
         return dstFunc
 
     def validatePcsRange(self, weight: float, orientation: int, target_value: Optional[float],
-                         lower_limit: Optional[float], upper_limit: Optional[float]) -> Optional[dict]:
+                         lower_limit: Optional[float], upper_limit: Optional[float]
+                         ) -> Optional[dict]:
         """ Validate PCS value range.
         """
 
@@ -6102,7 +6115,7 @@ class BaseLinearMRParserListener():
 
         return dstFunc
 
-    def updateAmbigAtomNameMapping(self):
+    def updateAmbigAtomNameMapping(self) -> None:
         """ Update ambiguous atom name mapping dictionary.
         """
 
@@ -6180,7 +6193,8 @@ class BaseLinearMRParserListener():
 
                     ambig['atom_id_list'] = [dict(s) for s in set(frozenset(atom.items()) for atom in ambig['atom_id_list'])]
 
-    def __mapAtomIdListToChainAssign(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
+    def __mapAtomIdListToChainAssign(self, atomIdList: List[dict]  # pylint: disable=no-self-use
+                                     ) -> List[dict]:
         """ Map ambiguity atom name mapping to chain assignment.
         """
 
@@ -6191,7 +6205,8 @@ class BaseLinearMRParserListener():
                     chainAssign.add((atom_id['chain_id'], atom_id['seq_id'], atom_id['comp_id']))
         return list(chainAssign)
 
-    def __mapAtomIdListToAtomSelection(self, atomIdList: List[dict]) -> List[dict]:  # pylint: disable=no-self-use
+    def __mapAtomIdListToAtomSelection(self, atomIdList: List[dict]  # pylint: disable=no-self-use
+                                       ) -> List[dict]:
         """ Map ambiguity atom name mapping to atom selection.
         """
 
@@ -6249,7 +6264,7 @@ class BaseLinearMRParserListener():
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
-    def __setLocalSeqScheme(self):
+    def __setLocalSeqScheme(self) -> None:
         """ Set sequence scheme for each restraint.
         """
 
@@ -6280,7 +6295,7 @@ class BaseLinearMRParserListener():
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
-    def retrieveLocalSeqScheme(self):
+    def retrieveLocalSeqScheme(self) -> None:
         """ Retrieve sequence scheme for each restraint.
         """
 
@@ -6324,7 +6339,7 @@ class BaseLinearMRParserListener():
 
     def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
                 rdcCode: Optional[str] = None, orientationId: Optional[str] = None,
-                cyanaParameter: Optional[str] = None):
+                cyanaParameter: Optional[str] = None) -> None:
         """ Add saveframe for given conditions if not exists.
         """
 
@@ -6382,7 +6397,7 @@ class BaseLinearMRParserListener():
         self.sfDict[key].append(item)
 
     def __addSfWithSoftware(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
-                            rdcCode: Optional[str] = None, softwareName: Optional[str] = None):
+                            rdcCode: Optional[str] = None, softwareName: Optional[str] = None) -> None:
         """ Add saveframe for given conditions if not exists.
         """
 
@@ -6515,7 +6530,7 @@ class BaseLinearMRParserListener():
 
         return self.sfDict[key][-1]
 
-    def trimSfWoLp(self):
+    def trimSfWoLp(self) -> None:
         """ Trim saveframe(s) without any loop.
         """
 

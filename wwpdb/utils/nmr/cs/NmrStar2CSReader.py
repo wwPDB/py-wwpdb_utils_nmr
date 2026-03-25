@@ -20,8 +20,8 @@ from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker
 try:
     from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
-    from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.cs.NmrStar2CSLexer import NmrStar2CSLexer
@@ -30,8 +30,8 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import MAX_ERROR_REPORT
     from nmr.ChemCompUtil import ChemCompUtil
-    from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.cs.NmrStar2CSLexer import NmrStar2CSLexer
@@ -59,9 +59,9 @@ class NmrStar2CSReader:
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
-                 nefT: Optional[NEFTranslator] = None,
-                 reasons: Optional[dict] = None):
+                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BmrbChemShiftStat] = None,
+                 nefT: Optional[NefTranslator] = None,
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -80,29 +80,29 @@ class NmrStar2CSReader:
         self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
 
         # BMRB chemical shift statistics
-        self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+        self.__csStat = BmrbChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
-        # NEFTranslator
-        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        # NefTranslator
+        self.__nefT = NefTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
         if nefT is None:
             self.__nefT.set_remediation_mode(True)
 
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
-    def setDebugMode(self, debug: bool):
+    def setDebugMode(self, debug: bool) -> None:
         """ Set debug mode.
         """
 
         self.__debug = debug
 
-    def setLexerMaxErrorReport(self, maxErrReport: int):
+    def setLexerMaxErrorReport(self, maxErrReport: int) -> None:
         """ Set the maximum number of lexer error messages to save.
         """
 
         self.__maxLexerErrorReport = maxErrReport
 
-    def setParserMaxErrorReport(self, maxErrReport: int):
+    def setParserMaxErrorReport(self, maxErrReport: int) -> None:
         """ Set the maximum number of parser error messages to save.
         """
 

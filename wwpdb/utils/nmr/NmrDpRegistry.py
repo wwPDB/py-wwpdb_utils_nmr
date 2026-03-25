@@ -192,13 +192,13 @@ class NmrDpRegistry:
     # ChemCompUtil
     ccU = None
 
-    # BMRBChemShiftStat
+    # BmrbChemShiftStat
     csStat = None
 
     # CifToNmrStar
     c2S = None
 
-    # NEFTranslator
+    # NefTranslator
     nefT = None
 
     # NmrDpMrSplitter

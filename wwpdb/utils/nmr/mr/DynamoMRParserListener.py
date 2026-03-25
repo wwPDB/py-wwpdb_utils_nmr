@@ -30,7 +30,7 @@ try:
                                                DIST_AMBIG_UP,
                                                KNOWN_ANGLE_ATOM_NAMES,
                                                KNOWN_ANGLE_SEQ_OFFSET)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -62,7 +62,7 @@ except ImportError:
                                    DIST_AMBIG_UP,
                                    KNOWN_ANGLE_ATOM_NAMES,
                                    KNOWN_ANGLE_SEQ_OFFSET)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.DynamoMRParser import DynamoMRParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -99,8 +99,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 nefT: NefTranslator = None,
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -144,7 +144,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         """ Exit a parse tree produced by DynamoMRParser#sequence.
         """
 
-    def closeSequence(self):
+    def closeSequence(self) -> None:
         """ Close and fix sequence.
         """
         self.has_seq_align_err = False

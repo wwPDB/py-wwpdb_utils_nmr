@@ -4,7 +4,7 @@ recursive-include wwpdb/utils/nmr/chem_comp_util *.pkl
 
 prune wwpdb/utils/nmr/obsolete
 prune wwpdb/utils/tests-nmr/obsolete
-prune wwpdb/utils/nmr/nef/NEFTranslator/lib
+prune wwpdb/utils/nmr/nef/NefTranslator/lib
 prune wwpdb/utils/nmr/ann/lib
 
 global-exclude */__pycache__/*

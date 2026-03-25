@@ -28,7 +28,7 @@ from mmcif.io.PdbxWriter import PdbxWriter
 import requests
 
 
-def uncompress_gzip_file(inPath: str, outPath: str):
+def uncompress_gzip_file(inPath: str, outPath: str) -> None:
     """ Uncompress a given gzip file.
     """
 
@@ -42,7 +42,7 @@ class ChemCompUpdater:
     """ Update chemical component dictionary (CCD) and locate them OneDep compatible directory trees.
     """
 
-    def __init__(self, force: bool = False):
+    def __init__(self, force: bool = False) -> None:
         self.__components_cif = 'components.cif'
         self.__components_cif_gz = self.__components_cif + '.gz'
         self.__components_cif_path = os.path.join(os.path.dirname(__file__), self.__components_cif)
@@ -62,7 +62,7 @@ class ChemCompUpdater:
 
         self.update()
 
-    def deploy(self):
+    def deploy(self) -> None:
         """ Deploy chemical component dictionary (CCD) into OneDep compatible directory trees.
         """
 
@@ -114,7 +114,7 @@ class ChemCompUpdater:
         except IOError as e:
             logging.error(str(e))
 
-    def download(self):
+    def download(self) -> None:
         """ Download Chemical Component Dictionary (CCD),
         """
 
@@ -128,7 +128,7 @@ class ChemCompUpdater:
         except Exception as e:  # pylint: disable=broad-exception-caught
             logging.error(str(e))
 
-    def update(self):
+    def update(self) -> None:
         """ Update Chemical Component Dictionary (CCD) with time-stamp check.
         """
 

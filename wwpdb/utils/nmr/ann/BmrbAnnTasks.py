@@ -1,4 +1,4 @@
-# File: BMRBAnnTasks.py
+# File: BmrbAnnTasks.py
 # Date: 24-Dec-2023
 #
 # Updates:
@@ -77,7 +77,7 @@ DEFAULT_SF_LABEL_TAGS = ('_Assigned_chem_shift_list.Sample_condition_list_label'
                          '_Conformer_family_coord_set.Sample_condition_list_label')
 
 
-class BMRBAnnTasks:
+class BmrbAnnTasks:
     """ Wrapper class for BMRB annotation tasks.
     """
     __slots__ = ('__class_name__',
@@ -88,7 +88,7 @@ class BMRBAnnTasks:
                  '__defSfLabelTag',
                  '__update_related_entries')
 
-    def __init__(self, registry: NmrDpRegistry):
+    def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -103,7 +103,7 @@ class BMRBAnnTasks:
             if isinstance(self.__reg.inputParamDict['update_related_entries'], bool):
                 self.__update_related_entries = self.__reg.inputParamDict['update_related_entries']
 
-    def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]):
+    def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]) -> None:
         """ Set provenance information.
         """
 

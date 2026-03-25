@@ -1,5 +1,5 @@
 ##
-# File: mmCIFUtil.py
+# File: PdbxUtil.py
 # Date: 21-Aug-2012  Zukang Feng
 #
 # Update:
@@ -7,6 +7,7 @@
 # 30-May-2024  M. Yokochi - resolve duplication of datablock/saveframe name (DAOTHER-9437)
 # 16-Jan-2025  M. Yokochi - abandon symbolic label representations in mmCIF for mutual format conversion
 # 13-Nov-2025  M. Yokochi - add appendAttributeExtendRows() (DAOTHER-8905)
+# 25-Mar-2026  M. Yokochi - rename class from mmCIFUtil to PdbxUtil
 ##
 """ A collection of classes for manipulating CIF files containing multiple datablocks.
 """
@@ -31,7 +32,7 @@ from mmcif.io.PdbxWriter import PdbxWriter
 LABEL_SYMBOL_PAT = re.compile(r'^\$[^\s\$\?\\\'\"\`;]+$')
 
 
-def abandon_symbolic_labels(containerList: list):
+def abandon_symbolic_labels(containerList: list) -> None:
     """ Abandon symbolic label representations that serve as saveframe pointers in NMR-STAR.
     """
 
@@ -50,7 +51,7 @@ def abandon_symbolic_labels(containerList: list):
                         obj.setValue(val[1:], attrs[col], idx)
 
 
-class mmCIFUtil:
+class PdbxUtil:
     """ Accessor methods for manipulating CIF files containing multiple datablocks.
     """
     __slots__ = ('__class_name__',
@@ -67,7 +68,7 @@ class mmCIFUtil:
 
         return name if ext == 1 else f'{name}_{ext}'
 
-    def __init__(self, verbose: bool = False, log: IO = sys.stderr, filePath: Optional[str] = None):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr, filePath: Optional[str] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -133,7 +134,8 @@ class mmCIFUtil:
 
         return self.__dBlockNameList
 
-    def getDataBlock(self, blockName: str, ext: int = 1) -> Optional[DataCategory]:
+    def getDataBlock(self, blockName: str, ext: int = 1
+                     ) -> Optional[DataCategory]:
         """ Return target datablock.
             Return None in case current blockName does not exist or no blockName does not match.
             @return: target datablock
@@ -170,7 +172,8 @@ class mmCIFUtil:
 
         return {container.getName(): container.getObjNameList() for container in self.__dBlockList}
 
-    def getCategoryNameList(self, blockName: str, ext: int = 1) -> List[str]:
+    def getCategoryNameList(self, blockName: str, ext: int = 1
+                            ) -> List[str]:
         """ Get all category names in a given datablock.
         """
 
@@ -187,7 +190,8 @@ class mmCIFUtil:
 
         return catName in self.getCategoryNameList(blockName, ext)
 
-    def getAttributeList(self, blockName: str, catName: str, ext: int = 1) -> List[str]:
+    def getAttributeList(self, blockName: str, catName: str, ext: int = 1
+                         ) -> List[str]:
         """ Get item names in given datablock and category.
         """
 
@@ -225,7 +229,8 @@ class mmCIFUtil:
 
         return len(catObj.getRowList())
 
-    def getRowList(self, blockName: str, catName: str, ext: int = 1) -> List[list]:
+    def getRowList(self, blockName: str, catName: str, ext: int = 1
+                   ) -> List[list]:
         """ Get a list of list of a given datablock and category.
         """
 
@@ -241,7 +246,8 @@ class mmCIFUtil:
 
         return catObj.getRowList()
 
-    def getDictList(self, blockName: str, catName: str, ext: int = 1) -> List[dict]:
+    def getDictList(self, blockName: str, catName: str, ext: int = 1
+                    ) -> List[dict]:
         """ Get category values as a list of dictionaries in a given datablock and category.
         """
 
@@ -274,7 +280,7 @@ class mmCIFUtil:
 
         return ''
 
-    def updateSingleValue(self, blockName: str, catName: str, itemName: str, rowIndex: int, value: Any, ext: int = 1):
+    def updateSingleValue(self, blockName: str, catName: str, itemName: str, rowIndex: int, value: Any, ext: int = 1) -> None:
         """ Update row data of a given datablock, category, item, and row index with a given value.
         """
 
@@ -290,7 +296,7 @@ class mmCIFUtil:
 
         catObj.setValue(value, itemName, rowIndex)
 
-    def updateMultipleValue(self, blockName: str, catName: str, itemName: str, value: Any, ext: int = 1):
+    def updateMultipleValue(self, blockName: str, catName: str, itemName: str, value: Any, ext: int = 1) -> None:
         """ Update multiple row data of a given datablock, category, and item with a given value.
         """
 
@@ -307,7 +313,7 @@ class mmCIFUtil:
         for rowIndex in range(0, catObj.getRowCount()):
             catObj.setValue(value, itemName, rowIndex)
 
-    def addDataBlock(self, blockName: str, ext: int = 1):
+    def addDataBlock(self, blockName: str, ext: int = 1) -> None:
         """ Add a datablock.
         """
 
@@ -315,7 +321,7 @@ class mmCIFUtil:
         self.__dBlockList.append(DataContainer(blockName))
         self.__dBlockNameList.append(blockName)
 
-    def addCategory(self, blockName: str, catName: str, items: List[str], ext: int = 1):
+    def addCategory(self, blockName: str, catName: str, items: List[str], ext: int = 1) -> None:
         """ Add a category in a given datablock.
         """
 
@@ -331,7 +337,7 @@ class mmCIFUtil:
 
         self.getDataBlock(blockName, ext).append(catObj)
 
-    def removeCategory(self, blockName: str, catName: str, ext: int = 1):
+    def removeCategory(self, blockName: str, catName: str, ext: int = 1) -> None:
         """ Remove a category in a given datablock.
         """
 
@@ -349,7 +355,7 @@ class mmCIFUtil:
 
         self.__dBlockList[idx].remove(catName)
 
-    def moveCategoryToTop(self, blockName: str, catName: str, ext: int = 1):
+    def moveCategoryToTop(self, blockName: str, catName: str, ext: int = 1) -> None:
         """ Move category to top in a given datablock.
         """
 
@@ -377,7 +383,7 @@ class mmCIFUtil:
         for _catObj in _catObjList:
             self.__dBlockList[idx].append(_catObj)
 
-    def appendAttributeExtendRows(self, blockName: str, catName: str, attr: str, defaultValue="?", ext: int = 1):
+    def appendAttributeExtendRows(self, blockName: str, catName: str, attr: str, defaultValue="?", ext: int = 1) -> None:
         """ Append an attribute in a given datablock and category.
         """
 
@@ -393,7 +399,7 @@ class mmCIFUtil:
 
         catObj.appendAttributeExtendRows(attr, defaultValue)
 
-    def appendRow(self, blockName: str, catName: str, row: list, ext: int = 1):
+    def appendRow(self, blockName: str, catName: str, row: list, ext: int = 1) -> None:
         """ Append a row in a given datablock and category.
         """
 
@@ -409,7 +415,7 @@ class mmCIFUtil:
 
         catObj.append(row)
 
-    def appendRowList(self, blockName: str, catName: str, rowList: List[list], ext: int = 1):
+    def appendRowList(self, blockName: str, catName: str, rowList: List[list], ext: int = 1) -> None:
         """ Append row list in a given datablock and category.
         """
 
@@ -426,7 +432,7 @@ class mmCIFUtil:
         for row in rowList:
             catObj.append(row)
 
-    def extendCategory(self, blockName: str, catName: str, items: List[str], rowList: list, col: int = -1, ext: int = 1):
+    def extendCategory(self, blockName: str, catName: str, items: List[str], rowList: list, col: int = -1, ext: int = 1) -> None:
         """ Extend existing category with new item names, row list, and inserting position in a given datablock.
         """
 
@@ -477,7 +483,7 @@ class mmCIFUtil:
             catObj.setAttributeNameList(_attrNameList)
             catObj.setRowList(_rowList)
 
-    def copyItemValues(self, blockName: str, catName: str, srcItems: List[str], dstItems: List[str], ext: int = 1):
+    def copyItemValues(self, blockName: str, catName: str, srcItems: List[str], dstItems: List[str], ext: int = 1) -> None:
         """ Copy values of source items to destination items.
         """
 
@@ -511,7 +517,7 @@ class mmCIFUtil:
             for j, srcCol in enumerate(srcCols):
                 row[dstCols[j]] = row[srcCol]
 
-    def writeToFile(self, outputFilePath: Optional[str] = None):
+    def writeToFile(self, outputFilePath: Optional[str] = None) -> None:
         """ Write CIF file.
         """
 

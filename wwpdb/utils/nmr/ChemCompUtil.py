@@ -65,7 +65,7 @@ class ChemCompUtil:
                  '__cachedDict',
                  '__failedCompId')
 
-    def __init__(self, verbose: bool = False, log: IO = sys.stderr):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr) -> None:
         # pickle file name of cached dictionary for standard residues
         self.__cacheFile = os.path.join(os.path.dirname(__file__), 'chem_comp_util', 'std_chem_comp.pkl')
 
@@ -132,7 +132,8 @@ class ChemCompUtil:
         return self.lastStatus
 
     @functools.lru_cache(maxsize=128)
-    def getMethylAtoms(self, compId: str) -> List[str]:
+    def getMethylAtoms(self, compId: str
+                       ) -> List[str]:
         """ Return atoms in methyl group of a given comp_id.
         """
 
@@ -156,7 +157,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=128)
-    def getMethylProtons(self, compId: str) -> List[str]:
+    def getMethylProtons(self, compId: str
+                         ) -> List[str]:
         """ Return all protons in methyl group of a given comp_id.
         """
 
@@ -179,7 +181,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=128)
-    def getRepMethylProtons(self, compId: str) -> List[str]:
+    def getRepMethylProtons(self, compId: str
+                            ) -> List[str]:
         """ Return representative protons in methyl group of a given comp_id.
         """
 
@@ -202,7 +205,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=128)
-    def getNonRepMethylProtons(self, compId: str) -> List[str]:
+    def getNonRepMethylProtons(self, compId: str
+                               ) -> List[str]:
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
@@ -225,7 +229,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=128)
-    def getRepMethyleneOrAminoProtons(self, compId: str) -> List[str]:
+    def getRepMethyleneOrAminoProtons(self, compId: str
+                                      ) -> List[str]:
         """ Return representative protons in methylene/amino group of a given comp_id.
         """
 
@@ -248,7 +253,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=128)
-    def getNonRepMethyleneOrAminoProtons(self, compId: str) -> List[str]:
+    def getNonRepMethyleneOrAminoProtons(self, compId: str
+                                         ) -> List[str]:
         """ Return non-representative protons in methylene/amino group of a given comp_id.
         """
 
@@ -271,7 +277,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=128)
-    def getRepAminoProtons(self, compId: str) -> List[str]:
+    def getRepAminoProtons(self, compId: str
+                           ) -> List[str]:
         """ Return representative protons in amino group of a given comp_id.
         """
 
@@ -294,7 +301,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=128)
-    def getNonRepAminoProtons(self, compId: str) -> List[str]:
+    def getNonRepAminoProtons(self, compId: str
+                              ) -> List[str]:
         """ Return non-representative protons in amino group of a given comp_id.
         """
 
@@ -317,7 +325,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=128)
-    def getImideProtons(self, compId: str) -> List[str]:
+    def getImideProtons(self, compId: str
+                        ) -> List[str]:
         """ Return imide protons of a given comp_id.
         """
 
@@ -352,7 +361,8 @@ class ChemCompUtil:
         return atmList
 
     @functools.lru_cache(maxsize=256)
-    def getBondedAtoms(self, compId: str, atomId: str, exclProton: bool = False, onlyProton: bool = False) -> List[str]:
+    def getBondedAtoms(self, compId: str, atomId: str, exclProton: bool = False, onlyProton: bool = False
+                       ) -> List[str]:
         """ Return bonded atoms to a given atom.
         """
 
@@ -370,7 +380,8 @@ class ChemCompUtil:
         return [a for a in bondedAtoms if (exclProton and a not in allProtons) or (onlyProton and a in allProtons)]
 
     @functools.lru_cache(maxsize=256)
-    def getProtonsInSameGroup(self, compId: str, atomId: str, exclSelf: bool = False) -> List[str]:
+    def getProtonsInSameGroup(self, compId: str, atomId: str, exclSelf: bool = False
+                              ) -> List[str]:
         """ Return protons in the same group of a given comp_id and atom_id.
         """
 
@@ -386,7 +397,8 @@ class ChemCompUtil:
 
         return [p for p in attached if (exclSelf and p != atomId) or not exclSelf]
 
-    def getAtomsBasedOnGreekLetterSystem(self, compId: str, atomId: str) -> List[str]:
+    def getAtomsBasedOnGreekLetterSystem(self, compId: str, atomId: str
+                                         ) -> List[str]:
         """ Return atoms match with greek letter system of a given comp_id.
         """
 
@@ -441,7 +453,8 @@ class ChemCompUtil:
 
         return []
 
-    def getBondSignature(self, compId: str, atomId: str) -> Tuple[List[str], List[str]]:
+    def getBondSignature(self, compId: str, atomId: str
+                         ) -> Tuple[List[str], List[str]]:
         """ Return abstract covalent bond pattern of a given comp_id and atom_id.
         """
 
@@ -499,7 +512,8 @@ class ChemCompUtil:
         return peptide_like > nucleotide_like and peptide_like > carbohydrate_like
 
     @functools.lru_cache(maxsize=128)
-    def getTypeOfCompId(self, compId: Optional[str] = None) -> Tuple[bool, bool, bool]:
+    def getTypeOfCompId(self, compId: Optional[str] = None
+                        ) -> Tuple[bool, bool, bool]:
         """ Return type of a given comp_id.
             @return: array of bool: peptide, nucleotide, carbohydrate
         """
@@ -579,7 +593,7 @@ class ChemCompUtil:
 
         return fw
 
-    def write_std_dict_as_pickle(self):
+    def write_std_dict_as_pickle(self) -> None:
         """ Write dictionary for standard residues as pickle file.
         """
 

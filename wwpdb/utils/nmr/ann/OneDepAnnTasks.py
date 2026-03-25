@@ -28,7 +28,7 @@ try:
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag,
                                               retrieve_symbolic_labels)
-    from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+    from wwpdb.utils.nmr.io.PdbxUtil import PdbxUtil
 except ImportError:
     from nmr.NmrDpConstant import EMPTY_VALUE
     from nmr.NmrDpRegistry import NmrDpRegistry
@@ -36,7 +36,7 @@ except ImportError:
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag,
                                   retrieve_symbolic_labels)
-    from nmr.io.mmCIFUtil import mmCIFUtil
+    from nmr.io.PdbxUtil import PdbxUtil
 
 
 # derived from wwpdb.apps.deposit.depui.constant.REQUIREMENTS
@@ -283,7 +283,7 @@ class OneDepAnnTasks:
                  '__defLpTag',
                  '__allowedSfTags')
 
-    def __init__(self, registry: NmrDpRegistry):
+    def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -2043,7 +2043,7 @@ class OneDepAnnTasks:
                     array[idx] = str(val)
             return array
 
-        cifObj = mmCIFUtil(self.__reg.verbose, self.__reg.log)
+        cifObj = PdbxUtil(self.__reg.verbose, self.__reg.log)
 
         cifObj.addDataBlock(self.__reg.entry_id)
 

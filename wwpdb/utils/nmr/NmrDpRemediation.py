@@ -295,7 +295,8 @@ except ImportError:
     from nmr.cs.XeasyCSReader import XeasyCSReader
 
 
-def get_chem_shift_format(fPath: str) -> Optional[str]:
+def get_chem_shift_format(fPath: str
+                          ) -> Optional[str]:
     """ Return chemical shift format for a input file.
     """
 
@@ -314,7 +315,8 @@ def get_chem_shift_format(fPath: str) -> Optional[str]:
     return None
 
 
-def get_chem_shift_format_from_string(string: str) -> Optional[str]:
+def get_chem_shift_format_from_string(string: str
+                                      ) -> Optional[str]:
     """ Return chemical shift format for a given input.
     """
 
@@ -341,7 +343,7 @@ class NmrDpRemediation:
                  '__reg',
                  '__paramag')
 
-    def __init__(self, registry: NmrDpRegistry):
+    def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -397,7 +399,7 @@ class NmrDpRemediation:
         return self.__reg.report.getTotalErrors() == __errors
 
     def __cleanUpSf(self, file_type: str, content_subtype: str,  # pylint: disable=no-self-use
-                    sf: Union[pynmrstar.Saveframe, pynmrstar.Loop]):
+                    sf: Union[pynmrstar.Saveframe, pynmrstar.Loop]) -> None:
         """ Clean-up third-party saveframes.
         """
 
@@ -409,8 +411,7 @@ class NmrDpRemediation:
         sf.remove_tag(tags_to_be_removed)
 
     def removeUnusedPdbInsCode(self, file_list_id: int, content_subtype: str,
-                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                               lp_category: str) -> bool:
+                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> bool:
         """ Remove unused PDB_ind_code tags from loops.
         """
 
@@ -456,7 +457,7 @@ class NmrDpRemediation:
         return False
 
     def fixChainIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
-                         chain_id: str, _chain_id: str):
+                         chain_id: str, _chain_id: str) -> None:
         """ Fix chain ID of interesting loop.
         """
 
@@ -491,8 +492,8 @@ class NmrDpRemediation:
                 self.__fixChainIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
 
     def __fixChainIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
-                           sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                           lp_category: str, chain_id: str, _chain_id: str):
+                           sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                           chain_id: str, _chain_id: str) -> None:
         """ Fix chain ID of interesting loop.
         """
 
@@ -572,7 +573,7 @@ class NmrDpRemediation:
                         row[entity_id_col] = _chain_id
 
     def fixSeqIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
-                       chain_id: str, seq_id_conv_dict: dict):
+                       chain_id: str, seq_id_conv_dict: dict) -> None:
         """ Fix sequence ID of interesting loop.
         """
 
@@ -607,8 +608,8 @@ class NmrDpRemediation:
                 self.__fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
 
     def __fixSeqIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
-                         sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                         lp_category: str, chain_id: str, seq_id_conv_dict: dict):
+                         sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                         chain_id: str, seq_id_conv_dict: dict) -> None:
         """ Fix sequence ID of interesting loop.
         """
 
@@ -706,7 +707,7 @@ class NmrDpRemediation:
                         row[seq_id_alt_col] = seq_id_conv_dict[seq_id_alt]
 
     def fixCompIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str, sf_framecode: str,
-                        chain_id: str, seq_id: int, comp_id_conv_dict: dict):
+                        chain_id: str, seq_id: int, comp_id_conv_dict: dict) -> None:
         """ Fix comp ID of interesting loop.
         """
 
@@ -832,7 +833,7 @@ class NmrDpRemediation:
                     if comp_id in comp_id_conv_dict:
                         row[comp_id_col] = comp_id_conv_dict[comp_id]
 
-    def fixAtomNomenclature(self, comp_id: str, atom_id_conv_dict: dict):
+    def fixAtomNomenclature(self, comp_id: str, atom_id_conv_dict: dict) -> None:
         """ Fix atom nomenclature.
         """
 
@@ -884,7 +885,7 @@ class NmrDpRemediation:
 
     def __fixAtomNomenclature(self, file_list_id: int, file_type: str, content_subtype: str,
                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                              lp_category: str, comp_id: str, atom_id_conv_dict: dict):
+                              lp_category: str, comp_id: str, atom_id_conv_dict: dict) -> None:
         """ Fix atom nomenclature.
         """
 
@@ -4244,8 +4245,9 @@ class NmrDpRemediation:
         return modified
 
     def __resolveUnmappedAuthSequenceInCsLoop(self, file_list_id: int,
-                                              sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                              lp_category: str, cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool) -> bool:
+                                              sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                                              cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool
+                                              ) -> bool:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
@@ -8012,8 +8014,7 @@ class NmrDpRemediation:
             return self.__reg.report.getTotalErrors() == __errors
 
     def __syncMrLoop(self, file_list_id: int, file_type: str, content_subtype: str,
-                     sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                     lp_category: str):
+                     sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> None:
         """ Synchronize sequence scheme of restraint loop based on coordinates.
         """
 
@@ -9472,7 +9473,7 @@ class NmrDpRemediation:
 
         return self.__reg.report.getTotalErrors() == __errors
 
-    def remediateSpectralPeakListSaveframe(self, star_data: pynmrstar.Entry):
+    def remediateSpectralPeakListSaveframe(self, star_data: pynmrstar.Entry) -> None:
         """ Remediate spectral peak list saveframe
         """
 
@@ -18459,7 +18460,7 @@ class NmrDpRemediation:
         self.__mergeAnyPkAsIs()
 
         if self.__reg.bmrb_only and self.__reg.internal_mode:
-            self.performBMRBjAnnTasks()
+            self.performBmrbJAnnTasks()
 
         try:
 
@@ -18631,7 +18632,7 @@ class NmrDpRemediation:
 
         return True
 
-    def performBMRBjAnnTasks(self, enforce: bool = False) -> bool:
+    def performBmrbJAnnTasks(self, enforce: bool = False) -> bool:
         """ Perform a series of BMRBj specific annotation tasks.
             @note: this method requires additional software packages,
                    network access to PubMed, NCBI Taxonomy, BMRB-API, BMRB ETS, etc
@@ -18644,13 +18645,13 @@ class NmrDpRemediation:
             return False
 
         try:
-            from wwpdb.utils.nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
+            from wwpdb.utils.nmr.ann.BmrbJAnnTasks import BmrbJAnnTasks  # pylint: disable=import-outside-toplevel
         except ImportError:
             try:
-                from nmr.ann.BMRBjAnnTasks import BMRBjAnnTasks  # pylint: disable=import-outside-toplevel
+                from nmr.ann.BmrbJAnnTasks import BmrbJAnnTasks  # pylint: disable=import-outside-toplevel
             except ImportError:
                 return False
 
-        ann = BMRBjAnnTasks(self.__reg)
+        ann = BmrbJAnnTasks(self.__reg)
 
         return ann.perform(self.__reg.star_data[0])

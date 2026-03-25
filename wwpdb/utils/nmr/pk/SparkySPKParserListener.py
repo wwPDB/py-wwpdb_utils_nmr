@@ -20,7 +20,7 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.SparkySPKParser import SparkySPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
@@ -28,7 +28,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.SparkySPKParser import SparkySPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
@@ -54,8 +54,8 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 nefT: NefTranslator = None,
+                 reasons: Optional[dict] = None) -> None:
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, nefT, reasons)
 
@@ -322,7 +322,7 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Exit a parse tree produced by SparkySPKParser#label_position.
         """
 
-    def exit_Peak_2d(self):
+    def exit_Peak_2d(self) -> None:
         """ Extract 2D spectral peak.
         """
 
@@ -397,7 +397,7 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.positionSelection.clear()
 
-    def exit_Peak_3d(self):
+    def exit_Peak_3d(self) -> None:
         """ Extract 3D spectral peak.
         """
 
@@ -473,7 +473,7 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.positionSelection.clear()
 
-    def exit_Peak_4d(self):
+    def exit_Peak_4d(self) -> None:
         """ Extract 4D spectral peak.
         """
 
@@ -551,7 +551,7 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.positionSelection.clear()
 
-    def exit_Peak_wo_assign_2d(self):
+    def exit_Peak_wo_assign_2d(self) -> None:
         """ Extract 2D spectral peak without peak assignment.
         """
 
@@ -608,7 +608,7 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.positionSelection.clear()
 
-    def exit_Peak_wo_assign_3d(self):
+    def exit_Peak_wo_assign_3d(self) -> None:
         """ Extract 3D spectral peak without peak assignment.
         """
 
@@ -666,7 +666,7 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         finally:
             self.positionSelection.clear()
 
-    def exit_Peak_wo_assign_4d(self):
+    def exit_Peak_wo_assign_4d(self) -> None:
         """ Extract 4D spectral peak without peak assignment.
         """
 

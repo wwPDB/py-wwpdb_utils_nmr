@@ -38,7 +38,7 @@ try:
                                            alignPolymerSequenceWithConflicts,
                                            getRestraintFormatName,
                                            getOneLetterCodeCanSequence)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdAtomName,
@@ -65,7 +65,7 @@ except ImportError:
                                alignPolymerSequenceWithConflicts,
                                getRestraintFormatName,
                                getOneLetterCodeCanSequence)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdAtomName,
@@ -117,7 +117,7 @@ class BaseTopologyParserListener():
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None):
+                 nefT: NefTranslator = None) -> None:
 
         self.mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 
@@ -163,7 +163,7 @@ class BaseTopologyParserListener():
         # PDB specific
         self.cur_nr = -1
 
-    def exit(self, retrievedAtomNumList: List[int]):
+    def exit(self, retrievedAtomNumList: List[int]) -> None:
         """ Common function to exit a parse tree.
         """
 
@@ -1115,7 +1115,7 @@ class BaseTopologyParserListener():
         return prev_seq_id != seq_id and prev_atom_name[0] not in NON_METAL_ELEMENTS\
             and (self.unambig or prev_atom_name[0] not in PSE_PRO_BEGIN_CODE)
 
-    def assignMetalIon(self):
+    def assignMetalIon(self) -> None:
         """ Assign metal ion if necessary.
         """
 
@@ -1151,7 +1151,7 @@ class BaseTopologyParserListener():
                 atomNum['chain_id'] = nonPoly['auth_chain_id']
                 atomNum['seq_id'] = nonPoly['auth_seq_id'][0]
 
-    def assignNonPolymer(self, nonPolyIndices: List[int]):
+    def assignNonPolymer(self, nonPolyIndices: List[int]) -> None:
         """ Assign non-polymer if necessary.
         """
 

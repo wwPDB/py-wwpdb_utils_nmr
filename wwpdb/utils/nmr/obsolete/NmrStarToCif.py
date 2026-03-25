@@ -17,10 +17,10 @@ from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import EMPTY_VALUE
-    from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+    from wwpdb.utils.nmr.io.PdbxUtil import PdbxUtil
 except ImportError:
     from nmr.NmrDpConstant import EMPTY_VALUE
-    from nmr.io.mmCIFUtil import mmCIFUtil
+    from nmr.io.PdbxUtil import PdbxUtil
 
 
 class NmrStarToCif:
@@ -28,7 +28,7 @@ class NmrStarToCif:
         @deprecated: Comprehensive solution has been integrated in NmrDpUtility class. (DAOTHER-7407)
     """
 
-    def __init__(self, verbose=False, log=sys.stderr):
+    def __init__(self, verbose=False, log=sys.stderr) -> None:
         self.__verbose = verbose
         self.__log = log
 
@@ -39,7 +39,7 @@ class NmrStarToCif:
         # whether to insert Auth_atom_name_* items
         self.__insert_original_atom_name_items = True
 
-    def clean(self, cifPath=None, originalCsFileNameList=None, originalMrFileNameList=None):
+    def clean(self, cifPath=None, originalCsFileNameList=None, originalMrFileNameList=None) -> bool:
         """ Clean up CIF formatted NMR data for NMR legacy deposition
             @deprecated: Comprehensive solution has been integrated in NmrDpUtility class. (DAOTHER-7407)
         """
@@ -51,7 +51,7 @@ class NmrStarToCif:
 
             # post modification for converted CIF file
 
-            cifObj = mmCIFUtil(filePath=cifPath)
+            cifObj = PdbxUtil(filePath=cifPath)
 
             categories = cifObj.getIntegratedCategoryNameList()
 
@@ -187,7 +187,7 @@ class NmrStarToCif:
 
             return False
 
-    def convert(self, strPath=None, cifPath=None, originalFileName=None, fileType='nm-uni-nef'):
+    def convert(self, strPath=None, cifPath=None, originalFileName=None, fileType='nm-uni-nef') -> bool:
         """ Convert NMR-STAR to CIF for NMR unified deposition
             @deprecated: Comprehensive solution has been integrated in NmrDpUtility class. (DAOTHER-7407)
         """
@@ -215,7 +215,7 @@ class NmrStarToCif:
 
                 # post modification for converted CIF file
 
-                cifObj = mmCIFUtil(filePath=cifPath)
+                cifObj = PdbxUtil(filePath=cifPath)
 
                 categories = cifObj.getIntegratedCategoryNameList()
 

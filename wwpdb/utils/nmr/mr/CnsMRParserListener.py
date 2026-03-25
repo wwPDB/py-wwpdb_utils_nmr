@@ -51,7 +51,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import deepcopy
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
     from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
@@ -102,7 +102,7 @@ except ImportError:
     from nmr.AlignUtil import deepcopy
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.CnsMRParser import CnsMRParser
     from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
@@ -138,8 +138,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 nefT: NefTranslator = None,
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 

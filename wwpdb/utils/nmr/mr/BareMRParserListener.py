@@ -27,7 +27,7 @@ try:
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.BareMRParser import BareMRParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -51,7 +51,7 @@ except ImportError:
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.BareMRParser import BareMRParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -92,8 +92,8 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 nefT: NefTranslator = None,
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -191,7 +191,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if self.cur_subtype == 'dihed':
             self.extractTorsion_angle_restraint()
 
-    def extractDistance_restraint(self):
+    def extractDistance_restraint(self) -> None:
         """ Extract distance restraint.
         """
 
@@ -491,7 +491,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.anySelection.clear()
 
-    def extractTorsion_angle_restraint(self):
+    def extractTorsion_angle_restraint(self) -> None:
         """ Extract torsion angle restraint.
         """
 

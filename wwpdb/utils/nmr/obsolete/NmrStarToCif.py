@@ -17,10 +17,10 @@ from mmcif.io.IoAdapterPy import IoAdapterPy
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import EMPTY_VALUE
-    from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+    from wwpdb.utils.nmr.io.PdbxUtil import PdbxUtil
 except ImportError:
     from nmr.NmrDpConstant import EMPTY_VALUE
-    from nmr.io.mmCIFUtil import mmCIFUtil
+    from nmr.io.PdbxUtil import PdbxUtil
 
 
 class NmrStarToCif:
@@ -51,7 +51,7 @@ class NmrStarToCif:
 
             # post modification for converted CIF file
 
-            cifObj = mmCIFUtil(filePath=cifPath)
+            cifObj = PdbxUtil(filePath=cifPath)
 
             categories = cifObj.getIntegratedCategoryNameList()
 
@@ -215,7 +215,7 @@ class NmrStarToCif:
 
                 # post modification for converted CIF file
 
-                cifObj = mmCIFUtil(filePath=cifPath)
+                cifObj = PdbxUtil(filePath=cifPath)
 
                 categories = cifObj.getIntegratedCategoryNameList()
 

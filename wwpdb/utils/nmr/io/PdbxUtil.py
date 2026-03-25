@@ -1,5 +1,5 @@
 ##
-# File: mmCIFUtil.py
+# File: PdbxUtil.py
 # Date: 21-Aug-2012  Zukang Feng
 #
 # Update:
@@ -7,6 +7,7 @@
 # 30-May-2024  M. Yokochi - resolve duplication of datablock/saveframe name (DAOTHER-9437)
 # 16-Jan-2025  M. Yokochi - abandon symbolic label representations in mmCIF for mutual format conversion
 # 13-Nov-2025  M. Yokochi - add appendAttributeExtendRows() (DAOTHER-8905)
+# 25-Mar-2026  M. Yokochi - rename class from mmCIFUtil to PdbxUtil
 ##
 """ A collection of classes for manipulating CIF files containing multiple datablocks.
 """
@@ -50,7 +51,7 @@ def abandon_symbolic_labels(containerList: list) -> None:
                         obj.setValue(val[1:], attrs[col], idx)
 
 
-class mmCIFUtil:
+class PdbxUtil:
     """ Accessor methods for manipulating CIF files containing multiple datablocks.
     """
     __slots__ = ('__class_name__',

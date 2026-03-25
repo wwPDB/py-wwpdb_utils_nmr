@@ -439,7 +439,7 @@ try:
                                                 write_as_pickle)
     from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
-    from wwpdb.utils.nmr.io.mmCIFUtil import abandon_symbolic_labels
+    from wwpdb.utils.nmr.io.PdbxUtil import abandon_symbolic_labels
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        isAmbigAtomSelection,
                                                        getTypeOfDihedralRestraint,
@@ -578,7 +578,7 @@ except ImportError:
                                     write_as_pickle)
     from nmr.nef.NEFTranslator import NEFTranslator
     from nmr.io.CifReader import CifReader
-    from nmr.io.mmCIFUtil import abandon_symbolic_labels
+    from nmr.io.PdbxUtil import abandon_symbolic_labels
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            isAmbigAtomSelection,
                                            getTypeOfDihedralRestraint,

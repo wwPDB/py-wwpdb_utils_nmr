@@ -43,7 +43,7 @@ try:
                                                DATABLOCK_PAT,
                                                SF_ANONYMOUS_PAT,
                                                SAVE_PAT)
-    from wwpdb.utils.nmr.io.mmCIFUtil import mmCIFUtil
+    from wwpdb.utils.nmr.io.PdbxUtil import PdbxUtil
     from wwpdb.utils.nmr.AlignUtil import getPrettyJson
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -51,7 +51,7 @@ except ImportError:
                                    DATABLOCK_PAT,
                                    SF_ANONYMOUS_PAT,
                                    SAVE_PAT)
-    from nmr.io.mmCIFUtil import mmCIFUtil
+    from nmr.io.PdbxUtil import PdbxUtil
     from nmr.AlignUtil import getPrettyJson
 
 
@@ -262,7 +262,7 @@ class CifToNmrStar:
 
         try:
 
-            cifObj = mmCIFUtil(filePath=cifPath)
+            cifObj = PdbxUtil(filePath=cifPath)
 
             block_name_list = cifObj.getDataBlockNameList()
 

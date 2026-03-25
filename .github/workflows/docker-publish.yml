@@ -9,7 +9,7 @@ on:
   schedule:
     - cron: '0 3 * * 3'
   push:
-    branches: [ "bmrb-extract_main" ]
+    branches: [ "main" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
 

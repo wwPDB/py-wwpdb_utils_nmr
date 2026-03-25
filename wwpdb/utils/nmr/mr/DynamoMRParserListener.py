@@ -100,7 +100,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -144,7 +144,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         """ Exit a parse tree produced by DynamoMRParser#sequence.
         """
 
-    def closeSequence(self):
+    def closeSequence(self) -> None:
         """ Close and fix sequence.
         """
         self.has_seq_align_err = False

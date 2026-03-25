@@ -657,7 +657,7 @@ class AmberMRParserListener(ParseTreeListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
+                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -800,69 +800,69 @@ class AmberMRParserListener(ParseTreeListener):
         self.__g = []
 
     @property
-    def debug(self):
+    def debug(self) -> bool:
         """ Retrieve debug mode.
         """
 
         return self.__debug
 
     @debug.setter
-    def debug(self, debug: bool):
+    def debug(self, debug: bool) -> None:
         self.__debug = debug
 
     @property
-    def internal(self):
+    def internal(self) -> bool:
         """ Retrieve internal mode.
         """
 
         return self.__internal
 
     @internal.setter
-    def internal(self, internal: bool):
+    def internal(self, internal: bool) -> None:
         self.__internal = internal
 
     @property
-    def createSfDict(self):
+    def createSfDict(self) -> dict:
         """ Whether to create saveframe dictionary.
         """
 
         return self.__createSfDict
 
     @createSfDict.setter
-    def createSfDict(self, createSfDict: bool):
+    def createSfDict(self, createSfDict: bool) -> None:
         self.__createSfDict = createSfDict
 
     @property
-    def originalFileName(self):
+    def originalFileName(self) -> str:
         """ Retrieve the original file name.
         """
 
         return self.__originalFileName
 
     @originalFileName.setter
-    def originalFileName(self, originalFileName: str):
+    def originalFileName(self, originalFileName: str) -> None:
         self.__originalFileName = originalFileName
 
     @property
-    def listIdCounter(self):
+    def listIdCounter(self) -> dict:
         """ Retrieve list ID counter dictionary.
         """
 
         return self.__listIdCounter
 
     @listIdCounter.setter
-    def listIdCounter(self, listIdCounter: dict):
+    def listIdCounter(self, listIdCounter: dict) -> None:
         self.__listIdCounter = listIdCounter
 
     @property
-    def entryId(self):
+    def entryId(self) -> str:
         """ Retrieve entry ID.
         """
 
         return self.__entryId
 
     @entryId.setter
-    def entryId(self, entryId: str):
+    def entryId(self, entryId: str) -> None:
         self.__entryId = entryId
 
     def enterAmber_mr(self, ctx: AmberMRParser.Amber_mrContext):  # pylint: disable=unused-argument
@@ -1345,7 +1345,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.prevComment = self.lastComment
                 self.lastComment = None
 
-    def __evalRestraint(self):
+    def __evalRestraint(self) -> None:
         """ Evaluate restraint.
         """
 
@@ -1993,7 +1993,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                    dstFunc.get('upper_linear_limit'),
                                                    sf['list_id']])
 
-    def __createAtomNumberDict(self):
+    def __createAtomNumberDict(self) -> None:
         """ Create atom number dictionary.
         """
 
@@ -3811,7 +3811,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                     f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                     f"based on Sander comment {' '.join(gwc[offsetwc:offsetwc+4])!r}.")
 
-    def __evalRestraintWithAmbmask(self):
+    def __evalRestraintWithAmbmask(self) -> None:
         """ Evaluate restraint (Amber 10 ambmask),
         """
 
@@ -4471,7 +4471,7 @@ class AmberMRParserListener(ParseTreeListener):
                                                    dstFunc.get('upper_linear_limit'),
                                                    sf['list_id']])
 
-    def __createAtomNumberDictWithAmbmask(self):
+    def __createAtomNumberDictWithAmbmask(self) -> None:
         """ Create atom number dictionary from AMBER 10 ambmask.
         """
 
@@ -5129,7 +5129,8 @@ class AmberMRParserListener(ParseTreeListener):
                                                         f"Couldn't specify 'iat({col+1})={iat}' in the coordinates "
                                                         f"based on Sander comment {' '.join(gl[:5])!r}.")
 
-    def validateDistanceRange(self, wt: float) -> Optional[dict]:
+    def validateDistanceRange(self, wt: float
+                              ) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -5281,7 +5282,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateAngleRange(self, wt: float) -> Optional[dict]:
+    def validateAngleRange(self, wt: float
+                           ) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -5408,7 +5410,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validatePcsRange(self, n: int, wt: float, tolpro: float, mltpro: int) -> Optional[dict]:
+    def validatePcsRange(self, n: int, wt: float, tolpro: float, mltpro: int
+                         ) -> Optional[dict]:
         """ Validate PCS value range.
         """
 
@@ -5444,7 +5447,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateRdcRange(self, n: int, wt: float) -> Optional[dict]:
+    def validateRdcRange(self, n: int, wt: float
+                         ) -> Optional[dict]:
         """ Validate RDC value range.
         """
 
@@ -5501,7 +5505,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dstFunc
 
-    def validateCsaRange(self, n: int, wt: float) -> Optional[dict]:
+    def validateCsaRange(self, n: int, wt: float
+                         ) -> Optional[dict]:
         """ Validate CSA value range.
         """
 
@@ -5560,7 +5565,8 @@ class AmberMRParserListener(ParseTreeListener):
 
     def getAtomNumberDictFromAmbmaskInfo(self, seqId: int, atomId: str, order: int = 0,
                                          enableWarning: bool = True, useDefault: bool = True,
-                                         authChainId: Optional[str] = None) -> Optional[dict]:
+                                         authChainId: Optional[str] = None
+                                         ) -> Optional[dict]:
         """ Return atom number dictionary from Amber 10 ambmask information.
         """
 
@@ -5940,7 +5946,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return self.getAtomNumberDictFromAmbmaskInfo(seqId, atomId, order, enableWarning, False, authChainId)
 
-    def reportSanderCommentIssue(self, subtype_name: str):
+    def reportSanderCommentIssue(self, subtype_name: str) -> None:
         """ Report Sander comment's issue.
         """
 
@@ -7557,7 +7563,8 @@ class AmberMRParserListener(ParseTreeListener):
 
         return dst_func
 
-    def getNeighborCandidateAtom(self, factor: dict, src_atom: dict, around: float) -> Optional[dict]:
+    def getNeighborCandidateAtom(self, factor: dict, src_atom: dict, around: float
+                                 ) -> Optional[dict]:
         """ Get the nearest neighbor atom for given conditions.
         """
 
@@ -7639,7 +7646,8 @@ class AmberMRParserListener(ParseTreeListener):
         return None
 
     @functools.lru_cache(maxsize=256)
-    def guessChainIdFromCompId(self, seqId: int, compId: str) -> List[str]:
+    def guessChainIdFromCompId(self, seqId: int, compId: str
+                               ) -> List[str]:
         """ Get possible chain IDs from sequence code and residue name.
         """
 
@@ -7692,7 +7700,8 @@ class AmberMRParserListener(ParseTreeListener):
 
     @functools.lru_cache(maxsize=2048)
     def __getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True,
-                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
+                             __preferAuthSeq: bool = True
+                             ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         coordAtomSite = None
         if cifCheck:
@@ -8195,7 +8204,7 @@ class AmberMRParserListener(ParseTreeListener):
                     if self.numGrnamCol[varNum] >= decimal:
                         self.numGrnamCol[varNum] = decimal - 1
 
-    def decideRestraintType(self, likeDist: bool):
+    def decideRestraintType(self, likeDist: bool) -> None:
         """ Decide restraint type by the size of 'iat' terms in a restraint.
         """
 
@@ -8432,7 +8441,8 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 self.__trimSfWoLp()
 
-    def validateNoexpRange(self, imix: int, ipeak: int, awt: float, arange: float) -> Optional[dict]:
+    def validateNoexpRange(self, imix: int, ipeak: int, awt: float, arange: float
+                           ) -> Optional[dict]:
         """ Validate NOESY peak volume range.
         """
 
@@ -8853,7 +8863,8 @@ class AmberMRParserListener(ParseTreeListener):
             if self.__createSfDict:
                 self.__trimSfWoLp()
 
-    def validateShfRange(self, n: int, wt: float, shrang: float) -> Optional[dict]:
+    def validateShfRange(self, n: int, wt: float, shrang: float
+                         ) -> Optional[dict]:
         """ Validate chemical shift value range.
         """
 
@@ -11090,7 +11101,7 @@ class AmberMRParserListener(ParseTreeListener):
                 self.ambigAtomNameMapping[self.__cur_resname_for_mapping] = {}
             self.ambigAtomNameMapping[self.__cur_resname_for_mapping][ambigCode] = mapName
 
-    def updateAmbigAtomNameMapping(self):
+    def updateAmbigAtomNameMapping(self) -> None:
         """ Update ambiguous atom name mapping dictionary.
         """
 
@@ -11219,7 +11230,8 @@ class AmberMRParserListener(ParseTreeListener):
                 return ps['auth_chain_id'], ps['auth_seq_id'][idx], ps['comp_id'][idx]
         return ps['auth_chain_id'], seqId, None
 
-    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None) -> List[Tuple[str, int, str, bool]]:
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None
+                                                ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates for a given sequence code and atom name.
         """
 
@@ -11330,7 +11342,7 @@ class AmberMRParserListener(ParseTreeListener):
         return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
-                         allowAmbig: bool = True, enableWarning: bool = True, offset: int = 0):
+                         allowAmbig: bool = True, enableWarning: bool = True, offset: int = 0) -> None:
         """ Select atoms of the coordinates for given conditions.
         """
 
@@ -11403,7 +11415,8 @@ class AmberMRParserListener(ParseTreeListener):
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
-                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning: bool = True):
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict], enableWarning: bool = True
+                                   ) -> None:
         """ Perform consistency test for each atom in reference to the coordinates.
         """
 
@@ -11599,7 +11612,8 @@ class AmberMRParserListener(ParseTreeListener):
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
-    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None, rdcCode: Optional[str] = None):
+    def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None, rdcCode: Optional[str] = None
+                ) -> None:
         """ Add saveframe for given conditions if not exists.
         """
 
@@ -11692,7 +11706,7 @@ class AmberMRParserListener(ParseTreeListener):
 
         return self.sfDict[key][-1]
 
-    def __trimSfWoLp(self):
+    def __trimSfWoLp(self) -> None:
         """ Trim saveframe(s) without any loop.
         """
 

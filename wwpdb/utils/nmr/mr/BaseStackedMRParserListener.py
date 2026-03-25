@@ -661,7 +661,7 @@ class BaseStackedMRParserListener():
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -954,112 +954,112 @@ class BaseStackedMRParserListener():
         self.g = []
 
     @property
-    def debug(self):
+    def debug(self) -> bool:
         """ Retrieve debug mode.
         """
 
         return self.__debug
 
     @debug.setter
-    def debug(self, debug: bool):
+    def debug(self, debug: bool) -> None:
         self.__debug = debug
 
     @property
-    def log(self):
+    def log(self) -> IO:
         """ Retrieve current log.
         """
 
         return self.__log
 
     @property
-    def verbose_debug(self):
+    def verbose_debug(self) -> bool:
         """ Retrieve verbose debug mode.
         """
 
         return self.__verbose_debug
 
     @verbose_debug.setter
-    def verbose_debug(self, verbose_debug: bool):
+    def verbose_debug(self, verbose_debug: bool) -> None:
         self.__verbose_debug = verbose_debug
 
     @property
-    def remediate(self):
+    def remediate(self) -> bool:
         """ Retrieve remediation mode.
         """
 
         return self.__remediate
 
     @remediate.setter
-    def remediate(self, remediate: bool):
+    def remediate(self, remediate: bool) -> None:
         self.__remediate = remediate
 
     @property
-    def internal(self):
+    def internal(self) -> bool:
         """ Retrieve internal mode.
         """
 
         return self.__internal
 
     @internal.setter
-    def internal(self, internal: bool):
+    def internal(self, internal: bool) -> None:
         self.__internal = internal
 
     @property
-    def nmrVsModel(self):
+    def nmrVsModel(self) -> Optional[List[dict]]:
         """ Retrieve chain assignments between NMR data and model.
         """
 
         return self.__nmrVsModel
 
     @nmrVsModel.setter
-    def nmrVsModel(self, nmrVsModel: Optional[List[dict]]):
+    def nmrVsModel(self, nmrVsModel: Optional[List[dict]]) -> None:
         self.__nmrVsModel = nmrVsModel
 
     @property
-    def createSfDict(self):
+    def createSfDict(self) -> bool:
         """ Whether to create saveframe dictionary.
         """
 
         return self.__createSfDict
 
     @createSfDict.setter
-    def createSfDict(self, createSfDict: bool):
+    def createSfDict(self, createSfDict: bool) -> None:
         self.__createSfDict = createSfDict
 
     @property
-    def originalFileName(self):
+    def originalFileName(self) -> str:
         """ Retrieve the original file name.
         """
 
         return self.__originalFileName
 
     @originalFileName.setter
-    def originalFileName(self, originalFileName: str):
+    def originalFileName(self, originalFileName: str) -> None:
         self.__originalFileName = originalFileName
 
     @property
-    def listIdCounter(self):
+    def listIdCounter(self) -> dict:
         """ Retrieve list ID counter dictionary.
         """
 
         return self.__listIdCounter
 
     @listIdCounter.setter
-    def listIdCounter(self, listIdCounter: dict):
+    def listIdCounter(self, listIdCounter: dict) -> None:
         self.__listIdCounter = listIdCounter
 
     @property
-    def entryId(self):
+    def entryId(self) -> str:
         """ Retrieve entry ID.
         """
 
         return self.__entryId
 
     @entryId.setter
-    def entryId(self, entryId: str):
+    def entryId(self, entryId: str) -> None:
         self.__entryId = entryId
 
-    def exit(self):
+    def exit(self) -> None:
         """ Common function to exit a parse tree.
         """
 
@@ -2709,7 +2709,8 @@ class BaseStackedMRParserListener():
     def validateDistanceRange(self, weight: float, target_value: Optional[float],
                               lower_limit: Optional[float], upper_limit: Optional[float],
                               lower_linear_limit: Optional[float], upper_linear_limit: Optional[float],
-                              squareExponent: Optional[float] = None) -> Optional[dict]:
+                              squareExponent: Optional[float] = None
+                              ) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -3090,7 +3091,8 @@ class BaseStackedMRParserListener():
 
     def validateRdcRange(self, weight: float, misc_dict: dict, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
-                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
+                         ) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -3521,7 +3523,8 @@ class BaseStackedMRParserListener():
 
     def validateT1T2Range(self, weight: float, target_value: Optional[float],
                           lower_limit: Optional[float], upper_limit: Optional[float],
-                          lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
+                          lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
+                          ) -> Optional[dict]:
         """ Validate T1/T2 value range.
         """
 
@@ -3698,7 +3701,8 @@ class BaseStackedMRParserListener():
 
     def validateCsaRange(self, weight: float, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
-                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
+                         ) -> Optional[dict]:
         """ Validate CSA value range.
         """
 
@@ -3875,7 +3879,8 @@ class BaseStackedMRParserListener():
 
     def validatePreRange(self, weight: float, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
-                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
+                         ) -> Optional[dict]:
         """ Validate PRE value range.
         """
 
@@ -4052,7 +4057,8 @@ class BaseStackedMRParserListener():
 
     def validatePcsRange(self, weight: float, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
-                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
+                         ) -> Optional[dict]:
         """ Validate PCS value range.
         """
 
@@ -4229,7 +4235,8 @@ class BaseStackedMRParserListener():
 
     def validateCcrRange(self, weight: float, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
-                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None) -> Optional[dict]:
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
+                         ) -> Optional[dict]:
         """ Validate CCR value range.
         """
 
@@ -4439,7 +4446,7 @@ class BaseStackedMRParserListener():
 
         return True
 
-    def intersectionFactor_expressions(self, atomSelection: Optional[List[dict]] = None):
+    def intersectionFactor_expressions(self, atomSelection: Optional[List[dict]] = None) -> None:
         """ Take the intersection of the current factor and given atom selection.
         """
 
@@ -4653,7 +4660,7 @@ class BaseStackedMRParserListener():
 
         return _atomSelection
 
-    def consumeFactor_expressions(self, clauseName: str = 'atom selection expression', cifCheck: bool = True):
+    def consumeFactor_expressions(self, clauseName: str = 'atom selection expression', cifCheck: bool = True) -> None:
         """ Consume factor expressions as atom selection if possible.
         """
 
@@ -6730,7 +6737,7 @@ class BaseStackedMRParserListener():
                                         minAuthSeqId: Optional[int], maxAuthSeqId: Optional[int], _atomSelection: List[dict],
                                         seqKey: Tuple[str, int], coordAtomSite: Optional[dict], atomSiteAtomId: List[str],
                                         chainId: str, seqId: int, _seqId: int, compId: Optional[str], atomId: str, _atomId: str,
-                                        origAtomId: str, extSeqScheme: bool):
+                                        origAtomId: str, extSeqScheme: bool) -> None:
         """ Evaluate given factor.
         """
 
@@ -7159,7 +7166,8 @@ class BaseStackedMRParserListener():
 
     def __handleNoAtomSelection(self, _factor: dict, clauseName: str, cifCheck: bool, trial: int,
                                 chain_not_specified: bool, ambig_atom_sel: bool,
-                                found_comp_id: bool, atom_not_found_error: bool, _atomId: Optional[str]) -> Tuple[bool, dict]:
+                                found_comp_id: bool, atom_not_found_error: bool, _atomId: Optional[str]
+                                ) -> Tuple[bool, dict]:
         """ Handle case of no atom selection.
         """
 
@@ -7595,7 +7603,8 @@ class BaseStackedMRParserListener():
                     return replacedBy
         return compId
 
-    def getOrigSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Optional[int]:
+    def getOrigSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True
+                     ) -> Optional[int]:
         """ Return a original sequence code for a given polymer sequence and sequence code.
         """
 
@@ -7676,7 +7685,8 @@ class BaseStackedMRParserListener():
                         return ps['auth_seq_id'][idx]
         return seqId
 
-    def getRealSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True) -> Tuple[Optional[int], Optional[str], bool]:
+    def getRealSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True
+                     ) -> Tuple[Optional[int], Optional[str], bool]:
         """ Return a realistic sequence for a given polymer sequence and sequence code.
         """
 
@@ -7794,7 +7804,7 @@ class BaseStackedMRParserListener():
                 chainId = hint
         return chainId
 
-    def __updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool):
+    def __updateSegmentIdDict(self, factor: dict, chainId: str, isPolymer: Optional[bool], valid: bool) -> None:
         """ Update segment ID dictionary.
         """
 
@@ -7895,7 +7905,8 @@ class BaseStackedMRParserListener():
             return seqKey, self.__coordAtomSite[seqKey] if cifCheck and seqKey in self.__coordAtomSite else None
         return seqKey, None
 
-    def __getAtomIdList(self, factor: dict, compId: str, atomId: str) -> List[str]:
+    def __getAtomIdList(self, factor: dict, compId: str, atomId: str
+                        ) -> List[str]:
         """ Retrieve list of atom IDs for given conditions.
         """
 
@@ -8531,7 +8542,7 @@ class BaseStackedMRParserListener():
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
-    def setLocalSeqScheme(self):
+    def setLocalSeqScheme(self) -> None:
         """ Set sequence scheme for each restraint.
         """
 
@@ -8583,7 +8594,7 @@ class BaseStackedMRParserListener():
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
                 self.__getNamedReasonsForReparsing('label_seq_scheme')[self.cur_subtype] = True
 
-    def retrieveLocalSeqScheme(self):
+    def retrieveLocalSeqScheme(self) -> None:
         """ Retrieve sequence scheme for each restraint.
         """
 
@@ -8662,7 +8673,7 @@ class BaseStackedMRParserListener():
             self.preferAuthSeq = self.reasons['local_seq_scheme'][key]
 
     def addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
-              rdcCode: Optional[str] = None, alignCenter: Optional[str] = None):
+              rdcCode: Optional[str] = None, alignCenter: Optional[str] = None) -> None:
         """ Add saveframe for given conditions if not exists.
         """
 
@@ -8784,7 +8795,7 @@ class BaseStackedMRParserListener():
 
         return sf
 
-    def trimSfWoLp(self):
+    def trimSfWoLp(self) -> None:
         """ Trim saveframe(s) without any loop.
         """
 

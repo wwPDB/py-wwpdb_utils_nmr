@@ -143,7 +143,7 @@ class RCI:
                  '__all_smoothed',
                  '__all_atoms_no_smooth_gap_fill')
 
-    def __init__(self, verbose: bool = False, log: IO = sys.stderr):  # pylint: disable=redefined-builtin,redefined-outer-name
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr) -> None:  # noqa: E501, pylint: disable=redefined-builtin,redefined-outer-name,line-too-long
         self.__verbose = verbose
         self.__log = log
 
@@ -5629,7 +5629,8 @@ class RCI:
 
         return l_atom_list
 
-    def __gap_fill(self, L_list: list, l_atom: list) -> List[list]:
+    def __gap_fill(self, L_list: list, l_atom: list
+                   ) -> List[list]:
         """ Gap filling function when smooth=0, either  i+n or i-n
         """
 
@@ -5705,7 +5706,8 @@ class RCI:
 
         return L_all
 
-    def __gap_fill2(self, L_list: list, l_atom: list) -> List[list]:
+    def __gap_fill2(self, L_list: list, l_atom: list
+                    ) -> List[list]:
         """ Gap filling function when smooth=0, uses averaging of i+n and i-n
         """
 
@@ -5791,7 +5793,8 @@ class RCI:
 
         return L_all
 
-    def __smoothing(self, L_smooth: list, L_list: list, l_atom_type: str) -> List[list]:
+    def __smoothing(self, L_smooth: list, L_list: list, l_atom_type: str
+                    ) -> List[list]:
         """ Smoothing function.
         """
 
@@ -6956,7 +6959,8 @@ class RCI:
 
         return result_list
 
-    def __final_smoothing(self, L_smooth: int, L_list: list) -> List[list]:
+    def __final_smoothing(self, L_smooth: int, L_list: list
+                          ) -> List[list]:
         """ Smoothing function for final result.
         """
 
@@ -7329,7 +7333,8 @@ class RCI:
         ) = self.__rci_only(s_list_of_files, s_md_result, s_best_ten_coef_corr_true, m_coeff_list)
         return (s_best_ten_coef_corr_true, s_list_of_files, s_Pearson_coeff, s_Spearman_coeff)
 
-    def __rci_list_build(self, l_all_residues: list) -> Tuple[list, list]:
+    def __rci_list_build(self, l_all_residues: list
+                         ) -> Tuple[list, list]:
         """ Function to build a list with chemical shifts for a stand-alone version.
         """
 

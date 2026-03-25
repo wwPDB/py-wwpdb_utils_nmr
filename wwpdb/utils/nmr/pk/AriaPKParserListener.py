@@ -76,7 +76,7 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, nefT, reasons)
 

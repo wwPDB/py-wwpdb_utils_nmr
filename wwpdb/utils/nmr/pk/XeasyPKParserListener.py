@@ -60,7 +60,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
+                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None) -> None:
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, nefT, reasons)
 
@@ -739,7 +739,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__last_comment = None
         self.__g.clear()
 
-    def fillSpectralDimWithLabels(self):
+    def fillSpectralDimWithLabels(self) -> None:
         """ Fill spectral_dim.
         """
 

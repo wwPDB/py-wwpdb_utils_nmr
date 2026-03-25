@@ -117,7 +117,7 @@ def get_first_sf_tag(sf: pynmrstar.Saveframe, tag: str, default: str = '') -> An
     return value if len(value) < 2 or value[0] != '$' else value[1:]
 
 
-def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
+def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any) -> None:
     """ Set saveframe tag with a given value.
     """
 
@@ -142,7 +142,7 @@ def set_sf_tag(sf: pynmrstar.Saveframe, tag: str, value: Any):
     sf.tags[tagNames.index(tag)][1] = value
 
 
-def set_lp_tag(lp: pynmrstar.Loop, tag: str, value: Any):
+def set_lp_tag(lp: pynmrstar.Loop, tag: str, value: Any) -> None:
     """ Set loop tag with a given value.
     """
 
@@ -159,7 +159,7 @@ def set_lp_tag(lp: pynmrstar.Loop, tag: str, value: Any):
             row[col] = value
 
 
-def retrieve_symbolic_labels(strData: pynmrstar.Entry):
+def retrieve_symbolic_labels(strData: pynmrstar.Entry) -> None:
     """ Retrieve symbolic label representations that serve as saveframe pointers in NMR-STAR.
     """
 
@@ -228,7 +228,7 @@ class CifToNmrStar:
                  'category_order',
                  'category_order_nef')
 
-    def __init__(self, log: IO = sys.stderr):
+    def __init__(self, log: IO = sys.stderr) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -782,7 +782,8 @@ class CifToNmrStar:
 
         return modified
 
-    def set_local_sf_id(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], listId: Union[int, str]):
+    def set_local_sf_id(self, strData: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], listId: Union[int, str]
+                        ) -> None:
         """ Set list ID for a given saveframe or loop.
         """
 
@@ -951,7 +952,8 @@ class CifToNmrStar:
 
         return strData
 
-    def cleanup(self, strData: pynmrstar.Entry) -> pynmrstar.Entry:
+    def cleanup(self, strData: pynmrstar.Entry
+                ) -> pynmrstar.Entry:
         """ Wrapper function of cleanup_str() and cleanup_nef().
         """
 
@@ -966,7 +968,8 @@ class CifToNmrStar:
         except (IndexError, AttributeError):
             return strData
 
-    def cleanup_str(self, strData: pynmrstar.Entry) -> pynmrstar.Entry:
+    def cleanup_str(self, strData: pynmrstar.Entry
+                    ) -> pynmrstar.Entry:
         """ Remove empty/ineffective saveframes and loops of NMR-STAR.
         """
 
@@ -1115,7 +1118,8 @@ class CifToNmrStar:
 
         return strData
 
-    def cleanup_nef(self, strData: pynmrstar.Entry) -> pynmrstar.Entry:  # pylint: disable=no-self-use
+    def cleanup_nef(self, strData: pynmrstar.Entry  # pylint: disable=no-self-use
+                    ) -> pynmrstar.Entry:
         """ Remove empty/ineffective saveframes and loops of NEF.
         """
 

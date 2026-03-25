@@ -608,7 +608,7 @@ class NmrDpUtility:
                  '__authSeqMap',
                  '__nmrIfR')
 
-    def __init__(self, verbose: bool = False, log: IO = sys.stderr):
+    def __init__(self, verbose: bool = False, log: IO = sys.stderr) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -877,20 +877,20 @@ class NmrDpUtility:
         # NMRIF reader
         self.__nmrIfR = None
 
-    def setVerbose(self, verbose: bool):
+    def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.
         """
 
         self.__reg.verbose = verbose
         self.__reg.debug = verbose
 
-    def setMrDebugMode(self, debug: bool):
+    def setMrDebugMode(self, debug: bool) -> None:
         """ Set debug mode for MR splitter.
         """
 
         self.__reg.mr_debug = debug
 
-    def setSource(self, fPath: str, originalName: str = None):
+    def setSource(self, fPath: str, originalName: str = None) -> None:
         """ Set primary source file path.
         """
 
@@ -904,7 +904,7 @@ class NmrDpUtility:
         else:
             raise IOError(f"+{self.__class_name__}.setSource() ++ Error  - Could not access to file path {fPath}.")
 
-    def setDestination(self, fPath: str):
+    def setDestination(self, fPath: str) -> None:
         """ Set primary destination file path.
         """
 
@@ -912,14 +912,14 @@ class NmrDpUtility:
             self.__reg.dstPath = os.path.abspath(fPath)
             self.__dstPath__ = copy.copy(self.__reg.dstPath)
 
-    def setLog(self, fPath: str):
+    def setLog(self, fPath: str) -> None:
         """ Set a log file path for the primary input source.
         """
 
         if fPath is not None:
             self.__logPath = os.path.abspath(fPath)
 
-    def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
+    def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file') -> None:  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
         """ Add a named input and value to the dictionary of input parameters.
         """
 
@@ -965,7 +965,7 @@ class NmrDpUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e)) from e
 
-    def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
+    def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file') -> None:  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
         """ Add a named input and value to the dictionary of output parameters.
         """
 
@@ -2442,7 +2442,8 @@ class NmrDpUtility:
 
     def __extractPolymerSequenceInLoop__(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
                                          sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                         list_id: int, sf_framecode: str, lp_category: str, poly_seq_list_set: dict) -> bool:
+                                         list_id: int, sf_framecode: str, lp_category: str, poly_seq_list_set: dict
+                                         ) -> bool:
         """ Extract polymer sequence in interesting loops.
         """
 
@@ -3559,7 +3560,8 @@ class NmrDpUtility:
 
         return False
 
-    def __extractPolymerSequenceInEntityLoopOfChain__(self, file_list_id: int, chain_id: str) -> Optional[dict]:
+    def __extractPolymerSequenceInEntityLoopOfChain__(self, file_list_id: int, chain_id: str
+                                                      ) -> Optional[dict]:
         """ Extract polymer sequence in entity loops of a given chain id.
         """
 
@@ -3680,7 +3682,7 @@ class NmrDpUtility:
         return True
 
     def __extractNonStandardResidue__(self, file_name: str, sf_framecode: str, lp_category: str,
-                                      input_source: NmrDpReportInputSource):
+                                      input_source: NmrDpReportInputSource) -> None:
         """ Extract non-standard residue.
         """
 
@@ -8340,7 +8342,7 @@ class NmrDpUtility:
 
         return self.__reg.report.getTotalErrors() == __errors
 
-    def __retrieveCoordAssemblyChecker__(self):
+    def __retrieveCoordAssemblyChecker__(self) -> None:
         """ Wrapper function for ParserListenerUtil.coordAssemblyChecker.
         """
 

@@ -124,7 +124,7 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None):
+                 atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 

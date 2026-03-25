@@ -50,7 +50,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 
         self.file_type = 'nm-shi-bar'

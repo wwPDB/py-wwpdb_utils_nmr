@@ -82,7 +82,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -402,7 +402,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
-    def __splitAtomSelectionExpr(self, atomSelection: str) -> Tuple[str, int, str, str]:  # pylint: disable=no-self-use
+    def __splitAtomSelectionExpr(self, atomSelection: str  # pylint: disable=no-self-use
+                                 ) -> Tuple[str, int, str, str]:
         """ Split BIOSYM atom selection expression.
         """
 
@@ -1225,7 +1226,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         """ Exit a parse tree produced by BiosymMRParser#decl_target.
         """
 
-    def splitInsAtomSelectionExpr(self, atomSelection: str) -> Tuple[str, int, str]:  # pylint: disable=no-self-use
+    def splitInsAtomSelectionExpr(self, atomSelection: str  # pylint: disable=no-self-use
+                                  ) -> Tuple[str, int, str]:
         """ Split Insight II atom selection expression.
         """
 

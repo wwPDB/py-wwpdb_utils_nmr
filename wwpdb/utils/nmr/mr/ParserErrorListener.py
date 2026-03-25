@@ -47,7 +47,7 @@ class ParserErrorListener(ErrorListener):
     __ignoreCodicError = False
 
     def __init__(self, filePath: str, inputString: Optional[str] = None,
-                 maxErrorReport: int = MAX_ERROR_REPORT, ignoreCodicError: bool = False):
+                 maxErrorReport: int = MAX_ERROR_REPORT, ignoreCodicError: bool = False) -> None:
 
         self.__messageList = []
         self.__errorLineNumber = []
@@ -64,7 +64,7 @@ class ParserErrorListener(ErrorListener):
 
         self.__ignoreCodicError = ignoreCodicError
 
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e) -> None:
 
         if self.__errLineNumOverflowed:
             return

@@ -373,7 +373,7 @@ class RosettaMRParserListener(ParseTreeListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -515,69 +515,69 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__f = []
 
     @property
-    def debug(self):
+    def debug(self) -> bool:
         """ Retrieve debug mode.
         """
 
         return self.__debug
 
     @debug.setter
-    def debug(self, debug: bool):
+    def debug(self, debug: bool) -> None:
         self.__debug = debug
 
     @property
-    def remediate(self):
+    def remediate(self) -> bool:
         """ Retrieve remediation mode.
         """
 
         return self.__remediate
 
     @remediate.setter
-    def remediate(self, remediate: bool):
+    def remediate(self, remediate: bool) -> None:
         self.__remediate = remediate
 
     @property
-    def createSfDict(self):
+    def createSfDict(self) -> dict:
         """ Whether to create saveframe dictionary.
         """
 
         return self.__createSfDict
 
     @createSfDict.setter
-    def createSfDict(self, createSfDict: bool):
+    def createSfDict(self, createSfDict: bool) -> None:
         self.__createSfDict = createSfDict
 
     @property
-    def originalFileName(self):
+    def originalFileName(self) -> str:
         """ Retrieve the original file name.
         """
 
         return self.__originalFileName
 
     @originalFileName.setter
-    def originalFileName(self, originalFileName: str):
+    def originalFileName(self, originalFileName: str) -> None:
         self.__originalFileName = originalFileName
 
     @property
-    def listIdCounter(self):
+    def listIdCounter(self) -> dict:
         """ Retrieve list ID counter dictionary.
         """
 
         return self.__listIdCounter
 
     @listIdCounter.setter
-    def listIdCounter(self, listIdCounter: dict):
+    def listIdCounter(self, listIdCounter: dict) -> None:
         self.__listIdCounter = listIdCounter
 
     @property
-    def entryId(self):
+    def entryId(self) -> str:
         """ Retrieve entry ID.
         """
 
         return self.__entryId
 
     @entryId.setter
-    def entryId(self, entryId: str):
+    def entryId(self, entryId: str) -> None:
         self.__entryId = entryId
 
     def enterRosetta_mr(self, ctx: RosettaMRParser.Rosetta_mrContext):  # pylint: disable=unused-argument
@@ -1346,7 +1346,8 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    def validateDistanceRange(self, weight: float) -> Optional[dict]:
+    def validateDistanceRange(self, weight: float
+                              ) -> Optional[dict]:
         """ Validate distance value range.
         """
 
@@ -1612,7 +1613,8 @@ class RosettaMRParserListener(ParseTreeListener):
         return dstFunc
 
     def getRealChainSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True,
-                          isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
+                          isFirstTrial: bool = True
+                          ) -> Tuple[str, int, Optional[str]]:
         """ Return a realistic sequence for a given polymer sequence and sequence code.
         """
 
@@ -2006,7 +2008,8 @@ class RosettaMRParserListener(ParseTreeListener):
         return list(chainAssign)
 
     def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: Optional[str], seqId: int,
-                                                           atomId: Optional[str] = None) -> List[Tuple[str, int, str, bool]]:
+                                                           atomId: Optional[str] = None
+                                                           ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates.
         """
 
@@ -2241,7 +2244,7 @@ class RosettaMRParserListener(ParseTreeListener):
         return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, atomId: str,
-                         allowAmbig: bool = True, subtype_name: Optional[str] = None):
+                         allowAmbig: bool = True, subtype_name: Optional[str] = None) -> None:
         """ Select atoms of the coordinates.
         """
 
@@ -2518,7 +2521,7 @@ class RosettaMRParserListener(ParseTreeListener):
         if len(atomSelection) > 0:
             self.atomSelectionSet.append(atomSelection)
 
-    def selectCoordResidues(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int):
+    def selectCoordResidues(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int) -> None:
         """ Select residues of the coordinates.
         """
 
@@ -2532,7 +2535,8 @@ class RosettaMRParserListener(ParseTreeListener):
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
-                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict]) -> Tuple[str, bool]:
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict]
+                                   ) -> Tuple[str, bool]:
         """ Perform consistency test for each atom in reference to the coordinates.
         """
 
@@ -3091,7 +3095,8 @@ class RosettaMRParserListener(ParseTreeListener):
 
     @functools.lru_cache(maxsize=2048)
     def __getCoordAtomSiteOf(self, chainId: str, seqId: int, cifCheck: bool = True, asis: bool = True,
-                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
+                             __preferAuthSeq: bool = True
+                             ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         coordAtomSite = None
         if cifCheck:
@@ -3209,7 +3214,8 @@ class RosettaMRParserListener(ParseTreeListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    def validateAngleRange(self, weight: float) -> Optional[dict]:
+    def validateAngleRange(self, weight: float
+                           ) -> Optional[dict]:
         """ Validate angle value range.
         """
 
@@ -6038,7 +6044,7 @@ class RosettaMRParserListener(ParseTreeListener):
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
-    def __setLocalSeqScheme(self):
+    def __setLocalSeqScheme(self) -> None:
         """ Set sequence scheme for each restraint.
         """
 
@@ -6061,7 +6067,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
-    def __retrieveLocalSeqScheme(self):
+    def __retrieveLocalSeqScheme(self) -> None:
         """ Retrieve sequence scheme for each restraint.
         """
 
@@ -6096,7 +6102,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.__preferAuthSeq = self.__reasons['local_seq_scheme'][key]
 
     def __addSf(self, constraintType: Optional[str] = None, potentialType: Optional[str] = None,
-                rdcCode: Optional[str] = None):
+                rdcCode: Optional[str] = None) -> None:
         """ Add saveframe for given conditions if not exists.
         """
 

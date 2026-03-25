@@ -125,7 +125,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None):
+                 reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -915,7 +915,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genAtomNameSelection.clear()
 
     def exitDistance_wo_comp_restraint(self, chainId1: str, seqId1: int, atomId1: str,
-                                       chainId2: str, seqId2: int, atomId2: str):
+                                       chainId2: str, seqId2: int, atomId2: str) -> None:
         """ Exit a parse tree produced by CyanaMRParser#distance_restraint.
         """
 

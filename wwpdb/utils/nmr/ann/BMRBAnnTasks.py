@@ -88,7 +88,7 @@ class BMRBAnnTasks:
                  '__defSfLabelTag',
                  '__update_related_entries')
 
-    def __init__(self, registry: NmrDpRegistry):
+    def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -103,7 +103,7 @@ class BMRBAnnTasks:
             if isinstance(self.__reg.inputParamDict['update_related_entries'], bool):
                 self.__update_related_entries = self.__reg.inputParamDict['update_related_entries']
 
-    def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]):
+    def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]) -> None:
         """ Set provenance information.
         """
 

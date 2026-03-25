@@ -94,7 +94,7 @@ class NmrDpFirstAid:
                  '__version__',
                  '__reg')
 
-    def __init__(self, registry: NmrDpRegistry):
+    def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -103,7 +103,8 @@ class NmrDpFirstAid:
     def fixFormatIssueOfInputSource(self, file_list_id: int, file_name: str, file_type: str,
                                     srcPath: Optional[str] = None, fileSubType: str = 'S',
                                     message: Optional[dict] = None, tmpPaths: Optional[List[str]] = None,
-                                    allowEmpty: bool = False, hasLegacySfIssue: bool = False) -> bool:
+                                    allowEmpty: bool = False, hasLegacySfIssue: bool = False
+                                    ) -> bool:
         """ Fix format issue of NMR data.
         """
 
@@ -893,7 +894,7 @@ class NmrDpFirstAid:
 
     def __rescueFormerNef__(self, file_name: str, file_type: str, content_subtype: str,
                             sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
-                            sf_framecode: str, sf_category: str, lp_category: str):
+                            sf_framecode: str, sf_category: str, lp_category: str) -> None:
         """ Rescue former NEF version prior to 1.0.
         """
 
@@ -1239,7 +1240,7 @@ class NmrDpFirstAid:
 
     def __rescueImmatureStr__(self, file_name: str, file_type: str, content_subtype: str,
                               sf: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
-                              sf_framecode: str, lp_category: str):
+                              sf_framecode: str, lp_category: str) -> None:
         """ Rescue immature NMR-STAR.
         """
 
@@ -1482,7 +1483,8 @@ class NmrDpFirstAid:
         except KeyError:
             pass
 
-    def getSaveframeByName(self, file_list_id: int, sf_framecode: str) -> Optional[pynmrstar.Saveframe]:
+    def getSaveframeByName(self, file_list_id: int, sf_framecode: str
+                           ) -> Optional[pynmrstar.Saveframe]:
         """ Retrieve saveframe content from a given name.
         """
 

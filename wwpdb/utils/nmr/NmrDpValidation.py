@@ -332,7 +332,8 @@ def predict_redox_state_of_cystein(ca_chem_shift: Optional[float], cb_chem_shift
     return oxi / total, red / total
 
 
-def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift) -> Tuple[float, float]:
+def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift
+                                         ) -> Tuple[float, float]:
     """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
         @return: probability of cis-peptide bond, probability of trans-peptide bond
         Reference:
@@ -535,7 +536,8 @@ def predict_rotamer_state_of_valine(cg1_chem_shift: Optional[float], cg2_chem_sh
     return gp / total, t / total, gm / total
 
 
-def predict_rotamer_state_of_isoleucine(cd1_chem_shift: Optional[float]) -> Tuple[float, float, float]:
+def predict_rotamer_state_of_isoleucine(cd1_chem_shift: Optional[float]
+                                        ) -> Tuple[float, float, float]:
     """ Return prediction of rotermeric state of Isoleucine using assigned CD1 chemical shift.
         @return: probability of gauche+, trans, gauche-
         Reference:
@@ -587,7 +589,8 @@ def is_like_planality_boundary(row: dict, lower_limit_name: str, upper_limit_nam
         return False
 
 
-def get_atom_name_mapping(lp: pynmrstar.Loop, list_of_tags: List[List[str]]) -> Optional[List[dict]]:
+def get_atom_name_mapping(lp: pynmrstar.Loop, list_of_tags: List[List[str]]
+                          ) -> Optional[List[dict]]:
     """ Return atom name mapping history for each comp_id.
         Each tags should be array of 'comp_id', 'atom_id', and 'atom_name'.
     """
@@ -648,7 +651,7 @@ class NmrDpValidation:
                  '__reg',
                  '__rci')
 
-    def __init__(self, registry: NmrDpRegistry):
+    def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -657,7 +660,8 @@ class NmrDpValidation:
         # RCI
         self.__rci = RCI(False, self.__reg.log)
 
-    def getChemCompNameAndStatusOf(self, comp_id: str) -> Tuple[bool, Optional[str], Optional[str]]:
+    def getChemCompNameAndStatusOf(self, comp_id: str
+                                   ) -> Tuple[bool, Optional[str], Optional[str]]:
         """ Return _chem_comp.name and release status a given CCD ID, if possible.
         """
 
@@ -701,7 +705,8 @@ class NmrDpValidation:
                 or atom_id.endswith('%') or atom_id.endswith('#')
                 or self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id) == 0)
 
-    def getAtomIdListInXplor(self, comp_id: str, atom_id: str) -> List[str]:
+    def getAtomIdListInXplor(self, comp_id: str, atom_id: str
+                             ) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature.
         """
 
@@ -709,7 +714,8 @@ class NmrDpValidation:
 
         return atom_list if details is None else []
 
-    def getAtomIdListInXplorForLigandRemap(self, comp_id: str, atom_id: str, coord_atom_site: dict) -> List[str]:
+    def getAtomIdListInXplorForLigandRemap(self, comp_id: str, atom_id: str, coord_atom_site: dict
+                                           ) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id in XPLOR atom nomenclature
             in reference to coordinates' alternative atom IDs. (DAOTHER-9286)
         """
@@ -724,7 +730,8 @@ class NmrDpValidation:
 
         return atom_id if len(_atom_id) == 0 else _atom_id[0]
 
-    def getAtomIdList(self, comp_id: str, atom_id: str) -> List[str]:
+    def getAtomIdList(self, comp_id: str, atom_id: str
+                      ) -> List[str]:
         """ Return atom ID list in IUPAC atom nomenclature for a given atom_id.
         """
 
@@ -1644,7 +1651,8 @@ class NmrDpValidation:
         return is_done
 
     def __convertCsToEntry(self, src_data: Optional[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]] = None,
-                           list_id: int = 1) -> Optional[pynmrstar.Entry]:
+                           list_id: int = 1
+                           ) -> Optional[pynmrstar.Entry]:
         """ Convert NMR-STAR CS loop/saveframe to pynmrstar Entry object.
         """
 
@@ -1733,7 +1741,8 @@ class NmrDpValidation:
 
         return not self.__reg.report.isError()
 
-    def detectContentSubType__(self, file_list_id: int, input_source: NmrDpReportInputSource, dir_path: Optional[str] = None):
+    def detectContentSubType__(self, file_list_id: int, input_source: NmrDpReportInputSource,
+                               dir_path: Optional[str] = None) -> None:
         """ Detect content subtype of NMR data file in any STAR format.
         """
 
@@ -2385,7 +2394,8 @@ class NmrDpValidation:
         return False
 
     def getNmrBondLength(self, nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_atom_id_1: str,
-                         nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_atom_id_2: str) -> Optional[List[dict]]:
+                         nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_atom_id_2: str
+                         ) -> Optional[List[dict]]:
         """ Return the bond length of given two NMR atoms.
             @return: the bond length
         """
@@ -2450,7 +2460,8 @@ class NmrDpValidation:
 
     def getCoordBondLength(self, cif_chain_id_1: str, cif_seq_id_1: int, cif_atom_id_1: str,
                            cif_chain_id_2: str, cif_seq_id_2: int, cif_atom_id_2: str,
-                           label_scheme: bool = True) -> Optional[List[dict]]:
+                           label_scheme: bool = True
+                           ) -> Optional[List[dict]]:
         """ Return the bond length of given two CIF atoms.
             @return: the bond length
         """
@@ -2517,7 +2528,8 @@ class NmrDpValidation:
 
         return None
 
-    def __getNearestAromaticRing(self, nmr_chain_id: str, nmr_seq_id: int, nmr_atom_id: str) -> Optional[dict]:
+    def __getNearestAromaticRing(self, nmr_chain_id: str, nmr_seq_id: int, nmr_atom_id: str
+                                 ) -> Optional[dict]:
         """ Return the nearest aromatic ring around a given atom.
             @return: the nearest aromatic ring
         """
@@ -2878,7 +2890,8 @@ class NmrDpValidation:
         self.__reg.cpC['near_ring'][seq_key] = None
         return None
 
-    def __getNearestParaFerroMagneticAtom(self, nmr_chain_id: str, nmr_seq_id: int, nmr_atom_id: str) -> Optional[dict]:
+    def __getNearestParaFerroMagneticAtom(self, nmr_chain_id: str, nmr_seq_id: int, nmr_atom_id: str
+                                          ) -> Optional[dict]:
         """ Return the nearest paramagnetic/ferromagnetic atom around a given atom.
             @return: the nearest paramagnetic/ferromagnetic atom
         """
@@ -3355,7 +3368,8 @@ class NmrDpValidation:
         self.__reg.cpC['tautomer'][seq_key] = 'unknown'
         return 'unknown'
 
-    def getRotamerOfValine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
+    def getRotamerOfValine(self, nmr_chain_id: str, nmr_seq_id: int
+                           ) -> List[dict]:
         """ Return rotameric state distribution of a given valine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -3466,7 +3480,8 @@ class NmrDpValidation:
         self.__reg.cpC['rotamer'][seq_key] = none
         return none
 
-    def getRotamerOfLeucine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
+    def getRotamerOfLeucine(self, nmr_chain_id: str, nmr_seq_id: int
+                            ) -> List[dict]:
         """ Return rotameric state distribution of a given leucine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -3598,7 +3613,8 @@ class NmrDpValidation:
         self.__reg.cpC['rotamer'][seq_key] = none
         return none
 
-    def getRotamerOfIsoleucine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
+    def getRotamerOfIsoleucine(self, nmr_chain_id: str, nmr_seq_id: int
+                               ) -> List[dict]:
         """ Return rotameric state distribution of a given isoleucine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -4430,7 +4446,7 @@ class NmrDpValidation:
 
     def validateAtomNomenclature(self, file_name: str, file_type: str, content_subtype: str,
                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                 sf_framecode: str, lp_category: str):
+                                 sf_framecode: str, lp_category: str) -> None:
         """ Validate atom nomenclature using NEFTranslator and CCD.
         """
 
@@ -5024,7 +5040,7 @@ class NmrDpValidation:
 
     def validateAtomTypeOfCsLoop(self, file_name: str, file_type: str,
                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                 sf_framecode: str, lp_category: str):
+                                 sf_framecode: str, lp_category: str) -> None:
         """ Validate atom type, isotope number on assigned chemical shifts.
         """
 
@@ -5397,7 +5413,7 @@ class NmrDpValidation:
 
     def testIndexConsistency(self, file_name: str,
                              sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                             sf_framecode: str, lp_category: str, index_tag: str):
+                             sf_framecode: str, lp_category: str, index_tag: str) -> None:
         """ Perform consistency test on index of interesting loops.
         """
 
@@ -5487,7 +5503,7 @@ class NmrDpValidation:
 
     def testDataConsistencyInLoop(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
                                   sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                  sf_framecode: str, lp_category: str, parent_pointer: int):
+                                  sf_framecode: str, lp_category: str, parent_pointer: int) -> None:
         """ Perform consistency test on data of interesting loops.
         """
 
@@ -5733,7 +5749,7 @@ class NmrDpValidation:
 
     def detectConflictDataInLoop(self, file_name: str, file_type: str, content_subtype: str,
                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                 sf_framecode: str, lp_category: str):
+                                 sf_framecode: str, lp_category: str) -> None:
         """ Detect redundant/inconsistent data of interesting loops.
         """
 
@@ -7874,7 +7890,8 @@ class NmrDpValidation:
 
         return modified
 
-    def testRdcVector(self, file_name: str, file_type: str, content_subtype: str, sf_framecode: str, lp_category: str):
+    def testRdcVector(self, file_name: str, file_type: str, content_subtype: str, sf_framecode: str, lp_category: str
+                      ) -> None:
         """ Perform consistency test on RDC bond vectors.
         """
 
@@ -8697,7 +8714,8 @@ class NmrDpValidation:
 
         return ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2
 
-    def testCoordCovalentBond(self, file_name: str, file_type: str, content_subtype: str, sf_framecode: str, lp_category: str):
+    def testCoordCovalentBond(self, file_name: str, file_type: str, content_subtype: str, sf_framecode: str, lp_category: str
+                              ) -> None:
         """ Perform consistency test on covalent bonds.
         """
 
@@ -8768,7 +8786,7 @@ class NmrDpValidation:
 
     def testResidueVariant(self, file_name: str, file_type: str, content_subtype: str,
                            sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                           sf_framecode: str, lp_category: str, cif_poly_seq: List[dict], nmr2ca: dict):
+                           sf_framecode: str, lp_category: str, cif_poly_seq: List[dict], nmr2ca: dict) -> None:
         """ Perform consistency test on residue variants.
         """
 
@@ -12863,7 +12881,7 @@ class NmrDpValidation:
         return modified
 
     def testDataConsistencyInAuxLoopOfSpectralPeak(self, file_name: str, file_type: str, sf_framecode: str,
-                                                   num_dim: int, lp_category: str, aux_data: List[List[dict]]):
+                                                   num_dim: int, lp_category: str, aux_data: List[List[dict]]) -> None:
         """ Perform consistency test on data of spectral peak loops.
         """
 
@@ -13089,7 +13107,7 @@ class NmrDpValidation:
     def testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name: str, file_type: str, sf_framecode: str,
                                                       num_dim: int, lp_category: str, aux_data: List[List[dict]],
                                                       sf: pynmrstar.Saveframe,
-                                                      parent_pointer: int):
+                                                      parent_pointer: int) -> None:
         """ Perform consistency test on data of spectral peak loops.
         """
 
@@ -13332,7 +13350,8 @@ class NmrDpValidation:
 
         return False
 
-    def __extractCoordStructConf(self, nmr_chain_id: str, nmr_seq_ids: List[int]) -> List[Optional[str]]:
+    def __extractCoordStructConf(self, nmr_chain_id: str, nmr_seq_ids: List[int]
+                                 ) -> List[Optional[str]]:
         """ Extract conformational annotations of coordinate file.
         """
 
@@ -13380,7 +13399,8 @@ class NmrDpValidation:
 
         return nmr_struct_conf
 
-    def __getCoordCompId(self, nmr_chain_id: str, nmr_seq_id: int) -> Optional[str]:
+    def __getCoordCompId(self, nmr_chain_id: str, nmr_seq_id: int
+                         ) -> Optional[str]:
         """ Return comp ID of coordinate file for a given NMR sequence.
         """
 
@@ -13504,7 +13524,8 @@ class NmrDpValidation:
         self.__reg.cpC['tautomer'][seq_key] = 'unknown'
         return 'unknown'
 
-    def __getRotamerOfValine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
+    def __getRotamerOfValine(self, nmr_chain_id: str, nmr_seq_id: int
+                             ) -> List[dict]:
         """ Return rotameric state distribution of a given valine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -13616,7 +13637,8 @@ class NmrDpValidation:
         self.__reg.cpC['rotamer'][seq_key] = none
         return none
 
-    def __getRotamerOfLeucine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
+    def __getRotamerOfLeucine(self, nmr_chain_id: str, nmr_seq_id: int
+                              ) -> List[dict]:
         """ Return rotameric state distribution of a given leucine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -13749,7 +13771,8 @@ class NmrDpValidation:
         self.__reg.cpC['rotamer'][seq_key] = none
         return none
 
-    def __getRotamerOfIsoleucine(self, nmr_chain_id: str, nmr_seq_id: int) -> List[dict]:
+    def __getRotamerOfIsoleucine(self, nmr_chain_id: str, nmr_seq_id: int
+                                 ) -> List[dict]:
         """ Return rotameric state distribution of a given isoleucine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -13884,7 +13907,7 @@ class NmrDpValidation:
 
     def calculateStatsOfExptlData(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
                                   sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                  list_id: int, sf_framecode: str, lp_category: str, seq_align_dic: dict, asm: list):
+                                  list_id: int, sf_framecode: str, lp_category: str, seq_align_dic: dict, asm: list) -> None:
         """ Calculate statistics of experimental data.
         """
 
@@ -14275,7 +14298,7 @@ class NmrDpValidation:
         asm.append(ent)
 
     def __calculateStatsOfAssignedChemShift(self, file_list_id: int, sf_framecode: str,
-                                            lp_data: List[dict], cs_ann: List[dict], ent: dict):
+                                            lp_data: List[dict], cs_ann: List[dict], ent: dict) -> None:
         """ Calculate statistics of assigned chemical shifts.
         """
 
@@ -15934,7 +15957,7 @@ class NmrDpValidation:
 
     def __calculateStatsOfDistanceRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
                                             conflict_id_set: Optional[List[int]], inconsistent: Set[int],
-                                            redundant: Set[int], ent: dict):
+                                            redundant: Set[int], ent: dict) -> None:
         """ Calculate statistics of distance restraints.
         """
 
@@ -16633,7 +16656,7 @@ class NmrDpValidation:
                                      f"++ Error  - {str(e)}\n")
 
     def __calculateStatsOfCovalentBond(self, file_list_id: int, sf_framecode: str, lp_category: str, lp_data: List[dict], ent: dict
-                                       ):
+                                       ) -> None:
         """ Calculate statistics of covalent bonds.
         """
 
@@ -17514,7 +17537,7 @@ class NmrDpValidation:
 
     def __calculateStatsOfDihedralRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
                                             conflict_id_set: Optional[List[int]], inconsistent: Set[int],
-                                            redundant: Set[int], ent: dict):
+                                            redundant: Set[int], ent: dict) -> None:
         """ Calculate statistics of dihedral angle restraints.
         """
 
@@ -18155,7 +18178,8 @@ class NmrDpValidation:
                                      f"++ Error  - {str(e)}\n")
 
     def __calculateStatsOfRdcRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
-                                       conflict_id_set: List[int], inconsistent: Set[int], redundant: Set[int], ent: dict):
+                                       conflict_id_set: List[int], inconsistent: Set[int], redundant: Set[int], ent: dict
+                                       ) -> None:
         """ Calculate statistics of RDC restraints.
         """
 
@@ -18618,7 +18642,7 @@ class NmrDpValidation:
         return f'{vector_type}_bond_vectors'
 
     def __calculateStatsOfSpectralPeak(self, file_list_id: int, sf_framecode: str,
-                                       num_dim: int, lp_data: Optional[List[dict]], ent: dict):
+                                       num_dim: int, lp_data: Optional[List[dict]], ent: dict) -> None:
         """ Calculate statistics of spectral peaks.
         """
 
@@ -18939,7 +18963,8 @@ class NmrDpValidation:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__calculateStatsOfSpectralPeak() ++ Error  - {str(e)}\n")
 
-    def __calculateStatsOfSpectralPeakAlt(self, file_list_id: int, sf_framecode: str, num_dim: int, lp_data: List[dict], ent: dict):
+    def __calculateStatsOfSpectralPeakAlt(self, file_list_id: int, sf_framecode: str, num_dim: int, lp_data: List[dict], ent: dict
+                                          ) -> None:
         """ Calculate statistics of spectral peaks.
         """
 

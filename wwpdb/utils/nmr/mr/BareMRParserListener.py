@@ -93,7 +93,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -191,7 +191,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if self.cur_subtype == 'dihed':
             self.extractTorsion_angle_restraint()
 
-    def extractDistance_restraint(self):
+    def extractDistance_restraint(self) -> None:
         """ Extract distance restraint.
         """
 
@@ -491,7 +491,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.anySelection.clear()
 
-    def extractTorsion_angle_restraint(self):
+    def extractTorsion_angle_restraint(self) -> None:
         """ Extract torsion angle restraint.
         """
 

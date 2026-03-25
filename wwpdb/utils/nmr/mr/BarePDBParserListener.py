@@ -66,7 +66,7 @@ class BarePDBParserListener(ParseTreeListener, BaseTopologyParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None):
+                 nefT: NEFTranslator = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 

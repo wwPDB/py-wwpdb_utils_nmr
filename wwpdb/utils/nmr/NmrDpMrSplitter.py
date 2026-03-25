@@ -264,7 +264,7 @@ def detect_bom(fPath: str, default: str = 'utf-8') -> str:
     return default
 
 
-def convert_codec(inPath: str, outPath: str, in_codec: str = 'utf-8', out_codec: str = 'utf-8'):
+def convert_codec(inPath: str, outPath: str, in_codec: str = 'utf-8', out_codec: str = 'utf-8') -> None:
     """ Convert codec of input file.
     """
 
@@ -274,7 +274,7 @@ def convert_codec(inPath: str, outPath: str, in_codec: str = 'utf-8', out_codec:
         ofh.write(contents.decode(in_codec).encode(out_codec))
 
 
-def convert_rtf_to_ascii(inPath: str, outPath: str):
+def convert_rtf_to_ascii(inPath: str, outPath: str) -> None:
     """ Convert RTF file to ASCII text file.
     """
 
@@ -521,7 +521,8 @@ def concat_restraint_names(content_subtype: Optional[str]) -> str:
     return ', '.join(f)
 
 
-def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
+def get_peak_list_format(fPath: str, asCode: bool = False
+                         ) -> Optional[str]:
     """ Return peak list format for a input file.
     """
 
@@ -727,7 +728,8 @@ def get_peak_list_format(fPath: str, asCode: bool = False) -> Optional[str]:
     return None
 
 
-def get_peak_list_format_from_string(string: str, header: Optional[str] = None, asCode: bool = False) -> Optional[str]:
+def get_peak_list_format_from_string(string: str, header: Optional[str] = None, asCode: bool = False
+                                     ) -> Optional[str]:
     """ Return peak list format for a given input.
     """
 
@@ -999,7 +1001,8 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
     return None
 
 
-def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]) -> Optional[int]:
+def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]
+                                          ) -> Optional[int]:
     """ Return number of dimensions for a input peak list file.
     """
 
@@ -1030,7 +1033,8 @@ def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]
     return None
 
 
-def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: str) -> Optional[int]:
+def get_number_of_dimensions_of_peak_list_from_string(file_format: str, line: str
+                                                      ) -> Optional[int]:
     """ Return number of dimensions of peak list of given format and input.
     """
 
@@ -1161,7 +1165,8 @@ def is_half_spin_nuclei(atom_type: str) -> bool:
     return any(True for nucl in HALF_SPIN_NUCLEUS if atom_type.startswith(nucl))
 
 
-def get_prompt_file_format(line: str) -> Optional[str]:
+def get_prompt_file_format(line: str
+                           ) -> Optional[str]:
     """ Return prompt file type for a given input.
     """
 
@@ -1182,7 +1187,7 @@ class NmrDpMrSplitter:
                  '__reg',
                  '__cur_original_ar_file_name')
 
-    def __init__(self, registry: NmrDpRegistry):
+    def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -5417,7 +5422,8 @@ class NmrDpMrSplitter:
 
         return not self.__reg.report.isError()
 
-    def __getPeakListFileTypeAndContentSubtype(self, file_path: str) -> Tuple[Optional[str], Optional[dict]]:
+    def __getPeakListFileTypeAndContentSubtype(self, file_path: str
+                                               ) -> Tuple[Optional[str], Optional[dict]]:
         """ Return peak list file type and content subtype of a given file path.
         """
 
@@ -5450,7 +5456,8 @@ class NmrDpMrSplitter:
 
         return None, None
 
-    def __getCorrectedMrFilePath(self, src_path: str) -> Tuple[Optional[str], bool]:
+    def __getCorrectedMrFilePath(self, src_path: str
+                                 ) -> Tuple[Optional[str], bool]:
         """ Return corrected MR file path.
         """
 
@@ -7537,7 +7544,7 @@ class NmrDpMrSplitter:
 
         return True
 
-    def __testFormatValidityOfLegacyMr(self, file_path: str, file_type: str, src_path: str, offset: int):
+    def __testFormatValidityOfLegacyMr(self, file_path: str, file_type: str, src_path: str, offset: int) -> None:
         """ Perform format check of a given MR file, then split MR recursively if necessary.
         """
 

@@ -225,7 +225,7 @@ class BaseCSParserListener():
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,  # pylint: disable=unused-argument
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
 
         self.polySeq = polySeq
         # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
@@ -308,83 +308,83 @@ class BaseCSParserListener():
         self.f = []
 
     @property
-    def debug(self):
+    def debug(self) -> bool:
         """ Retrieve debug mode.
         """
 
         return self.__debug
 
     @debug.setter
-    def debug(self, debug: bool):
+    def debug(self, debug: bool) -> None:
         self.__debug = debug
 
     @property
-    def verbose_debug(self):
+    def verbose_debug(self) -> bool:
         """ Retrieve vebose debug mode.
         """
 
         return self.__verbose_debug
 
     @verbose_debug.setter
-    def verbose_debug(self, verbose_debug: bool):
+    def verbose_debug(self, verbose_debug: bool) -> None:
         self.__verbose_debug = verbose_debug
 
     @property
-    def createSfDict(self):
+    def createSfDict(self) -> bool:
         """ Whether to create saveframe dictionary.
         """
 
         return self.__createSfDict
 
     @createSfDict.setter
-    def createSfDict(self, createSfDict: bool):
+    def createSfDict(self, createSfDict: bool) -> None:
         self.__createSfDict = createSfDict
 
     @property
-    def originalFileName(self):
+    def originalFileName(self) -> str:
         """ Retrieve the original file name.
         """
 
         return self.__originalFileName
 
     @originalFileName.setter
-    def originalFileName(self, originalFileName: str):
+    def originalFileName(self, originalFileName: str) -> None:
         self.__originalFileName = originalFileName
 
     @property
-    def listIdCounter(self):
+    def listIdCounter(self) -> dict:
         """ Retrieve list ID counter dictionary.
         """
 
         return self.__listIdCounter
 
     @listIdCounter.setter
-    def listIdCounter(self, listIdCounter: dict):
+    def listIdCounter(self, listIdCounter: dict) -> None:
         self.__listIdCounter = listIdCounter
 
     @property
-    def reservedListIds(self):
+    def reservedListIds(self) -> dict:
         """ Retrieve reserved list IDs.
         """
 
         return self.__reservedListIds
 
     @reservedListIds.setter
-    def reservedListIds(self, reservedListIds: dict):
+    def reservedListIds(self, reservedListIds: dict) -> None:
         self.__reservedListIds = reservedListIds
 
     @property
-    def entryId(self):
+    def entryId(self) -> str:
         """ Retrieve entry ID.
         """
 
         return self.__entryId
 
     @entryId.setter
-    def entryId(self, entryId: str):
+    def entryId(self, entryId: str) -> None:
         self.__entryId = entryId
 
-    def exit(self):
+    def exit(self) -> None:
         """ Common function to exit a parse tree.
         """
 
@@ -677,7 +677,8 @@ class BaseCSParserListener():
 
     def validateCsValue(self, index: int, pos: float, pos_unc: Optional[float],
                         occupancy: Optional[float] = None,
-                        figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
+                        figure_of_merit: Optional[Union[float, int]] = None
+                        ) -> Optional[dict]:
         """ Validate range of assigned chemical shift.
         """
 
@@ -727,7 +728,7 @@ class BaseCSParserListener():
 
         return dstFunc
 
-    def predictSequenceNumberOffsetByFirstResidue(self, chain_id: Optional[str], seq_id: int, comp_id: Optional[str]):
+    def predictSequenceNumberOffsetByFirstResidue(self, chain_id: Optional[str], seq_id: int, comp_id: Optional[str]) -> None:
         """ Find sequence offset by the given first residue.
         """
 
@@ -798,7 +799,8 @@ class BaseCSParserListener():
 
             self.offset[None] = offset
 
-    def checkAssignment(self, index: int, assignment: List[dict]) -> Tuple[bool, bool, Optional[bool]]:
+    def checkAssignment(self, index: int, assignment: List[dict]
+                        ) -> Tuple[bool, bool, Optional[bool]]:
         """ Evaluate assigned chemical shift.
         """
 
@@ -852,7 +854,7 @@ class BaseCSParserListener():
         return has_assignments, has_multiple_assignments
 
     def addCsRow(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool, auth_seq_id_map: dict,
-                 debug_label: Optional[str], details: Optional[str] = None, default_ambig_code: Optional[int] = None):
+                 debug_label: Optional[str], details: Optional[str] = None, default_ambig_code: Optional[int] = None) -> None:
         """ Add assigned chemical shift.
         """
 
@@ -895,7 +897,8 @@ class BaseCSParserListener():
 
     def extractAssignment(self, numOfDim: int, string: str, src_index: int,
                           with_segid: Optional[str] = None, with_compid: Optional[str] = None,
-                          hint: Optional[List[dict]] = None) -> Optional[List[dict]]:
+                          hint: Optional[List[dict]] = None
+                          ) -> Optional[List[dict]]:
         """ Extract assignment from a given string.
         """
 
@@ -2443,7 +2446,8 @@ class BaseCSParserListener():
         return ret if len(ret) > 0 else None
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq: bool = True,
-                          isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
+                          isFirstTrial: bool = True
+                          ) -> Tuple[str, int, Optional[str]]:
         """ Return a realistic sequence for a given polymer sequence, sequence code, and residue name.
         """
 
@@ -3602,7 +3606,7 @@ class BaseCSParserListener():
         return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
-                         index: int, allowAmbig: bool = True, offset: int = 0):
+                         index: int, allowAmbig: bool = True, offset: int = 0) -> None:
         """ Select atoms of the coordinates.
         """
 
@@ -3752,7 +3756,8 @@ class BaseCSParserListener():
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
-                                   coordAtomSite: Optional[dict], index: int) -> Tuple[str, bool]:
+                                   coordAtomSite: Optional[dict], index: int
+                                   ) -> Tuple[str, bool]:
         """ Perform consistency test for each atom in reference to the coordinates.
         """
 
@@ -4000,7 +4005,8 @@ class BaseCSParserListener():
 
     @functools.lru_cache(maxsize=2048)
     def __getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True,
-                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
+                             __preferAuthSeq: bool = True
+                             ) -> Tuple[Tuple[str, int], Optional[dict]]:
 
         def get_dummy_coord_atom_site(comp_id):
             if self.ccU.updateChemCompDict(comp_id):
@@ -4054,7 +4060,7 @@ class BaseCSParserListener():
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
-    def __setLocalSeqScheme(self):
+    def __setLocalSeqScheme(self) -> None:
         """ Set sequence scheme for each chemical shift.
         """
 
@@ -4067,7 +4073,7 @@ class BaseCSParserListener():
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
-    def retrieveLocalSeqScheme(self):
+    def retrieveLocalSeqScheme(self) -> None:
         """ Retrieve sequence scheme for each chemical shift.
         """
 
@@ -4091,7 +4097,7 @@ class BaseCSParserListener():
         if key in self.reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self) -> None:
         """ Add saveframe for given conditions if not exists.
         """
 

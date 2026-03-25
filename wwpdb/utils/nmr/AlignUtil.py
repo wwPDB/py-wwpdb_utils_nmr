@@ -97,7 +97,8 @@ def hasLargeSeqGap(polySeq1: dict, polySeq2: dict,
     return False
 
 
-def fillInnerBlankCompId(polySeq: dict, seqIdName: str = 'seq_id') -> List[dict]:
+def fillInnerBlankCompId(polySeq: dict, seqIdName: str = 'seq_id'
+                         ) -> List[dict]:
     """ Fill inner blanked comp_ID.
     """
 
@@ -139,7 +140,8 @@ def fillInnerBlankCompId(polySeq: dict, seqIdName: str = 'seq_id') -> List[dict]
 
 
 def fillBlankCompId(polySeq1: dict, polySeq2: dict,
-                    seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id') -> List[dict]:
+                    seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id'
+                    ) -> List[dict]:
     """ Fill blanked comp_ID in polySeq2 against polySeq1.
     """
 
@@ -197,7 +199,8 @@ def fillBlankCompId(polySeq1: dict, polySeq2: dict,
     return ps
 
 
-def fillBlankCompIdWithOffset(polySeq: dict, offset: int, seqIdName: str = 'seq_id', compIdName: str = 'comp_id') -> List[dict]:
+def fillBlankCompIdWithOffset(polySeq: dict, offset: int, seqIdName: str = 'seq_id', compIdName: str = 'comp_id'
+                              ) -> List[dict]:
     """ Fill blanked comp_ID with offset.
     """
 
@@ -238,8 +241,8 @@ def fillBlankCompIdWithOffset(polySeq: dict, offset: int, seqIdName: str = 'seq_
     return ps
 
 
-def beautifyPolySeq(polySeq1: dict, polySeq2: dict,
-                    seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id') -> Tuple[List[dict], List[dict]]:
+def beautifyPolySeq(polySeq1: dict, polySeq2: dict, seqIdName1: str = 'seq_id', seqIdName2: str = 'seq_id'
+                    ) -> Tuple[List[dict], List[dict]]:
     """ Truncate negative seq_IDs and insert spacing between the large gap.
     """
 
@@ -424,7 +427,8 @@ def getGaugeCode(seqIdList: List[int], offset: int = 0) -> str:
     return gaugeCode[:_lenSeqId]
 
 
-def getScoreOfSeqAlign(myAlign: list) -> Tuple[int, int, int, int, int]:
+def getScoreOfSeqAlign(myAlign: list
+                       ) -> Tuple[int, int, int, int, int]:
     """ Return score of sequence alignment.
     """
 
@@ -712,7 +716,7 @@ def getChemShiftFormatNames(fileTypes: str) -> str:
     return ', or '.join(nameList)
 
 
-def updatePolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, compId: str, authCompId: Optional[str] = None):
+def updatePolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, compId: str, authCompId: Optional[str] = None) -> None:
     """ Update polymer sequence of the current MR file.
     """
 
@@ -735,7 +739,7 @@ def updatePolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, compId: s
         ps['auth_comp_id'].append(compId if authCompId in EMPTY_VALUE else authCompId)
 
 
-def revertPolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, authCompId: str):
+def revertPolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, authCompId: str) -> None:
     """ Revert polymer sequence of the current MR file.
     """
 
@@ -757,7 +761,7 @@ def revertPolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, authCompI
         ps['auth_comp_id'].append(authCompId)
 
 
-def updatePolySeqRstAmbig(polySeqRstAmb: List[dict], chainId: str, seqId: int, compIds: List[str]):
+def updatePolySeqRstAmbig(polySeqRstAmb: List[dict], chainId: str, seqId: int, compIds: List[str]) -> None:
     """ Update polymer sequence of the current MR file.
     """
 
@@ -778,7 +782,7 @@ def updatePolySeqRstAmbig(polySeqRstAmb: List[dict], chainId: str, seqId: int, c
         ps['comp_ids'][ps['seq_id'].index(seqId)] &= _compIds
 
 
-def mergePolySeqRstAmbig(polySeqRst: List[dict], polySeqRstAmb: List[dict]):
+def mergePolySeqRstAmbig(polySeqRst: List[dict], polySeqRstAmb: List[dict]) -> None:
     """ Merge polymer sequence and ambiguous polymer sequence of the curent MR file.
     """
 
@@ -818,7 +822,7 @@ def mergePolySeqRstAmbig(polySeqRst: List[dict], polySeqRstAmb: List[dict]):
                 del _ps['comp_ids'][idx]
 
 
-def updatePolySeqRstFromAtomSelectionSet(polySeqRst: List[dict], atomSelectionSet: List[List[dict]]):
+def updatePolySeqRstFromAtomSelectionSet(polySeqRst: List[dict], atomSelectionSet: List[List[dict]]) -> None:
     """ Update polymer sequence of the current MR file.
     """
 
@@ -839,7 +843,7 @@ def updatePolySeqRstFromAtomSelectionSet(polySeqRst: List[dict], atomSelectionSe
             updatePolySeqRst(polySeqRst, chainId, seqId, compId)
 
 
-def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
+def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None) -> None:
     """ Sort polymer sequence of the current MR file by sequence number.
     """
 
@@ -952,7 +956,7 @@ def sortPolySeqRst(polySeqRst: List[dict], nonPolyRemap: Optional[dict] = None):
                 polySeqRst[pos] = fillInnerBlankCompId(ps)
 
 
-def syncCompIdOfPolySeqRst(polySeqRst: List[dict], compIdMap: dict):
+def syncCompIdOfPolySeqRst(polySeqRst: List[dict], compIdMap: dict) -> None:
     """ Synchronize residue names of polymer sequence of the current MR file.
     """
 
@@ -965,7 +969,7 @@ def syncCompIdOfPolySeqRst(polySeqRst: List[dict], compIdMap: dict):
                 ps['comp_id'][idx] = compIdMap[compId]
 
 
-def stripPolySeqRst(polySeqRst: List[dict]):
+def stripPolySeqRst(polySeqRst: List[dict]) -> None:
     """ Strip polymer sequence of the current MR file.
     """
 
@@ -1016,7 +1020,7 @@ def stripPolySeqRst(polySeqRst: List[dict]):
                 ps['auth_comp_id'] = auth_comp_ids
 
 
-def updateSeqAtmRst(seqAtmRst: List[dict], chainId: str, seqId: int, atoms: List[str]):
+def updateSeqAtmRst(seqAtmRst: List[dict], chainId: str, seqId: int, atoms: List[str]) -> None:
     """ Update sequence with atom names of the current MR file.
     """
 
@@ -1040,7 +1044,8 @@ def updateSeqAtmRst(seqAtmRst: List[dict], chainId: str, seqId: int, atoms: List
 
 
 def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
-                         conservative: bool = True, resolvedMultimer: bool = False) -> Tuple[List[dict], List[dict]]:
+                         conservative: bool = True, resolvedMultimer: bool = False
+                         ) -> Tuple[List[dict], List[dict]]:
     """ Align polymer sequence of the coordinates and restraints.
     """
 
@@ -1543,8 +1548,8 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
     return seqAlign, compIdMapping
 
 
-def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: List[dict],
-                                      conflictTh: int = 1) -> Tuple[List[dict], List[dict]]:
+def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: List[dict], conflictTh: int = 1
+                                      ) -> Tuple[List[dict], List[dict]]:
     """ Align polymer sequence of the coordinates and restraints allowing minor conflicts.
     """
 
@@ -2182,7 +2187,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
     return chainAssign, warnings
 
 
-def trimSequenceAlignment(seqAlign: List[dict], chainAssign: List[dict]):
+def trimSequenceAlignment(seqAlign: List[dict], chainAssign: List[dict]) -> None:
     """ Trim ineffective sequence alignments.
     """
 
@@ -2209,7 +2214,8 @@ def trimSequenceAlignment(seqAlign: List[dict], chainAssign: List[dict]):
 
 def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, compId: str, atomId: str,
                                cifCompId: Optional[str] = None, coordAtomSite: Optional[dict] = None,
-                               ignoreSeqId: bool = False) -> Tuple[int, str, str]:
+                               ignoreSeqId: bool = False
+                               ) -> Tuple[int, str, str]:
     """ Retrieve atom identifiers from atom name mapping of public MR file.
     """
 
@@ -2546,7 +2552,9 @@ def retrieveAtomIdentFromMRMap(ccU, mrAtomNameMapping: List[dict], seqId: int, c
 
 
 def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, cifCompId: str, atomId: str,
-                            coordAtomSite: Optional[dict] = None, ignoreSeqId: bool = False) -> str:
+                            coordAtomSite: Optional[dict] = None,
+                            ignoreSeqId: bool = False
+                            ) -> str:
     """ Retrieve atom_id from atom name mapping of public MR file.
     """
 
@@ -3324,7 +3332,8 @@ def splitPolySeqRstForExactNoes(pA, polySeqModel: List[dict], polySeqRst: List[d
     return _polySeqRst, _chainIdMapping, _modelChainIdExt
 
 
-def retrieveRemappedChainId(chainIdRemap: dict, seqId: int) -> Tuple[Optional[str], Optional[int]]:
+def retrieveRemappedChainId(chainIdRemap: dict, seqId: int
+                            ) -> Tuple[Optional[str], Optional[int]]:
     """ Retrieve chain_id and seq_id from mapping dictionary based on sequence alignments.
     """
 
@@ -3351,7 +3360,8 @@ def retrieveOriginalSeqIdFromMRMap(chainIdRemap: dict, chainId: str, seqId: int)
                  if remap['chain_id'] == chainId and remap['seq_id'] == seqId), seqId)
 
 
-def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[dict], seqAlign: List[dict], chainAssign: List[dict]
+def splitPolySeqRstForNonPoly(ccU, nonPolyModel: List[dict], polySeqRst: List[dict],
+                              seqAlign: List[dict], chainAssign: List[dict]
                               ) -> Tuple[Optional[List[dict]], Optional[dict]]:
     """ Split polymer sequence of the current MR file for non-polymer.
     """
@@ -3490,7 +3500,8 @@ def retrieveRemappedNonPoly(nonPolyRemap: dict, nonPoly: Optional[dict], chainId
 
 
 def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List[dict], polySeqRst: List[dict],
-                               chainAssign: List[dict]) -> Tuple[Optional[List[dict]], Optional[dict]]:
+                               chainAssign: List[dict]
+                               ) -> Tuple[Optional[List[dict]], Optional[dict]]:
     """ Split polymer sequence of the current MR file for branched polymer.
     """
 
@@ -3760,7 +3771,8 @@ def splitPolySeqRstForBranched(pA, polySeqModel: List[dict], branchedModel: List
 
 
 def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str, history: dict,
-                                         rep_model_id: int, rep_alt_id: str, csStat) -> Optional[List[dict]]:
+                                         rep_model_id: int, rep_alt_id: str, csStat
+                                         ) -> Optional[List[dict]]:
     """ Retrieve atom name mapping from revision history and PDB Versioned Archive.
     """
 
@@ -3911,7 +3923,8 @@ def retrieveAtomNameMappingFromRevisions(cR, dir_path: str, extended_pdb_id: str
 
 
 def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_path: str,
-                                        rep_model_id: int, rep_alt_id: str, csStat) -> Optional[List[dict]]:
+                                        rep_model_id: int, rep_alt_id: str, csStat
+                                        ) -> Optional[List[dict]]:
     """ Retrieve atom name mapping from the original uploaded coordinate file.
     """
 

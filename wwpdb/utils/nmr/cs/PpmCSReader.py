@@ -61,7 +61,7 @@ class PpmCSReader:
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
                  nefT: Optional[NEFTranslator] = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -90,19 +90,19 @@ class PpmCSReader:
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
-    def setDebugMode(self, debug: bool):
+    def setDebugMode(self, debug: bool) -> None:
         """ Set debug mode.
         """
 
         self.__debug = debug
 
-    def setLexerMaxErrorReport(self, maxErrReport: int):
+    def setLexerMaxErrorReport(self, maxErrReport: int) -> None:
         """ Set the maximum number of lexer error messages to save.
         """
 
         self.__maxLexerErrorReport = maxErrReport
 
-    def setParserMaxErrorReport(self, maxErrReport: int):
+    def setParserMaxErrorReport(self, maxErrReport: int) -> None:
         """ Set the maximum number of parser error messages to save.
         """
 

@@ -1047,7 +1047,7 @@ class BasePKParserListener():
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
                  nefT: NEFTranslator = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
 
         self.representativeModelId = representativeModelId
         self.representativeAltId = representativeAltId
@@ -1236,113 +1236,113 @@ class BasePKParserListener():
         self.__allow_ext_seq = False
 
     @property
-    def debug(self):
+    def debug(self) -> bool:
         """ Retrieve debug mode.
         """
 
         return self.__debug
 
     @debug.setter
-    def debug(self, debug: bool):
+    def debug(self, debug: bool) -> None:
         self.__debug = debug
 
     @property
-    def verbose_debug(self):
+    def verbose_debug(self) -> bool:
         """ Retrieve vebose debug mode.
         """
 
         return self.__verbose_debug
 
     @verbose_debug.setter
-    def verbose_debug(self, verbose_debug: bool):
+    def verbose_debug(self, verbose_debug: bool) -> None:
         self.__verbose_debug = verbose_debug
 
     @property
-    def internal(self):
+    def internal(self) -> bool:
         """ Retrieve internal mode.
         """
 
         return self.__internal
 
     @internal.setter
-    def internal(self, internal: bool):
+    def internal(self, internal: bool) -> None:
         self.__internal = internal
 
     @property
-    def createSfDict(self):
+    def createSfDict(self) -> bool:
         """ Whether to create saveframe dictionary.
         """
 
         return self.__createSfDict
 
     @createSfDict.setter
-    def createSfDict(self, createSfDict: bool):
+    def createSfDict(self, createSfDict: bool) -> None:
         self.__createSfDict = createSfDict
 
     @property
-    def enforcePeakRowFormat(self):
+    def enforcePeakRowFormat(self) -> bool:
         """ Whether to enforce peak row format or not.
         """
 
         return self.__enforcePeakRowFormat
 
     @enforcePeakRowFormat.setter
-    def enforcePeakRowFormat(self, enforcePeakRowFormat: bool):
+    def enforcePeakRowFormat(self, enforcePeakRowFormat: bool) -> None:
         self.__enforcePeakRowFormat = enforcePeakRowFormat
 
     @property
-    def originalFileName(self):
+    def originalFileName(self) -> str:
         """ Retrieve the original file name.
         """
 
         return self.__originalFileName
 
     @originalFileName.setter
-    def originalFileName(self, originalFileName: str):
+    def originalFileName(self, originalFileName: str) -> None:
         self.__originalFileName = originalFileName
 
     @property
-    def listIdCounter(self):
+    def listIdCounter(self) -> dict:
         """ Retrieve list ID counter dictionary.
         """
 
         return self.__listIdCounter
 
     @listIdCounter.setter
-    def listIdCounter(self, listIdCounter: dict):
+    def listIdCounter(self, listIdCounter: dict) -> None:
         self.__listIdCounter = listIdCounter
 
     @property
-    def reservedListIds(self):
+    def reservedListIds(self) -> dict:
         """ Retrieve reserved list IDs.
         """
 
         return self.__reservedListIds
 
     @reservedListIds.setter
-    def reservedListIds(self, reservedListIds: dict):
+    def reservedListIds(self, reservedListIds: dict) -> None:
         self.__reservedListIds = reservedListIds
 
     @property
-    def entryId(self):
+    def entryId(self) -> str:
         """ Retrieve entry ID.
         """
 
         return self.__entryId
 
     @entryId.setter
-    def entryId(self, entryId: str):
+    def entryId(self, entryId: str) -> None:
         self.__entryId = entryId
 
     @property
-    def csLoops(self):
+    def csLoops(self) -> List[dict]:
         """ Retrieve CS loops as reference for peak assignment.
         """
 
         return self.__csLoops
 
     @csLoops.setter
-    def csLoops(self, csLoops: List[dict]):
+    def csLoops(self, csLoops: List[dict]) -> None:
         self.__csLoops = csLoops
 
         if self.__csLoops is None or len(self.__csLoops) == 0:
@@ -1365,7 +1365,7 @@ class BasePKParserListener():
                         return
             self.__defaultSegId__ = collections.Counter(segIds).most_common()[0][0]
 
-    def exit(self, spectrum_names: Optional[dict] = None):
+    def exit(self, spectrum_names: Optional[dict] = None) -> None:
         """ Common function to exit a parse tree.
         """
 
@@ -1728,7 +1728,7 @@ class BasePKParserListener():
             translateToStdAtomNameNoRef.cache_clear()
             translateToStdAtomNameWithRef.cache_clear()
 
-    def initSpectralDim(self):
+    def initSpectralDim(self) -> None:
         """ Initialize spectral_dim dictionary.
         """
 
@@ -1780,7 +1780,8 @@ class BasePKParserListener():
             self.peaks4D = 0
         self.use_peak_row_format = True
 
-    def testAssignment(self, _dim_id: int, _assign: List[dict], _label: str) -> Tuple[bool, Optional[str]]:
+    def testAssignment(self, _dim_id: int, _assign: List[dict], _label: str
+                       ) -> Tuple[bool, Optional[str]]:
         """ Perform consistency test between peak assignment and spectral_dim.
         """
 
@@ -1886,7 +1887,7 @@ class BasePKParserListener():
             return True
         return False
 
-    def fillPkAuxLoops(self, spectrum_names: Optional[dict]):
+    def fillPkAuxLoops(self, spectrum_names: Optional[dict]) -> None:
         """ Create auxiliary loops of spectral peak list.
         """
 
@@ -3283,7 +3284,7 @@ class BasePKParserListener():
         return False
 
     def __remediatePeakAssignmentForAtomType(self, num_of_dim: int, atom_type: List[str],
-                                             use_peak_row_format: bool, loop: pynmrstar.Loop):
+                                             use_peak_row_format: bool, loop: pynmrstar.Loop) -> None:
         """ Remediate peak assignment for decided atom type (PIPP specific)
         """
 
@@ -3350,8 +3351,8 @@ class BasePKParserListener():
 
                     return
 
-    def __remediateIncompletePeakAssignment(self, num_of_dim: int, use_peak_row_format: bool, loop: pynmrstar.Loop
-                                            ):  # pylint: disable=no-self-use
+    def __remediateIncompletePeakAssignment(self, num_of_dim: int, use_peak_row_format: bool, loop: pynmrstar.Loop  # noqa: E501, pylint: disable=no-self-use,line-too-long
+                                            ) -> None:
         """ Remediate imcomplete peak assignment.
         """
 
@@ -3401,7 +3402,7 @@ class BasePKParserListener():
                 del loop.data[_idx]
 
     def __remediatePeakAssignmentForOneBondTransfer(self, num_of_dim: int, onebond_transfers: List[List[int]],
-                                                    use_peak_row_format: bool, loop: pynmrstar.Loop):
+                                                    use_peak_row_format: bool, loop: pynmrstar.Loop) -> None:
         """ Remediate peak assignment based on onebond transfer.
         """
 
@@ -4618,7 +4619,7 @@ class BasePKParserListener():
                 del loop.data[_idx]
 
     def __remediatePeakAssignmentForJcouplingTransfer(self, num_of_dim: int, jcoupling_transfers: List[List[int]],
-                                                      use_peak_row_format: bool, loop: pynmrstar.Loop):
+                                                      use_peak_row_format: bool, loop: pynmrstar.Loop) -> None:
         """ Remediate peak assignment based on J-coupling transfer.
         """
 
@@ -4897,7 +4898,7 @@ class BasePKParserListener():
                             is_reparsable = False
 
     def __remediatePeakAssignmentForRelayedTransfer(self, num_of_dim: int, relayed_transfers: List[List[int]],
-                                                    use_peak_row_format: bool, loop: pynmrstar.Loop):
+                                                    use_peak_row_format: bool, loop: pynmrstar.Loop) -> None:
         """ Remediate peak assignment based on relayed transfer.
         """
 
@@ -5183,7 +5184,8 @@ class BasePKParserListener():
                             self.reasonsForReParsing['relayed_idx_history'] = self.relayed_idx_history
                             is_reparsable = False
 
-    def __getCsValue(self, chain_id: str, seq_id: int, comp_id: str, atom_id: str) -> Tuple[Optional[float], Optional[float]]:
+    def __getCsValue(self, chain_id: str, seq_id: int, comp_id: str, atom_id: str
+                     ) -> Tuple[Optional[float], Optional[float]]:
         """ Retrieve CS value for a given atom as reference for peak assignment.
         """
 
@@ -5223,7 +5225,7 @@ class BasePKParserListener():
 
         return None, None
 
-    def __setTempCsValue(self, star_atom: dict, values: List[float]):
+    def __setTempCsValue(self, star_atom: dict, values: List[float]) -> None:
         """ Set reference CS value for a given atom as reference for peak assignment.
         """
 
@@ -5273,7 +5275,8 @@ class BasePKParserListener():
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str],
-                       figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
+                       figure_of_merit: Optional[Union[float, int]] = None
+                       ) -> Optional[dict]:
         """ Validate value range of 2D peak.
         """
 
@@ -5362,7 +5365,8 @@ class BasePKParserListener():
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str],
-                       figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
+                       figure_of_merit: Optional[Union[float, int]] = None
+                       ) -> Optional[dict]:
         """ Validate value range of 3D peak.
         """
 
@@ -5471,7 +5475,8 @@ class BasePKParserListener():
                        lw_hz_1: Optional[float], lw_hz_2: Optional[float], lw_hz_3: Optional[float], lw_hz_4: Optional[float],
                        height: Optional[str], height_uncertainty: Optional[str],
                        volume: Optional[str], volume_uncertainty: Optional[str],
-                       figure_of_merit: Optional[Union[float, int]] = None) -> Optional[dict]:
+                       figure_of_merit: Optional[Union[float, int]] = None
+                       ) -> Optional[dict]:
         """ Validate value range of 4D peak.
         """
 
@@ -5591,7 +5596,7 @@ class BasePKParserListener():
         return dstFunc
 
     def selectProbablePosition(self, index: int, label: str, positions: List[float],
-                               with_segid: Optional[str] = None, with_compid: Optional[str] = None,) -> float:
+                               with_segid: Optional[str] = None, with_compid: Optional[str] = None) -> float:
         """ Select the most realistic peak position with given conditions.
         """
 
@@ -5661,7 +5666,7 @@ class BasePKParserListener():
 
         return position
 
-    def checkAssignment(self, index: int, assignment: List[dict]):
+    def checkAssignment(self, index: int, assignment: List[dict]) -> None:
         """ Evaluate peak assignment for selecting the most realistic peak position.
         """
 
@@ -6353,7 +6358,7 @@ class BasePKParserListener():
 
     def addAssignedPkRow2D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool],
-                           debug_label: Optional[str], details: Optional[str]):
+                           debug_label: Optional[str], details: Optional[str]) -> None:
         """ Add assigned peak list row (22D).
         """
 
@@ -6614,7 +6619,7 @@ class BasePKParserListener():
 
     def addAssignedPkRow3D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool],
-                           debug_label: Optional[str], details: Optional[str]):
+                           debug_label: Optional[str], details: Optional[str]) -> None:
         """ Add assigned peak list row (3D).
         """
 
@@ -6902,7 +6907,7 @@ class BasePKParserListener():
 
     def addAssignedPkRow4D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool], asis3: Optional[bool], asis4: Optional[bool],
-                           debug_label: Optional[str], details: Optional[str]):
+                           debug_label: Optional[str], details: Optional[str]) -> None:
         """ Add assigned peak list row (4D).
         """
 
@@ -7247,7 +7252,8 @@ class BasePKParserListener():
 
     def extractPeakAssignment(self, numOfDim: int, string: str, src_index: int,
                               with_segid: Optional[str] = None, with_compid: Optional[str] = None,
-                              hint: Optional[List[dict]] = None, dim_id_hint: Optional[int] = None) -> Optional[List[dict]]:
+                              hint: Optional[List[dict]] = None, dim_id_hint: Optional[int] = None
+                              ) -> Optional[List[dict]]:
         """ Extract peak assignment from a given string.
         """
 
@@ -9005,7 +9011,8 @@ class BasePKParserListener():
         return ret if len(ret) > 0 else None
 
     def getRealChainSeqId(self, ps: dict, seqId: int, compId: Optional[str], isPolySeq: bool = True,
-                          isFirstTrial: bool = True) -> Tuple[str, int, Optional[str]]:
+                          isFirstTrial: bool = True
+                          ) -> Tuple[str, int, Optional[str]]:
         """ Return a realistic sequence for a given polymer sequence, sequence code, and residue name.
         """
 
@@ -10911,7 +10918,7 @@ class BasePKParserListener():
         return list(chainAssign)
 
     def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
-                         index: int, allowAmbig: bool = True, offset: int = 0):
+                         index: int, allowAmbig: bool = True, offset: int = 0) -> None:
         """ Select atoms of the coordinates.
         """
 
@@ -11122,7 +11129,8 @@ class BasePKParserListener():
             self.atomSelectionSet.append(atomSelection)
 
     def testCoordAtomIdConsistency(self, chainId: str, seqId: int, compId: str, atomId: str,
-                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict], index: int) -> Tuple[str, bool]:
+                                   seqKey: Tuple[str, int], coordAtomSite: Optional[dict], index: int
+                                   ) -> Tuple[str, bool]:
         """ Perform consistency test for each atom in reference to the coordinates.
         """
 
@@ -11395,7 +11403,8 @@ class BasePKParserListener():
 
     @functools.lru_cache(maxsize=2048)
     def __getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True,
-                             __preferAuthSeq: bool = True) -> Tuple[Tuple[str, int], Optional[dict]]:
+                             __preferAuthSeq: bool = True
+                             ) -> Tuple[Tuple[str, int], Optional[dict]]:
         seqKey = (chainId, seqId)
         if cifCheck:
             preferAuthSeq = __preferAuthSeq if asis else not __preferAuthSeq
@@ -11453,7 +11462,7 @@ class BasePKParserListener():
         self.reasonsForReParsing[name] = {}
         return self.reasonsForReParsing[name]
 
-    def __setLocalSeqScheme(self):
+    def __setLocalSeqScheme(self) -> None:
         """ Set sequence scheme for each spectral peak.
         """
 
@@ -11470,7 +11479,7 @@ class BasePKParserListener():
             if self.__preferLabelSeqCount > MAX_PREF_LABEL_SCHEME_COUNT:
                 self.reasonsForReParsing['label_seq_scheme'] = True
 
-    def retrieveLocalSeqScheme(self):
+    def retrieveLocalSeqScheme(self) -> None:
         """ Retrieve sequence scheme for each spectral peak.
         """
 
@@ -11498,7 +11507,7 @@ class BasePKParserListener():
         if key in self.reasons['local_seq_scheme']:
             self.__preferAuthSeq = self.reasons['local_seq_scheme'][key]
 
-    def __addSf(self):
+    def __addSf(self) -> None:
         """ Add saveframe for given conditions if not exists.
         """
 

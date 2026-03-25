@@ -78,7 +78,7 @@ class CnsMRReader:
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
                  csStat: Optional[BMRBChemShiftStat] = None, nefT: Optional[NEFTranslator] = None,
-                 reasons: Optional[dict] = None):
+                 reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -118,37 +118,37 @@ class CnsMRReader:
         # reasons for re-parsing request from the previous trial
         self.__reasons = reasons
 
-    def setDebugMode(self, debug: bool):
+    def setDebugMode(self, debug: bool) -> None:
         """ Set debug mode.
         """
 
         self.__debug = debug
 
-    def setInternalMode(self, internal: bool):
+    def setInternalMode(self, internal: bool) -> None:
         """ Set internal mode.
         """
 
         self.__internal = internal
 
-    def setNmrVsModel(self, nmrVsModel: Optional[List[dict]]):
+    def setNmrVsModel(self, nmrVsModel: Optional[List[dict]]) -> None:
         """ Set chain assignments between NMR data and model.
         """
 
         self.__nmrVsModel = nmrVsModel
 
-    def setLexerMaxErrorReport(self, maxErrReport: int):
+    def setLexerMaxErrorReport(self, maxErrReport: int) -> None:
         """ Set the maximum number of lexer error messages to save.
         """
 
         self.__maxLexerErrorReport = maxErrReport
 
-    def setParserMaxErrorReport(self, maxErrReport: int):
+    def setParserMaxErrorReport(self, maxErrReport: int) -> None:
         """ Set the maximum number of parser error messages to save.
         """
 
         self.__maxParserErrorReport = maxErrReport
 
-    def setSllPredMode(self, sll_pred: bool):
+    def setSllPredMode(self, sll_pred: bool) -> None:
         """ Set ANTLR4 SLL prediction mode.
         """
 

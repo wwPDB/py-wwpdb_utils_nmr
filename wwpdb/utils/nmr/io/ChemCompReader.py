@@ -131,7 +131,7 @@ class ChemCompReader:
                  '__compId',
                  '__lastCompId')
 
-    def __init__(self, verbose: bool = True, log: IO = sys.stdout):
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -154,7 +154,7 @@ class ChemCompReader:
         # the compId of the current datablock
         self.__lastCompId = None
 
-    def setCachePath(self, topCachePath: str = '/data/components/ligand-dict-v4'):
+    def setCachePath(self, topCachePath: str = '/data/components/ligand-dict-v4') -> None:
         """ Set the top file tree of CCD.
         """
 
@@ -278,7 +278,8 @@ class ChemCompReader:
                 self.__log.write(f"+{self.__class_name__}.__updateDataBlock() ++ Error  - {str(e)}\n")
             return False
 
-    def __getDataBlock(self, blockId: Optional[str] = None) -> Optional[DataContainer]:
+    def __getDataBlock(self, blockId: Optional[str] = None
+                       ) -> Optional[DataContainer]:
         """ Worker method to read CCD CIF file and set the target datablock.
             @return: the first datablock if no blockId is provided
         """
@@ -333,7 +334,8 @@ class ChemCompReader:
 
         return False
 
-    def __getDictList(self, catName: str) -> List[dict]:
+    def __getDictList(self, catName: str
+                      ) -> List[dict]:
         """ Return a list of dictionaries of the input category.
         """
 
@@ -366,7 +368,8 @@ class ChemCompReader:
 
         return dList
 
-    def __getRowList(self, catName: str) -> List[list]:
+    def __getRowList(self, catName: str
+                     ) -> List[list]:
         """ Return a list a list of data from the input category including
             data types and default value replacement.
         """

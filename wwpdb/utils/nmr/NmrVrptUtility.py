@@ -107,7 +107,7 @@ NMR_VTF_DIHED_ERR_BINS = (1.0, 10.0, 20.0)
 NMR_VTF_RDC_ERR_BINS = (1.0, 2.0, 5.0)  # to be decided
 
 
-def uncompress_gzip_file(inPath: str, outPath: str):
+def uncompress_gzip_file(inPath: str, outPath: str) -> None:
     """ Uncompress a given gzip file.
     """
 
@@ -117,7 +117,7 @@ def uncompress_gzip_file(inPath: str, outPath: str):
             ofh.write(line)
 
 
-def compress_as_gzip_file(inPath: str, outPath: str):
+def compress_as_gzip_file(inPath: str, outPath: str) -> None:
     """ Compress a given file as a gzip file.
     """
 
@@ -148,7 +148,7 @@ def load_from_pickle(file_name: str, default: Any = None) -> Any:
     return default
 
 
-def write_as_pickle(obj: Any, file_name: str):
+def write_as_pickle(obj: Any, file_name: str) -> None:
     """ Write a given object as pickle file.
     """
 
@@ -395,7 +395,8 @@ def angle_diff(x: float, y: float) -> float:
     return d
 
 
-def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], target_value: Optional[float], angle: float) -> float:
+def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], target_value: Optional[float], angle: float
+                ) -> float:
     """ Return angle outlier for given lower_bound, upper_bound, and target_value.
         @author: Kumaran Baskaran
         @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff
@@ -507,7 +508,8 @@ def rdc_error(lower_bound: Optional[float], upper_bound: Optional[float], rdc: f
     return error
 
 
-def get_violated_model_ids(viol_per_model: List[dict]) -> List[int]:
+def get_violated_model_ids(viol_per_model: List[dict]
+                           ) -> List[int]:
     """ Return the list of violated model IDs.
     """
 
@@ -614,7 +616,7 @@ class NmrVrptUtility:
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None, ccU: Optional[ChemCompUtil] = None,
-                 csStat: Optional[BMRBChemShiftStat] = None):
+                 csStat: Optional[BMRBChemShiftStat] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -749,26 +751,26 @@ class NmrVrptUtility:
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'nmr-restraint-validation': __checkTasks}
 
-    def setVerbose(self, verbose: bool):
+    def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.
         """
 
         self.__verbose = verbose
 
-    def setDebugMode(self, debug: bool):
+    def setDebugMode(self, debug: bool) -> None:
         """ Set debug mode.
         """
 
         self.__debug = debug
 
-    def trustPdbxAuthAtomName(self, trust_pdbx_auth_atom_name: bool):
+    def trustPdbxAuthAtomName(self, trust_pdbx_auth_atom_name: bool) -> None:
         """ Whether to trust _atom_site.pdbx_auth_atom_name rather than _atom_site.auth_atom_id.
             @note: Set True for OneDep validation package.
         """
 
         self.__trust_pdbx_auth_atom_name = trust_pdbx_auth_atom_name
 
-    def useCache(self, use_cache: bool):
+    def useCache(self, use_cache: bool) -> None:
         """ Use cache file(s) of the previous run.
             Do not enable this for generation of wwPDB validation report because of no performance improvement.
         """
@@ -781,7 +783,7 @@ class NmrVrptUtility:
 
         return self.__results
 
-    def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
+    def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file') -> None:  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
         """ Add a named input and value to the dictionary of input parameters.
         """
 
@@ -801,7 +803,7 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             raise ValueError(f"+{self.__class_name__}.addInput() ++ Error  - " + str(e)) from e
 
-    def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file'):  # pylint: disable=redefined-builtin
+    def addOutput(self, name: Optional[str] = None, value: Any = None, type: str = 'file') -> None:  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
         """ Add a named input and value to the dictionary of output parameters.
         """
 
@@ -819,7 +821,8 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e)) from e
 
-    def op(self, op: str) -> Optional[dict]:
+    def op(self, op: str
+           ) -> Optional[dict]:
         """ Perform a series of tasks for a given workflow operation.
         """
 

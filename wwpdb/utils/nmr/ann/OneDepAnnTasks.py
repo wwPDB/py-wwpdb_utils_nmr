@@ -283,7 +283,7 @@ class OneDepAnnTasks:
                  '__defLpTag',
                  '__allowedSfTags')
 
-    def __init__(self, registry: NmrDpRegistry):
+    def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 

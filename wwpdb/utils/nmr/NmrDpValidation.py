@@ -5411,7 +5411,7 @@ class NmrDpValidation:
 
         try:
 
-            indices = self.__reg.nefT.get_index(sf, lp_category, index_id=index_tag)[0]
+            indices = self.__reg.nefT.get_index(sf, lp_category, index_tag)[0]
 
             if indices != list(range(1, len(indices) + 1)):
 

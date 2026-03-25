@@ -2186,7 +2186,7 @@ class NefTranslator:
         return sf_list, lp_list
 
     def get_nef_seq(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # pylint: disable=no-self-use
-                    lp_category: str = 'nef_chemical_shift', seq_id_name='sequence_code', comp_id_name='residue_name',
+                    lp_category: str = '_nef_chemical_shift', seq_id_name='sequence_code', comp_id_name='residue_name',
                     chain_id_name: str = 'chain_code', allow_empty: bool = False, allow_gap: bool = False,
                     check_identity: bool = True
                     ) -> List[List[dict]]:
@@ -2370,7 +2370,7 @@ class NefTranslator:
         return data
 
     def get_star_seq(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],
-                     lp_category: str = 'Atom_chem_shift', seq_id_name: str = 'Comp_index_ID', comp_id_name: str = 'Comp_ID',
+                     lp_category: str = '_Atom_chem_shift', seq_id_name: str = 'Comp_index_ID', comp_id_name: str = 'Comp_ID',
                      chain_id_name='Entity_assembly_ID', alt_seq_id_name='Seq_ID', alt_seq_id_offset=0,
                      alt_chain_id_name='Auth_asym_ID',
                      allow_empty: bool = False, allow_gap: bool = False, check_identity: bool = True,
@@ -3434,7 +3434,8 @@ class NefTranslator:
                            and row[1] != row[3]\
                            and row[1] in STD_MON_DICT and row[3] not in STD_MON_DICT:
                             count += 1
-                    if count > len(pre_seq_data) // 2:  # DAOTHER-9927: reset auth_seq_id and auth_comp_id derived from BMRB archive
+                    # DAOTHER-9927: reset auth_seq_id and auth_comp_id derived from BMRB archive
+                    if count > len(pre_seq_data) // 2:
                         auth_seq_id_col = loop.tags.index('Auth_seq_ID')
                         auth_comp_id_col = loop.tags.index('Auth_comp_ID')
                         for idx in range(len(loop)):
@@ -4171,7 +4172,7 @@ class NefTranslator:
         return data
 
     def get_star_auth_seq(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop],  # noqa: E501, pylint: disable=no-self-use,line-too-long
-                          lp_category: str = 'Atom_chem_shift', auth_seq_id_name: str = 'Auth_seq_ID',
+                          lp_category: str = '_Atom_chem_shift', auth_seq_id_name: str = 'Auth_seq_ID',
                           auth_comp_id_name: str = 'Auth_comp_ID', auth_asym_id_name: str = 'Auth_asym_ID',
                           seq_id_name: str = 'Comp_index_ID', chain_id_name: str = 'Entity_assembly_ID',
                           allow_empty: bool = True
@@ -4566,7 +4567,8 @@ class NefTranslator:
                 sorted_ist = sorted(set((row[0], int(row[1])) for row in a_type_data),
                                     key=itemgetter(0, 1))
                 sorted_atm = sorted(set((row[0], row[2]) for row in a_type_data
-                                        if not (row[2] in EMPTY_VALUE or (isinstance(row[2], str) and BAD_EXPR_PAT.match(row[2])))),
+                                        if not (row[2] in EMPTY_VALUE
+                                                or (isinstance(row[2], str) and BAD_EXPR_PAT.match(row[2])))),
                                     key=itemgetter(0, 1))  # DAOTHER-7389, issue #3
 
                 for t in a_types:
@@ -7767,7 +7769,8 @@ class NefTranslator:
 
                 atom_list = [a for a in atoms if re.match(pattern, a) and nef_atom[0] in ('H', '1', '2', '3', a[0])]
 
-                if not is_std_comp_id and self.__csStat.peptideLike(comp_id) and any(a in AMINO_PROTON_CODE for a in atom_list)\
+                if not is_std_comp_id and self.__csStat.peptideLike(comp_id)\
+                   and any(a in AMINO_PROTON_CODE for a in atom_list)\
                    and any(a not in AMINO_PROTON_CODE for a in atom_list):
                     atom_list = [a for a in atom_list if a not in AMINO_PROTON_CODE]  # ACA:H21, H22, H2 (5nwu)
 
@@ -7781,7 +7784,8 @@ class NefTranslator:
                     if len(_atom_list) > 0:
                         atom_list = _atom_list
 
-                ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+                ambiguity_code = 1 if atom_list[0] in methyl_atoms\
+                    else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
                 # DAOTHER-8817: guess ambiguity code from pseudo CCD
                 if ambiguity_code == 0:
@@ -7830,11 +7834,13 @@ class NefTranslator:
 
                 atom_list = [a for a in atoms if re.match(pattern, a)]
 
-                if not is_std_comp_id and self.__csStat.peptideLike(comp_id) and any(a in AMINO_PROTON_CODE for a in atom_list)\
+                if not is_std_comp_id and self.__csStat.peptideLike(comp_id)\
+                   and any(a in AMINO_PROTON_CODE for a in atom_list)\
                    and any(a not in AMINO_PROTON_CODE for a in atom_list):
                     atom_list = [a for a in atom_list if a not in AMINO_PROTON_CODE]  # ACA:H21, H22, H2 (5nwu)
 
-                ambiguity_code = 1 if atom_list[0] in methyl_atoms else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+                ambiguity_code = 1 if atom_list[0] in methyl_atoms\
+                    else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
 
                 # DAOTHER-8817: guess ambiguity code from pseudo CCD
                 if ambiguity_code == 0:
@@ -8665,7 +8671,8 @@ class NefTranslator:
 
                     atom_list = [a for a in atoms if re.match(pattern, a) and nef_atom[0] in ('H', '1', '2', '3', a[0])]
 
-                    if not is_std_comp_id and self.__csStat.peptideLike(comp_id) and any(a in AMINO_PROTON_CODE for a in atom_list)\
+                    if not is_std_comp_id and self.__csStat.peptideLike(comp_id)\
+                       and any(a in AMINO_PROTON_CODE for a in atom_list)\
                        and any(a not in AMINO_PROTON_CODE for a in atom_list):
                         atom_list = [a for a in atom_list if a not in AMINO_PROTON_CODE]  # ACA:H21, H22, H2 (5nwu)
 
@@ -8729,7 +8736,8 @@ class NefTranslator:
 
                     atom_list = [a for a in atoms if re.match(pattern, a)]
 
-                    if not is_std_comp_id and self.__csStat.peptideLike(comp_id) and any(a in AMINO_PROTON_CODE for a in atom_list)\
+                    if not is_std_comp_id and self.__csStat.peptideLike(comp_id)\
+                       and any(a in AMINO_PROTON_CODE for a in atom_list)\
                        and any(a not in AMINO_PROTON_CODE for a in atom_list):
                         atom_list = [a for a in atom_list if a not in AMINO_PROTON_CODE]  # ACA:H21, H22, H2 (5nwu)
 

@@ -39,7 +39,7 @@ RUN python wwpdb/utils/nmr/ChemCompUpdater.py
 
 # Run BMRBCsStatUpdater.py
 # This updates: wwpdb/utils/nmr/bmrb_cs_stat
-RUN python wwpdb/utils/nmr/BMRBCsStatUpdater.py
+RUN python wwpdb/utils/nmr/BmrbCsStatUpdater.py
 
 # Install Python dependencies for runtime
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
@@ -54,7 +54,7 @@ RUN rm -f .dockerignore \
           wwpdb/utils/nmr/components.cif.gz \
           wwpdb/utils/nmr/bmrb_cs_stat/*.csv \
           wwpdb/utils/nmr/ChemCompUpdater.py \
-          wwpdb/utils/nmr/BMRBCsStatUpdater.py
+          wwpdb/utils/nmr/BmrbCsStatUpdater.py
 
 # ============================================================
 # Stage 2: Runtime (minimal, non-root)

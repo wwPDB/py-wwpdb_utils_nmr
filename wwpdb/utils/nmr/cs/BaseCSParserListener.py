@@ -60,7 +60,7 @@ try:
                                            splitPolySeqRstForExactNoes,
                                            retrieveRemappedChainId,
                                            retrieveRemappedNonPoly)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        translateToStdAtomNameNoRef,
@@ -115,7 +115,7 @@ except ImportError:
                                splitPolySeqRstForExactNoes,
                                retrieveRemappedChainId,
                                retrieveRemappedNonPoly)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            translateToStdAtomNameNoRef,
@@ -224,7 +224,7 @@ class BaseCSParserListener():
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,  # pylint: disable=unused-argument
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  reasons: Optional[dict] = None) -> None:
 
         self.polySeq = polySeq

@@ -20,7 +20,7 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.SparkyPKParser import SparkyPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
@@ -28,7 +28,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.SparkyPKParser import SparkyPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
@@ -59,7 +59,7 @@ class SparkyPKParserListener(ParseTreeListener, BasePKParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  reasons: Optional[dict] = None) -> None:
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, nefT, reasons)

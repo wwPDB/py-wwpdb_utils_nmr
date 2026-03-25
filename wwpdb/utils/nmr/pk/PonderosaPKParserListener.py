@@ -24,7 +24,7 @@ try:
                                                REPRESENTATIVE_ALT_ID,
                                                SPECTRAL_DIM_TEMPLATE,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.PonderosaPKParser import PonderosaPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
@@ -34,7 +34,7 @@ except ImportError:
                                    REPRESENTATIVE_ALT_ID,
                                    SPECTRAL_DIM_TEMPLATE,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.PonderosaPKParser import PonderosaPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
@@ -52,7 +52,7 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  reasons: Optional[dict] = None) -> None:
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, nefT, reasons)

@@ -31,7 +31,7 @@ try:
                                                  is_pdb_top_file)
     from wwpdb.utils.nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from wwpdb.utils.nmr.io.CifReader import CifReader
-    from wwpdb.utils.nmr.nef.NEFTranslator import is_empty_loop
+    from wwpdb.utils.nmr.nef.NefTranslator import is_empty_loop
     auth_view = 'mock-data-combine-at-upload'
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
@@ -56,7 +56,7 @@ except ImportError:
                                      is_pdb_top_file)
     from nmr.CifToNmrStar import get_first_sf_tag  # , set_sf_tag
     from nmr.io.CifReader import CifReader
-    from nmr.nef.NEFTranslator import is_empty_loop
+    from nmr.nef.NefTranslator import is_empty_loop
     auth_view = 'auth_view'
 
 

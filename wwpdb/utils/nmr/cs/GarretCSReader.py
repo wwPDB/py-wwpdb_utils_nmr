@@ -21,7 +21,7 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.cs.GarretCSLexer import GarretCSLexer
@@ -31,7 +31,7 @@ except ImportError:
     from nmr.NmrDpConstant import MAX_ERROR_REPORT
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BMRBChemShiftStat import BMRBChemShiftStat
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.cs.GarretCSLexer import GarretCSLexer
@@ -60,7 +60,7 @@ class GarretCSReader:
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BMRBChemShiftStat] = None,
-                 nefT: Optional[NEFTranslator] = None,
+                 nefT: Optional[NefTranslator] = None,
                  reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
@@ -82,8 +82,8 @@ class GarretCSReader:
         # BMRB chemical shift statistics
         self.__csStat = BMRBChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
 
-        # NEFTranslator
-        self.__nefT = NEFTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        # NefTranslator
+        self.__nefT = NefTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
         if nefT is None:
             self.__nefT.set_remediation_mode(True)
 

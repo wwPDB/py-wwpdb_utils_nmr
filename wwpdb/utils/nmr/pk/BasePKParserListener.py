@@ -105,7 +105,7 @@ try:
                                            retrieveOriginalSeqIdFromMRMap)
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdResName,
@@ -219,7 +219,7 @@ except ImportError:
                                retrieveOriginalSeqIdFromMRMap)
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdResName,
@@ -1046,7 +1046,7 @@ class BasePKParserListener():
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  reasons: Optional[dict] = None) -> None:
 
         self.representativeModelId = representativeModelId

@@ -20,13 +20,13 @@ from antlr4 import ParseTreeListener
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                STD_MON_DICT)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.cs.OliviaCSParser import OliviaCSParser
     from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    STD_MON_DICT)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.cs.OliviaCSParser import OliviaCSParser
     from nmr.cs.BaseCSParserListener import BaseCSParserListener
 
@@ -41,7 +41,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  reasons: Optional[dict] = None) -> None:
         super().__init__(verbose, log, polySeq, entityAssembly, nefT, reasons)
 

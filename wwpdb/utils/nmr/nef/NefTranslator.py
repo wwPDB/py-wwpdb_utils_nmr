@@ -1,9 +1,9 @@
 ##
-# File: NEFTranslator.py
+# File: NefTranslator.py
 # Date:  02-May-2019  K. Baskaran
 #
 # Updates:
-# 29-Jul-2019  M. Yokochi - support NEFTranslator v1.3.0 and integration into OneDep environment
+# 29-Jul-2019  M. Yokochi - support NefTranslator v1.3.0 and integration into OneDep environment
 # 28-Aug-2019  M. Yokochi - report all empty data error as UserWarning
 # 11-Oct-2019  K. Baskaran & M. Yokochi - add functions to detect missing mandatory tag (v1.4.0)
 # 05-Nov-2019  M. Yokochi - revise error messages for missing mandatory saveframe/loop tags
@@ -126,6 +126,7 @@
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
 # 27-Jan-2026  M. Yokochi - convert one-letter-code in CS loop if possible (DAOTHER-10487)
 # 05-Mar-2026  M. Yokochi - provide instruction to depositor in case of missing mandatory item error (DAOTHER-10547)
+# 25-Mar-2026  M. Yokochi - rename class from NEFTranslator to NefTranslator
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -444,7 +445,7 @@ def specify_missing_tags(lp_category: str, current_tags: List[str], missing_tags
     return msg
 
 
-class NEFTranslator:
+class NefTranslator:
     """ Bi-directional translator between NEF and NMR-STAR
     """
     __slots__ = ('__class_name__',

@@ -437,7 +437,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,
                                                 load_from_pickle,
                                                 write_as_pickle)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.io.PdbxUtil import abandon_symbolic_labels
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -576,7 +576,7 @@ except ImportError:
     from nmr.NmrVrptUtility import (uncompress_gzip_file,
                                     load_from_pickle,
                                     write_as_pickle)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.io.PdbxUtil import abandon_symbolic_labels
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -623,7 +623,7 @@ class NmrDpUtility:
 
         self.__reg.c2S = CifToNmrStar(log)
 
-        self.__reg.nefT = NEFTranslator(verbose, log, self.__reg.ccU, self.__reg.csStat, self.__reg.c2S)
+        self.__reg.nefT = NefTranslator(verbose, log, self.__reg.ccU, self.__reg.csStat, self.__reg.c2S)
         self.__reg.nefT.permit_missing_dist_restraint(self.__reg.permit_missing_legacy_dist_restraint)
 
         self.__reg.pA = PairwiseAlign()
@@ -2090,7 +2090,7 @@ class NmrDpUtility:
 
     def __getPolymerSequence__(self, file_list_id: int, sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], content_subtype: str
                                ) -> List[List[dict]]:
-        """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NEFTranslator.
+        """ Wrapper function to retrieve polymer sequence from loop of a specified saveframe and content subtype via NefTranslator.
         """
 
         input_source = self.__reg.report.input_sources[file_list_id]
@@ -4708,7 +4708,7 @@ class NmrDpUtility:
                 'test_code': test_code, 'test_gauge_code': test_gauge_code}
 
     def __validateAtomNomenclature(self) -> bool:
-        """ Validate atom nomenclature using NEFTranslator and CCD.
+        """ Validate atom nomenclature using NefTranslator and CCD.
         """
 
         for fileListId in range(self.__reg.file_path_list_len):
@@ -16066,7 +16066,7 @@ class NmrDpUtility:
 
         if self.__reg.dstPath is None:
             raise KeyError(f"+{self.__class_name__}.__translateNef2Str() "
-                           "++ Error  - Could not find destination path as input NEF file for NEFTranslator.")
+                           "++ Error  - Could not find destination path as input NEF file for NefTranslator.")
 
         file_name = os.path.basename(self.__reg.dstPath)
         file_type = input_source_dic['file_type']
@@ -16198,7 +16198,7 @@ class NmrDpUtility:
 
         if self.__reg.dstPath is None:
             raise KeyError(f"+{self.__class_name__}.__translateStr2Nef() "
-                           "++ Error  - Could not find destination path as input NMR-STAR file for NEFTranslator.")
+                           "++ Error  - Could not find destination path as input NMR-STAR file for NefTranslator.")
 
         file_name = os.path.basename(self.__reg.dstPath)
         file_type = input_source_dic['file_type']

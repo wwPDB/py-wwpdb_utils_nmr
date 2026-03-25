@@ -25,7 +25,7 @@ try:
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                ASSIGNMENT_SEPARATOR_PAT)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.XeasyPKParser import XeasyPKParser
     from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
@@ -35,7 +35,7 @@ except ImportError:
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    ASSIGNMENT_SEPARATOR_PAT)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.XeasyPKParser import XeasyPKParser
     from nmr.pk.BasePKParserListener import BasePKParserListener
@@ -59,7 +59,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  atomNumberDict: Optional[dict] = None, reasons: Optional[dict] = None) -> None:
         super().__init__(verbose, log, representativeModelId, representativeAltId,
                          mrAtomNameMapping, cR, caC, nefT, reasons)

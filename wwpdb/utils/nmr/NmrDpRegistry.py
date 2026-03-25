@@ -198,7 +198,7 @@ class NmrDpRegistry:
     # CifToNmrStar
     c2S = None
 
-    # NEFTranslator
+    # NefTranslator
     nefT = None
 
     # NmrDpMrSplitter

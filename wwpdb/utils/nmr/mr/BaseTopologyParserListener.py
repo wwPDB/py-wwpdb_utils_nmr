@@ -38,7 +38,7 @@ try:
                                            alignPolymerSequenceWithConflicts,
                                            getRestraintFormatName,
                                            getOneLetterCodeCanSequence)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        translateToStdAtomName,
@@ -65,7 +65,7 @@ except ImportError:
                                alignPolymerSequenceWithConflicts,
                                getRestraintFormatName,
                                getOneLetterCodeCanSequence)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            translateToStdAtomName,
@@ -117,7 +117,7 @@ class BaseTopologyParserListener():
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None) -> None:
+                 nefT: NefTranslator = None) -> None:
 
         self.mrAtomNameMapping = None if mrAtomNameMapping is None or len(mrAtomNameMapping) == 0 else mrAtomNameMapping
 

@@ -4,16 +4,14 @@
 #
 # Updates:
 ##
-"""Test cases for NEFTranslator - simply import everything to ensure imports work"""
+"""Test cases for NefTranslator - simply import everything to ensure imports work"""
 import sys
 import unittest
 
 from wwpdb.utils.nmr.BMRBChemShiftStat import BMRBChemShiftStat
 from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
-# DAOTHER-9714: NmrStarToCif class has been deprecated
-# from wwpdb.utils.nmr.NmrStarToCif import NmrStarToCif
-from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
 from wwpdb.utils.nmr.rci.RCI import RCI
 
 if __package__ is None or __package__ == "":
@@ -27,7 +25,7 @@ else:
 
 class ImportTests(unittest.TestCase):
     def testInstantiate(self):  # pylint: disable=no-self-use
-        _c = NEFTranslator()  # noqa: F841
+        _c = NefTranslator()  # noqa: F841
         _npu = NmrDpUtility()  # noqa: F841
         _ndp = NmrDpReport()  # noqa: F841
         # _nstc = NmrStarToCif()  # noqa: F841

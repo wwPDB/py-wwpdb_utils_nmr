@@ -740,7 +740,7 @@ class NmrDpValidation:
     def __getAtomIdListWithAmbigCode(self, comp_id: str, atom_id: str, leave_unmatched: bool = True
                                      ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
-            @see: NEFTranslator.get_valid_star_atom()
+            @see: NefTranslator.get_valid_star_atom()
         """
 
         return self.__reg.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=leave_unmatched)
@@ -845,7 +845,6 @@ class NmrDpValidation:
 
                 else:
 
-                    # NEFTranslator.validate_file() generates this object internally, but not re-used.
                     is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(srcPath)
 
                     if len(self.__reg.star_data_type) > 0:
@@ -864,7 +863,6 @@ class NmrDpValidation:
 
                     if any(True for err_message in message['error'] if 'The mandatory loop' in err_message):
 
-                        # NEFTranslator.validate_file() generates this object internally, but not re-used.
                         _, star_data_type, star_data = self.__reg.nefT.read_input_file(srcPath)
 
                         if len(self.__reg.star_data_type) > 0:
@@ -980,7 +978,6 @@ class NmrDpValidation:
                                     if is_valid:
                                         csPath = _csPath
 
-                                        # NEFTranslator.validate_file() generates this object internally, but not re-used.
                                         _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
 
                                         self.__reg.has_legacy_sf_issue = False
@@ -1049,7 +1046,6 @@ class NmrDpValidation:
 
                         else:
 
-                            # NEFTranslator.validate_file() generates this object internally, but not re-used.
                             _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
 
                             self.__reg.has_legacy_sf_issue = False
@@ -1223,7 +1219,6 @@ class NmrDpValidation:
                                 if is_valid:
                                     csPath = _csPath
 
-                                    # NEFTranslator.validate_file() generates this object internally, but not re-used.
                                     _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
 
                                     self.__reg.has_legacy_sf_issue = False
@@ -1295,7 +1290,6 @@ class NmrDpValidation:
 
                     else:
 
-                        # NEFTranslator.validate_file() generates this object internally, but not re-used.
                         _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
 
                         self.__reg.has_legacy_sf_issue = False
@@ -1471,7 +1465,6 @@ class NmrDpValidation:
 
                         else:
 
-                            # NEFTranslator.validate_file() generates this object internally, but not re-used.
                             _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
                             self.__reg.has_legacy_sf_issue = False
@@ -1608,7 +1601,6 @@ class NmrDpValidation:
 
                     if _file_type == file_type:
 
-                        # NEFTranslator.validate_file() generates this object internally, but not re-used.
                         _is_done, _star_data_type, _star_data = self.__reg.nefT.read_input_file(self.__reg.srcNmrCifPath)
 
                         if _is_done and _star_data_type == 'Entry' and is_done and self.__reg.star_data_type[0] == 'Entry':
@@ -4447,7 +4439,7 @@ class NmrDpValidation:
     def validateAtomNomenclature(self, file_name: str, file_type: str, content_subtype: str,
                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                  sf_framecode: str, lp_category: str) -> None:
-        """ Validate atom nomenclature using NEFTranslator and CCD.
+        """ Validate atom nomenclature using NefTranslator and CCD.
         """
 
         try:

@@ -671,7 +671,6 @@ class NmrDpFirstAid:
 
             else:
 
-                # NEFTranslator.validate_file() generates this object internally, but not re-used.
                 is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(_srcPath)
 
                 rescued = hasLegacySfIssue and is_done and star_data_type == 'Entry'

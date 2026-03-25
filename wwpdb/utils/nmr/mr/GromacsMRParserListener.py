@@ -63,7 +63,7 @@ try:
                                                 angle_target_values,
                                                 dihedral_angle,
                                                 angle_error)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.GromacsMRParser import GromacsMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -128,7 +128,7 @@ except ImportError:
                                     angle_target_values,
                                     dihedral_angle,
                                     angle_error)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.GromacsMRParser import GromacsMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -240,7 +240,7 @@ class GromacsMRParserListener(ParseTreeListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,  # pylint: disable=unused-argument
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  atomNumberDict: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__

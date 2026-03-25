@@ -40,7 +40,7 @@ try:
                                            assignPolymerSequence)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.pk.XMLParser import XMLParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -82,7 +82,7 @@ except ImportError:
                                assignPolymerSequence)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.pk.XMLParser import XMLParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -138,7 +138,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__

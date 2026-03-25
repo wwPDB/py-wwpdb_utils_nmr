@@ -11,14 +11,14 @@ import platform
 import unittest
 
 try:
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
 except ImportError:
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
 
 
 class ImportTests(unittest.TestCase):
     def setUp(self):
-        self.neft = NEFTranslator()
+        self.neft = NefTranslator()
         here = os.path.abspath(os.path.dirname(__file__))
         self.testdata = os.path.join(here, 'mock-data')
         self.outputdir = os.path.join(here, 'mock-data', platform.python_version())

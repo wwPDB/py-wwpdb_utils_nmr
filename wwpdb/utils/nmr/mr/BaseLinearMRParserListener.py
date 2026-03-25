@@ -98,7 +98,7 @@ try:
                                                 angle_target_values,
                                                 dihedral_angle,
                                                 angle_error)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -193,7 +193,7 @@ except ImportError:
                                     angle_target_values,
                                     dihedral_angle,
                                     angle_error)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -427,7 +427,7 @@ class BaseLinearMRParserListener():
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  reasons: Optional[dict] = None, upl_or_lol: Optional[str] = None, file_ext: Optional[str] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__

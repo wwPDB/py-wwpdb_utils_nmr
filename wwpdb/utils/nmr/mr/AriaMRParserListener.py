@@ -24,7 +24,7 @@ try:
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP)
-    from wwpdb.utils.nmr.nef.NEFTranslator import NEFTranslator
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.AriaMRParser import AriaMRParser
     from wwpdb.utils.nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -42,7 +42,7 @@ except ImportError:
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP)
-    from nmr.nef.NEFTranslator import NEFTranslator
+    from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.AriaMRParser import AriaMRParser
     from nmr.mr.BaseLinearMRParserListener import BaseLinearMRParserListener
@@ -79,7 +79,7 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                  representativeAltId: str = REPRESENTATIVE_ALT_ID,
                  mrAtomNameMapping: Optional[List[dict]] = None,
                  cR: Optional[CifReader] = None, caC: Optional[dict] = None,
-                 nefT: NEFTranslator = None,
+                 nefT: NefTranslator = None,
                  reasons: Optional[dict] = None) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__

@@ -3565,8 +3565,8 @@ class NmrDpMrSplitter:
                                 err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
                                 # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
-                                    else " Please re-upload the file."
+                                err += " Please re-upload the NEF file as an NMR unified data file."\
+                                    if _file_type == 'nef' else " Please re-upload the file."
 
                                 if len(message['error']) > 0:
                                     for err_message in message['error']:
@@ -3582,7 +3582,6 @@ class NmrDpMrSplitter:
 
                             else:
 
-                                # NEFTranslator.validate_file() generates this object internally, but not re-used.
                                 _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
                                 self.__reg.has_legacy_sf_issue = False
@@ -3754,8 +3753,8 @@ class NmrDpMrSplitter:
                                 err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                     f"but recognized as {self.readable_file_type[_file_type]} file."
                                 # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
-                                    else " Please re-upload the file."
+                                err += " Please re-upload the NEF file as an NMR unified data file."\
+                                    if _file_type == 'nef' else " Please re-upload the file."
 
                                 if len(message['error']) > 0:
                                     for err_message in message['error']:
@@ -3771,7 +3770,6 @@ class NmrDpMrSplitter:
 
                             else:
 
-                                # NEFTranslator.validate_file() generates this object internally, but not re-used.
                                 _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
                                 self.__reg.has_legacy_sf_issue = False
@@ -3915,8 +3913,8 @@ class NmrDpMrSplitter:
                         err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                             f"but recognized as {self.readable_file_type[_file_type]} file."
                         # DAOTHER-5673
-                        err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
-                            else " Please re-upload the file."
+                        err += " Please re-upload the NEF file as an NMR unified data file."\
+                            if _file_type == 'nef' else " Please re-upload the file."
 
                         if len(message['error']) > 0:
                             for err_message in message['error']:
@@ -3932,7 +3930,6 @@ class NmrDpMrSplitter:
 
                     else:
 
-                        # NEFTranslator.validate_file() generates this object internally, but not re-used.
                         _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
                         self.__reg.has_legacy_sf_issue = False
@@ -4745,7 +4742,6 @@ class NmrDpMrSplitter:
 
                                 else:
 
-                                    # NEFTranslator.validate_file() generates this object internally, but not re-used.
                                     _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
                                     self.__reg.has_legacy_sf_issue = False
@@ -4871,8 +4867,8 @@ class NmrDpMrSplitter:
                                     err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
                                         f"but recognized as {self.readable_file_type[_file_type]} file."
                                     # DAOTHER-5673
-                                    err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
-                                        else " Please re-upload the file."
+                                    err += " Please re-upload the NEF file as an NMR unified data file."\
+                                        if _file_type == 'nef' else " Please re-upload the file."
 
                                     if len(message['error']) > 0:
                                         for err_message in message['error']:
@@ -4888,7 +4884,6 @@ class NmrDpMrSplitter:
 
                                 else:
 
-                                    # NEFTranslator.validate_file() generates this object internally, but not re-used.
                                     _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
                                     self.__reg.has_legacy_sf_issue = False

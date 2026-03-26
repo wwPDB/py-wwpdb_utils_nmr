@@ -9442,7 +9442,10 @@ class NmrDpRemediation:
             entity_assembly = self.__reg.caC['entity_assembly']
             auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__reg.nmr_ext_poly_seq))
             for auth_chain_id in auth_chain_ids:
-                item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
+                try:
+                    item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
+                except StopIteration:
+                    continue
                 if item['entity_type'] == 'polymer':
                     poly_type = item['entity_poly_type']
                     if poly_type.startswith('polypeptide'):
@@ -13136,7 +13139,10 @@ class NmrDpRemediation:
             entity_assembly = self.__reg.caC['entity_assembly']
             auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__reg.nmr_ext_poly_seq))
             for auth_chain_id in auth_chain_ids:
-                item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
+                try:
+                    item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
+                except StopIteration:
+                    continue
                 if item['entity_type'] == 'polymer':
                     poly_type = item['entity_poly_type']
                     if poly_type.startswith('polypeptide'):
@@ -15029,7 +15035,10 @@ class NmrDpRemediation:
             entity_assembly = self.__reg.caC['entity_assembly']
             auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__reg.nmr_ext_poly_seq))
             for auth_chain_id in auth_chain_ids:
-                item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
+                try:
+                    item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
+                except StopIteration:
+                    continue
                 if item['entity_type'] == 'polymer':
                     poly_type = item['entity_poly_type']
                     if poly_type.startswith('polypeptide'):

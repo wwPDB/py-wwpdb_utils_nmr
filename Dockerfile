@@ -65,23 +65,23 @@ FROM python:3.12-alpine
 RUN apk add --no-cache ca-certificates
 
 # Create non-root user
-RUN addgroup -S webmaster && \
-    adduser -S webmaster -G webmaster -D
+RUN addgroup -S appuser && \
+    adduser -S appuser -G appuser -D
 
 # Copy installed Python environment
 COPY --from=builder /install /usr/local
 
 # Copy application code with generated ligand_dict
-COPY --from=builder --chown=webmaster:webmaster /opt/py-wwpdb_utils_nmr /opt/py-wwpdb_utils_nmr
-
-# Switch to no-root user
-USER webmaster
+COPY --from=builder --chown=appuser:appuser /opt/py-wwpdb_utils_nmr /opt/py-wwpdb_utils_nmr
 
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
 
 # Set working directory
-WORKDIR /opt/py-wwpdb_utils_nmr
+WORKDIR /mnt
+
+# Switch to no-root user
+USER appuser
 
 # Default command
 CMD ["python"]

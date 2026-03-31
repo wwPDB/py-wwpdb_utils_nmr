@@ -2630,6 +2630,48 @@ class NefTranslator:
                                        and loop.data[idx][atom_id_col] not in EMPTY_VALUE:
                                         loop.data[idx][auth_atom_id_col] = loop.data[idx][atom_id_col]
 
+                if 'Comp_ID' in loop.tags and all(_comp_id in ('ADE', 'CYT', 'GUA', 'THY', 'INO', 'HCY')
+                                                  for _comp_id in loop.get_tag(['Comp_id'])):
+                    comp_id_map = {'ADE': 'DA', 'CYT': 'DC', 'GUA': 'DG', 'THY': 'DT', 'INO': 'DI', 'HCY': 'DNR'}
+                    if has_coord and cif_br is None and cif_np is None\
+                            and all(all(self.__csStat.getTypeOfCompId(_comp_id)[1] for _comp_id in ps['comp_id'])
+                                    for ps in cif_ps):
+                        comp_id_col = loop.tags.index('Comp_ID')
+                        pre_seq_data = loop.get_tag(['Comp_ID'])
+                        for idx, _comp_id in enumerate(pre_seq_data):
+                            loop.data[idx][comp_id_col] = comp_id_map.get(_comp_id, _comp_id)
+                    # BMRB Only
+                    elif nmr_poly_seq is not None\
+                            and all(all(self.__csStat.getTypeOfCompId(_comp_id)[1] for _comp_id in ps['comp_id'])
+                                    for ps in nmr_poly_seq):
+                        comp_id_col = loop.tags.index('Comp_ID')
+                        comp_index_id_col = loop.tags.index('Comp_index_ID') if 'Comp_index_ID' in loop.tags else -1
+                        seq_id_col = loop.tags.index('Seq_ID') if 'Seq_ID' in loop.tags else -1
+                        atom_id_col = loop.tags.index('Atom_ID') if 'Atom_ID' in loop.tags else -1
+                        pre_seq_data = loop.get_tag(['Comp_ID'])
+                        for idx, _comp_id in enumerate(pre_seq_data):
+                            loop.data[idx][comp_id_col] = comp_id_map.get(_comp_id, _comp_id)
+                            if 'Auth_seq_ID' not in loop.tags:
+                                loop.add_tag('Auth_seq_ID', update_data=True)
+                            if 'Auth_comp_ID' not in loop.tags:
+                                loop.add_tag('Auth_comp_ID', update_data=True)
+                            if 'Auth_atom_ID' not in loop.tags:
+                                loop.add_tag('Auth_atom_ID', update_data=True)
+                            auth_comp_id_col = loop.tags.index('Auth_comp_ID')
+                            auth_seq_id_col = loop.tags.index('Auth_seq_ID')
+                            auth_atom_id_col = loop.tags.index('Auth_atom_ID')
+                            if loop.data[idx][auth_comp_id_col] in EMPTY_VALUE:
+                                loop.data[idx][auth_comp_id_col] = _comp_id
+                            loop.data[idx][comp_id_col] = comp_id_map.get(_comp_id, _comp_id)
+                            if loop.data[idx][auth_seq_id_col] in EMPTY_VALUE:
+                                if comp_index_id_col != -1 and loop.data[idx][comp_index_id_col] not in EMPTY_VALUE:
+                                    loop.data[idx][auth_seq_id_col] = loop.data[idx][comp_index_id_col]
+                                elif seq_id_col != -1 and loop.data[idx][seq_id_col] not in EMPTY_VALUE:
+                                    loop.data[idx][auth_seq_id_col] = loop.data[idx][seq_id_col]
+                            if loop.data[idx][auth_atom_id_col] in EMPTY_VALUE\
+                               and loop.data[idx][atom_id_col] not in EMPTY_VALUE:
+                                loop.data[idx][auth_atom_id_col] = loop.data[idx][atom_id_col]
+
             if lp_category == '_Atom_chem_shift' and self.__remediation_mode and has_auth_asym_id\
                and set(tags) & set(loop.tags) == set(tags) and set(tags__) & set(loop.tags) == set(tags__):
                 factor = max(len(alt_chain_id_set), 2)  # 2lnh

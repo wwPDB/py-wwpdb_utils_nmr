@@ -9387,7 +9387,17 @@ class NmrDpValidation:
                     auth_dat = loop.get_tag(auth_pdb_tags)
                     if len(auth_dat) > 0:
                         has_auth_seq = valid_auth_seq = True
-                        if not self.__reg.annotation_mode:
+                        if self.__reg.annotation_mode:  # DAOTHER-10661
+                            dat = loop.get_tag(auth_pdb_tags)
+                            for row_ in dat:
+                                for d in range(atom_dim_num):
+                                    try:
+                                        int(row_[atom_dim_num + d])
+                                    except (ValueError, TypeError):
+                                        has_auth_seq = valid_auth_seq = False
+                                        break
+
+                        else:
                             for row in auth_dat:
                                 try:
                                     for d in range(atom_dim_num):

@@ -6839,13 +6839,13 @@ class NefTranslator:
                         if dat_type == 'bool':
                             try:
                                 bool(dat)
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 if idx < len_loop:
                                     bad_ids.add(idx)
                         elif 'int' in dat_type or dat_type == 'pointer-index':
                             try:
                                 int(dat)
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 if idx < len_loop:
                                     bad_ids.add(idx)
                         elif 'float' in dat_type:
@@ -6861,7 +6861,7 @@ class NefTranslator:
                                                            or not any(methyl_atom in atom_ids for methyl_atom in methyl_atoms)):
                                         if idx < len_loop:
                                             bad_ids.add(idx)
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 if idx < len_loop:
                                     bad_ids.add(idx)
 

@@ -6839,7 +6839,7 @@ class NefTranslator:
                         if dat_type == 'bool':
                             try:
                                 bool(dat)
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 if idx < len_loop:
                                     bad_ids.add(idx)
                         elif 'int' in dat_type or dat_type == 'pointer-index':
@@ -6848,6 +6848,13 @@ class NefTranslator:
                             except ValueError:
                                 if idx < len_loop:
                                     bad_ids.add(idx)
+                            except TypeError:
+                                # DAOTHER-10661
+                                if is_cs_lp and key_names[col] in ('sequence_code', 'Comp_index_ID'):
+                                    pass
+                                else:
+                                    if idx < len_loop:
+                                        bad_ids.add(idx)
                         elif 'float' in dat_type:
                             try:
                                 val = float(dat)
@@ -6861,7 +6868,7 @@ class NefTranslator:
                                                            or not any(methyl_atom in atom_ids for methyl_atom in methyl_atoms)):
                                         if idx < len_loop:
                                             bad_ids.add(idx)
-                            except ValueError:
+                            except (ValueError, TypeError):
                                 if idx < len_loop:
                                     bad_ids.add(idx)
 

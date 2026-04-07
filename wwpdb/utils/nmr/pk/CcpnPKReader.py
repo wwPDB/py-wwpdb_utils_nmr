@@ -270,6 +270,11 @@ class CcpnPKReader:
 if __name__ == "__main__":
     reader = CcpnPKReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-daother-10661/9vr0/15N-NOESY-peaks_tr.tbl',
+                 '../../tests-nmr/mock-data-daother-10661/9vr0/9vr0.cif')
+
+    reader = CcpnPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-daother-10371/nnoe_cnoe_cnPACS1_101-273_600uM_pH65_303K_8_dec23_3.txt',
                  '../../tests-nmr/mock-data-daother-10371/D_800858_model_P1.cif.V3')
 

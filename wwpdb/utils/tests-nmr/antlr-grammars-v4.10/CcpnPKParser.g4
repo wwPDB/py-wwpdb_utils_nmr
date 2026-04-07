@@ -28,6 +28,9 @@ ccpn_pk:
 	peak_list_2d |
 	peak_list_3d |
 	peak_list_4d |
+        peak_list_wo_assign_2d |
+        peak_list_wo_assign_3d |
+        peak_list_wo_assign_4d |
 	RETURN
 	)*
 	EOF;
@@ -84,6 +87,57 @@ peak_4d:
 	Integer? Integer?
 	((position position position position Simple_name Simple_name Simple_name Simple_name) |
 	 ( Simple_name Simple_name Simple_name Simple_name position position position position))
+	number? number?
+	position? position? position? position?
+	position?
+	note* (RETURN | EOF);
+
+peak_list_wo_assign_2d:
+	Num? (Id | Id_)?
+	(Position_F1 | Shift_F1 | Position_F1_ | Shift_F1_) (Position_F2 | Shift_F2)
+	Height? Volume?
+	Line_width_F1? Line_width_F2?
+	Merit?
+	Details? Fit_method? Vol_method? RETURN_VARS
+	peak_wo_assign_2d+;
+
+peak_wo_assign_2d:
+	Integer? Integer?
+	position position
+	number? number?
+	position? position?
+	position?
+	note* (RETURN | EOF);
+
+peak_list_wo_assign_3d:
+	Num? (Id | Id_)?
+	(Position_F1 | Shift_F1 | Position_F1_ | Shift_F1_) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3)
+	Height? Volume?
+	Line_width_F1? Line_width_F2? Line_width_F3?
+	Merit?
+	Details? Fit_method? Vol_method? RETURN_VARS
+	peak_wo_assign_3d+;
+
+peak_wo_assign_3d:
+	Integer? Integer?
+	position position position
+	number? number?
+	position? position? position?
+	position?
+	note* (RETURN | EOF);
+
+peak_list_wo_assign_4d:
+	Num? (Id | Id_)?
+	(Position_F1 | Shift_F1 | Position_F1_ | Shift_F1_) (Position_F2 | Shift_F2) (Position_F3 | Shift_F3) (Position_F4 | Shift_F4)
+	Height? Volume?
+	Line_width_F1? Line_width_F2? Line_width_F3? Line_width_F4?
+	Merit?
+	Details? Fit_method? Vol_method? RETURN_VARS
+	peak_wo_assign_4d+;
+
+peak_wo_assign_4d:
+	Integer? Integer?
+	position position position position
 	number? number?
 	position? position? position? position?
 	position?

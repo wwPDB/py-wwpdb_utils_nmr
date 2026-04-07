@@ -605,8 +605,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                 if file_type in ('CCPN', 'nm-pea-ccp') and idx < 20 and header is not None\
                    and ('Position F1' in header or 'Shift F1' in header) and ('Position F2' in header or 'Shift F2' in header)\
-                   and 'Assign F1' in header and 'Assign F2' in header:
-                    # and ('Height' in header or 'Volume' in header):
+                   and (('Assign F1' in header and 'Assign F2' in header) or ('Height' in header or 'Volume' in header)):
 
                     header = header.replace('#', '')
 
@@ -633,7 +632,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                 if file_type in ('CCPN', 'nm-pea-ccp') and idx < 20 and header is None and ',' in line\
                    and ('Position F1' in line or 'Shift F1' in line) and ('Position F2' in line or 'Shift F2' in line)\
-                   and 'Assign F1' in line and 'Assign F2' in line:  # and ('Height' in line or 'Volume' in line):
+                   and (('Assign F1' in line and 'Assign F2' in line) or ('Height' in line or 'Volume' in line)):
 
                     try:
 
@@ -767,7 +766,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
         return 'nm-pea-ari' if asCode else 'ARIA'
 
     if ('Position F1' in string or 'Shift F1' in string) and ('Position F2' in string or 'Shift F2' in string)\
-       and 'Assign F1' in string and 'Assign F2' in string:  # and ('Height' in string or 'Volume' in string):
+       and (('Assign F1' in string and 'Assign F2' in string) or ('Height' in string or 'Volume' in string)):
         return 'nm-pea-ccp' if asCode else 'CCPN'
 
     if 'NOESYTYPE' in string:  # PONDEROSA peak list
@@ -850,7 +849,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
             pass
 
     if ('Position F1' in header or 'Shift F1' in header) and ('Position F2' in header or 'Shift F2' in header)\
-       and 'Assign F1' in header and 'Assign F2' in header:  # and ('Height' in header or 'Volume' in header):
+       and (('Assign F1' in header and 'Assign F2' in header) or ('Height' in header or 'Volume' in header)):
         if len_col > 4 and not col[0].isdigit():
             return 'nm-pea-ccp' if asCode else 'CCPN'  # header broken CCPN
 

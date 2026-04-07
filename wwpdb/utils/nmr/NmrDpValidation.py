@@ -11197,7 +11197,11 @@ class NmrDpValidation:
         """
 
         _num_dim = get_first_sf_tag(sf, NUM_DIM_ITEMS[file_type])
-        num_dim = int(_num_dim)
+
+        try:
+            num_dim = int(_num_dim)
+        except (ValueError, TypeError):
+            return False
 
         if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
             return False

@@ -464,7 +464,13 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                     return 'HN2'
 
         elif refCompId == 'ACE':
-            if atomId in ('HA', 'HA%', 'HA*', 'HA#', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
+            if atomId in ('HA1', 'H21'):
+                return 'H1'
+            if atomId in ('HA2', 'H22'):
+                return 'H2'
+            if atomId in ('HA3', 'H23'):
+                return 'H3'
+            if atomId in ('HA', 'HA%', 'HA*', 'HA#', 'QH', 'MH', 'QA', 'MA') and not unambig:
                 return 'H%'
             if atomId == 'CA':
                 return 'CH3'
@@ -1192,7 +1198,13 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                     return 'HN2'
 
         elif refCompId == 'ACE':
-            if atomId in ('HA', 'HA%', 'HA*', 'HA#', 'HA1', 'HA2', 'HA3', 'QH', 'MH', 'QA', 'MA') and not unambig:
+            if atomId in ('HA1', 'H21'):
+                return 'H1'
+            if atomId in ('HA2', 'H22'):
+                return 'H2'
+            if atomId in ('HA3', 'H23'):
+                return 'H3'
+            if atomId in ('HA', 'HA%', 'HA*', 'HA#', 'QH', 'MH', 'QA', 'MA') and not unambig:
                 return 'H%'
             if atomId == 'CA':
                 return 'CH3'

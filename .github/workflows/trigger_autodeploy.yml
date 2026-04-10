@@ -4,7 +4,6 @@ name: AutoDeploy
 on:
   push:
     branches:
-      - main
       - develop
       - master
 

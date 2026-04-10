@@ -45,6 +45,7 @@ try:
                                                AMINO_PROTON_CODE,
                                                LARGE_ASYM_ID,
                                                LEN_LARGE_ASYM_ID,
+                                               LEN_MAJOR_ASYM_ID,
                                                MAX_MAG_IDENT_ASYM_ID,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ASYM_ID,
@@ -94,6 +95,7 @@ except ImportError:
                                    AMINO_PROTON_CODE,
                                    LARGE_ASYM_ID,
                                    LEN_LARGE_ASYM_ID,
+                                   LEN_MAJOR_ASYM_ID,
                                    MAX_MAG_IDENT_ASYM_ID,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ASYM_ID,
@@ -4326,68 +4328,121 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                             dataItems,
                                                             filterItemByEntityId)
 
-                        authAsymIds = []
-                        compId = None
-                        for idx, item in enumerate(mappings):
-                            has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                            seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                            authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
-                                (entityAssemblyId, idx + 1, entityId, True)
-                            authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                            if has_ins_code_val:
-                                authToInsCode[seqKey] = item['ins_code']
-                            authToEntityType[seqKey] = entityType
-                            if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
-                                _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
-                                authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
-                            if item['auth_asym_id'] != item['label_asym_id']:  # DAOTHER-8817
-                                _seqKey = (item['label_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
-                                if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
-                                    _seqKey = (item['label_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
-                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
-                            if item['auth_asym_id'] not in authAsymIds:
-                                authAsymIds.append(item['auth_asym_id'])
-                            if compId is None:
-                                compId = item['comp_id']
-
-                        for idx, item in enumerate(mappings):
-                            altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
-                            if altKey not in authToStarSeq:
+                        if len(mappings) < LEN_MAJOR_ASYM_ID:
+                            for idx, item in enumerate(mappings):
                                 has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
-                                    (entityAssemblyId, idx + 1, entityId, False)
+                                seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
+                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                    (entityAssemblyId, idx + 1, entityId, True)
+                                authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
                                 if has_ins_code_val:
-                                    authToInsCode[altKey] = item['ins_code']
-                                authToEntityType[altKey] = entityType
+                                    authToInsCode[seqKey] = item['ins_code']
+                                authToEntityType[seqKey] = entityType
                                 if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
-                                    _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
-                                    authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                                    _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
                                 if item['auth_asym_id'] != item['label_asym_id']:  # DAOTHER-8817
-                                    _altKey = (item['label_asym_id'], item['alt_seq_id'], item['comp_id'])
-                                    authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                                    _seqKey = (item['label_asym_id'], item['auth_seq_id'], item['comp_id'])
+                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
                                     if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
-                                        _altKey = (item['label_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                        _seqKey = (item['label_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                        authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+                                compId = item['comp_id']
+                                altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
+                                if altKey not in authToStarSeq:
+                                    has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
+                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                        (entityAssemblyId, idx + 1, entityId, False)
+                                    if has_ins_code_val:
+                                        authToInsCode[altKey] = item['ins_code']
+                                    authToEntityType[altKey] = entityType
+                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                        _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
                                         authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                                    if item['auth_asym_id'] != item['label_asym_id']:  # DAOTHER-8817
+                                        _altKey = (item['label_asym_id'], item['alt_seq_id'], item['comp_id'])
+                                        authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                                        if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                            _altKey = (item['label_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                            authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
 
-                        labelAsymIds = []
-                        for item in mappings:
-                            if item['label_asym_id'] not in labelAsymIds:
-                                labelAsymIds.append(item['label_asym_id'])
+                                entityAssembly.append({'entity_assembly_id': entityAssemblyId,
+                                                       'entity_id': entityId,
+                                                       'entity_type': entityType,
+                                                       'entity_src_method': entitySrcMethod,
+                                                       'entity_desc': entityDesc,
+                                                       'entity_fw': entityFW,
+                                                       'entity_copies': 1,
+                                                       'entity_details': entityDetails,
+                                                       'entity_role': entityRole,
+                                                       'auth_asym_id': item['auth_asym_id'],
+                                                       'label_asym_id': item['label_asym_id'],
+                                                       'comp_id': compId})
+                                entityAssemblyId += 1
 
-                        entityAssembly.append({'entity_assembly_id': entityAssemblyId,
-                                               'entity_id': entityId,
-                                               'entity_type': entityType,
-                                               'entity_src_method': entitySrcMethod,
-                                               'entity_desc': entityDesc,
-                                               'entity_fw': entityFW,
-                                               'entity_copies': entityCopies,
-                                               'entity_details': entityDetails,
-                                               'entity_role': entityRole,
-                                               'auth_asym_id': ','.join(authAsymIds),
-                                               'label_asym_id': ','.join(labelAsymIds),
-                                               'comp_id': compId})
-                        entityAssemblyId += 1
+                        else:
+                            authAsymIds = []
+                            compId = None
+                            for idx, item in enumerate(mappings):
+                                has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
+                                seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
+                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                    (entityAssemblyId, idx + 1, entityId, True)
+                                authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
+                                if has_ins_code_val:
+                                    authToInsCode[seqKey] = item['ins_code']
+                                authToEntityType[seqKey] = entityType
+                                if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                    _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+                                if item['auth_asym_id'] != item['label_asym_id']:  # DAOTHER-8817
+                                    _seqKey = (item['label_asym_id'], item['auth_seq_id'], item['comp_id'])
+                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                        _seqKey = (item['label_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                        authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+                                if item['auth_asym_id'] not in authAsymIds:
+                                    authAsymIds.append(item['auth_asym_id'])
+                                if compId is None:
+                                    compId = item['comp_id']
+
+                            for idx, item in enumerate(mappings):
+                                altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
+                                if altKey not in authToStarSeq:
+                                    has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
+                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                        (entityAssemblyId, idx + 1, entityId, False)
+                                    if has_ins_code_val:
+                                        authToInsCode[altKey] = item['ins_code']
+                                    authToEntityType[altKey] = entityType
+                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                        _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                        authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                                    if item['auth_asym_id'] != item['label_asym_id']:  # DAOTHER-8817
+                                        _altKey = (item['label_asym_id'], item['alt_seq_id'], item['comp_id'])
+                                        authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                                        if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                            _altKey = (item['label_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                            authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+
+                            labelAsymIds = []
+                            for item in mappings:
+                                if item['label_asym_id'] not in labelAsymIds:
+                                    labelAsymIds.append(item['label_asym_id'])
+
+                            entityAssembly.append({'entity_assembly_id': entityAssemblyId,
+                                                   'entity_id': entityId,
+                                                   'entity_type': entityType,
+                                                   'entity_src_method': entitySrcMethod,
+                                                   'entity_desc': entityDesc,
+                                                   'entity_fw': entityFW,
+                                                   'entity_copies': entityCopies,
+                                                   'entity_details': entityDetails,
+                                                   'entity_role': entityRole,
+                                                   'auth_asym_id': ','.join(authAsymIds),
+                                                   'label_asym_id': ','.join(labelAsymIds),
+                                                   'comp_id': compId})
+                            entityAssemblyId += 1
 
                     elif has_nonpoly_only:
                         gen_ent_asm_from_nonpoly = True

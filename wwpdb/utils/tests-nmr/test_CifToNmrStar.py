@@ -56,6 +56,11 @@ class TestCifToNmrStar(unittest.TestCase):
             self.assertTrue(self.cif_to_nmr_star.convert('mock-data-daother-9437/test2.str',
                                                          'mock-data-daother-9437/test2.cif2str'))
 
+    def test_daother_10580(self):
+        if os.path.exists('mock-data-daother-10580'):
+            self.assertTrue(self.cif_to_nmr_star.convert('mock-data-daother-10580/B36_BMRB_2_2p5ppmCplus.txt',
+                                                         'mock-data-daother-10580/B36_BMRB_2_2p5ppmCplus.txt.cif2str'))
+
 
 if __name__ == "__main__":
     unittest.main()

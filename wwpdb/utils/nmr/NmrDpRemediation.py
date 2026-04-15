@@ -3845,6 +3845,14 @@ class NmrDpRemediation:
                 if chain_id not in label_asym_ids:
                     label_asym_ids.append(chain_id)
 
+            if entity_type == 'non-polymer':
+                for _item in entity_assembly:
+                    if entity_id != _item['entity_id'] or _item == item:
+                        continue
+                    for chain_id in _item['label_asym_id'].split(','):
+                        if chain_id not in label_asym_ids:
+                            label_asym_ids.append(chain_id)
+
             min_auth_seq_id = max_auth_seq_id = max_seq_id = -1
 
             for chain_id in label_asym_ids:

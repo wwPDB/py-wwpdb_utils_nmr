@@ -28,9 +28,9 @@ ccpn_pk:
 	peak_list_2d |
 	peak_list_3d |
 	peak_list_4d |
-        peak_list_wo_assign_2d |
-        peak_list_wo_assign_3d |
-        peak_list_wo_assign_4d |
+	peak_list_wo_assign_2d |
+	peak_list_wo_assign_3d |
+	peak_list_wo_assign_4d |
 	RETURN
 	)*
 	EOF;

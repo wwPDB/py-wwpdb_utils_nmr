@@ -2402,7 +2402,8 @@ class NmrDpRemediation:
 
                 row[0] = item['entity_assembly_id']
                 row[1] = (f'entity_{entity_id}' + ('' if entity_total[entity_id] == 1 else f'_{entity_count[entity_id]}'))\
-                    if entity_type not in ('non-polymer', 'water') else f"entity_{item['comp_id']}"
+                    if entity_type not in ('non-polymer', 'water')\
+                    else f"entity_{item['comp_id']}" + ('' if entity_total[entity_id] == 1 else f'_{entity_count[entity_id]}')
                 item['entity_assembly_name'] = row[1]
                 row[2] = item['entity_id']
                 row[3] = f'$entity_{entity_id}' if entity_type not in ('non-polymer', 'water') else f"$entity_{item['comp_id']}"
@@ -3111,7 +3112,7 @@ class NmrDpRemediation:
                     if seq_key_1 in auth_to_star_seq:
                         entity_assembly_id_1, seq_id_1, entity_id_1, _ = auth_to_star_seq[seq_key_1]
                         entity_assembly_name_1 = next((item['entity_assembly_name'] for item in entity_assembly
-                                                       if item['entity_id'] == entity_id_1), None)
+                                                       if item['entity_assembly_id'] == entity_assembly_id_1), None)
                         row[3], row[4], row[5], row[6], row[7], row[8], row[9] =\
                             entity_assembly_id_1, entity_assembly_name_1, entity_id_1, auth_comp_id_1, seq_id_1, seq_id_1, atom_id_1
 
@@ -3123,7 +3124,7 @@ class NmrDpRemediation:
                     if seq_key_2 in auth_to_star_seq:
                         entity_assembly_id_2, seq_id_2, entity_id_2, _ = auth_to_star_seq[seq_key_2]
                         entity_assembly_name_2 = next((item['entity_assembly_name'] for item in entity_assembly
-                                                       if item['entity_id'] == entity_id_2), None)
+                                                       if item['entity_assembly_id'] == entity_assembly_id_2), None)
                         row[10], row[11], row[12], row[13], row[14], row[15], row[16] =\
                             entity_assembly_id_2, entity_assembly_name_2, entity_id_2, auth_comp_id_2, seq_id_2, seq_id_2, atom_id_2
 

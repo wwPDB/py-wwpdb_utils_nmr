@@ -9360,11 +9360,19 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
 
                 try:
                     for np in nonPolySeq:
-                        if np['auth_chain_id'] == chainId and cifSeqId in np['auth_seq_id']:
-                            cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
-                            seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, cifSeqId, cifCompId)
-                            if coordAtomSite is not None:
-                                break
+                        if np['auth_chain_id'] == chainId and cifCompId in np['comp_id']:
+                            if cifSeqId in np['auth_seq_id']:
+                                _cifSeqId = np['seq_id'][np['auth_seq_id'].index(cifSeqId)]
+                                seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, _cifSeqId, cifCompId)
+                                if coordAtomSite is not None:
+                                    cifSeqId = _cifSeqId
+                                    break
+                            if cifSeqId in np['seq_id']:
+                                _cifSeqId = np['auth_seq_id'][np['seq_id'].index(cifSeqId)]
+                                seqKey, coordAtomSite = getCoordAtomSiteOf(caC, authChainId, chainId, _cifSeqId, cifCompId)
+                                if coordAtomSite is not None:
+                                    cifSeqId = _cifSeqId
+                                    break
                 except ValueError:
                     pass
 

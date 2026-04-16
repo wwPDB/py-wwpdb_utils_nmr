@@ -10481,9 +10481,14 @@ class NefTranslator:
                 index_index = -1
 
             try:
-                id_index = nef_tags.index('_nef_distance_restraint.id')
+                id_index = nef_tags.index('_nef_distance_restraint.restraint_id')
             except ValueError:
                 id_index = -1
+
+            try:
+                combination_id_index = nef_tags.index('_nef_distance_restraint.restraint_combination_id')
+            except ValueError:
+                combination_id_index = -1
 
             key_indices = [nef_tags.index(tag) for tag in ['_nef_distance_restraint.chain_code_1',
                                                            '_nef_distance_restraint.sequence_code_1',
@@ -10588,7 +10593,7 @@ class NefTranslator:
                             buf[data_index] = data
 
                     if id_index != -1:
-                        buf_row[id_index] = _id
+                        buf[id_index] = _id
 
                     buf_row.append(buf)
 
@@ -10616,6 +10621,18 @@ class NefTranslator:
                     index += 1
 
                     out_row.append(row)
+
+                if id_index != -1 and combination_id_index != -1:
+
+                    for idx, row in enumerate(out_row):
+                        if row[combination_id_index] in EMPTY_VALUE:
+                            continue
+
+                        _id = row[id_index]
+
+                        if (idx == 0 or out_row[idx - 1][id_index] != _id)\
+                           and (idx + 1 == len(out_row) or buf_row[idx + 1][id_index] != _id):
+                            row[combination_id_index] = None
 
             return out_row
 

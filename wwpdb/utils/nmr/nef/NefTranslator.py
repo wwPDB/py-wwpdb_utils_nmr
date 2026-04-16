@@ -10631,7 +10631,7 @@ class NefTranslator:
                         _id = row[id_index]
 
                         if (idx == 0 or out_row[idx - 1][id_index] != _id)\
-                           and (idx + 1 == len(out_row) or buf_row[idx + 1][id_index] != _id):
+                           and (idx + 1 == len(out_row) or out_row[idx + 1][id_index] != _id):
                             row[combination_id_index] = None
 
             return out_row

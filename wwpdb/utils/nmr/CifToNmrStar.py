@@ -347,6 +347,10 @@ class CifToNmrStar:
                     item['ordered'] = ordered_block
 
                     item['sf_category_flag'] = False
+
+                    if len(itVals['Values']) == 0:  # DAOTHER-10580
+                        continue
+
                     for _item, _value in zip(itVals['Items'], itVals['Values'][0]):
                         tag = f'_{category}.{_item}'
                         tag = tag.lower()

@@ -299,7 +299,6 @@ class BaseTopologyParserListener():
                                                 if 'atom_type' in atomNum:
                                                     del atomNum['atom_type']
                             else:
-                                compIdList.append('.')
                                 unknownAtomIds = [_atomId for _atomId in authAtomIds if _atomId not in chemCompAtomIds]
                                 self.__f.append(f"[Unknown atom name] "
                                                 f"{unknownAtomIds} are unknown atom names for {authCompId} residue.")

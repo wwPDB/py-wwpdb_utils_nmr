@@ -1208,8 +1208,17 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
 
                     if myPr1 != '.':
+                        trial = 0
                         while idx2 < len(ps2['seq_id']):
                             if ps2['comp_id'][idx2] == myPr1:
+                                ps2_seq_id = ps2['seq_id'][idx2]
+                                ps2_auth_comp_id = ps2['auth_comp_id'][idx2]
+                                compIdMapping.append({'chain_id': chain_id2, 'seq_id': ps2_seq_id,
+                                                      'comp_id': myPr0, 'auth_comp_id': ps2_auth_comp_id})
+                                idx2 += 1
+                                break
+                            trial += 1
+                            if trial > len(ps2['seq_id']):
                                 ps2_seq_id = ps2['seq_id'][idx2]
                                 ps2_auth_comp_id = ps2['auth_comp_id'][idx2]
                                 compIdMapping.append({'chain_id': chain_id2, 'seq_id': ps2_seq_id,
@@ -1628,8 +1637,17 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                     myPr0, myPr1 = str(myAlign[i][0]), str(myAlign[i][1])
 
                     if myPr1 != '.':
+                        trial = 0
                         while idx2 < len(ps2['seq_id']):
                             if ps2['comp_id'][idx2] == myPr1:
+                                ps2_seq_id = ps2['seq_id'][idx2]
+                                ps2_auth_comp_id = ps2['auth_comp_id'][idx2]
+                                compIdMapping.append({'chain_id': chain_id2, 'seq_id': ps2_seq_id,
+                                                      'comp_id': myPr0, 'auth_comp_id': ps2_auth_comp_id})
+                                idx2 += 1
+                                break
+                            trial += 1
+                            if trial > len(ps2['seq_id']):
                                 ps2_seq_id = ps2['seq_id'][idx2]
                                 ps2_auth_comp_id = ps2['auth_comp_id'][idx2]
                                 compIdMapping.append({'chain_id': chain_id2, 'seq_id': ps2_seq_id,

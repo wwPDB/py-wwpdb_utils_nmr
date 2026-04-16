@@ -646,7 +646,7 @@ MIN_EXT_SEQ_FOR_ATOM_SEL_ERR = 12
 
 UNREAL_AUTH_SEQ_NUM = -10000
 
-MAX_CONFLICT_ATTEMPT = 5
+MAX_CONFLICT_ATTEMPT = 11
 
 DIST_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 101.0}
 DIST_RESTRAINT_ERROR = {'min_exclusive': 0.0, 'max_exclusive': 150.0}

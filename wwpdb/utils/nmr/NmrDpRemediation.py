@@ -15467,26 +15467,40 @@ class NmrDpRemediation:
                                     if _id != prev_id:
                                         _atom1 = {'chain_id': row[auth_asym_id_1_col],
                                                   'seq_id':
-                                                  int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE
-                                                  else None,
+                                                  int(row[auth_seq_id_1_col])
+                                                  if row[auth_seq_id_1_col] not in EMPTY_VALUE
+                                                  and row[auth_seq_id_1_col].isdigit()
+                                                  else int(re.findall(r'\d+', row[auth_seq_id_1_col])[0])
+                                                  if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                                   'comp_id': row[comp_id_1_col],
                                                   'atom_id': row[atom_id_1_col]}
                                         _atom2 = {'chain_id': row[auth_asym_id_2_col],
                                                   'seq_id':
-                                                  int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE
-                                                  else None,
+                                                  int(row[auth_seq_id_2_col])
+                                                  if row[auth_seq_id_2_col] not in EMPTY_VALUE
+                                                  and row[auth_seq_id_2_col].isdigit()
+                                                  else int(re.findall(r'\d+', row[auth_seq_id_2_col])[0])
+                                                  if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                                   'comp_id': row[comp_id_2_col],
                                                   'atom_id': row[atom_id_2_col]}
                                         prev_id = _id
                                         continue
                                     atom1 = {'chain_id': row[auth_asym_id_1_col],
                                              'seq_id':
-                                             int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
+                                             int(row[auth_seq_id_1_col])
+                                             if row[auth_seq_id_1_col] not in EMPTY_VALUE
+                                             and row[auth_seq_id_1_col].isdigit()
+                                             else int(re.findall(r'\d+', row[auth_seq_id_1_col])[0])
+                                             if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
                                              'comp_id': row[comp_id_1_col],
                                              'atom_id': row[atom_id_1_col]}
                                     atom2 = {'chain_id': row[auth_asym_id_2_col],
                                              'seq_id':
-                                             int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
+                                             int(row[auth_seq_id_2_col])
+                                             if row[auth_seq_id_2_col] not in EMPTY_VALUE
+                                             and row[auth_seq_id_2_col].isdigit()
+                                             else int(re.findall(r'\d+', row[auth_seq_id_2_col])[0])
+                                             if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
                                              'comp_id': row[comp_id_2_col],
                                              'atom_id': row[atom_id_2_col]}
                                     if isAmbigAtomSelection([_atom1, atom1], self.__reg.csStat)\

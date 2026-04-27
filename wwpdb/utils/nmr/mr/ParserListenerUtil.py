@@ -2588,7 +2588,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if conflict == 0 and unmapped > 0:
+                    if conflict == 0 and unmapped > 0 and _matched > unmapped:
 
                         nmr_seq_ids, cif_auth_seq_ids, cif_label_seq_ids = [], [], []
 

@@ -3252,11 +3252,26 @@ class NmrDpUtility:
             for ps_in_cs_loop in poly_seq_in_cs_loop['polymer_sequence']:
                 _chain_id = ps_in_cs_loop['chain_id']
 
+                _peptide = _nucleotide = _carbohydrate = False
+                for _comp_id in ps_in_cs_loop['comp_id']:
+                    _peptide, _nucleotide, _carbohydrate = self.__reg.csStat.getTypeOfCompId(_comp_id)
+                    if _peptide or _nucleotide or _carbohydrate:
+                        break
+
                 for ps in poly_seq:
                     chain_id = ps['chain_id']
 
                     if chain_id == _chain_id\
                        or 'identical_chain_id' in ps and _chain_id in ps['identical_chain_id']:
+
+                        peptide = nucleotide = carbohydrate = False
+                        for comp_id in ps['comp_id']:
+                            peptide, nucleotide, carbohydrate = self.__reg.csStat.getTypeOfCompId(comp_id)
+                            if peptide or nucleotide or carbohydrate:
+                                break
+
+                        if peptide != _peptide or nucleotide != _nucleotide or carbohydrate != _carbohydrate:
+                            continue
 
                         if 'alt_comp_id' in ps_in_cs_loop:
                             for _seq_id, _comp_id, _alt_comp_id in zip(ps_in_cs_loop['seq_id'], ps_in_cs_loop['comp_id'],

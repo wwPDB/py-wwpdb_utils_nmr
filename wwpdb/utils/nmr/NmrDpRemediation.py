@@ -3159,6 +3159,15 @@ class NmrDpRemediation:
 
                 if len(bonds_w_leaving) > 0:
 
+                    def get_auth_seq_id(val):
+                        if isinstance(val, int):
+                            return val
+                        if val in EMPTY_VALUE:
+                            return None
+                        if val.isdigit():
+                            return int(val)
+                        return int(re.findall(r'\d+', val)[0])
+
                     # _Entity_deleted_atom loop
 
                     lp_category = '_Entity_deleted_atom'
@@ -3198,9 +3207,9 @@ class NmrDpRemediation:
                             comp_id = bond['ptnr1_label_comp_id']
                             atom_id = bond['ptnr1_label_atom_id']
                             auth_asym_id = bond['ptnr1_auth_asym_id']
-                            auth_seq_id = bond['ptnr1_auth_seq_id']
+                            auth_seq_id = get_auth_seq_id(bond['ptnr1_auth_seq_id'])
 
-                            if not auth_seq_id.isdigit():
+                            if auth_seq_id is None:
                                 continue
 
                             if self.__reg.ccU.updateChemCompDict(comp_id):
@@ -3215,7 +3224,7 @@ class NmrDpRemediation:
 
                                 if leaving_atom_id is not None:
 
-                                    seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+                                    seq_key = (auth_asym_id, auth_seq_id, comp_id)
 
                                     if seq_key in auth_to_star_seq:
                                         if auth_asym_id in asym_to_orig_seq:
@@ -3249,9 +3258,9 @@ class NmrDpRemediation:
                                 comp_id = bond['ptnr2_label_comp_id']
                                 atom_id = bond['ptnr2_label_atom_id']
                                 auth_asym_id = bond['ptnr2_auth_asym_id']
-                                auth_seq_id = bond['ptnr2_auth_seq_id']
+                                auth_seq_id = get_auth_seq_id(bond['ptnr2_auth_seq_id'])
 
-                                if not auth_seq_id.isdigit():
+                                if auth_seq_id is None:
                                     continue
 
                                 if self.__reg.ccU.updateChemCompDict(comp_id):
@@ -3267,7 +3276,7 @@ class NmrDpRemediation:
 
                                     if leaving_atom_id is not None:
 
-                                        seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+                                        seq_key = (auth_asym_id, auth_seq_id, comp_id)
 
                                         if seq_key in auth_to_star_seq:
                                             if auth_asym_id in asym_to_orig_seq:
@@ -3301,14 +3310,14 @@ class NmrDpRemediation:
                                 comp_id = bond['ptnr1_label_comp_id']
                                 atom_id = 'SG'
                                 auth_asym_id = bond['ptnr1_auth_asym_id']
-                                auth_seq_id = bond['ptnr1_auth_seq_id']
+                                auth_seq_id = get_auth_seq_id(bond['ptnr1_auth_seq_id'])
 
-                                if not auth_seq_id.isdigit():
+                                if auth_seq_id is None:
                                     continue
 
                                 leaving_atom_id = 'HG'
 
-                                seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+                                seq_key = (auth_asym_id, auth_seq_id, comp_id)
 
                                 if seq_key in auth_to_star_seq:
                                     auth_comp_id = next((_v[1] for _k, _v in asym_to_orig_seq[auth_asym_id].items()
@@ -3337,14 +3346,14 @@ class NmrDpRemediation:
                                 comp_id = 'HIS'
                                 atom_id = bond['ptnr1_label_atom_id']
                                 auth_asym_id = bond['ptnr1_auth_asym_id']
-                                auth_seq_id = bond['ptnr1_auth_seq_id']
+                                auth_seq_id = get_auth_seq_id(bond['ptnr1_auth_seq_id'])
 
-                                if not auth_seq_id.isdigit():
+                                if auth_seq_id is None:
                                     continue
 
                                 leaving_atom_id = 'HD1' if atom_id == 'ND1' else 'HE2'
 
-                                seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+                                seq_key = (auth_asym_id, auth_seq_id, comp_id)
 
                                 if seq_key in auth_to_star_seq:
                                     if auth_asym_id in asym_to_orig_seq:
@@ -3376,14 +3385,14 @@ class NmrDpRemediation:
                                 comp_id = bond['ptnr2_label_comp_id']
                                 atom_id = 'SG'
                                 auth_asym_id = bond['ptnr2_auth_asym_id']
-                                auth_seq_id = bond['ptnr2_auth_seq_id']
+                                auth_seq_id = get_auth_seq_id(bond['ptnr2_auth_seq_id'])
 
-                                if not auth_seq_id.isdigit():
+                                if auth_seq_id is None:
                                     continue
 
                                 leaving_atom_id = 'HG'
 
-                                seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+                                seq_key = (auth_asym_id, auth_seq_id, comp_id)
 
                                 if seq_key in auth_to_star_seq:
                                     if auth_asym_id in asym_to_orig_seq:
@@ -3415,14 +3424,14 @@ class NmrDpRemediation:
                                 comp_id = 'HIS'
                                 atom_id = bond['ptnr2_label_atom_id']
                                 auth_asym_id = bond['ptnr2_auth_asym_id']
-                                auth_seq_id = bond['ptnr2_auth_seq_id']
+                                auth_seq_id = get_auth_seq_id(bond['ptnr2_auth_seq_id'])
 
-                                if not auth_seq_id.isdigit():
+                                if auth_seq_id is None:
                                     continue
 
                                 leaving_atom_id = 'HD1' if atom_id == 'ND1' else 'HE2'
 
-                                seq_key = (auth_asym_id, int(auth_seq_id), comp_id)
+                                seq_key = (auth_asym_id, auth_seq_id, comp_id)
 
                                 if seq_key in auth_to_star_seq:
                                     if auth_asym_id in asym_to_orig_seq:
@@ -5951,28 +5960,36 @@ class NmrDpRemediation:
 
             if (self.__reg.annotation_mode or self.__reg.native_combined) and len(auth_atom_name_to_id) > 0:
 
+                def get_auth_seq_id(val):
+                    if isinstance(val, int):
+                        return val
+                    if val in EMPTY_VALUE:
+                        return None
+                    if val.isdigit():
+                        return int(val)
+                    return int(re.findall(r'\d+', val)[0])
+
                 count_auth_name = count_auth_id = 0
 
                 for row in loop:
 
                     auth_asym_id = row[auth_asym_id_col]
-                    auth_seq_id = row[auth_seq_id_col]
+                    auth_seq_id = get_auth_seq_id(row[auth_seq_id_col])
                     auth_comp_id = row[auth_comp_id_col]
                     auth_atom_id = row[auth_atom_id_col]
 
-                    if not auth_seq_id.isdigit():
+                    if auth_seq_id is None:
                         continue
 
-                    auth_seq_id_ = int(auth_seq_id)
-                    seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
                     try:
                         auth_to_star_seq[seq_key]  # pylint: disable=pointless-statement
                     except KeyError:
                         auth_asym_id = next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                             if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
-                        if (auth_asym_id, auth_seq_id_, auth_comp_id) not in auth_to_star_seq:
+                                             if _auth_seq_id == auth_seq_id and _auth_comp_id == auth_comp_id), auth_asym_id)
+                        if (auth_asym_id, auth_seq_id, auth_comp_id) not in auth_to_star_seq:
                             auth_comp_id = next((_auth_comp_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
-                                                 if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id_), auth_comp_id)
+                                                 if _auth_asym_id == auth_asym_id and _auth_seq_id == auth_seq_id), auth_comp_id)
 
                     if auth_comp_id in auth_atom_name_to_id:
                         if auth_atom_id in auth_atom_name_to_id[auth_comp_id]:
@@ -5985,15 +6002,14 @@ class NmrDpRemediation:
                     for row in loop:
 
                         auth_asym_id = row[auth_asym_id_col]
-                        auth_seq_id = row[auth_seq_id_col]
+                        auth_seq_id = get_auth_seq_id(row[auth_seq_id_col])
                         auth_comp_id = row[auth_comp_id_col]
                         auth_atom_id = row[auth_atom_id_col]
 
-                        if not auth_seq_id.isdigit():
+                        if auth_seq_id is None:
                             continue
 
-                        auth_seq_id_ = int(auth_seq_id)
-                        seq_key = (auth_asym_id, auth_seq_id_, auth_comp_id)
+                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
                         try:
                             auth_to_star_seq_ann[seq_key]  # pylint: disable=pointless-statement
                             _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
@@ -15460,33 +15476,36 @@ class NmrDpRemediation:
 
                         if has_or_code:
 
+                            def get_auth_seq_id(val):
+                                if val in EMPTY_VALUE:
+                                    return None
+                                if isinstance(val, int):
+                                    return val
+                                if val.isdigit():
+                                    return int(val)
+                                return int(re.findall(r'\d+', val)[0])
+
                             prev_id = -1
                             for row in lp:
                                 if member_logic_code_col != -1 and row[member_logic_code_col] == 'OR':
                                     _id = int(row[id_col])
                                     if _id != prev_id:
                                         _atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                                  'seq_id':
-                                                  int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE
-                                                  else None,
+                                                  'seq_id': get_auth_seq_id(row[auth_seq_id_1_col]),
                                                   'comp_id': row[comp_id_1_col],
                                                   'atom_id': row[atom_id_1_col]}
                                         _atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                                  'seq_id':
-                                                  int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE
-                                                  else None,
+                                                  'seq_id': get_auth_seq_id(row[auth_seq_id_2_col]),
                                                   'comp_id': row[comp_id_2_col],
                                                   'atom_id': row[atom_id_2_col]}
                                         prev_id = _id
                                         continue
                                     atom1 = {'chain_id': row[auth_asym_id_1_col],
-                                             'seq_id':
-                                             int(row[auth_seq_id_1_col]) if row[auth_seq_id_1_col] not in EMPTY_VALUE else None,
+                                             'seq_id': get_auth_seq_id(row[auth_seq_id_1_col]),
                                              'comp_id': row[comp_id_1_col],
                                              'atom_id': row[atom_id_1_col]}
                                     atom2 = {'chain_id': row[auth_asym_id_2_col],
-                                             'seq_id':
-                                             int(row[auth_seq_id_2_col]) if row[auth_seq_id_2_col] not in EMPTY_VALUE else None,
+                                             'seq_id': get_auth_seq_id(row[auth_seq_id_2_col]),
                                              'comp_id': row[comp_id_2_col],
                                              'atom_id': row[atom_id_2_col]}
                                     if isAmbigAtomSelection([_atom1, atom1], self.__reg.csStat)\

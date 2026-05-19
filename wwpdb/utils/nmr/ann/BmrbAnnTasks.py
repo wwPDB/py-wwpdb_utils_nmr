@@ -590,6 +590,7 @@ class BmrbAnnTasks:
                         isotope_nums_in_loop = set()
                         isotope_nums_with_empty_val_err = set()
                         isotope_nums_with_zero_val_err = set()
+                        isotope_nums_with_non_zero_val_err = set()
                         empty_ambig_code = False
 
                         for idx, row in enumerate(dat):
@@ -603,7 +604,8 @@ class BmrbAnnTasks:
                                     try:
                                         val_err = float(row[1])
                                         if val_err > 0.0:
-                                            pass
+                                            if isotope_number in ALLOWED_ISOTOPE_NUMBERS:
+                                                isotope_nums_with_non_zero_val_err.add(isotope_number)
                                         elif val_err == 0.0:
                                             if len(zero_shift_val_err) == 0:
                                                 zero_shift_val_err = row[1]
@@ -613,6 +615,8 @@ class BmrbAnnTasks:
                                                 lp.data[idx][val_err_col] = row[1][1:]
                                         else:
                                             lp.data[idx][val_err_col] = abs(val_err)
+                                            if isotope_number in ALLOWED_ISOTOPE_NUMBERS:
+                                                isotope_nums_with_non_zero_val_err.add(isotope_number)
                                     except ValueError:
                                         pass
                                 if row[2] in EMPTY_VALUE:
@@ -682,11 +686,12 @@ class BmrbAnnTasks:
                                     if cs_val_err > CS_UNCERT_MAX:
                                         continue
 
+                                    fill_non_zero_val_err = isotope_number not in isotope_nums_with_non_zero_val_err
                                     for idx, row in enumerate(dat):
                                         try:
                                             if int(row[0]) != isotope_number:
                                                 continue
-                                            if row[1] in EMPTY_VALUE:
+                                            if fill_non_zero_val_err or row[1] in EMPTY_VALUE:
                                                 lp.data[idx][val_err_col] = cs_val_err
                                         except (ValueError, TypeError):
                                             continue

@@ -1600,7 +1600,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
 
             length = len(myAlign)
 
-            if length == 0:
+            if length <= conflictTh:  # reconciled fix for DAOTHER-10684 and 7zyx unit test
                 continue
 
             _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)

@@ -77,7 +77,7 @@ DP_OUTPUT_FILE_KEYS = (REPORT_FILE_PATH_KEY,
 DP_OUTPUT_FILE_LIST_KEYS = (CS_FILE_PATH_LIST_KEY,  # nmr-cs-str-consistency-check specific
                             MR_FILE_PATH_LIST_KEY)  # nmr-cs-str-consistency-check specific
 
-# support workflow operations of NmrDpUtility class
+# supported workflow operations of NmrDpUtility class
 DP_WORKFLOW_OPS = ('nmr-nef-consistency-check',
                    'nmr-str-consistency-check',
                    'nmr-nef2str-deposit',
@@ -112,7 +112,7 @@ VRPT_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
 # supported output file names for NmrVrptUtility class
 VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,)
 
-# support workflow operations of NmrVrptUtility class
+# supported workflow operations of NmrVrptUtility class
 VRPT_WORKFLOW_OPS = ('nmr-restraint-validation',)
 
 # sub-directory name for cache files

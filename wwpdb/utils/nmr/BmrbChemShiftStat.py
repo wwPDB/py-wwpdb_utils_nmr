@@ -20,6 +20,7 @@
 # 25-Dec-2025  M. Yokochi - allow to ignore specific residues from other chemical shift statistics
 #                           when CCD status is obsolete but not replaced-by (N9K)
 # 25-Mar-2026  M. Yokochi - rename class from BMRBChemShiftStat to BmrbChemShiftStat
+# 22-May-2026  M. Yokochi - add getCategorizedAtomIds() (DAOTHER-9785)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -102,7 +103,8 @@ class BmrbChemShiftStat:
                  '__cachedDictForMethylProtons',
                  '__cachedDictForRepMethylProtons',
                  '__cachedDictForNonRepMethylProtons',
-                 '__cachedDictForProtonInSameGroup')
+                 '__cachedDictForProtonInSameGroup',
+                 '__cachedDictForCategorizedAtomIds')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr, ccU: Optional[ChemCompUtil] = None) -> None:
         self.__class_name__ = self.__class__.__name__
@@ -166,6 +168,7 @@ class BmrbChemShiftStat:
         self.__cachedDictForRepMethylProtons = {}
         self.__cachedDictForNonRepMethylProtons = {}
         self.__cachedDictForProtonInSameGroup = {}
+        self.__cachedDictForCategorizedAtomIds = {}
 
     def hasCompId(self, comp_id: str) -> bool:
         """ Return whether a given comp_id has BMRB chemical shift statistics.
@@ -850,6 +853,70 @@ class BmrbChemShiftStat:
                 if (('methyl' in item['desc'] and item['atom_id'][0] in PROTON_BEGIN_CODE)
                     or 'geminal' in item['desc'] or item['desc'].startswith('aroma-opposite'))
                 and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
+
+    def getCategorizedAtomIds(self, comp_id: str) -> Optional[dict]:
+        """ Return categorized atom_id list of a given comp_id.
+            enumerations for the category: 'backbone', 'sidechain', 'aromatic', 'sugar', 'base'
+        """
+
+        if comp_id in EMPTY_VALUE:
+            return None
+
+        if comp_id in self.__aa_comp_ids:
+            backbone = self.getBackBoneAtoms(comp_id, polypeptide_like=True)
+            sidechain = self.getSideChainAtoms(comp_id, polypeptide_like=True)
+            aromatic = self.getAromaticAtoms(comp_id)
+            if len(aromatic) > 0:
+                sidechain = [a for a in sidechain if a not in aromatic]
+            result = {'backbone': backbone}
+            if len(sidechain) > 0:
+                result['sidechain'] = sidechain
+            if len(aromatic) > 0:
+                result['aromatic'] = aromatic
+            return result
+
+        if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
+            backbone = self.getBackBoneAtoms(comp_id, polynucleotide_like=True)
+            sidechain = self.getSideChainAtoms(comp_id, polynucleotide_like=True)
+            return {'sugar': backbone, 'base': sidechain}
+
+        if comp_id in self.__cachedDictForCategorizedAtomIds:
+            return deepcopy(self.__cachedDictForCategorizedAtomIds[comp_id])
+
+        polypeptide_like, polynucleotide_like, carbohydrates_like = self.__ccU.getTypeOfCompId(comp_id)
+
+        result = {}
+
+        try:
+
+            if polypeptide_like:
+                backbone = self.getBackBoneAtoms(comp_id, polypeptide_like=True)
+                sidechain = self.getSideChainAtoms(comp_id, polypeptide_like=True)
+                aromatic = self.getAromaticAtoms(comp_id)
+                if len(aromatic) > 0:
+                    sidechain = [a for a in sidechain if a not in aromatic]
+                result = {'backbone': backbone}
+                if len(sidechain) > 0:
+                    result['sidechain'] = sidechain
+                if len(aromatic) > 0:
+                    result['aromatic'] = aromatic
+                return result
+
+            if polynucleotide_like:
+                backbone = self.getBackBoneAtoms(comp_id, polynucleotide_like=True)
+                sidechain = self.getSideChainAtoms(comp_id, polynucleotide_like=True)
+                result = {'sugar': backbone, 'base': sidechain}
+                return result
+
+            if carbohydrates_like:
+                result = {'sugar': self.getAllAtoms(comp_id)}
+                return result
+
+            return None
+
+        finally:
+            if len(result) > 0:
+                self.__cachedDictForCategorizedAtomIds[comp_id] = result
 
     def loadStatFromCsvFiles(self) -> bool:
         """ Load all BMRB chemical shift statistics from CSV files.

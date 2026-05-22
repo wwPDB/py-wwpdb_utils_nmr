@@ -11,10 +11,13 @@
 # 21-Feb-2024  M. Yokochi - add support for discontinuous model_id (NMR restraint remediation, 2n6j)
 # 28-Feb-2024  M. Yokochi - collect atom_ids dictionary for both auth_atom_id and pdbx_auth_atom_name tags
 #                           to prevent MISSING ATOM IN MODEL KeyError in restraintsanalysis.py (DAOTHER-9200)
+# 22-May-2026  M. Yokochi - transplant BMRB chemical shift analysis except for PANAV support,
+#                           add 'nmr-chemical-shift-validation' workflow operation (DAOTHER-9785)
 ##
-""" Wrapper class for NMR restraint analysis.
+""" Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
-    @note: This class is alternative implementation of wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis
+    @note: This class is alternative implementation of wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis
+    @note: This class is alternative implementation of wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis
 """
 __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
@@ -24,6 +27,7 @@ __version__ = "v1.2"
 
 import copy
 import gzip
+import math
 import os
 import pickle
 import sys
@@ -41,6 +45,7 @@ try:
                                                NMR_CIF_FILE_PATH_KEY,
                                                NMR_STR_FILE_PATH_KEY,
                                                RESULT_PKL_FILE_PATH_KEY,
+                                               REPORT_FILE_PATH_KEY,
                                                CIF_READER_OBJ_KEY,
                                                NMR_CIF_READER_OBJ_KEY,
                                                PYNMRSTAR_OBJ_KEY,
@@ -54,23 +59,29 @@ try:
                                                EMPTY_VALUE,
                                                STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
+                                               AMINO_PROTON_CODE,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_ERROR_MAX,
                                                ANGLE_ERROR_MAX,
-                                               RDC_ERROR_MAX)
+                                               RDC_ERROR_MAX,
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               ALLOWED_AMBIGUITY_CODES)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
+    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
                                               calculate_uninstanced_coord,
                                               to_np_array)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                                        getDistConstraintType)
+    from wwpdb.utils.nmr.rci.RCI import RCI
 except ImportError:
     from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                    NMR_CIF_FILE_PATH_KEY,
                                    NMR_STR_FILE_PATH_KEY,
                                    RESULT_PKL_FILE_PATH_KEY,
+                                   REPORT_FILE_PATH_KEY,
                                    CIF_READER_OBJ_KEY,
                                    NMR_CIF_READER_OBJ_KEY,
                                    PYNMRSTAR_OBJ_KEY,
@@ -84,18 +95,23 @@ except ImportError:
                                    EMPTY_VALUE,
                                    STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
+                                   AMINO_PROTON_CODE,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_ERROR_MAX,
                                    ANGLE_ERROR_MAX,
-                                   RDC_ERROR_MAX)
+                                   RDC_ERROR_MAX,
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   ALLOWED_AMBIGUITY_CODES)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
+    from nmr.NmrDpReport import NmrDpReport
     from nmr.io.CifReader import (CifReader,
                                   calculate_uninstanced_coord,
                                   to_np_array)
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
                                            getDistConstraintType)
+    from nmr.rci.RCI import RCI
 
 
 NMR_VTF_DIST_VIOL_CUTOFF = 0.1
@@ -209,7 +225,7 @@ def dist_inv_6_summed(r_list: List[float]) -> float:
           J. Mol. Biol. (1995) 245, 645–660.
           DOI: 10.1006/jmbi.1994.0053
         @author: Kumaran Baskaran
-        @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.r6sum
+        @see: wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.r6sum
     """
 
     if len(r_list) == 1:
@@ -378,7 +394,7 @@ def angle_target_values(target_value: Optional[float], target_value_uncertainty:
 def angle_diff(x: float, y: float) -> float:
     """ Return normalized angular difference.
         @author: Kumaran Baskaran
-        @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff.ac
+        @see: wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.angle_diff.ac
     """
 
     if x < 0.0:
@@ -399,13 +415,13 @@ def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], targ
                 ) -> float:
     """ Return angle outlier for given lower_bound, upper_bound, and target_value.
         @author: Kumaran Baskaran
-        @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff
+        @see: wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.angle_diff
     """
 
     def check_angle_range_overlap(x, y, c, g, t: float = 0.5):
         """ Return whether angular range formed by (x, c) and (c, y) matches to a given range (g) with tolerance (t).
             @author: Kumaran Baskaran
-            @see: wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.angle_diff.check_ac
+            @see: wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.angle_diff.check_ac
         """
 
         l = angle_diff(x, c)  # noqa: E741
@@ -562,6 +578,286 @@ def get_violation_statistics_for_each_bin(beg_err_bin: Optional[float], end_err_
     return viol_stat_all_model, viol_stat_per_model
 
 
+def probability_density(value: float, mean: float, stddev: float) -> float:
+    """ Return probability density.
+    """
+
+    stddev2 = stddev ** 2.0
+
+    return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
+
+
+def predict_redox_state_of_cystein(ca_chem_shift: Optional[float], cb_chem_shift: Optional[float]
+                                   ) -> Tuple[float, float]:
+    """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
+        @return: probability of oxidized state, probability of reduced state
+        Reference:
+          13C NMR chemical shifts can predict disulfide bond formation.
+          Sharma, D., Rajarathnam, K.
+          J Biomol NMR 18, 165–171 (2000).
+          DOI: 10.1023/A:1008398416292
+    """
+
+    oxi_ca = {'avr': 55.5, 'std': 2.5}
+    oxi_cb = {'avr': 40.7, 'std': 3.8}
+
+    red_ca = {'avr': 59.3, 'std': 3.2}
+    red_cb = {'avr': 28.3, 'std': 2.2}
+
+    oxi = 1.0
+    red = 1.0
+
+    if ca_chem_shift is not None:
+        oxi *= probability_density(ca_chem_shift, oxi_ca['avr'], oxi_ca['std'])
+        red *= probability_density(ca_chem_shift, red_ca['avr'], red_ca['std'])
+
+    if cb_chem_shift is not None:
+        if cb_chem_shift < 32.0:
+            oxi = 0.0
+        else:
+            oxi *= probability_density(cb_chem_shift, oxi_cb['avr'], oxi_cb['std'])
+        if cb_chem_shift > 35.0:
+            red = 0.0
+        else:
+            red *= probability_density(cb_chem_shift, red_cb['avr'], red_cb['std'])
+
+    total = oxi + red
+
+    if total in (0.0, 2.0):
+        return 0.0, 0.0
+
+    return oxi / total, red / total
+
+
+def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift
+                                         ) -> Tuple[float, float]:
+    """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
+        @return: probability of cis-peptide bond, probability of trans-peptide bond
+        Reference:
+          A software tool for the prediction of Xaa-Pro peptide bond conformations in proteins
+          based on 13C chemical shift statistics.
+          Schubert, M., Labudde, D., Oschkinat, H. et al.
+          J Biomol NMR 24, 149–154 (2002)
+          DOI: 10.1023/A:1020997118364
+    """
+
+    cis_cb = {'avr': 34.16, 'std': 1.15, 'max': 36.23, 'min': 30.74}
+    cis_cg = {'avr': 24.52, 'std': 1.09, 'max': 27.01, 'min': 22.10}
+    cis_dl = {'avr': 9.64, 'std': 1.27}
+
+    trs_cb = {'avr': 31.75, 'std': 0.98, 'max': 35.83, 'min': 26.30}
+    trs_cg = {'avr': 27.26, 'std': 1.05, 'max': 33.39, 'min': 19.31}
+    trs_dl = {'avr': 4.51, 'std': 1.17}
+
+    cis = 1.0
+    trs = 1.0
+
+    if cb_chem_shift is not None:
+        if cb_chem_shift < cis_cb['min'] - cis_cb['std'] or cb_chem_shift > cis_cb['max'] + cis_cb['std']:
+            cis = 0.0
+        else:
+            cis *= probability_density(cb_chem_shift, cis_cb['avr'], cis_cb['std'])
+        if cb_chem_shift < trs_cb['min'] - trs_cb['std'] or cb_chem_shift > trs_cb['max'] + trs_cb['std']:
+            trs = 0.0
+        else:
+            trs *= probability_density(cb_chem_shift, trs_cb['avr'], trs_cb['std'])
+
+    if cg_chem_shift is not None:
+        if cg_chem_shift < cis_cg['min'] - cis_cg['std'] or cg_chem_shift > cis_cg['max'] + cis_cg['std']:
+            cis = 0.0
+        else:
+            cis *= probability_density(cg_chem_shift, cis_cg['avr'], cis_cg['std'])
+        if cg_chem_shift < trs_cg['min'] - trs_cg['std'] or cg_chem_shift > trs_cg['max'] + trs_cg['std']:
+            trs = 0.0
+        else:
+            trs *= probability_density(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
+
+    if (cb_chem_shift is not None) and (cg_chem_shift is not None):
+        delta_shift = cb_chem_shift - cg_chem_shift
+
+        cis *= probability_density(delta_shift, cis_dl['avr'], cis_dl['std'])
+        trs *= probability_density(delta_shift, trs_dl['avr'], trs_dl['std'])
+
+    total = cis + trs
+
+    if total in (0.0, 2.0):
+        return 0.0, 0.0
+
+    return cis / total, trs / total
+
+
+def predict_tautomer_state_of_histidine(cg_chem_shift: Optional[float], cd2_chem_shift: Optional[float],
+                                        nd1_chem_shift: Optional[float], ne2_chem_shift: Optional[float]
+                                        ) -> Tuple[float, float]:
+    """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and NE2 chemical shifts.
+        @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
+        Reference:
+          Protonation, Tautomerization, and Rotameric Structure of Histidine:
+          A Comprehensive Study by Magic-Angle-Spinning Solid-State NMR.
+          Shenhui Li and Mei Hong.
+          Journal of the American Chemical Society 2011 133 (5), 1534-1544
+          DOI: 10.1021/ja108943n
+    """
+
+    bip_cg = {'avr': 131.2, 'std': 0.7}
+    bip_cd2 = {'avr': 120.6, 'std': 1.3}
+    bip_nd1 = {'avr': 190.0, 'std': 1.9}
+    bip_ne2 = {'avr': 176.3, 'std': 1.9}
+
+    tau_cg = {'avr': 135.7, 'std': 2.2}
+    tau_cd2 = {'avr': 116.9, 'std': 2.1}
+    tau_nd1 = {'avr': 249.4, 'std': 1.9}
+    tau_ne2 = {'avr': 171.1, 'std': 1.9}
+
+    pi_cg = {'avr': 125.7, 'std': 2.2}
+    pi_cd2 = {'avr': 125.6, 'std': 2.1}
+    pi_nd1 = {'avr': 171.8, 'std': 1.9}
+    pi_ne2 = {'avr': 248.2, 'std': 1.9}
+
+    bip = 1.0
+    tau = 1.0
+    pi = 1.0
+
+    if cg_chem_shift is not None:
+        bip *= probability_density(cg_chem_shift, bip_cg['avr'], bip_cg['std'])
+        tau *= probability_density(cg_chem_shift, tau_cg['avr'], tau_cg['std'])
+        pi *= probability_density(cg_chem_shift, pi_cg['avr'], pi_cg['std'])
+
+    if cd2_chem_shift is not None:
+        bip *= probability_density(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])
+        tau *= probability_density(cd2_chem_shift, tau_cd2['avr'], tau_cd2['std'])
+        pi *= probability_density(cd2_chem_shift, pi_cd2['avr'], pi_cd2['std'])
+
+    if nd1_chem_shift is not None:
+        bip *= probability_density(nd1_chem_shift, bip_nd1['avr'], bip_nd1['std'])
+        tau *= probability_density(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
+        pi *= probability_density(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
+
+    if ne2_chem_shift is not None:
+        bip *= probability_density(ne2_chem_shift, bip_ne2['avr'], bip_ne2['std'])
+        tau *= probability_density(ne2_chem_shift, tau_ne2['avr'], tau_ne2['std'])
+        pi *= probability_density(ne2_chem_shift, pi_ne2['avr'], pi_ne2['std'])
+
+    total = bip + tau + pi
+
+    if total in (0.0, 3.0):
+        return 0.0, 0.0, 0.0
+
+    return bip / total, tau / total, pi / total
+
+
+def predict_rotamer_state_of_leucine(cd1_chem_shift: Optional[float], cd2_chem_shift: Optional[float]
+                                     ) -> Tuple[float, float]:
+    """ Return prediction of rotermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
+        @return: probability of gauche+, trans, gauche-
+        Reference:
+          Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
+          Robert E. London, Brett D. Wingad, and Geoffrey A. Mueller.
+          Journal of the American Chemical Society 2008 130 (33), 11097-11105
+          DOI: 10.1021/ja802729t
+    """
+
+    if None not in (cd1_chem_shift, cd2_chem_shift):
+
+        delta = cd1_chem_shift - cd2_chem_shift
+
+        pt = (delta + 5.0) / 10.0
+
+        if 0.0 <= pt <= 1.0:
+            return 1.0 - pt, pt, 0.0
+
+    gp_cd1 = {'avr': 24.45, 'std': 1.58}
+    gp_cd2 = {'avr': 25.79, 'std': 1.68}
+
+    t_cd1 = {'avr': 25.17, 'std': 1.58}
+    t_cd2 = {'avr': 23.84, 'std': 1.68}
+
+    gp = 1.0
+    t = 1.0
+
+    if cd1_chem_shift is not None:
+        gp *= probability_density(cd1_chem_shift, gp_cd1['avr'], gp_cd1['std'])
+        t *= probability_density(cd1_chem_shift, t_cd1['avr'], t_cd1['std'])
+
+    if cd2_chem_shift is not None:
+        gp *= probability_density(cd2_chem_shift, gp_cd2['avr'], gp_cd2['std'])
+        t *= probability_density(cd2_chem_shift, t_cd2['avr'], t_cd2['std'])
+
+    total = gp + t
+
+    if total in (0.0, 2.0):
+        return 0.0, 0.0, 0.0
+
+    return gp / total, t / total, 0.0
+
+
+def predict_rotamer_state_of_valine(cg1_chem_shift: Optional[float], cg2_chem_shift: Optional[float]
+                                    ) -> Tuple[float, float]:
+    """ Return prediction of rotermeric state of Valine using assigned CG1 and CG2 chemical shifts.
+        @return: probability of gauche+, trans, gauche-
+        Reference:
+          Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
+          Robert E. London, Brett D. Wingad, and Geoffrey A. Mueller.
+          Journal of the American Chemical Society 2008 130 (33), 11097-11105
+          DOI: 10.1021/ja802729t
+    """
+
+    gm_cg1 = {'avr': 22.05, 'std': 1.36}
+    gm_cg2 = {'avr': 20.1, 'std': 1.55}
+
+    gp_cg1 = {'avr': 20.87, 'std': 1.36}
+    gp_cg2 = {'avr': 21.23, 'std': 1.55}
+
+    t_cg1 = {'avr': 21.74, 'std': 1.36}
+    t_cg2 = {'avr': 21.97, 'std': 1.55}
+
+    gm = 1.0
+    gp = 1.0
+    t = 1.0
+
+    if cg1_chem_shift is not None:
+        gm *= probability_density(cg1_chem_shift, gm_cg1['avr'], gm_cg1['std'])
+        gp *= probability_density(cg1_chem_shift, gp_cg1['avr'], gp_cg1['std'])
+        t *= probability_density(cg1_chem_shift, t_cg1['avr'], t_cg1['std'])
+
+    if cg2_chem_shift is not None:
+        gm *= probability_density(cg2_chem_shift, gm_cg2['avr'], gm_cg2['std'])
+        gp *= probability_density(cg2_chem_shift, gp_cg2['avr'], gp_cg2['std'])
+        t *= probability_density(cg2_chem_shift, t_cg2['avr'], t_cg2['std'])
+
+    total = gm + gp + t
+
+    if total in (0.0, 3.0):
+        return 0.0, 0.0, 0.0
+
+    return gp / total, t / total, gm / total
+
+
+def predict_rotamer_state_of_isoleucine(cd1_chem_shift: Optional[float]
+                                        ) -> Tuple[float, float, float]:
+    """ Return prediction of rotermeric state of Isoleucine using assigned CD1 chemical shift.
+        @return: probability of gauche+, trans, gauche-
+        Reference:
+          Determination of Isoleucine Side-Chain Conformations in Ground and Excited States of Proteins from Chemical Shifts.
+          D. Flemming Hansen, Philipp Neudecker, and Lewis E. Kay.
+          Journal of the American Chemical Society 2010 132 (22), 7589-7591
+          DOI: 10.1021/ja102090z
+    """
+
+    if cd1_chem_shift is None:
+        return 0.0, 0.0, 0.0
+
+    if cd1_chem_shift < 9.3:
+        return 0.0, 0.0, 1.0
+
+    if cd1_chem_shift > 14.8:
+        return 1.0 * (4.0 / 85.0), 1.0 * (81.0 / 85.0), 0.0
+
+    pgm = (14.8 - cd1_chem_shift) / 5.5
+
+    return (1.0 - pgm) * (4.0 / 85.0), (1.0 - pgm) * (81.0 / 85.0), pgm
+
+
 class NmrVrptUtility:
     """ Wrapper class for NMR restraint analysis.
     """
@@ -581,6 +877,7 @@ class NmrVrptUtility:
                  '__cifHashCode',
                  '__nmrDataHashCode',
                  '__resultsCacheName',
+                 '__inputReport',
                  '__cR',
                  '__rR',
                  '__ccU',
@@ -590,8 +887,18 @@ class NmrVrptUtility:
                  '__representative_alt_id',
                  '__total_models',
                  '__eff_model_ids',
+                 '__entityInstance',
                  '__atomIdList',
                  '__coordinates',
+                 '__chemShiftMeta',
+                 '__chemShiftTotal',
+                 '__chemShiftDict',
+                 '__chemShiftUniqDict',
+                 '__chemShiftPrimary',
+                 '__chemShiftOutlier',
+                 '__chemShiftDuplicated',
+                 '__chemShiftUnparsed',
+                 '__chemShiftUnmapped',
                  '__distRestDict',
                  '__distRestDictWithCombKey',
                  '__distRestSeqDict',
@@ -654,6 +961,9 @@ class NmrVrptUtility:
         # cache file name for results
         self.__resultsCacheName = None
 
+        # input NMR data processing report
+        self.__inputReport = None
+
         # CIF reader
         self.__cR = cR
 
@@ -678,10 +988,20 @@ class NmrVrptUtility:
         # list of effective model_id
         self.__eff_model_ids = None
 
+        # entity instances
+        self.__entityInstance = None
+
         # atom id list for each model_id and atom key (auth_asym_id, auth_seq_id, auth_comp_id, auth_atom_id, PDB_ins_code)
         self.__atomIdList = None
         # coordinates for each model_id and atom key
         self.__coordinates = None
+
+        # metadata of assigned chemical shift lists
+        self.__chemShiftMeta = None
+        # total cs row size of assigned chemical lists
+        self.__chemShiftTotal = None
+        # chemical shifts for each list_id
+        self.__chemShiftDict = None
 
         # distance restraints for each restraint key (list_id, restraint_id)
         self.__distRestDict = None
@@ -703,6 +1023,17 @@ class NmrVrptUtility:
         self.__rdcRestDictWithCombKey = None
         # RDC restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__rdcRestSeqDict = None
+
+        # unique chemical shifts for each list_id and atom_key
+        self.__chemShiftUniqDict = None
+        # list of chemical shift outliers for each list_id
+        self.__chemShiftOutlier = None
+        # list of duplicated chemical shifts for each list_id
+        self.__chemShiftDuplicated = None
+        # list of unparsed chemical shifts for each list_id
+        self.__chemShiftUnparsed = None
+        # list of unmapped chemical shifts for each list_id
+        self.__chemShiftUnmapped = None
 
         # distance restraint violations for each restraint key
         self.__distRestViolDict = None
@@ -731,25 +1062,39 @@ class NmrVrptUtility:
         # whether the previous results have been retrieved
         self.__has_prev_results = False
 
-        __checkTasks = [self.__parseCoordinate,
-                        self.__parseNmrData,
-                        self.__checkPreviousResultsIfAvailable,
-                        self.__retrieveCoordAssemblyChecker,
-                        self.__extractCoordAtomSite,
-                        self.__extractGenDistConstraint,
-                        self.__extractTorsionAngleConstraint,
-                        self.__extractRdcConstraint,
-                        self.__calculateDistanceRestraintViolations,
-                        self.__calculateDihedralAngleRestraintViolations,
-                        self.__calculateRdcRestraintViolations,
-                        self.__summarizeCommonResults,
-                        self.__summarizeDistanceRestraintAnalysis,
-                        self.__summarizeDihedralAngleRestraintAnalysis,
-                        self.__summarizeRdcRestraintAnalysis,
-                        self.__outputResultsAsPickleFileIfPossible]
+        __csValidTasks = [self.__parseCoordinate,
+                          self.__parseNmrData,
+                          self.__parseNmrDpReport,
+                          self.__checkPreviousCsAnalysis,
+                          self.__retrieveCoordAssemblyChecker,
+                          self.__extractEntityInstances,
+                          self.__extractChemicalShifts,
+                          self.__calculateChemicalShiftViolations,
+                          self.__summarizeCommonCsResults,
+                          self.__outputResultsAsPickleFile]
+
+        __mrValidTasks = [self.__parseCoordinate,
+                          self.__parseNmrData,
+                          self.__checkPreviousMrAnalysis,
+                          self.__retrieveCoordAssemblyChecker,
+                          self.__extractCoordAtomSites,
+                          self.__extractGenDistConstraints,
+                          self.__extractTorsionAngleConstraints,
+                          self.__extractRdcConstraints,
+                          self.__calculateDistanceRestraintViolations,
+                          self.__calculateDihedralAngleRestraintViolations,
+                          self.__calculateRdcRestraintViolations,
+                          self.__summarizeCommonMrResults,
+                          self.__summarizeDistanceRestraintAnalysis,
+                          self.__summarizeDihedralAngleRestraintAnalysis,
+                          self.__summarizeRdcRestraintAnalysis,
+                          self.__outputResultsAsPickleFile]
 
         # dictionary of processing tasks of each workflow operation
-        self.__procTasksDict = {'nmr-restraint-validation': __checkTasks}
+        self.__procTasksDict = {'nmr-cs-validation': __csValidTasks,
+                                'nmr-mr-validation': __mrValidTasks,
+                                'nmr-chemical-shift-validation': __csValidTasks,
+                                'nmr-restraint-validation': __mrValidTasks}  # for backward compatibility
 
     def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.
@@ -1231,12 +1576,54 @@ class NmrVrptUtility:
 
         return False
 
-    def __checkPreviousResultsIfAvailable(self) -> bool:
-        """ Retrieve the previous results using the identical data sources, if available.
+    def __parseNmrDpReport(self) -> bool:
+        """ Parse report file, which include information about well-defined region and random coil index.
+        """
+
+        self.__inputReport = None
+
+        if REPORT_FILE_PATH_KEY not in self.__inputParamDict:
+            return True
+
+        fPath = self.__inputParamDict[REPORT_FILE_PATH_KEY]
+
+        try:
+
+            self.__inputReport = NmrDpReport(self.__verbose, self.__log)
+
+            if self.__inputReport.loadFile(fPath):
+                return True
+
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+
+        self.__inputReport = None
+
+        return False
+
+    def __checkPreviousCsAnalysis(self) -> bool:
+        """ Retrieve the previous chemical shift analysis using the identical data sources, if available.
         """
 
         if None not in (self.__cifHashCode, self.__nmrDataHashCode):
-            self.__resultsCacheName = f"{self.__cifHashCode}_{self.__nmrDataHashCode}_vrpt_results.pkl"
+            self.__resultsCacheName = f"{self.__cifHashCode}_{self.__nmrDataHashCode}_vrpt_cs_analysis.pkl"
+            cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
+
+            if self.__debug:
+                if os.path.exists(cache_path):
+                    os.remove(cache_path)
+
+            self.__results = load_from_pickle(cache_path)
+            self.__has_prev_results = self.__results is not None
+
+        return True
+
+    def __checkPreviousMrAnalysis(self) -> bool:
+        """ Retrieve the previous restraint analysis using the identical data sources, if available.
+        """
+
+        if None not in (self.__cifHashCode, self.__nmrDataHashCode):
+            self.__resultsCacheName = f"{self.__cifHashCode}_{self.__nmrDataHashCode}_vrpt_mr_analysis.pkl"
             cache_path = os.path.join(self.__cacheDirPath, self.__resultsCacheName)
 
             if self.__debug:
@@ -1285,10 +1672,173 @@ class NmrVrptUtility:
 
         return True
 
-    def __extractCoordAtomSite(self) -> bool:
+    def __extractEntityInstances(self) -> bool:
+        """ Extract entity instances of coordinate file.
+            @author: Masashi Yokochi
+        """
+
+        if self.__has_prev_results:
+            return True
+
+        if self.__cifPath is None:
+            return False
+
+        vrpt_entity_instance_cache_path = None
+
+        if self.__cifHashCode is not None:
+            vrpt_entity_instance_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_vrpt_entity_instance.pkl")
+            self.__entityInstance = load_from_pickle(vrpt_entity_instance_cache_path)
+
+            if self.__entityInstance is not None:
+                return True
+
+        _auth_atom_id = 'pdbx_auth_atom_name'\
+            if self.__trust_pdbx_auth_atom_name and self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')\
+            else 'auth_atom_id'
+
+        data_items = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                      {'name': 'auth_seq_id', 'type': 'int'},
+                      {'name': 'auth_comp_id', 'type': 'str'},
+                      {'name': _auth_atom_id, 'type': 'str', 'alt_name': 'auth_atom_id'},
+                      # {'name': 'label_asym_id', 'type': 'str'},
+                      {'name': 'label_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                      {'name': 'label_comp_id', 'type': 'str'},
+                      # {'name': 'label_atom_id', 'type': 'str'},
+                      # {'name': 'label_entity_id', 'type': 'int'},
+                      {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'}
+                      ]
+
+        NMR_OBS_NUCS = set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys())
+
+        # DAOTHER-8705, 8817
+        if _auth_atom_id == 'pdbx_auth_atom_name':
+            data_items.append({'name': 'auth_atom_id', 'type': 'str', 'alt_name': 'alt_auth_atom_id'})
+            data_items.append({'name': 'pdbx_auth_comp_id', 'type': 'str', 'alt_name': 'alt_auth_comp_id'})
+
+        _filter_items = [{'name': 'type_symbol', 'type': 'enum', 'enum': NMR_OBS_NUCS},
+                         {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)},
+                         {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': self.__eff_model_ids[0]}]
+
+        if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
+            _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,
+                                  'fetch_first_match': True})  # to process large assembly avoiding forced timeout
+
+        self.__entityInstance = {}
+
+        atom_name_unchecked = comp_name_unchecked = True
+        _auth_atom_id_ = 'auth_atom_id'
+
+        try:
+
+            coord = self.__cR.getDictListWithFilter('atom_site', data_items, _filter_items)
+
+            # DAOTHER-8705
+            if atom_name_unchecked:
+                atom_name_unchecked = False
+                if _auth_atom_id == 'pdbx_auth_atom_name':
+                    for c in coord:
+                        if None not in (c['auth_atom_id'], c['alt_auth_atom_id'])\
+                           and c['auth_atom_id'][0].isdigit() and c['alt_auth_atom_id'][0] == 'H':
+                            _auth_atom_id_ = 'alt_auth_atom_id'
+                            break
+
+            # DAOTHER-8817
+            if comp_name_unchecked:
+                comp_name_unchecked = False
+                if _auth_atom_id == 'pdbx_auth_atom_name':
+                    for c in coord:
+                        if c['auth_comp_id'] is not None and c['auth_comp_id'] not in STD_MON_DICT\
+                           and c['alt_auth_comp_id'] is not None and c['auth_comp_id'] != c['alt_auth_comp_id']:
+                            _auth_atom_id_ = 'alt_auth_atom_id'
+                            break
+
+            for c in coord:
+                auth_chain_id = c['auth_chain_id']
+                if auth_chain_id not in self.__entityInstance:
+                    self.__entityInstance[auth_chain_id] = {}
+
+                seq_id = str(c['auth_seq_id'])
+                if c['ins_code'] not in EMPTY_VALUE:
+                    seq_id += c['ins_code']
+
+                seq_key = (seq_id, c['label_comp_id'])
+
+                if seq_key not in self.__entityInstance[auth_chain_id]:
+                    self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': c['seq_id'], 'atoms': []}
+
+                atom_id = c[_auth_atom_id_]
+
+                if atom_id not in self.__entityInstance[auth_chain_id][seq_key]:
+                    self.__entityInstance[auth_chain_id][seq_key].append(atom_id)
+
+            # include unmodeled entity
+
+            def update_entity_instance(_ps):
+                auth_chain_id = _ps['auth_chain_id']
+                if auth_chain_id not in self.__entityInstance:
+                    return
+
+                if 'ins_code' in _ps:
+                    for auth_seq_id, ins_code, seq_id, comp_id\
+                            in zip(_ps['auth_seq_id'], _ps['ins_code'], _ps['seq_id'], _ps['comp_id']):
+                        auth_seq_id = str(auth_seq_id)
+                        if ins_code not in EMPTY_VALUE:
+                            auth_seq_id += ins_code
+
+                        seq_key = (auth_seq_id, comp_id)
+
+                        if seq_key in self.__entityInstance[auth_chain_id]:
+                            continue
+
+                        self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                        if self.__ccU.updateChemCompDict(comp_id):
+                            for cca in self.__ccU.lastAtomDictList:
+                                if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                    self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
+
+                else:
+                    for auth_seq_id, seq_id, comp_id\
+                            in zip(_ps['auth_seq_id'], _ps['seq_id'], _ps['comp_id']):
+                        seq_key = (str(auth_seq_id), comp_id)
+
+                        if seq_key in self.__entityInstance[auth_chain_id]:
+                            continue
+
+                        self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                        if self.__ccU.updateChemCompDict(comp_id):
+                            for cca in self.__ccU.lastAtomDictList:
+                                if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                    self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
+
+            for ps in self.__caC['polymer_sequence']:
+                update_entity_instance(ps)
+
+            for br in self.__caC['branched']:
+                update_entity_instance(br)
+
+            for np in self.__caC['non_poly']:
+                update_entity_instance(np)
+
+            if self.__cifHashCode is not None:
+                write_as_pickle(self.__entityInstance, vrpt_entity_instance_cache_path)
+
+            return True
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractEntityInstances() ++ Error  - {str(e)}\n")
+
+            self.__entityInstance = None
+
+        return False
+
+    def __extractCoordAtomSites(self) -> bool:
         """ Extract atom_site of coordinate file.
             @author: Masashi Yokochi
-            @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_coordinates,
+            @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.get_coordinates,
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, use PDB_ins_code for atom identification,
                      performance optimization
@@ -1323,10 +1873,10 @@ class NmrVrptUtility:
                       {'name': 'label_asym_id', 'type': 'str'},
                       {'name': 'label_seq_id', 'type': 'int'},
                       {'name': 'label_comp_id', 'type': 'str'},
-                      {'name': 'label_atom_id', 'type': 'str'},
+                      # {'name': 'label_atom_id', 'type': 'str'},
                       {'name': 'label_entity_id', 'type': 'int'},
                       {'name': 'label_alt_id', 'type': 'str', 'default': '.'},
-                      {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'default': '?'},
+                      {'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'},
                       {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
@@ -1337,7 +1887,7 @@ class NmrVrptUtility:
             data_items.append({'name': 'auth_atom_id', 'type': 'str', 'alt_name': 'alt_auth_atom_id'})
             data_items.append({'name': 'pdbx_auth_comp_id', 'type': 'str', 'alt_name': 'alt_auth_comp_id'})
 
-        _filter_items = []  # {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representativeAltId,)}]
+        _filter_items = []  # {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)}]
 
         if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
             _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,
@@ -1382,13 +1932,13 @@ class NmrVrptUtility:
 
                 for c in coord:
                     atom_key = (c['auth_asym_id'], c['auth_seq_id'], c['auth_comp_id'],
-                                c[_auth_atom_id_], c['pdbx_PDB_ins_code'])
+                                c[_auth_atom_id_], c['ins_code'])
 
                     # tokens = ("ent_", "said_", "resname_", "seq_", "resnum_", "altcode_", "icode_", "chain_")
 
                     atom_id_list_per_model[atom_key] =\
                         (c['label_entity_id'], c['label_asym_id'], c['label_comp_id'], c['label_seq_id'],
-                         c['auth_seq_id'], c['label_alt_id'], c['pdbx_PDB_ins_code'], c['auth_asym_id'])
+                         c['auth_seq_id'], c['label_alt_id'], c['ins_code'], c['auth_asym_id'])
 
                     coordinates_per_model[atom_key] = to_np_array(c)
 
@@ -1396,11 +1946,11 @@ class NmrVrptUtility:
                     # (MISSING ATOM IN MODEL KeyError)
                     if _auth_atom_id == 'pdbx_auth_atom_name' and c['auth_atom_id'] != c['alt_auth_atom_id']:
                         _atom_key = (c['auth_asym_id'], c['auth_seq_id'], c['auth_comp_id'],
-                                     c['alt_auth_atom_id'], c['pdbx_PDB_ins_code'])
+                                     c['alt_auth_atom_id'], c['ins_code'])
 
                         atom_id_list_per_model[_atom_key] =\
                             (c['label_entity_id'], c['label_asym_id'], c['label_comp_id'], c['label_seq_id'],
-                             c['auth_seq_id'], c['label_alt_id'], c['pdbx_PDB_ins_code'], c['auth_asym_id'])
+                             c['auth_seq_id'], c['label_alt_id'], c['ins_code'], c['auth_asym_id'])
 
                         coordinates_per_model[_atom_key] = to_np_array(c)
 
@@ -1416,16 +1966,142 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__log.write(f"+{self.__class_name__}.__extractCoordAtomSite() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractCoordAtomSites() ++ Error  - {str(e)}\n")
 
             self.__atomIdList = self.__coordinates = None
 
         return False
 
-    def __extractGenDistConstraint(self) -> bool:
+    def __extractChemicalShifts(self) -> bool:
+        """ Extract Atom_chem_shift category of NMR data file.
+            @author: Masashi Yokochi
+            @note: Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftAnalysis.get_chemical_shifts,
+                   written by Aleksandras Gutmanas, Kumaran Baskaran
+            @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of chemical shifts,
+        """
+
+        if self.__has_prev_results:
+            return True
+
+        if self.__nmrDataPath is None:
+            return False
+
+        self.__chemShiftMeta = []
+        self.__chemShiftTotal = {}
+        self.__chemShiftDict = {}
+        self.__chemShiftUnparsed = {}
+
+        lp_category = 'Atom_chem_shift'
+        sf_category = 'Assigned_chem_shift_list'
+
+        try:
+
+            for idx, datablock_name in enumerate(self.__rR.getDataBlockNameList()):
+
+                if not self.__rR.hasCategory(lp_category, datablock_name):
+                    continue
+
+                sf_tag = self.__rR.getDictList(sf_category, datablock_name)
+
+                list_id = int(sf_tag[0]['ID'])
+                sf_framecode = sf_tag[0]['Sf_framecode']
+
+                self.__chemShiftMeta.append((idx, sf_framecode, list_id))
+                self.__chemShiftTotal[list_id] = self.__rR.getRowLength(lp_category, datablock_name)
+
+                data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                              {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                              {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                              {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                              {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                              {'name': 'Val', 'type': 'float', 'alt_name': 'value'},
+                              {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
+                              {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
+                               'enum': ALLOWED_AMBIGUITY_CODES},
+                              ]
+
+                tags = self.__rR.getAttributeList(lp_category, datablock_name)
+
+                if 'PDB_ins_code' in tags:
+                    data_items.append({'name': 'PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'})
+
+                filter_items = [{'name': 'Assigned_chem_shift_list_ID', 'type': 'int', 'value': list_id}]
+
+                data = self.__rR.getDictListWithFilter(lp_category,
+                                                       data_items,
+                                                       filter_items,
+                                                       datablock_name)
+
+                if list_id not in self.__chemShiftDict:
+
+                    if len(data) == 0:
+                        self.__log.write(f"Failed in parsing assigned chemical shifts of list ID {list_id}\n")
+                        continue
+
+                    self.__chemShiftDict[list_id] = data
+                    self.__chemShiftUnparsed[list_id] = []
+
+                    if self.__chemShiftTotal[list_id] > len(data):
+
+                        data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                      {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                      {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                      {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                      {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                      {'name': 'Val', 'type': 'str', 'alt_name': 'value'},
+                                      {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
+                                      {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
+                                       'enum': ALLOWED_AMBIGUITY_CODES},
+                                      ]
+
+                        if 'PDB_ins_code' in tags:
+                            data_items.append({'name': 'PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'})
+
+                        filter_items = [{'name': 'Assigned_chem_shift_list_ID', 'type': 'int', 'value': list_id}]
+
+                        _data = self.__rR.getDictListWithFilter(lp_category,
+                                                                data_items,
+                                                                filter_items,
+                                                                datablock_name)
+
+                        for _cs in _data:
+                            cs_auth_chain_id = _cs['auth_chain_id']
+                            cs_auth_seq_id = _cs['auth_seq_id']
+                            cs_comp_id = _cs['comp_id']
+                            cs_atom_id = _cs['atom_id']
+                            if not any(True for cs in data
+                                       if cs['auth_chain_id'] == cs_auth_chain_id
+                                       and cs['auth_seq_id'] == cs_auth_seq_id
+                                       and cs['comp_id'] == cs_comp_id
+                                       and cs['atom_id'] == cs_atom_id):
+                                cs_value = _cs['value']
+                                cs_error = _cs['error']
+                                ambig_code = _cs['ambig_code']
+
+                                if 'PDB_ins_code' not in tags or _cs['ins_code'] in EMPTY_VALUE:
+                                    cs_key = (cs_auth_chain_id, str(cs_auth_seq_id), cs_comp_id, cs_atom_id)
+                                else:
+                                    cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + _cs['ins_code'], cs_comp_id, cs_atom_id)
+
+                                err_cs_values = list(cs_key)
+                                err_cs_values.extend([cs_value, cs_error, ambig_code])
+                                self.__chemShiftDuplicated[list_id].append(err_cs_values)
+
+            return True
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractChemicalShiftgs() ++ Error  - {str(e)}\n")
+
+            self.__chemShiftMeta = self.__chemShiftTotal = self.__chemShiftDict = self.__chemShiftUnparsed = None
+
+        return False
+
+    def __extractGenDistConstraints(self) -> bool:
         """ Extract Gen_dist_constraint category of NMR data file.
             @author: Masashi Yokochi
-            @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_restraints2,
+            @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.get_restraints2,
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
@@ -1453,7 +2129,7 @@ class NmrVrptUtility:
                 if not self.__rR.hasCategory(lp_category, datablock_name):
                     continue
 
-                sf_tag = self.__rR.getDictList(sf_category)
+                sf_tag = self.__rR.getDictList(sf_category, datablock_name)
 
                 list_id = int(sf_tag[0]['ID'])
 
@@ -1472,7 +2148,7 @@ class NmrVrptUtility:
                               {'name': 'Distance_upper_bound_val', 'type': 'float', 'alt_name': 'upper_limit'}
                               ]
 
-                tags = self.__rR.getAttributeList(lp_category)
+                tags = self.__rR.getAttributeList(lp_category, datablock_name)
 
                 has_combination_id = 'Combination_ID' in tags
                 has_member_logic_code = 'Member_logic_code' in tags
@@ -1509,7 +2185,8 @@ class NmrVrptUtility:
 
                 rest = self.__rR.getDictListWithFilter(lp_category,
                                                        data_items,
-                                                       filter_items)
+                                                       filter_items,
+                                                       datablock_name)
 
                 for r in rest:
                     rest_key = (list_id, r['id'])
@@ -1537,7 +2214,7 @@ class NmrVrptUtility:
                     if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
                         if 'HOH' not in (comp_id_1, comp_id_2):
-                            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - "
+                            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraints() ++ Error  - "
                                              f"distance restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
@@ -1571,7 +2248,7 @@ class NmrVrptUtility:
                                            lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - "
+                        self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraints() ++ Error  - "
                                          f"distance restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
@@ -1645,16 +2322,16 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraint() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractGenDistConstraints() ++ Error  - {str(e)}\n")
 
             self.__distRestDict = self.__distRestSeqDict = None
 
         return False
 
-    def __extractTorsionAngleConstraint(self) -> bool:
+    def __extractTorsionAngleConstraints(self) -> bool:
         """ Extract Torsion_angle_constraint category of NMR data file.
             @author: Masashi Yokochi
-            @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.get_restraints2,
+            @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.get_restraints2,
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID),
@@ -1687,7 +2364,7 @@ class NmrVrptUtility:
                 if not self.__rR.hasCategory(lp_category, datablock_name):
                     continue
 
-                sf_tag = self.__rR.getDictList(sf_category)
+                sf_tag = self.__rR.getDictList(sf_category, datablock_name)
 
                 list_id = int(sf_tag[0]['ID'])
 
@@ -1713,7 +2390,7 @@ class NmrVrptUtility:
                               {'name': 'Angle_target_val', 'type': 'float', 'alt_name': 'target_value'}
                               ]
 
-                tags = self.__rR.getAttributeList(lp_category)
+                tags = self.__rR.getAttributeList(lp_category, datablock_name)
 
                 has_torsion_angle_name = 'Torsion_angle_name' in tags
                 has_combination_id = 'Combination_ID' in tags
@@ -1748,7 +2425,8 @@ class NmrVrptUtility:
 
                 rest = self.__rR.getDictListWithFilter(lp_category,
                                                        data_items,
-                                                       filter_items)
+                                                       filter_items,
+                                                       datablock_name)
 
                 for r in rest:
                     rest_key = (list_id, r['id'])
@@ -1782,7 +2460,7 @@ class NmrVrptUtility:
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int)\
                        or not isinstance(auth_seq_id_3, int) or not isinstance(auth_seq_id_4, int):
                         if angle_type not in ('PPA', 'UNNAMED'):
-                            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - "
+                            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraints() ++ Error  - "
                                              f"dihedral angle restraint {rest_key} {r} is not interpretable, "
                                              f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
@@ -1800,7 +2478,7 @@ class NmrVrptUtility:
                                             lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - "
+                        self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraints() ++ Error  - "
                                          f"dihedral angle restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
@@ -1849,13 +2527,13 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraint() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractTorsionAngleConstraints() ++ Error  - {str(e)}\n")
 
             self.__dihedRestDict = self.__dihedRestSeqDict = None
 
         return False
 
-    def __extractRdcConstraint(self) -> bool:
+    def __extractRdcConstraints(self) -> bool:
         """ Extract RDC_constraint category of NMR data file.
         """
 
@@ -1880,7 +2558,7 @@ class NmrVrptUtility:
                 if not self.__rR.hasCategory(lp_category, datablock_name):
                     continue
 
-                sf_tag = self.__rR.getDictList(sf_category)
+                sf_tag = self.__rR.getDictList(sf_category, datablock_name)
 
                 list_id = int(sf_tag[0]['ID'])
 
@@ -1905,7 +2583,7 @@ class NmrVrptUtility:
                               {'name': 'Target_value', 'type': 'float', 'alt_name': 'target_value'},
                               ]
 
-                tags = self.__rR.getAttributeList(lp_category)
+                tags = self.__rR.getAttributeList(lp_category, datablock_name)
 
                 has_combination_id = 'Combination_ID' in tags
                 has_pdb_ins_code_1 = 'PDB_ins_code_1' in tags
@@ -1944,7 +2622,8 @@ class NmrVrptUtility:
 
                 rest = self.__rR.getDictListWithFilter(lp_category,
                                                        data_items,
-                                                       filter_items)
+                                                       filter_items,
+                                                       datablock_name)
 
                 for r in rest:
                     rest_key = (list_id, r['id'])
@@ -1965,7 +2644,7 @@ class NmrVrptUtility:
 
                     if None in (atom_id_1, atom_id_2)\
                        or not isinstance(auth_seq_id_1, int) or not isinstance(auth_seq_id_2, int):
-                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() "
+                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraints() "
                                          f"++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
@@ -1985,7 +2664,7 @@ class NmrVrptUtility:
                                           lower_limit, upper_limit, lower_linear_limit, upper_linear_limit)
 
                     if target_value is None:
-                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() "
+                        self.__log.write(f"+{self.__class_name__}.__extractRdcConstraints() "
                                          f"++ Error  - RDC restraint {rest_key} {r} is not interpretable, "
                                          f"{os.path.basename(self.__nmrDataPath)}.\n")
                         skipped = True
@@ -2028,16 +2707,145 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__log.write(f"+{self.__class_name__}.__extractRdcConstraint() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractRdcConstraints() ++ Error  - {str(e)}\n")
 
             self.__rdcRestDict = self.__rdcRestSeqDict = None
+
+        return False
+
+    def __calculateChemicalShiftViolations(self) -> bool:
+        """ Calculate chemical shift violations.
+            @author: Masashi Yokochi
+            @note: Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis.get_chemical_shifts,
+                   Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis.getCompleteness,
+                   written by Aleksandras Gutmanas, Kumaran Baskaran
+            @change: class method
+        """
+
+        if self.__chemShiftDict is None or len(self.__chemShiftDict) == 0 or self.__has_prev_results:
+            return True
+
+        if self.__coordinates is None:
+            return False
+
+        self.__chemShiftUniqDict = {}
+        self.__chemShiftOutlier = {}
+        self.__chemShiftDuplicated = {}
+        self.__chemShiftUnmapped = {}
+
+        try:
+
+            def check_entity_instance(list_id, _cs):
+                auth_chain_id = _cs['auth_chain_id']
+
+                if auth_chain_id not in self.__entityInstance:
+                    if list_id not in self.__chemShiftUnmapped:
+                        self.__chemShiftUnmapped[list_id] = []
+                    self.__chemShiftUnmapped[list_id].append(_cs)
+                    return
+
+                seq_id = _cs['seq_id']
+                comp_id = _cs['comp_id']
+
+                if 'ins_code' not in _cs and _cs['ins_code'] in EMPTY_VALUE:
+                    seq_key = (str(seq_id), comp_id)
+                else:
+                    seq_key = (str(seq_id) + _cs['ins_code'], comp_id)
+
+                if seq_key not in self.__entityInstance[auth_chain_id]:
+                    if list_id not in self.__chemShiftUnmapped:
+                        self.__chemShiftUnmapped[list_id] = []
+                    self.__chemShiftUnmapped[list_id].append(_cs)
+                    return
+
+                atom_id = _cs['atom_id']
+                atoms = self.__entityInstance[auth_chain_id][seq_key]['atoms']
+
+                if atom_id in atoms:
+                    return
+
+                if self.__entityInstance[auth_chain_id][seq_key]['seq_id'] == 1\
+                   and self.__ccU.peptideLike(comp_id)\
+                   and atom_id in AMINO_PROTON_CODE\
+                   and any(True for a_proton in AMINO_PROTON_CODE if a_proton in atoms):
+                    return
+
+                self.__chemShiftUnmapped[list_id].append(_cs)
+
+            for list_id, cs_data in self.__chemShiftDict.items():
+
+                if list_id in self.__chemShiftUniqDict:
+                    continue
+
+                has_ins_code = any(True for r in cs_data if 'ins_code' in r and r['ins_code'] not in EMPTY_VALUE)
+
+                self.__chemShiftUniqDict[list_id] = {}
+                self.__chemShiftOutlier[list_id] = []
+                self.__chemShiftDuplicated[list_id] = []
+                self.__chemShiftUnmapped[list_id] = []
+
+                for cs in cs_data:
+                    cs_auth_chain_id = cs['auth_chain_id']
+                    cs_auth_seq_id = cs['auth_seq_id']
+                    cs_comp_id = cs['comp_id']
+                    cs_atom_id = cs['atom_id']
+                    cs_value = cs['value']
+                    cs_error = cs['error']
+                    ambig_code = cs['ambig_code']
+
+                    if not has_ins_code or cs['ins_code'] in EMPTY_VALUE:
+                        cs_key = (cs_auth_chain_id, str(cs_auth_seq_id), cs_comp_id, cs_atom_id)
+                    else:
+                        cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + cs['ins_code'], cs_comp_id, cs_atom_id)
+
+                    if cs_key not in self.__chemShiftUniqDict:
+                        self.__chemShiftUniqDict[list_id][cs_key] = {'value': cs_value,
+                                                                     'error': cs_error,
+                                                                     'ambig_code': ambig_code}
+
+                        check_entity_instance(list_id, cs)
+
+                        cs_stat = next((cs_stat for cs_stat in self.__csStat.get(cs['comp_id'])
+                                        if cs_stat['atom_id'] == cs['atom_id'] and cs_stat['count'] > 0), None)
+
+                        if cs_stat is None:
+                            continue
+
+                        self.__chemShiftUniqDict[list_id][cs_key]['primary'] = True
+
+                        avg_value = cs_stat['avg']
+                        std_value = cs_stat['std']
+
+                        z_score = float(f"{(cs['value'] - avg_value) / std_value:.2f}")
+
+                        if abs(z_score) > 5.0:
+                            out_cs_values = list(cs_key)
+                            out_cs_values.extend([cs_value, ambig_code, z_score,
+                                                  float(f"{avg_value - 5.0 * std_value:.2f}"),
+                                                  float(f"{avg_value + 5.0 * std_value:.2f}")])
+                            self.__chemShiftOutlier[list_id].append(out_cs_values)
+
+                    else:
+                        dup_cs_values = list(cs_key)
+                        dup_cs_values.extend([cs_value, cs_error, ambig_code])
+                        self.__chemShiftDuplicated[list_id].append(dup_cs_values)
+
+            return True
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__calculateChemicalShiftViolations() ++ Error  - {str(e)}\n")
+
+            self.__chemShiftUniqDict = self.__chemShiftOutlier = \
+                self.__chemShiftDuplicated = self.__chemShiftUnmapped = None
 
         return False
 
     def __calculateDistanceRestraintViolations(self) -> bool:
         """ Calculate distance restraint violations.
             @author: Masashi Yokochi
-            @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.calculate_distance_violations,
+            @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.calculate_distance_violations,
                    written by Kumaran Baskaran
             @change: class method,
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
@@ -2327,7 +3135,7 @@ class NmrVrptUtility:
     def __calculateDihedralAngleRestraintViolations(self) -> bool:
         """ Calculate dihedral angle restraint violations.
             @author: Masashi Yokochi
-            @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.calculate_angle_violations,
+            @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.calculate_angle_violations,
                    written by Kumaran Baskaran
             @change: class method,
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID)
@@ -2669,8 +3477,280 @@ class NmrVrptUtility:
 
         return False
 
-    def __summarizeCommonResults(self) -> bool:
-        """ Summarize common results.
+    def __summarizeCommonCsResults(self) -> bool:
+        """ Summarize common chemical shift analysis results.
+        """
+
+        if self.__has_prev_results:
+            return True
+
+        if self.__chemShiftDict is None or len(self.__chemShiftDict) == 0:
+            self.__results = {'cs_no_file': True}
+            self.__log.write("There are no assigned chemical shifts that need to be analyzed.\n")
+            return False
+
+        task_keys = ('well_defined', 'full_length')
+
+        def do_calc_completeness(list_ids, task_key, auth_chain_id, well_defined_region, seq_key, seq_id, coord_atoms, output):
+            if task_key == 'well_defined':
+                try:
+                    auth_seq_id = int(seq_key[0])
+                    if auth_seq_id not in well_defined_region:
+                        return
+                except ValueError:
+                    return
+
+            res_num = seq_key[0]
+            comp_id = seq_key[1]
+
+            cs_atoms = []
+            for list_id in list_ids:
+                if list_id not in self.__chemShiftUniqDict:
+                    continue
+                cs_atoms.extend([cs_key[3] for cs_key, cs_val in self.__chemShiftUniqDict[list_id].items()
+                                 if cs_key[0] == auth_chain_id and cs_key[1] == res_num and cs_key[2] == comp_id
+                                 and 'primary' in cs_val])
+            if len(list_ids) > 1:
+                cs_atoms = list(set(cs_atoms))
+
+            categorized_atom_ids = self.__csStat.getCategorizedAtomIds(comp_id)
+
+            if categorized_atom_ids is None:
+                return
+
+            n_terminal_aa = seq_id == 1 and self.__csStat.peptideLike(comp_id)
+
+            for category, atom_ids in categorized_atom_ids.items():
+                for atom_id in atom_ids:
+
+                    if n_terminal_aa and atom_id == 'H':
+                        continue
+
+                    atom_type = atom_id[0]
+                    if atom_type not in ('H', 'C', 'N', 'P'):
+                        continue
+
+                    if atom_id in cs_atoms:
+                        output[task_key][atom_type][category][0] += 1
+                        output[task_key][atom_type]['overall'][0] += 1
+                        output[task_key]['Total'][category][0] += 1
+                        output[task_key]['Total']['overall'][0] += 1
+
+                    # count only carbon/nitrogen if not quaternary (use coordinates to check whether hydrogen attached)
+                    elif atom_type in ('C', 'N'):
+                        bonded_protons = self.__ccU.getBondedAtoms(comp_id, atom_id, onlyProton=True)
+                        if len(bonded_protons) == 1 and bonded_protons[0] not in coord_atoms:
+                            continue
+
+                    output[task_key][atom_type][category][1] += 1
+                    output[task_key][atom_type]['overall'][1] += 1
+                    output[task_key]['Total'][category][1] += 1
+                    output[task_key]['Total']['overall'][1] += 1
+
+            # Check for stereo-assignment of methyl groups (VAL, LEU)
+            for list_id in list_ids:
+                if comp_id == 'LEU':
+                    _cs_key = (auth_chain_id, res_num, comp_id, 'CD1')
+                    if _cs_key in self.__chemShiftUniqDict[list_id]\
+                       and self.__chemShiftUniqDict[list_id][_cs_key]['ambig_code'] == 1:
+                        _cs_key = (auth_chain_id, res_num, comp_id, 'CD2')
+                        if _cs_key in self.__chemShiftUniqDict[list_id]\
+                           and self.__chemShiftUniqDict[list_id][_cs_key]['ambig_code'] == 1:
+                            output[task_key]['stereomethyl'][0] += 1
+                    output[task_key]['stereomethyl'][1] += 1
+
+                elif comp_id == 'VAL':
+                    _cs_key = (auth_chain_id, res_num, comp_id, 'CG1')
+                    if _cs_key in self.__chemShiftUniqDict[list_id]\
+                       and self.__chemShiftUniqDict[list_id][_cs_key]['ambig_code'] == 1:
+                        _cs_key = (auth_chain_id, res_num, comp_id, 'CG2')
+                        if _cs_key in self.__chemShiftUniqDict[list_id]\
+                           and self.__chemShiftUniqDict[list_id][_cs_key]['ambig_code'] == 1:
+                            output[task_key]['stereomethyl'][0] += 1
+                    output[task_key]['stereomethyl'][1] += 1
+
+        def calc_completeness(list_ids):
+            output = {}
+
+            for task_key in task_keys:
+                output[task_key] = {'Total': {'overall': [0, 0],
+                                              'backbone': [0, 0],
+                                              'sidechain': [0, 0],
+                                              'aromatic': [0, 0],
+                                              'sugar': [0, 0],
+                                              'base': [0, 0]
+                                              },
+                                    'H': {'overall': [0, 0],
+                                          'backbone': [0, 0],
+                                          'sidechain': [0, 0],
+                                          'aromatic': [0, 0],
+                                          'sugar': [0, 0],
+                                          'base': [0, 0]
+                                          },
+                                    'C': {'overall': [0, 0],
+                                          'backbone': [0, 0],
+                                          'sidechain': [0, 0],
+                                          'aromatic': [0, 0],
+                                          'sugar': [0, 0],
+                                          'base': [0, 0]
+                                          },
+                                    'N': {'overall': [0, 0],
+                                          'backbone': [0, 0],
+                                          'sidechain': [0, 0],
+                                          'aromatic': [0, 0],
+                                          'sugar': [0, 0],
+                                          'base': [0, 0]
+                                          },
+                                    'P': {'overall': [0, 0],
+                                          'backbone': [0, 0],
+                                          'sidechain': [0, 0],
+                                          'aromatic': [0, 0],
+                                          'sugar': [0, 0],
+                                          'base': [0, 0]
+                                          },
+                                    'stereomethyl': [0, 0]
+                                    }
+
+            for auth_chain_id, v in self.__entityInstance.items():
+                well_defined_region = []
+
+                cif_ps = self.__inputReport.getModelPolymerSequenceOf(auth_chain_id, label_scheme=False)
+
+                if cif_ps is not None:
+                    if 'well_defined_region' in cif_ps:
+                        for item in cif_ps['well_defined_region']:
+                            well_defined_region.extend(item['seq_id'])
+
+                for seq_key, w in v.items():
+                    for task_key in task_keys:
+                        do_calc_completeness(list_ids, task_key, auth_chain_id, well_defined_region,
+                                             seq_key, w['seq_id'], w['atoms'], output)
+
+            return output
+
+        list_ids = list(self.__chemShiftDict.keys())
+
+        completeness = calc_completeness(list_ids)
+        completeness = {task_key: completeness[task_key]['Total']['overall'] for task_key in task_keys}
+
+        completeness_items = {list_id: calc_completeness([list_id]) for list_id in list_ids}
+
+        meta_data = (os.path.basename(self.__nmrDataPath), self.__chemShiftMeta)
+
+        cs_error = {'CS_OUTLIER': self.__chemShiftOutlier,
+                    'CS_DUPLICATE': self.__chemShiftDuplicated,
+                    'CS_VALUE': self.__chemShiftUnparsed,
+                    'NO_MAP': self.__chemShiftUnmapped}
+
+        book_keeping = {'total_shifts': self.__chemShiftTotal,
+                        'cs_error': cs_error}
+
+        exptl = self.__cR.getDictList('exptl')
+
+        ssnmr = False
+        if len(exptl) > 0 and 'method' in exptl[0]:
+            ssnmr = exptl[0]['method'] == 'SOLID-STATE NMR'
+
+        rci = RCI()
+
+        rci_atom_ids = ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB')
+        rci_result = {}
+
+        for list_id, cs_data in self.__chemShiftUniqDict.items():
+            rci_result[list_id] = {}
+
+            auth_chain_ids = list(set(cs_key[0] for cs_key in cs_data))
+
+            for auth_chain_id in auth_chain_ids:
+                ps = next((ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id), None)
+
+                if ps is None:
+                    continue
+
+                rci_residues, rci_assignments, seq_ids_wo_assign, oxidized_cys_seq_ids = [], [], [], []
+
+                for auth_seq_id, comp_id in zip(ps['auth_seq_id'], ps['comp_id']):
+
+                    if comp_id not in EMPTY_VALUE:
+                        if comp_id not in STD_MON_DICT:
+                            continue
+                        if not self.__csStat.peptideLike(comp_id):
+                            continue
+                        rci_residues.append([comp_id, auth_seq_id])
+                    else:
+                        continue
+
+                    _cs_data = {k: v for k, v in cs_data.items()
+                                if k[0] == auth_chain_id and k[1].isdigit() and int(k[1]) == auth_seq_id
+                                and k[2] == comp_id and v['value'] not in EMPTY_VALUE}
+
+                    if len(_cs_data) == 0:
+                        continue
+
+                    has_bb_atoms = False
+
+                    for cs_key, cs_vals in _cs_data.items():
+                        atom_id = cs_key[3]
+
+                        if atom_id not in rci_atom_ids:
+                            continue
+
+                        rci_assignments.append([comp_id, auth_seq_id, atom_id, atom_id[0], cs_vals['value']])
+
+                        has_bb_atoms = True
+
+                    if has_bb_atoms:
+
+                        if comp_id in ('CYS', 'DCY'):
+
+                            ca_chem_shift = cb_chem_shift = None
+
+                            for cs_key, cs_vals in _cs_data.items():
+                                atom_id = cs_key[3]
+
+                                if atom_id == 'CA':
+                                    ca_chem_shift = cs_vals['value']
+                                elif atom_id == 'CB':
+                                    cb_chem_shift = cs_vals['value']
+
+                            ambig_redox_state = False
+
+                            if cb_chem_shift is not None:
+                                if cb_chem_shift < 32.0:
+                                    pass
+                                elif cb_chem_shift > 35.0:
+                                    oxidized_cys_seq_ids.append(auth_seq_id)
+                                else:
+                                    ambig_redox_state = True
+                            elif ca_chem_shift is not None:
+                                ambig_redox_state = True
+
+                            if ambig_redox_state:
+                                oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
+                                if oxi < 0.001:
+                                    pass
+                                elif red < 0.001 or oxi > 0.5:
+                                    oxidized_cys_seq_ids.append(auth_seq_id)
+
+                    else:
+                        seq_ids_wo_assign.append(auth_seq_id)
+
+                if len(rci_assignments) > 0:
+                    rci_result[list_id][auth_chain_id] =\
+                        rci.calculate(rci_residues, rci_assignments, oxidized_cys_seq_ids, seq_ids_wo_assign)
+
+        self.__results = {'completeness': completeness,
+                          'completeness_items': completeness_items,
+                          'meta_data': meta_data,
+                          'book_keeping': book_keeping,
+                          'ssnmr': ssnmr,
+                          'rci': rci_result,
+                          'panav': None}
+
+        return True
+
+    def __summarizeCommonMrResults(self) -> bool:
+        """ Summarize common restraint analysis results.
         """
 
         if self.__has_prev_results:
@@ -2684,7 +3764,7 @@ class NmrVrptUtility:
             if not self.__rR.hasCategory('Chem_comp_assembly', datablock_name):
                 continue
 
-            self.__results['seq_length'] = self.__rR.getRowLength('Chem_comp_assembly')
+            self.__results['seq_length'] = self.__rR.getRowLength('Chem_comp_assembly', datablock_name)
 
             break
 
@@ -2693,7 +3773,7 @@ class NmrVrptUtility:
     def __summarizeDistanceRestraintAnalysis(self) -> bool:
         """ Summarize distance restraint analysis results.
             @author: Masashi Yokochi
-            @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.generate_output,
+            @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.generate_output,
                    written by Kumaran Baskaran
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
@@ -2949,7 +4029,7 @@ class NmrVrptUtility:
     def __summarizeDihedralAngleRestraintAnalysis(self) -> bool:
         """ Summarize dihedral angle restraint analysis results.
             @author: Masashi Yokochi
-            @note: Derived from wwpdb.apps.validation.src.RestraintValidation.BMRBRestraintsAnalysis.generate_output,
+            @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.generate_output,
                    written by Kumaran Baskaran
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
@@ -3422,7 +4502,7 @@ class NmrVrptUtility:
 
         return False
 
-    def __outputResultsAsPickleFileIfPossible(self) -> bool:
+    def __outputResultsAsPickleFile(self) -> bool:
         """ Output results if 'result_pickle_file_path' was set in output parameter.
         """
 

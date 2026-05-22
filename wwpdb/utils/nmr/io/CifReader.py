@@ -36,6 +36,7 @@
 # 20-Aug-2024 - my  - support truncated loop sequence in the model (DAOTHER-9644)
 # 10-Sep-2024 - my  - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 # 18-Sep-2024 - my  - add 'starts-with-alnum' item type (DAOTHER-9694)
+# 20-May-2026 - my  - add 'enum-int' as filter item type (DAOTHER-9785)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -107,7 +108,7 @@ REORDER = False
 CIF_ITEM_TYPES = ('str', 'bool',
                   'int', 'range-int', 'abs-int', 'range-abs-int',
                   'float', 'range-float', 'abs-float', 'range-abs-float',
-                  'enum', 'starts-with-alnum')
+                  'enum', 'enum-int', 'starts-with-alnum')
 
 
 def M(axis: list, theta: float) -> list:
@@ -693,7 +694,7 @@ class CifReader:
                                 break
                         elif filterItemType == 'bool':
                             val = val.lower() in TRUE_VALUE
-                        elif filterItemType == 'int':
+                        elif filterItemType in ('int', 'enum-int'):
                             try:
                                 val = int(val)
                             except ValueError:
@@ -737,6 +738,17 @@ class CifReader:
                                     keep = False
                                     abort = True
                                     break
+                        elif filterItemType == 'enum-int':
+                            if val not in filterItem['enum']:
+                                keep = False
+                                break
+                            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                                if name not in fetchDict:
+                                    fetchDict[name] = val
+                                elif val != fetchDict[name]:
+                                    keep = False
+                                    abort = True
+                                    break
                         else:
                             if val != filterItem['value']:
                                 keep = False
@@ -766,7 +778,7 @@ class CifReader:
                             val = None
                     elif dataItemType == 'bool':
                         val = val.lower() in TRUE_VALUE
-                    elif dataItemType == 'int' and val is not None:
+                    elif dataItemType in ('int', 'enum-int') and val is not None:
                         try:
                             val = int(val)
                         except ValueError:

@@ -1069,8 +1069,8 @@ class NmrVrptUtility:
                           self.__retrieveCoordAssemblyChecker,
                           self.__extractEntityInstances,
                           self.__extractChemicalShifts,
-                          self.__calculateChemicalShiftViolations,
-                          self.__summarizeCommonCsResults,
+                          self.__validateChemicalShifts,
+                          self.__summarizeCommonCsAnalysis,
                           self.__outputResultsAsPickleFile]
 
         __mrValidTasks = [self.__parseCoordinate,
@@ -1081,10 +1081,10 @@ class NmrVrptUtility:
                           self.__extractGenDistConstraints,
                           self.__extractTorsionAngleConstraints,
                           self.__extractRdcConstraints,
-                          self.__calculateDistanceRestraintViolations,
-                          self.__calculateDihedralAngleRestraintViolations,
-                          self.__calculateRdcRestraintViolations,
-                          self.__summarizeCommonMrResults,
+                          self.__validateDistanceRestraints,
+                          self.__validateDihedralAngleRestraints,
+                          self.__validateRdcRestraints,
+                          self.__summarizeCommonMrAnalysis,
                           self.__summarizeDistanceRestraintAnalysis,
                           self.__summarizeDihedralAngleRestraintAnalysis,
                           self.__summarizeRdcRestraintAnalysis,
@@ -2713,8 +2713,8 @@ class NmrVrptUtility:
 
         return False
 
-    def __calculateChemicalShiftViolations(self) -> bool:
-        """ Calculate chemical shift violations.
+    def __validateChemicalShifts(self) -> bool:
+        """ Validate assigned chemical shifts.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis.get_chemical_shifts,
                    Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis.getCompleteness,
@@ -2835,15 +2835,15 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__log.write(f"+{self.__class_name__}.__calculateChemicalShiftViolations() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.__validateChemicalShifts() ++ Error  - {str(e)}\n")
 
             self.__chemShiftUniqDict = self.__chemShiftOutlier = \
                 self.__chemShiftDuplicated = self.__chemShiftUnmapped = None
 
         return False
 
-    def __calculateDistanceRestraintViolations(self) -> bool:
-        """ Calculate distance restraint violations.
+    def __validateDistanceRestraints(self) -> bool:
+        """ Validate distance restraints.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.calculate_distance_violations,
                    written by Kumaran Baskaran
@@ -2998,7 +2998,7 @@ class NmrVrptUtility:
 
                             d = distance(pos_1, pos_2)
                             if d == 0.0:
-                                self.__log.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - "
+                                self.__log.write(f"+{self.__class_name__}.__validateDistanceRestraints() ++ Error  - "
                                                  f"distance restraint {rest_key} {r} does not make sense, "
                                                  f"{os.path.basename(self.__nmrDataPath)}.\n")
                             dist_list_set[bound_key].append(d)
@@ -3126,14 +3126,14 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__log.write(f"+{self.__class_name__}.__calculateDistanceRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.__validateDistanceRestraints() ++ Error  - {str(e)}\n")
 
             self.__distRestViolDict = self.__distRestUnmapped = None
 
         return False
 
-    def __calculateDihedralAngleRestraintViolations(self) -> bool:
-        """ Calculate dihedral angle restraint violations.
+    def __validateDihedralAngleRestraints(self) -> bool:
+        """ Validate dihedral angle restraints.
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.RestraintsValidation.BMRBRestraintsAnalysis.calculate_angle_violations,
                    written by Kumaran Baskaran
@@ -3308,14 +3308,14 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__log.write(f"+{self.__class_name__}.__calculateDihedralAngleRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.__validateDihedralAngleRestraints() ++ Error  - {str(e)}\n")
 
             self.__dihedRestViolDict = self.__dihedRestUnmapped = None
 
         return False
 
-    def __calculateRdcRestraintViolations(self) -> bool:
-        """ Calculate RDC restraint violations.
+    def __validateRdcRestraints(self) -> bool:
+        """ Validate RDC restraints.
             @author: Masashi Yokochi
         """
 
@@ -3471,14 +3471,14 @@ class NmrVrptUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
-            self.__log.write(f"+{self.__class_name__}.__calculateRdcRestraintViolations() ++ Error  - {str(e)}\n")
+            self.__log.write(f"+{self.__class_name__}.__validateRdcRestraints() ++ Error  - {str(e)}\n")
 
             self.__rdcRestViolDict = self.__rdcRestUnmapped = None
 
         return False
 
-    def __summarizeCommonCsResults(self) -> bool:
-        """ Summarize common chemical shift analysis results.
+    def __summarizeCommonCsAnalysis(self) -> bool:
+        """ Summarize common chemical shift analysis.
         """
 
         if self.__has_prev_results:
@@ -3749,8 +3749,8 @@ class NmrVrptUtility:
 
         return True
 
-    def __summarizeCommonMrResults(self) -> bool:
-        """ Summarize common restraint analysis results.
+    def __summarizeCommonMrAnalysis(self) -> bool:
+        """ Summarize common restraint analysis.
         """
 
         if self.__has_prev_results:

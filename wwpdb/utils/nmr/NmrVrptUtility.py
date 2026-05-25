@@ -25,6 +25,7 @@ __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
 __version__ = "v1.2"
 
+import collections
 import copy
 import gzip
 import math
@@ -62,6 +63,7 @@ try:
                                                AMINO_PROTON_CODE,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
+                                               REPRESENTATIVE_ASYM_ID,
                                                DIST_ERROR_MAX,
                                                ANGLE_ERROR_MAX,
                                                RDC_ERROR_MAX,
@@ -98,6 +100,7 @@ except ImportError:
                                    AMINO_PROTON_CODE,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
+                                   REPRESENTATIVE_ASYM_ID,
                                    DIST_ERROR_MAX,
                                    ANGLE_ERROR_MAX,
                                    RDC_ERROR_MAX,
@@ -3490,6 +3493,8 @@ class NmrVrptUtility:
             return False
 
         task_keys = ('well_defined', 'full_length')
+        atom_types = ('Total', 'H', 'C', 'N', 'P')
+        atom_categories = ('overall', 'backbone', 'sidechain', 'aromatic', 'sugar', 'base')
 
         def do_calc_completeness(list_ids, task_key, auth_chain_id, well_defined_region, seq_key, seq_id, coord_atoms, output):
             if task_key == 'well_defined':
@@ -3520,7 +3525,7 @@ class NmrVrptUtility:
 
             n_terminal_aa = seq_id == 1 and self.__csStat.peptideLike(comp_id)
 
-            for category, atom_ids in categorized_atom_ids.items():
+            for atom_category, atom_ids in categorized_atom_ids.items():
                 for atom_id in atom_ids:
 
                     if n_terminal_aa and atom_id == 'H':
@@ -3531,9 +3536,9 @@ class NmrVrptUtility:
                         continue
 
                     if atom_id in cs_atoms:
-                        output[task_key][atom_type][category][0] += 1
+                        output[task_key][atom_type][atom_category][0] += 1
                         output[task_key][atom_type]['overall'][0] += 1
-                        output[task_key]['Total'][category][0] += 1
+                        output[task_key]['Total'][atom_category][0] += 1
                         output[task_key]['Total']['overall'][0] += 1
 
                     # count only carbon/nitrogen if not quaternary (use coordinates to check whether hydrogen attached)
@@ -3542,9 +3547,9 @@ class NmrVrptUtility:
                         if len(bonded_protons) == 1 and bonded_protons[0] not in coord_atoms:
                             continue
 
-                    output[task_key][atom_type][category][1] += 1
+                    output[task_key][atom_type][atom_category][1] += 1
                     output[task_key][atom_type]['overall'][1] += 1
-                    output[task_key]['Total'][category][1] += 1
+                    output[task_key]['Total'][atom_category][1] += 1
                     output[task_key]['Total']['overall'][1] += 1
 
             # Check for stereo-assignment of methyl groups (VAL, LEU)
@@ -3569,57 +3574,95 @@ class NmrVrptUtility:
                             output[task_key]['stereomethyl'][0] += 1
                     output[task_key]['stereomethyl'][1] += 1
 
+        if self.__inputReport is None:
+            polySeq = []
+
+            polySeqPdbMonIdName = 'pdb_mon_id' if self.__cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
+
+            lpCategory = 'pdbx_poly_seq_scheme'
+            keyItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                         'default': REPRESENTATIVE_ASYM_ID},
+                        {'name': 'seq_id', 'type': 'int', 'alt_name': 'seq_id'},
+                        {'name': 'mon_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
+                        {'name': 'pdb_strand_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                         'default': REPRESENTATIVE_ASYM_ID},
+                        {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                        {'name': polySeqPdbMonIdName, 'type': 'str', 'alt_name': 'auth_comp_id',
+                         'default-from': 'mon_id'}
+                        ]
+
+            try:
+
+                if self.__cR.hasItem(lpCategory, 'pdb_ins_code'):
+                    keyItems.append({'name': 'pdb_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
+
+                if self.__cR.hasItem(lpCategory, 'auth_mon_id'):
+                    keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
+
+                try:
+                    polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                           withStructConf=False,
+                                                           withRmsd=True)
+                except KeyError:  # pdbx_PDB_ins_code throws KeyError
+                    pass
+
+                if len(polySeq) == 0:
+                    lpCategory = 'atom_site'
+                    keyItems = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                                 'default': REPRESENTATIVE_ASYM_ID},
+                                {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'seq_id',
+                                 'default-from': 'auth_seq_id'},
+                                {'name': 'auth_comp_id', 'type': 'int', 'alt_name': 'auth_comp_id'},
+                                {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'}
+                                ]
+
+                    if self.__cR.hasItem(lpCategory, 'pdbx_PDB_ins_code'):
+                        keyItems.append({'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
+
+                    try:
+                        polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                               withStructConf=False,
+                                                               withRmsd=True)
+                    except (KeyError, ValueError):
+                        pass
+
+                for ps in polySeq:
+                    if 'ins_code' in ps and len(collections.Counter(ps['ins_code']).most_common()) == 1:
+                        del ps['ins_code']
+
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                if self.__verbose:
+                    self.__log.write(f"{self.__class_name__}.__summarizeCommonCsAnalysis() ++ Error  - {str(e)}\n")
+
         def calc_completeness(list_ids):
             output = {}
-
             for task_key in task_keys:
-                output[task_key] = {'Total': {'overall': [0, 0],
-                                              'backbone': [0, 0],
-                                              'sidechain': [0, 0],
-                                              'aromatic': [0, 0],
-                                              'sugar': [0, 0],
-                                              'base': [0, 0]
-                                              },
-                                    'H': {'overall': [0, 0],
-                                          'backbone': [0, 0],
-                                          'sidechain': [0, 0],
-                                          'aromatic': [0, 0],
-                                          'sugar': [0, 0],
-                                          'base': [0, 0]
-                                          },
-                                    'C': {'overall': [0, 0],
-                                          'backbone': [0, 0],
-                                          'sidechain': [0, 0],
-                                          'aromatic': [0, 0],
-                                          'sugar': [0, 0],
-                                          'base': [0, 0]
-                                          },
-                                    'N': {'overall': [0, 0],
-                                          'backbone': [0, 0],
-                                          'sidechain': [0, 0],
-                                          'aromatic': [0, 0],
-                                          'sugar': [0, 0],
-                                          'base': [0, 0]
-                                          },
-                                    'P': {'overall': [0, 0],
-                                          'backbone': [0, 0],
-                                          'sidechain': [0, 0],
-                                          'aromatic': [0, 0],
-                                          'sugar': [0, 0],
-                                          'base': [0, 0]
-                                          },
-                                    'stereomethyl': [0, 0]
-                                    }
+                output[task_key] = {'stereomethyl': [0, 0]}
+                for atom_type in atom_types:
+                    output[task_key][atom_type] = {}
+                    for atom_category in atom_categories:
+                        output[task_key][atom_type][atom_category] = [0, 0]
 
             for auth_chain_id, v in self.__entityInstance.items():
                 well_defined_region = []
 
-                cif_ps = self.__inputReport.getModelPolymerSequenceOf(auth_chain_id, label_scheme=False)
+                if self.__inputReport is None:
+                    cif_ps = next((ps for ps in polySeq if ps['auth_chain_id'] == auth_chain_id), None)
 
-                if cif_ps is not None:
-                    if 'well_defined_region' in cif_ps:
-                        for item in cif_ps['well_defined_region']:
-                            well_defined_region.extend(item['seq_id'])
+                    if cif_ps is not None:
+                        if 'well_defined_region' in cif_ps:
+                            for item in cif_ps['well_defined_region']:
+                                well_defined_region.extend(item['seq_id'])
+
+                else:
+                    cif_ps = self.__inputReport.getModelPolymerSequenceOf(auth_chain_id, label_scheme=False)
+
+                    if cif_ps is not None:
+                        if 'well_defined_region' in cif_ps:
+                            for item in cif_ps['well_defined_region']:
+                                well_defined_region.extend(item['seq_id'])
 
                 for seq_key, w in v.items():
                     for task_key in task_keys:

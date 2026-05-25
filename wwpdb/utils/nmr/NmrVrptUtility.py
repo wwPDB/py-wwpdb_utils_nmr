@@ -1070,6 +1070,7 @@ class NmrVrptUtility:
                           self.__parseNmrDpReport,
                           self.__checkPreviousCsAnalysis,
                           self.__retrieveCoordAssemblyChecker,
+                          self.__extractCoordAtomSites,
                           self.__extractEntityInstances,
                           self.__extractChemicalShifts,
                           self.__validateChemicalShifts,
@@ -1772,7 +1773,7 @@ class NmrVrptUtility:
                 atom_id = c[_auth_atom_id_]
 
                 if atom_id not in self.__entityInstance[auth_chain_id][seq_key]:
-                    self.__entityInstance[auth_chain_id][seq_key].append(atom_id)
+                    self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(atom_id)
 
             # include unmodeled entity
 
@@ -1818,11 +1819,13 @@ class NmrVrptUtility:
             for ps in self.__caC['polymer_sequence']:
                 update_entity_instance(ps)
 
-            for br in self.__caC['branched']:
-                update_entity_instance(br)
+            if 'branched' in self.__caC and self.__caC['branched'] is not None:
+                for br in self.__caC['branched']:
+                    update_entity_instance(br)
 
-            for np in self.__caC['non_poly']:
-                update_entity_instance(np)
+            if 'non_poly' in self.__caC and self.__caC['non_poly'] is not None:
+                for np in self.__caC['non_poly']:
+                    update_entity_instance(np)
 
             if self.__cifHashCode is not None:
                 write_as_pickle(self.__entityInstance, vrpt_entity_instance_cache_path)
@@ -2747,13 +2750,13 @@ class NmrVrptUtility:
                     self.__chemShiftUnmapped[list_id].append(_cs)
                     return
 
-                seq_id = _cs['seq_id']
+                auth_seq_id = _cs['auth_seq_id']
                 comp_id = _cs['comp_id']
 
-                if 'ins_code' not in _cs and _cs['ins_code'] in EMPTY_VALUE:
-                    seq_key = (str(seq_id), comp_id)
+                if 'ins_code' not in _cs or _cs['ins_code'] in EMPTY_VALUE:
+                    seq_key = (str(auth_seq_id), comp_id)
                 else:
-                    seq_key = (str(seq_id) + _cs['ins_code'], comp_id)
+                    seq_key = (str(auth_seq_id) + _cs['ins_code'], comp_id)
 
                 if seq_key not in self.__entityInstance[auth_chain_id]:
                     if list_id not in self.__chemShiftUnmapped:
@@ -3601,8 +3604,10 @@ class NmrVrptUtility:
 
                 try:
                     polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                           withStructConf=False,
-                                                           withRmsd=True)
+                                                           withRmsd=True,
+                                                           totalModels=self.__total_models,
+                                                           effModelIds=self.__eff_model_ids,
+                                                           repAltId=self.__representative_alt_id)
                 except KeyError:  # pdbx_PDB_ins_code throws KeyError
                     pass
 
@@ -3623,8 +3628,10 @@ class NmrVrptUtility:
 
                     try:
                         polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                               withStructConf=False,
-                                                               withRmsd=True)
+                                                               withRmsd=True,
+                                                               totalModels=self.__total_models,
+                                                               effModelIds=self.__eff_model_ids,
+                                                               repAltId=self.__representative_alt_id)
                     except (KeyError, ValueError):
                         pass
 
@@ -3687,6 +3694,25 @@ class NmrVrptUtility:
 
         book_keeping = {'total_shifts': self.__chemShiftTotal,
                         'cs_error': cs_error}
+
+        shift_summary_table = {}
+        for idx, list_id in enumerate(list_ids):
+            parsed = len(self.__chemShiftDict[list_id])
+            unparsed = len(self.__chemShiftUnmapped[list_id])
+            unmapped_error = len(self.__chemShiftUnmapped[list_id])
+            mapped = parsed - unmapped_error
+            shift_summary_table[list_id] = {'block_id': self.__chemShiftMeta[idx][0],
+                                            'block_name': self.__chemShiftMeta[idx][1],
+                                            'list_id': self.__chemShiftMeta[idx][2],
+                                            'file_name': os.path.basename(self.__nmrDataPath),
+                                            # 'type': 'full',
+                                            'total_number_of_shifts': parsed + unparsed,
+                                            'number_of_parsed_shifts': parsed,
+                                            'number_of_unparsed_shifts': unparsed,
+                                            'number_of_mapped_shifts': mapped,
+                                            'number_of_errors_while_mapping': unmapped_error
+                                            # 'number_of_warnings_while_mapping': 0
+                                            }
 
         exptl = self.__cR.getDictList('exptl')
 
@@ -3788,7 +3814,8 @@ class NmrVrptUtility:
                           'book_keeping': book_keeping,
                           'ssnmr': ssnmr,
                           'rci': rci_result,
-                          'panav': None}
+                          'panav': None,
+                          'shift_summary_table': shift_summary_table}
 
         return True
 

@@ -3495,9 +3495,11 @@ class NmrVrptUtility:
             self.__log.write("There are no assigned chemical shifts that need to be analyzed.\n")
             return False
 
+        any_type = 'Total'
+
         task_keys = ('well_defined', 'full_length')
-        atom_types = ('Total', 'H', 'C', 'N', 'P')
-        atom_categories = ('overall', 'backbone', 'sidechain', 'aromatic', 'sugar', 'base')
+        atom_types = (any_type, 'H', 'C', 'N', 'P')
+        atom_categories = ('overall', 'preferable', 'backbone', 'sidechain', 'aromatic', 'sugar', 'base')
 
         def do_calc_completeness(list_ids, task_key, auth_chain_id, well_defined_region, seq_key, seq_id, coord_atoms, output):
             if task_key == 'well_defined':
@@ -3541,8 +3543,14 @@ class NmrVrptUtility:
                     if atom_id in cs_atoms:
                         output[task_key][atom_type][atom_category][0] += 1
                         output[task_key][atom_type]['overall'][0] += 1
-                        output[task_key]['Total'][atom_category][0] += 1
-                        output[task_key]['Total']['overall'][0] += 1
+                        output[task_key][any_type][atom_category][0] += 1
+                        output[task_key][any_type]['overall'][0] += 1
+
+                        if not any(any(True for out_cs in self.__chemShiftOutlier[list_id]
+                                   if out_cs[0] == auth_chain_id and out_cs[1] == res_num
+                                   and out_cs[2] == comp_id and out_cs[3] == atom_id) for list_id in list_ids):
+                            output[task_key][atom_type]['preferable'][0] += 1
+                            output[task_key][any_type]['preferable'][0] += 1
 
                     # count only carbon/nitrogen if not quaternary (use coordinates to check whether hydrogen attached)
                     elif atom_type in ('C', 'N'):
@@ -3552,8 +3560,10 @@ class NmrVrptUtility:
 
                     output[task_key][atom_type][atom_category][1] += 1
                     output[task_key][atom_type]['overall'][1] += 1
-                    output[task_key]['Total'][atom_category][1] += 1
-                    output[task_key]['Total']['overall'][1] += 1
+                    output[task_key][atom_type]['preferable'][1] += 1
+                    output[task_key][any_type][atom_category][1] += 1
+                    output[task_key][any_type]['overall'][1] += 1
+                    output[task_key][any_type]['preferable'][1] += 1
 
             # Check for stereo-assignment of methyl groups (VAL, LEU)
             for list_id in list_ids:
@@ -3680,8 +3690,27 @@ class NmrVrptUtility:
 
         list_ids = list(self.__chemShiftDict.keys())
 
-        completeness = calc_completeness(list_ids)
-        completeness = {task_key: completeness[task_key]['Total']['overall'] for task_key in task_keys}
+        _completeness = calc_completeness(list_ids)
+
+        completeness = {task_key: _completeness[task_key][any_type]['overall'] for task_key in task_keys}
+
+        completeness['chemical_shift_completeness'] =\
+            100.0 * completeness['well_defined'][0] / completeness['well_defined'][1]\
+            if completeness['well_defined'][1] > 0 else 0.0
+
+        completeness['chemical_shift_completeness_full_length'] =\
+            100.0 * completeness['full_length'][0] / completeness['full_length'][1]\
+            if completeness['full_length'][1] > 0 else 0.0
+
+        pref_completeness = {task_key: _completeness[task_key][any_type]['preferable'] for task_key in task_keys}
+
+        completeness['pref_chem_shift_completeness'] =\
+            100.0 * pref_completeness['well_defined'][0] / pref_completeness['well_defined'][1]\
+            if pref_completeness['well_defined'][1] > 0 else 0.0
+
+        completeness['pref_chem_shift_completeness_full_length'] =\
+            100.0 * pref_completeness['full_length'][0] / pref_completeness['full_length'][1]\
+            if pref_completeness['full_length'][1] > 0 else 0.0
 
         completeness_items = {list_id: calc_completeness([list_id]) for list_id in list_ids}
 

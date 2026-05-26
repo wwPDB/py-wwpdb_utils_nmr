@@ -132,7 +132,13 @@ try:
                                                 to_np_array,
                                                 distance,
                                                 to_unit_vector,
-                                                dihedral_angle)
+                                                dihedral_angle,
+                                                predict_redox_state_of_cystein,
+                                                predict_cis_trans_peptide_of_proline,
+                                                predict_tautomer_state_of_histidine,
+                                                predict_rotamer_state_of_leucine,
+                                                predict_rotamer_state_of_valine,
+                                                predict_rotamer_state_of_isoleucine)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName,
                                                        isIdenticalRestraint,
@@ -252,7 +258,13 @@ except ImportError:
                                     to_np_array,
                                     distance,
                                     to_unit_vector,
-                                    dihedral_angle)
+                                    dihedral_angle,
+                                    predict_redox_state_of_cystein,
+                                    predict_cis_trans_peptide_of_proline,
+                                    predict_tautomer_state_of_histidine,
+                                    predict_rotamer_state_of_leucine,
+                                    predict_rotamer_state_of_valine,
+                                    predict_rotamer_state_of_isoleucine)
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName,
                                            isIdenticalRestraint,
@@ -279,286 +291,6 @@ def is_non_metal_element(comp_id: str, atom_id: str) -> bool:
         return False
 
     return any(True for elem in NON_METAL_ELEMENTS if atom_id.startswith(elem))
-
-
-def probability_density(value: float, mean: float, stddev: float) -> float:
-    """ Return probability density.
-    """
-
-    stddev2 = stddev ** 2.0
-
-    return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
-
-
-def predict_redox_state_of_cystein(ca_chem_shift: Optional[float], cb_chem_shift: Optional[float]
-                                   ) -> Tuple[float, float]:
-    """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
-        @return: probability of oxidized state, probability of reduced state
-        Reference:
-          13C NMR chemical shifts can predict disulfide bond formation.
-          Sharma, D., Rajarathnam, K.
-          J Biomol NMR 18, 165–171 (2000).
-          DOI: 10.1023/A:1008398416292
-    """
-
-    oxi_ca = {'avr': 55.5, 'std': 2.5}
-    oxi_cb = {'avr': 40.7, 'std': 3.8}
-
-    red_ca = {'avr': 59.3, 'std': 3.2}
-    red_cb = {'avr': 28.3, 'std': 2.2}
-
-    oxi = 1.0
-    red = 1.0
-
-    if ca_chem_shift is not None:
-        oxi *= probability_density(ca_chem_shift, oxi_ca['avr'], oxi_ca['std'])
-        red *= probability_density(ca_chem_shift, red_ca['avr'], red_ca['std'])
-
-    if cb_chem_shift is not None:
-        if cb_chem_shift < 32.0:
-            oxi = 0.0
-        else:
-            oxi *= probability_density(cb_chem_shift, oxi_cb['avr'], oxi_cb['std'])
-        if cb_chem_shift > 35.0:
-            red = 0.0
-        else:
-            red *= probability_density(cb_chem_shift, red_cb['avr'], red_cb['std'])
-
-    total = oxi + red
-
-    if total in (0.0, 2.0):
-        return 0.0, 0.0
-
-    return oxi / total, red / total
-
-
-def predict_cis_trans_peptide_of_proline(cb_chem_shift, cg_chem_shift
-                                         ) -> Tuple[float, float]:
-    """ Return prediction of cis-trans peptide bond of Proline using assigned CB, CG chemical shifts.
-        @return: probability of cis-peptide bond, probability of trans-peptide bond
-        Reference:
-          A software tool for the prediction of Xaa-Pro peptide bond conformations in proteins
-          based on 13C chemical shift statistics.
-          Schubert, M., Labudde, D., Oschkinat, H. et al.
-          J Biomol NMR 24, 149–154 (2002)
-          DOI: 10.1023/A:1020997118364
-    """
-
-    cis_cb = {'avr': 34.16, 'std': 1.15, 'max': 36.23, 'min': 30.74}
-    cis_cg = {'avr': 24.52, 'std': 1.09, 'max': 27.01, 'min': 22.10}
-    cis_dl = {'avr': 9.64, 'std': 1.27}
-
-    trs_cb = {'avr': 31.75, 'std': 0.98, 'max': 35.83, 'min': 26.30}
-    trs_cg = {'avr': 27.26, 'std': 1.05, 'max': 33.39, 'min': 19.31}
-    trs_dl = {'avr': 4.51, 'std': 1.17}
-
-    cis = 1.0
-    trs = 1.0
-
-    if cb_chem_shift is not None:
-        if cb_chem_shift < cis_cb['min'] - cis_cb['std'] or cb_chem_shift > cis_cb['max'] + cis_cb['std']:
-            cis = 0.0
-        else:
-            cis *= probability_density(cb_chem_shift, cis_cb['avr'], cis_cb['std'])
-        if cb_chem_shift < trs_cb['min'] - trs_cb['std'] or cb_chem_shift > trs_cb['max'] + trs_cb['std']:
-            trs = 0.0
-        else:
-            trs *= probability_density(cb_chem_shift, trs_cb['avr'], trs_cb['std'])
-
-    if cg_chem_shift is not None:
-        if cg_chem_shift < cis_cg['min'] - cis_cg['std'] or cg_chem_shift > cis_cg['max'] + cis_cg['std']:
-            cis = 0.0
-        else:
-            cis *= probability_density(cg_chem_shift, cis_cg['avr'], cis_cg['std'])
-        if cg_chem_shift < trs_cg['min'] - trs_cg['std'] or cg_chem_shift > trs_cg['max'] + trs_cg['std']:
-            trs = 0.0
-        else:
-            trs *= probability_density(cg_chem_shift, trs_cg['avr'], trs_cg['std'])
-
-    if (cb_chem_shift is not None) and (cg_chem_shift is not None):
-        delta_shift = cb_chem_shift - cg_chem_shift
-
-        cis *= probability_density(delta_shift, cis_dl['avr'], cis_dl['std'])
-        trs *= probability_density(delta_shift, trs_dl['avr'], trs_dl['std'])
-
-    total = cis + trs
-
-    if total in (0.0, 2.0):
-        return 0.0, 0.0
-
-    return cis / total, trs / total
-
-
-def predict_tautomer_state_of_histidine(cg_chem_shift: Optional[float], cd2_chem_shift: Optional[float],
-                                        nd1_chem_shift: Optional[float], ne2_chem_shift: Optional[float]
-                                        ) -> Tuple[float, float]:
-    """ Return prediction of tautomeric state of Histidine using assigned CG, CD2, ND1, and NE2 chemical shifts.
-        @return: probability of biprotonated, probability of tau tautomer, probability of pi tautomer
-        Reference:
-          Protonation, Tautomerization, and Rotameric Structure of Histidine:
-          A Comprehensive Study by Magic-Angle-Spinning Solid-State NMR.
-          Shenhui Li and Mei Hong.
-          Journal of the American Chemical Society 2011 133 (5), 1534-1544
-          DOI: 10.1021/ja108943n
-    """
-
-    bip_cg = {'avr': 131.2, 'std': 0.7}
-    bip_cd2 = {'avr': 120.6, 'std': 1.3}
-    bip_nd1 = {'avr': 190.0, 'std': 1.9}
-    bip_ne2 = {'avr': 176.3, 'std': 1.9}
-
-    tau_cg = {'avr': 135.7, 'std': 2.2}
-    tau_cd2 = {'avr': 116.9, 'std': 2.1}
-    tau_nd1 = {'avr': 249.4, 'std': 1.9}
-    tau_ne2 = {'avr': 171.1, 'std': 1.9}
-
-    pi_cg = {'avr': 125.7, 'std': 2.2}
-    pi_cd2 = {'avr': 125.6, 'std': 2.1}
-    pi_nd1 = {'avr': 171.8, 'std': 1.9}
-    pi_ne2 = {'avr': 248.2, 'std': 1.9}
-
-    bip = 1.0
-    tau = 1.0
-    pi = 1.0
-
-    if cg_chem_shift is not None:
-        bip *= probability_density(cg_chem_shift, bip_cg['avr'], bip_cg['std'])
-        tau *= probability_density(cg_chem_shift, tau_cg['avr'], tau_cg['std'])
-        pi *= probability_density(cg_chem_shift, pi_cg['avr'], pi_cg['std'])
-
-    if cd2_chem_shift is not None:
-        bip *= probability_density(cd2_chem_shift, bip_cd2['avr'], bip_cd2['std'])
-        tau *= probability_density(cd2_chem_shift, tau_cd2['avr'], tau_cd2['std'])
-        pi *= probability_density(cd2_chem_shift, pi_cd2['avr'], pi_cd2['std'])
-
-    if nd1_chem_shift is not None:
-        bip *= probability_density(nd1_chem_shift, bip_nd1['avr'], bip_nd1['std'])
-        tau *= probability_density(nd1_chem_shift, tau_nd1['avr'], tau_nd1['std'])
-        pi *= probability_density(nd1_chem_shift, pi_nd1['avr'], pi_nd1['std'])
-
-    if ne2_chem_shift is not None:
-        bip *= probability_density(ne2_chem_shift, bip_ne2['avr'], bip_ne2['std'])
-        tau *= probability_density(ne2_chem_shift, tau_ne2['avr'], tau_ne2['std'])
-        pi *= probability_density(ne2_chem_shift, pi_ne2['avr'], pi_ne2['std'])
-
-    total = bip + tau + pi
-
-    if total in (0.0, 3.0):
-        return 0.0, 0.0, 0.0
-
-    return bip / total, tau / total, pi / total
-
-
-def predict_rotamer_state_of_leucine(cd1_chem_shift: Optional[float], cd2_chem_shift: Optional[float]
-                                     ) -> Tuple[float, float]:
-    """ Return prediction of rotermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
-        @return: probability of gauche+, trans, gauche-
-        Reference:
-          Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
-          Robert E. London, Brett D. Wingad, and Geoffrey A. Mueller.
-          Journal of the American Chemical Society 2008 130 (33), 11097-11105
-          DOI: 10.1021/ja802729t
-    """
-
-    if None not in (cd1_chem_shift, cd2_chem_shift):
-
-        delta = cd1_chem_shift - cd2_chem_shift
-
-        pt = (delta + 5.0) / 10.0
-
-        if 0.0 <= pt <= 1.0:
-            return 1.0 - pt, pt, 0.0
-
-    gp_cd1 = {'avr': 24.45, 'std': 1.58}
-    gp_cd2 = {'avr': 25.79, 'std': 1.68}
-
-    t_cd1 = {'avr': 25.17, 'std': 1.58}
-    t_cd2 = {'avr': 23.84, 'std': 1.68}
-
-    gp = 1.0
-    t = 1.0
-
-    if cd1_chem_shift is not None:
-        gp *= probability_density(cd1_chem_shift, gp_cd1['avr'], gp_cd1['std'])
-        t *= probability_density(cd1_chem_shift, t_cd1['avr'], t_cd1['std'])
-
-    if cd2_chem_shift is not None:
-        gp *= probability_density(cd2_chem_shift, gp_cd2['avr'], gp_cd2['std'])
-        t *= probability_density(cd2_chem_shift, t_cd2['avr'], t_cd2['std'])
-
-    total = gp + t
-
-    if total in (0.0, 2.0):
-        return 0.0, 0.0, 0.0
-
-    return gp / total, t / total, 0.0
-
-
-def predict_rotamer_state_of_valine(cg1_chem_shift: Optional[float], cg2_chem_shift: Optional[float]
-                                    ) -> Tuple[float, float]:
-    """ Return prediction of rotermeric state of Valine using assigned CG1 and CG2 chemical shifts.
-        @return: probability of gauche+, trans, gauche-
-        Reference:
-          Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
-          Robert E. London, Brett D. Wingad, and Geoffrey A. Mueller.
-          Journal of the American Chemical Society 2008 130 (33), 11097-11105
-          DOI: 10.1021/ja802729t
-    """
-
-    gm_cg1 = {'avr': 22.05, 'std': 1.36}
-    gm_cg2 = {'avr': 20.1, 'std': 1.55}
-
-    gp_cg1 = {'avr': 20.87, 'std': 1.36}
-    gp_cg2 = {'avr': 21.23, 'std': 1.55}
-
-    t_cg1 = {'avr': 21.74, 'std': 1.36}
-    t_cg2 = {'avr': 21.97, 'std': 1.55}
-
-    gm = 1.0
-    gp = 1.0
-    t = 1.0
-
-    if cg1_chem_shift is not None:
-        gm *= probability_density(cg1_chem_shift, gm_cg1['avr'], gm_cg1['std'])
-        gp *= probability_density(cg1_chem_shift, gp_cg1['avr'], gp_cg1['std'])
-        t *= probability_density(cg1_chem_shift, t_cg1['avr'], t_cg1['std'])
-
-    if cg2_chem_shift is not None:
-        gm *= probability_density(cg2_chem_shift, gm_cg2['avr'], gm_cg2['std'])
-        gp *= probability_density(cg2_chem_shift, gp_cg2['avr'], gp_cg2['std'])
-        t *= probability_density(cg2_chem_shift, t_cg2['avr'], t_cg2['std'])
-
-    total = gm + gp + t
-
-    if total in (0.0, 3.0):
-        return 0.0, 0.0, 0.0
-
-    return gp / total, t / total, gm / total
-
-
-def predict_rotamer_state_of_isoleucine(cd1_chem_shift: Optional[float]
-                                        ) -> Tuple[float, float, float]:
-    """ Return prediction of rotermeric state of Isoleucine using assigned CD1 chemical shift.
-        @return: probability of gauche+, trans, gauche-
-        Reference:
-          Determination of Isoleucine Side-Chain Conformations in Ground and Excited States of Proteins from Chemical Shifts.
-          D. Flemming Hansen, Philipp Neudecker, and Lewis E. Kay.
-          Journal of the American Chemical Society 2010 132 (22), 7589-7591
-          DOI: 10.1021/ja102090z
-    """
-
-    if cd1_chem_shift is None:
-        return 0.0, 0.0, 0.0
-
-    if cd1_chem_shift < 9.3:
-        return 0.0, 0.0, 1.0
-
-    if cd1_chem_shift > 14.8:
-        return 1.0 * (4.0 / 85.0), 1.0 * (81.0 / 85.0), 0.0
-
-    pgm = (14.8 - cd1_chem_shift) / 5.5
-
-    return (1.0 - pgm) * (4.0 / 85.0), (1.0 - pgm) * (81.0 / 85.0), pgm
 
 
 def is_like_planality_boundary(row: dict, lower_limit_name: str, upper_limit_name: str) -> bool:

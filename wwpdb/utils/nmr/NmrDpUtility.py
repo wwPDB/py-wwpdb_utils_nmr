@@ -7120,7 +7120,7 @@ class NmrDpUtility:
 
                         if fileListId == 0:
 
-                            err = "Assigned chemical shifts are required to verify the consistensy of assigned peak list. "\
+                            err = "Assigned chemical shifts are required to verify the consistency of assigned peak list. "\
                                 f"Referred {cs_list!r} saveframe containing the assigned chemical shift does not exist."
 
                             self.__reg.report.error.appendDescription('missing_mandatory_content',
@@ -7649,7 +7649,7 @@ class NmrDpUtility:
 
                             if fileListId == 0:
 
-                                err = "Assigned chemical shifts are required to verify the consistensy of assigned peak lists. "\
+                                err = "Assigned chemical shifts are required to verify the consistency of assigned peak lists. "\
                                     f"Referred {cs_list!r} saveframe containing the assigned chemical shift does not exist."
 
                                 self.__reg.report.error.appendDescription('missing_mandatory_content',

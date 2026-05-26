@@ -107,13 +107,17 @@ VRPT_INPUT_PARAM_KEYS = (CIF_READER_OBJ_KEY,
 # supported input file names for NmrVrptUtility class
 VRPT_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
                         NMR_CIF_FILE_PATH_KEY,
-                        NMR_STR_FILE_PATH_KEY)
+                        NMR_STR_FILE_PATH_KEY,
+                        REPORT_FILE_PATH_KEY)
 
 # supported output file names for NmrVrptUtility class
 VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,)
 
 # supported workflow operations of NmrVrptUtility class
-VRPT_WORKFLOW_OPS = ('nmr-restraint-validation',)
+VRPT_WORKFLOW_OPS = ('nmr-cs-validation',
+                     'nmr-mr-validation',
+                     'nmr-chemical-shift-validation',
+                     'nmr-restraint-validation')  # for backward compatibility
 
 # sub-directory name for cache files
 SUB_DIR_NAME_FOR_CACHE = 'utils_nmr'

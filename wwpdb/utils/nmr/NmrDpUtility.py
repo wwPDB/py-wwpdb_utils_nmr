@@ -15549,6 +15549,30 @@ class NmrDpUtility:
             has_coordinate = self.__reg.cifChecked
             # self.__reg.report.getInputSourceIdOfCoord() >= 0
 
+            cif_poly_seq = None
+
+            src_id = self.__reg.report.getInputSourceIdOfCoord()
+
+            if src_id >= 0:
+                cif_input_source = self.__reg.report.input_sources[src_id]
+
+                cif_input_source_dic = cif_input_source.get()
+
+                if has_key_value(cif_input_source_dic, 'polymer_sequence'):
+                    cif_poly_seq = cif_input_source_dic['polymer_sequence']
+
+            if cif_poly_seq is None and self.__report_prev is not None:
+
+                src_id = self.__report_prev.getInputSourceIdOfCoord()
+
+                if src_id >= 0:
+                    cif_input_source = self.__report_prev.input_sources[src_id]
+
+                    cif_input_source_dic = cif_input_source.get()
+
+                    if has_key_value(cif_input_source_dic, 'polymer_sequence'):
+                        cif_poly_seq = cif_input_source_dic['polymer_sequence']
+
             if has_coordinate:
                 model_info = {'file_name': os.path.basename(self.__reg.cifPath),
                               'file_type': 'pdbx',
@@ -16070,6 +16094,58 @@ class NmrDpUtility:
                                                         'ambig_code': row['ambig_code']
                                                         }
                                                 sf_info['chemical_shift_unmapped'].append(item)
+
+                                    if 'rci' in vrpt_cs and list_id in vrpt_cs['rci']:
+                                        rci = vrpt_cs['rci'][list_id]
+
+                                        if len(rci) > 0:
+                                            sf_info['random_coil_index'] = []
+                                            for auth_chain_id, result in rci.items():
+                                                item = {'auth_chain_id': auth_chain_id,
+                                                        'auth_seq_id': result['seq_id'],
+                                                        'rci': result['rci'],
+                                                        'nmr_rmsd': result['nmr_rmsd'],
+                                                        's2': result['s2']}
+
+                                                cif_ps = None
+                                                if cif_poly_seq is not None:
+                                                    cif_ps = next((ps for ps in cif_poly_seq
+                                                                   if ps['auth_chain_id'] == auth_chain_id), None)
+
+                                                if cif_ps is not None:
+                                                    item['comp_id'] = []
+                                                    has_struct_conf = 'struct_conf' in cif_ps
+                                                    if has_struct_conf:
+                                                        item['struct_conf'] = []
+                                                    for auth_seq_id in result['seq_id']:
+                                                        if auth_seq_id in cif_ps['auth_seq_id']:
+                                                            idx = cif_ps['auth_seq_id'].index(auth_seq_id)
+                                                            item['comp_id'].append(cif_ps['comp_id'][idx])
+                                                            if has_struct_conf:
+                                                                item['struct_conf'].append(cif_ps['struct_conf'][idx])
+                                                        else:
+                                                            item['comp_id'].append(None)
+                                                            if has_struct_conf:
+                                                                item['struct_conf'].append(None)
+
+                                                    if 'well_defined_region' in cif_ps:
+                                                        _score = 0.0
+                                                        dom_idx = -1
+
+                                                        for i, r in enumerate(cif_ps['well_defined_region']):
+                                                            try:
+                                                                score = r['percent_of_core'] / r['medoid_rmsd']
+                                                                if score > _score:
+                                                                    _score = score
+                                                                    dom_idx = i
+                                                            except Exception:  # pylint: disable=broad-exception-caught
+                                                                continue
+
+                                                        if dom_idx != -1:
+                                                            item['rmsd_in_well_defined_region'] =\
+                                                                cif_ps['well_defined_region'][dom_idx]['medoid_rmsd']
+
+                                                sf_info['random_coil_index'].append(item)
 
                             elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 

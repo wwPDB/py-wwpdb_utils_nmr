@@ -408,6 +408,7 @@ try:
                                                  is_like_planality_boundary)
     from wwpdb.utils.nmr.NmrDpRemediation import (NmrDpRemediation,
                                                   get_chem_shift_format_from_string)
+    from wwpdb.utils.nmr.NmrVrptUtility import NmrVrptUtility
     from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,
                                              NmrDpReportInputSource,
                                              NmrDpReportOutputStatistics)
@@ -547,6 +548,7 @@ except ImportError:
                                      is_like_planality_boundary)
     from nmr.NmrDpRemediation import (NmrDpRemediation,
                                       get_chem_shift_format_from_string)
+    from nmr.NmrVrptUtility import NmrVrptUtility
     from nmr.NmrDpReport import (NmrDpReport,
                                  NmrDpReportInputSource,
                                  NmrDpReportOutputStatistics)
@@ -15544,7 +15546,8 @@ class NmrDpUtility:
             except IndexError:
                 pass
 
-            has_coordinate = self.__reg.report.getInputSourceIdOfCoord() >= 0
+            has_coordinate = self.__reg.cifChecked
+            # self.__reg.report.getInputSourceIdOfCoord() >= 0
 
             if has_coordinate:
                 model_info = {'file_name': os.path.basename(self.__reg.cifPath),
@@ -15575,6 +15578,297 @@ class NmrDpUtility:
                             self.__output_statistics.setItemValue('entry_authors', audit_authors)
 
                 self.__output_statistics.setItemValue('model', model_info)
+
+            vrpt_util = NmrVrptUtility(self.__reg.verbose, self.__reg.log,
+                                       self.__reg.cR, self.__reg.caC, self.__reg.ccU, self.__reg.csStat)
+
+            vrpt_util.addInput(name='pynmrstar_object', value=self.__reg.star_data[0], type='param')
+
+            if REPORT_FILE_PATH_KEY in self.__reg.inputParamDict:
+                fPath = self.__reg.inputParamDict[REPORT_FILE_PATH_KEY]
+                if os.path.exists(fPath):
+                    vrpt_util.addInput(name='report_file_path', value=fPath, type='file')
+
+            vrpt_cs = vrpt_util.op('nmr-cs-validation')
+
+            if vrpt_cs is not None:
+                completeness = vrpt_cs['completeness']
+
+                cs_summary = {}
+                if has_coordinate:
+                    cs_summary['number_of_target_shifts_in_well_defined_region'] =\
+                        completeness['well_defined'][1]
+                    cs_summary['number_of_assigned_shifts_in_well_defined_region'] =\
+                        completeness['well_defined'][0]
+                    cs_summary['number_of_favorable_assigned_shifts_in_well_defined_region'] =\
+                        completeness['favor_well_defined'][0]
+                    cs_summary['completeness_in_well_defined_region'] =\
+                        float(f"{float(completeness['well_defined'][0]) / completeness['well_defined'][1]:.3f}")
+                    cs_summary['completeness_in_well_defined_region_with_favorable_shift'] =\
+                        float(f"{float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1]:.3f}")
+
+                cs_summary['number_of_target_shifts_in_full_length_region'] =\
+                    completeness['full_length'][1]
+                cs_summary['number_of_assigned_shifts_in_full_length_region'] =\
+                    completeness['full_length'][0]
+                cs_summary['number_of_favorable_assigned_shifts_in_full_length_region'] =\
+                    completeness['favor_full_length'][0]
+                cs_summary['completeness_in_full_length_region'] =\
+                    float(f"{float(completeness['full_length'][0]) / completeness['full_length'][1]:.3f}")
+                cs_summary['completeness_in_full_length_region_with_favorable_shift'] =\
+                    float(f"{float(completeness['favor_full_length'][0]) / completeness['full_length'][1]:.3f}")
+
+                self.__output_statistics.setItemValue('chem_shift_summary', cs_summary)
+
+            def map_completeness_of(src):
+                ret = {}
+
+                for k, v in src['Total'].items():
+                    if v[1] == 0:
+                        continue
+                    if k == 'overall':
+                        ret['completeness_of_overall_assignements'] =\
+                            [{'atom_group': 'overall_all_chemical_shifts',
+                              'number_of_assigned_shifts': v[0],
+                              'number_of_target_shifts': v[1],
+                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                             ]
+                    elif k == 'favorable':
+                        ret['completensss_of_favorable_assignments'] =\
+                            [{'atom_group': 'favorable_all_chemical_shifts',
+                              'number_of_assigned_shifts': v[0],
+                              'number_of_target_shifts': v[1],
+                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                             ]
+                    elif k == 'backbone':
+                        ret['completensss_of_backbone_assignments'] =\
+                            [{'atom_group': 'backbone_all_chemical_shifts',
+                              'number_of_assigned_shifts': v[0],
+                              'number_of_target_shifts': v[1],
+                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                             ]
+                    elif k == 'sidechain':
+                        ret['completensss_of_sidechain_assignments'] =\
+                            [{'atom_group': 'sidechain_all_chemical_shifts',
+                              'number_of_assigned_shifts': v[0],
+                              'number_of_target_shifts': v[1],
+                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                             ]
+                    elif k == 'aromatic':
+                        ret['completensss_of_aromatic_assignments'] =\
+                            [{'atom_group': 'aromatic_all_chemical_shifts',
+                              'number_of_assigned_shifts': v[0],
+                              'number_of_target_shifts': v[1],
+                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                             ]
+                    elif k == 'sugar':
+                        ret['completensss_of_sugar_assignments'] =\
+                            [{'atom_group': 'sugar_all_chemical_shifts',
+                              'number_of_assigned_shifts': v[0],
+                              'number_of_target_shifts': v[1],
+                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                             ]
+                    elif k == 'base':
+                        ret['completensss_of_base_assignments'] =\
+                            [{'atom_group': 'base_all_chemical_shifts',
+                              'number_of_assigned_shifts': v[0],
+                              'number_of_target_shifts': v[1],
+                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                             ]
+
+                for k, v in src['H'].items():
+                    if v[1] == 0:
+                        continue
+                    if k == 'overall':
+                        ret['completeness_of_overall_assignements'].append(
+                            {'atom_group': 'overall_1h_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'favorable':
+                        ret['completensss_of_favorable_assignments'].append(
+                            {'atom_group': 'favorable_1h_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'backbone':
+                        ret['completensss_of_backbone_assignments'].append(
+                            {'atom_group': 'backbone_1h_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'sidechain':
+                        ret['completensss_of_sidechain_assignments'].append(
+                            {'atom_group': 'sidechain_1h_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'aromatic':
+                        ret['completensss_of_aromatic_assignments'].append(
+                            {'atom_group': 'aromatic_1h_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'sugar':
+                        ret['completensss_of_sugar_assignments'].append(
+                            {'atom_group': 'sugar_1h_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'base':
+                        ret['completensss_of_base_assignments'].append(
+                            {'atom_group': 'base_1h_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+
+                for k, v in src['C'].items():
+                    if v[1] == 0:
+                        continue
+                    if k == 'overall':
+                        ret['completeness_of_overall_assignements'].append(
+                            {'atom_group': 'overall_13c_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'favorable':
+                        ret['completensss_of_favorable_assignments'].append(
+                            {'atom_group': 'favorable_13c_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'backbone':
+                        ret['completensss_of_backbone_assignments'].append(
+                            {'atom_group': 'backbone_13c_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'sidechain':
+                        ret['completensss_of_sidechain_assignments'].append(
+                            {'atom_group': 'sidechain_13c_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'aromatic':
+                        ret['completensss_of_aromatic_assignments'].append(
+                            {'atom_group': 'aromatic_13c_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'sugar':
+                        ret['completensss_of_sugar_assignments'].append(
+                            {'atom_group': 'sugar_13c_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'base':
+                        ret['completensss_of_base_assignments'].append(
+                            {'atom_group': 'base_13c_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+
+                for k, v in src['N'].items():
+                    if v[1] == 0:
+                        continue
+                    if k == 'overall':
+                        ret['completeness_of_overall_assignements'].append(
+                            {'atom_group': 'overall_15n_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'favorable':
+                        ret['completensss_of_favorable_assignments'].append(
+                            {'atom_group': 'favorable_15n_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'backbone':
+                        ret['completensss_of_backbone_assignments'].append(
+                            {'atom_group': 'backbone_15n_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'sidechain':
+                        ret['completensss_of_sidechain_assignments'].append(
+                            {'atom_group': 'sidechain_15n_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'aromatic':
+                        ret['completensss_of_aromatic_assignments'].append(
+                            {'atom_group': 'aromatic_15n_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'sugar':
+                        ret['completensss_of_sugar_assignments'].append(
+                            {'atom_group': 'sugar_15n_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'base':
+                        ret['completensss_of_base_assignments'].append(
+                            {'atom_group': 'base_15n_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+
+                for k, v in src['P'].items():
+                    if v[1] == 0:
+                        continue
+                    if k == 'overall':
+                        ret['completeness_of_overall_assignements'].append(
+                            {'atom_group': 'overall_31p_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'favorable':
+                        ret['completensss_of_favorable_assignments'].append(
+                            {'atom_group': 'favorable_31p_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'backbone':
+                        ret['completensss_of_backbone_assignments'].append(
+                            {'atom_group': 'backbone_31p_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'sidechain':
+                        ret['completensss_of_sidechain_assignments'].append(
+                            {'atom_group': 'sidechain_31p_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'aromatic':
+                        ret['completensss_of_aromatic_assignments'].append(
+                            {'atom_group': 'aromatic_31p_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'sugar':
+                        ret['completensss_of_sugar_assignments'].append(
+                            {'atom_group': 'sugar_31p_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                    elif k == 'base':
+                        ret['completensss_of_base_assignments'].append(
+                            {'atom_group': 'base_31p_chemical_shifts',
+                             'number_of_assigned_shifts': v[0],
+                             'number_of_target_shifts': v[1],
+                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+
+                if 'stereomethyl' in src:
+                    v = src['stereomethyl']
+                    ret['completeness_of_stereomethyl_assignments'] =\
+                        [{'atom_group': 'stereomethyl_13c_chemical_shifts',
+                          'number_of_assigned_shifts': v[0],
+                          'number_of_target_shifts': v[1],
+                          'completeness': float(f"{float(v[0]) / v[1]:.3f}")}]
+
+                return ret
 
             for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 
@@ -15631,28 +15925,48 @@ class NmrDpUtility:
                         if has_coordinate:
 
                             if content_subtype == 'chem_shift':
-                                tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
 
-                                if set(tags) & set(lp.tags) != set(tags):
-                                    sf_info['number_of_mapped_to_model'] = 0
-                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                                if vrpt_cs is not None and 'shift_summary_table' in vrpt_cs\
+                                   and list_id in vrpt_cs['shift_summary_table']:
+                                    summary = vrpt_cs['shift_summary_table'][list_id]
+
+                                    sf_info['number_of_parsed'] = summary['number_of_parsed_shifts']
+                                    sf_info['number_of_unparsed_with_error'] = summary['number_of_unparsed_shifts']
+                                    sf_info['number_of_mapped_to_model'] = summary['number_of_mapped_shifts']
+                                    sf_info['number_of_unmapped_to_model'] = summary['number_of_errors_while_mapping']
 
                                 else:
 
-                                    dat = lp.get_tag(tags)
+                                    tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
 
-                                    mapped_ids = set()
-                                    for row in dat:
+                                    if set(tags) & set(lp.tags) != set(tags):
+                                        sf_info['number_of_mapped_to_model'] = 0
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
 
-                                        if row[5] == 'UNMAPPED':
-                                            continue
+                                    else:
 
-                                        if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
-                                            mapped_ids.add(row[0])
+                                        dat = lp.get_tag(tags)
 
-                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                    sf_info['number_of_unmapped_to_model'] =\
-                                        sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+                                        mapped_ids = set()
+                                        for row in dat:
+
+                                            if row[5] == 'UNMAPPED':
+                                                continue
+
+                                            if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
+                                                mapped_ids.add(row[0])
+
+                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                        sf_info['number_of_unmapped_to_model'] =\
+                                            sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                                if vrpt_cs is not None and 'completeness_items' in vrpt_cs\
+                                   and list_id in vrpt_cs['completeness_items']:
+                                    src_item = vrpt_cs['completeness_items'][list_id]['well_defined']
+                                    sf_info['completeness_in_well_defined_region'] = map_completeness_of(src_item)
+
+                                    src_item = vrpt_cs['completeness_items'][list_id]['full_length']
+                                    sf_info['completeness_in_full_length_region'] = map_completeness_of(src_item)
 
                             elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 
@@ -15749,26 +16063,27 @@ class NmrDpUtility:
                         else:
                             sf_info['number_of_mapped_to_model'] = sf_info['number_of_unmapped_to_model'] = 0
 
-                        errors = self.__reg.report.error.getInheritableDictBySf(sf_framecode)
+                        if content_subtype != 'chem_shift' or vrpt_cs is None:
+                            errors = self.__reg.report.error.getInheritableDictBySf(sf_framecode)
 
-                        err_ordinals = set()
+                            err_ordinals = set()
 
-                        if errors is None:
-                            sf_info['number_of_unparsed_with_error'] = 0
+                            if errors is None:
+                                sf_info['number_of_unparsed_with_error'] = 0
 
-                        else:
+                            else:
 
-                            for k, v in errors.items():
-                                for item in v:
-                                    for msg in item['description'].split('\n'):
-                                        if INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.match(msg):
-                                            g = INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.search(msg).groups()
-                                            if g not in EMPTY_VALUE:
-                                                err_ordinals.add(g[0])
-                                                if len(err_data_type) == 0:
-                                                    err_data_type = g[1]
+                                for k, v in errors.items():
+                                    for item in v:
+                                        for msg in item['description'].split('\n'):
+                                            if INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.match(msg):
+                                                g = INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.search(msg).groups()
+                                                if g not in EMPTY_VALUE:
+                                                    err_ordinals.add(g[0])
+                                                    if len(err_data_type) == 0:
+                                                        err_data_type = g[1]
 
-                            sf_info['number_of_unparsed_with_error'] = len(err_ordinals)
+                                sf_info['number_of_unparsed_with_error'] = len(err_ordinals)
 
                         warnings = self.__reg.report.warning.getInheritableDictBySf(sf_framecode)
 

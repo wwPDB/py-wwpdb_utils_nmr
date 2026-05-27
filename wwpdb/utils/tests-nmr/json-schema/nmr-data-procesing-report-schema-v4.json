@@ -3012,7 +3012,10 @@
           "maxItems": 15
         },
         "saveframe_tag": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
             "Sf_category": {
               "type": "string",
@@ -4036,7 +4039,7 @@
       ]
     },
     "spectral_dim_transfer": {
-      "description": "Template for mechanism for coherence transfer between spectral dimensions.",
+      "description": "Template for coherence transfer mechanism between spectral dimensions.",
       "type": "object",
       "properties": {
         "id_1": {
@@ -4416,20 +4419,31 @@
         },
         "entry_authors": {
           "description": "Concatenated author name list of the entry.",
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "minLength": 1
         },
         "submission_date": {
           "description": "Initial submission date.",
-          "type": "date"
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}"
         },
         "processed_date": {
           "description": "Processed date.",
-          "type": "date"
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "[0-9]{4}-[0-9]{2}-[0-9]{2}"
         },
         "processed_site": {
           "description": "Host name of processed server.",
-          "type": "hostname"
+          "type": "string"
         },
         "assembly_name": {
           "description": "Summary of the molecular system.",
@@ -4484,7 +4498,10 @@
         },
         "software": {
           "description": "List of software used for validation.",
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "type": "object",
             "properties": {
@@ -4493,7 +4510,7 @@
                 "minLength": 1
               },
               "software_version": {
-               "type": "string",
+              "type": "string",
                 "minLength": 1
               }
             },
@@ -4512,6 +4529,64 @@
           "description": "Section for entities.",
           "type": "null"
         },
+        "chem_shift_summary": {
+          "description": "Section for completeness of overall assigned chemical shifts.",
+          "type": "object",
+          "properties": {
+            "number_of_target_shifts_in_well_defined_region": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_assigned_shifts_in_well_defined_region": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_target_shifts_in_full_length_region": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_assigned_shifts_in_full_length_region": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_favorable_assigned_shifts_in_well_defined_region": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_favorable_assigned_shifts_in_full_length_region": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "completeness_in_well_defined_region": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+             },
+            "completeness_in_full_length_region": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+             },
+            "completeness_in_well_defined_region_with_favorable_shift": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+             },
+            "completeness_in_full_length_region_with_favorable_shift": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "number_of_target_shifts_in_full_length_region",
+            "number_of_assigned_shifts_in_full_length_region",
+            "number_of_favorable_assigned_shifts_in_full_length_region",
+            "completeness_in_full_length_region",
+            "completeness_in_full_length_region_with_favorable_shift"
+          ]
+        },
         "chem_shift": {
           "description": "Section for chemical shift validation.",
           "type": [
@@ -4519,7 +4594,14 @@
             "null"
           ],
           "items": {
-            "$ref": "#/definitions/output_stats_common_bookkeeping",
+            "allOf": [
+              {
+                "$ref": "#/definitions/output_stats_common_bookkeeping"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_completeness"
+              }
+            ],
             "minItems": 1
           }
         },
@@ -4570,7 +4652,7 @@
       }
     },
     "output_stats_common_bookkeeping": {
-      "description": "Template for common bookkeeping structure for output statistics.",
+      "description": "Template for common bookkeeping structure of output statistics.",
       "type": "object",
       "properties": {
         "original_file_name": {
@@ -4616,10 +4698,87 @@
           "type": "integer",
           "minimum": 0
         }
+      },
+      "required": [
+        "list_id",
+        "sf_framecode",
+        "number_of_parsed"
+      ]
+    },
+    "output_stats_chem_shift_completeness": {
+      "description": "Template for detailed chemical shift completenesses of output statistics.",
+      "type": "object",
+      "properties": {
+        "completeness_in_well_defined_region": {
+          "type": "object",
+          "items": {
+            "$ref": "#/definitions/output_stats_chem_shift_completeness_per_atom_group"
+          }
+        },
+        "completeness_in_full_length_region": {
+          "type": "object",
+          "items": {
+            "$ref": "#/definitions/output_stats_chem_shift_completeness_per_atom_group"
+          }
+        }
+      }
+    },
+    "output_stats_chem_shift_completeness_per_atom_group": {
+      "description": "Template for chemical shift completenesses per atom group of output statistics.",
+      "type": "object",
+      "properties": {
+        "completeness_of_overall_assignements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
+          }
+        },
+        "completensss_of_favorable_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
+          }
+        },
+        "completeness_of_backbone_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
+          }
+        },
+        "complentess_of_sidechain_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
+          }
+        },
+        "completeness_of_aromatic_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
+          }
+        },
+        "completeness_of_sugar_assignemnts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
+          }
+        },
+        "completeness_of_base_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
+          }
+        },
+        "completeness_of_stereomethyl_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
+          }
+        }
       }
     },
     "common_message": {
-      "description": "Template for common structure for error/warning message.",
+      "description": "Template for common structure of error/warning message.",
       "type": "array",
       "items": {
         "type": "object",

@@ -1204,6 +1204,106 @@ class NmrVrptUtility:
         """ Parse coordinates.
         """
 
+        def extract_emsemble():
+
+            try:
+
+                self.__total_models = 0
+                self.__eff_model_ids = []
+
+                ensemble = self.__cR.getDictList('pdbx_nmr_ensemble')
+
+                if len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
+
+                    try:
+                        self.__total_models = int(ensemble[0]['conformers_submitted_total_number'])
+                    except ValueError:
+                        pass
+
+                if len(ensemble) == 0 or self.__total_models == 0:
+
+                    ensemble = self.__cR.getDictList('rcsb_nmr_ensemble')
+
+                    if len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
+
+                        try:
+                            self.__total_models = int(ensemble[0]['conformers_submitted_total_number'])
+                        except ValueError:
+                            pass
+
+                    else:
+
+                        try:
+
+                            model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num')\
+                                else 'ndb_model'
+
+                            model_ids = self.__cR.getDictListWithFilter('atom_site',
+                                                                        [{'name': model_num_name, 'type': 'int',
+                                                                          'alt_name': 'model_id'}
+                                                                         ])
+
+                            if len(model_ids) > 0:
+                                model_ids = set(c['model_id'] for c in model_ids)
+
+                                self.__representative_model_id = min(model_ids)
+                                self.__total_models = len(model_ids)
+                                self.__eff_model_ids = sorted(model_ids)
+
+                        except Exception as e:  # pylint: disable=broad-exception-caught
+
+                            if self.__verbose:
+                                self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
+
+                if len(ensemble) > 0 and 'representative_conformer' in ensemble[0]:
+
+                    try:
+
+                        rep_model_id = int(ensemble[0]['representative_conformer'])
+
+                        if 1 <= rep_model_id <= self.__total_models:
+                            self.__representative_model_id = rep_model_id
+
+                    except ValueError:
+                        pass
+
+                if len(self.__eff_model_ids) == 0:
+
+                    try:
+
+                        model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num')\
+                            else 'ndb_model'
+
+                        model_ids = self.__cR.getDictListWithFilter('atom_site',
+                                                                    [{'name': model_num_name, 'type': 'int',
+                                                                      'alt_name': 'model_id'}
+                                                                     ])
+
+                        if len(model_ids) > 0:
+                            model_ids = set(c['model_id'] for c in model_ids)
+
+                            self.__total_models = len(model_ids)
+                            self.__eff_model_ids = sorted(model_ids)
+
+                    except Exception as e:  # pylint: disable=broad-exception-caught
+
+                        if self.__verbose:
+                            self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
+
+                if self.__cR.hasItem('atom_site', 'label_alt_id'):
+                    alt_ids = self.__cR.getDictListWithFilter('atom_site',
+                                                              [{'name': 'label_alt_id', 'type': 'str'}
+                                                               ])
+
+                    if len(alt_ids) > 0:
+                        for a in alt_ids:
+                            if a['label_alt_id'] not in EMPTY_VALUE:
+                                self.__representative_alt_id = a['label_alt_id']
+                                break
+
+            except Exception:  # pylint: disable=broad-exception-caught
+                pass
+
         if self.__cR is not None:
 
             self.__cifPath = self.__cR.getFilePath()
@@ -1220,6 +1320,8 @@ class NmrVrptUtility:
 
                 self.__cifHashCode = self.__cR.getHashCode()
 
+            extract_emsemble()
+
             return True
 
         if not self.__checkCoordInputSource():
@@ -1235,111 +1337,18 @@ class NmrVrptUtility:
 
         file_name = os.path.basename(self.__cifPath)
 
-        try:
+        if self.__cifPath is None:
 
-            if self.__cifPath is None:
+            err = f"{file_name!r} is invalid PDBx/mmCIF file."
 
-                err = f"{file_name!r} is invalid PDBx/mmCIF file."
+            if self.__verbose:
+                self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
 
-                if self.__verbose:
-                    self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {err}\n")
-
-                return False
-
-            self.__total_models = 0
-            self.__eff_model_ids = []
-
-            ensemble = self.__cR.getDictList('pdbx_nmr_ensemble')
-
-            if len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
-
-                try:
-                    self.__total_models = int(ensemble[0]['conformers_submitted_total_number'])
-                except ValueError:
-                    pass
-
-            if len(ensemble) == 0 or self.__total_models == 0:
-
-                ensemble = self.__cR.getDictList('rcsb_nmr_ensemble')
-
-                if len(ensemble) > 0 and 'conformers_submitted_total_number' in ensemble[0]:
-
-                    try:
-                        self.__total_models = int(ensemble[0]['conformers_submitted_total_number'])
-                    except ValueError:
-                        pass
-
-                else:
-
-                    try:
-
-                        model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num')\
-                            else 'ndb_model'
-
-                        model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                                     ])
-
-                        if len(model_ids) > 0:
-                            model_ids = set(c['model_id'] for c in model_ids)
-
-                            self.__representative_model_id = min(model_ids)
-                            self.__total_models = len(model_ids)
-                            self.__eff_model_ids = sorted(model_ids)
-
-                    except Exception as e:  # pylint: disable=broad-exception-caught
-
-                        if self.__verbose:
-                            self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
-
-            if len(ensemble) > 0 and 'representative_conformer' in ensemble[0]:
-
-                try:
-
-                    rep_model_id = int(ensemble[0]['representative_conformer'])
-
-                    if 1 <= rep_model_id <= self.__total_models:
-                        self.__representative_model_id = rep_model_id
-
-                except ValueError:
-                    pass
-
-            if len(self.__eff_model_ids) == 0:
-
-                try:
-
-                    model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num') else 'ndb_model'
-
-                    model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                                 ])
-
-                    if len(model_ids) > 0:
-                        model_ids = set(c['model_id'] for c in model_ids)
-
-                        self.__total_models = len(model_ids)
-                        self.__eff_model_ids = sorted(model_ids)
-
-                except Exception as e:  # pylint: disable=broad-exception-caught
-
-                    if self.__verbose:
-                        self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
-
-            if self.__cR.hasItem('atom_site', 'label_alt_id'):
-                alt_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                          [{'name': 'label_alt_id', 'type': 'str'}
-                                                           ])
-
-                if len(alt_ids) > 0:
-                    for a in alt_ids:
-                        if a['label_alt_id'] not in EMPTY_VALUE:
-                            self.__representative_alt_id = a['label_alt_id']
-                            break
-
-            return True
-
-        except Exception:  # pylint: disable=broad-exception-caught
             return False
+
+        extract_emsemble()
+
+        return True
 
     def __checkCoordInputSource(self) -> bool:
         """ Check input source of the coordinates.
@@ -2091,7 +2100,7 @@ class NmrVrptUtility:
 
                                 err_cs_values = list(cs_key)
                                 err_cs_values.extend([cs_value, cs_error, ambig_code])
-                                self.__chemShiftDuplicated[list_id].append(err_cs_values)
+                                self.__chemShiftUnparsed[list_id].append(err_cs_values)
 
             return True
 
@@ -3499,7 +3508,7 @@ class NmrVrptUtility:
 
         task_keys = ('well_defined', 'full_length')
         atom_types = (any_type, 'H', 'C', 'N', 'P')
-        atom_categories = ('overall', 'preferable', 'backbone', 'sidechain', 'aromatic', 'sugar', 'base')
+        atom_categories = ('overall', 'favorable', 'backbone', 'sidechain', 'aromatic', 'sugar', 'base')
 
         def do_calc_completeness(list_ids, task_key, auth_chain_id, well_defined_region, seq_key, seq_id, coord_atoms, output):
             if task_key == 'well_defined':
@@ -3549,8 +3558,8 @@ class NmrVrptUtility:
                         if not any(any(True for out_cs in self.__chemShiftOutlier[list_id]
                                    if out_cs[0] == auth_chain_id and out_cs[1] == res_num
                                    and out_cs[2] == comp_id and out_cs[3] == atom_id) for list_id in list_ids):
-                            output[task_key][atom_type]['preferable'][0] += 1
-                            output[task_key][any_type]['preferable'][0] += 1
+                            output[task_key][atom_type]['favorable'][0] += 1
+                            output[task_key][any_type]['favorable'][0] += 1
 
                     # count only carbon/nitrogen if not quaternary (use coordinates to check whether hydrogen attached)
                     elif atom_type in ('C', 'N'):
@@ -3560,10 +3569,10 @@ class NmrVrptUtility:
 
                     output[task_key][atom_type][atom_category][1] += 1
                     output[task_key][atom_type]['overall'][1] += 1
-                    output[task_key][atom_type]['preferable'][1] += 1
+                    output[task_key][atom_type]['favorable'][1] += 1
                     output[task_key][any_type][atom_category][1] += 1
                     output[task_key][any_type]['overall'][1] += 1
-                    output[task_key][any_type]['preferable'][1] += 1
+                    output[task_key][any_type]['favorable'][1] += 1
 
             # Check for stereo-assignment of methyl groups (VAL, LEU)
             for list_id in list_ids:
@@ -3695,22 +3704,25 @@ class NmrVrptUtility:
         completeness = {task_key: _completeness[task_key][any_type]['overall'] for task_key in task_keys}
 
         completeness['chemical_shift_completeness'] =\
-            100.0 * completeness['well_defined'][0] / completeness['well_defined'][1]\
+            float(f"{100.0 * completeness['well_defined'][0] / completeness['well_defined'][1]:.2f}")\
             if completeness['well_defined'][1] > 0 else 0.0
 
         completeness['chemical_shift_completeness_full_length'] =\
-            100.0 * completeness['full_length'][0] / completeness['full_length'][1]\
+            float(f"{100.0 * completeness['full_length'][0] / completeness['full_length'][1]:.2f}")\
             if completeness['full_length'][1] > 0 else 0.0
 
-        pref_completeness = {task_key: _completeness[task_key][any_type]['preferable'] for task_key in task_keys}
+        favor_completeness = {task_key: _completeness[task_key][any_type]['favorable'] for task_key in task_keys}
 
-        completeness['pref_chem_shift_completeness'] =\
-            100.0 * pref_completeness['well_defined'][0] / pref_completeness['well_defined'][1]\
-            if pref_completeness['well_defined'][1] > 0 else 0.0
+        completeness['favor_well_defined'] = _completeness['well_defined'][any_type]['favorable']
+        completeness['favor_full_length'] = _completeness['full_length'][any_type]['favorable']
 
-        completeness['pref_chem_shift_completeness_full_length'] =\
-            100.0 * pref_completeness['full_length'][0] / pref_completeness['full_length'][1]\
-            if pref_completeness['full_length'][1] > 0 else 0.0
+        completeness['favor_chem_shift_completeness'] =\
+            float(f"{100.0 * favor_completeness['well_defined'][0] / favor_completeness['well_defined'][1]:.2f}")\
+            if favor_completeness['well_defined'][1] > 0 else 0.0
+
+        completeness['favor_chem_shift_completeness_full_length'] =\
+            float(f"{100.0 * favor_completeness['full_length'][0] / favor_completeness['full_length'][1]:.2f}")\
+            if favor_completeness['full_length'][1] > 0 else 0.0
 
         completeness_items = {list_id: calc_completeness([list_id]) for list_id in list_ids}
 
@@ -3727,7 +3739,7 @@ class NmrVrptUtility:
         shift_summary_table = {}
         for idx, list_id in enumerate(list_ids):
             parsed = len(self.__chemShiftDict[list_id])
-            unparsed = len(self.__chemShiftUnmapped[list_id])
+            unparsed = len(self.__chemShiftUnparsed[list_id])
             unmapped_error = len(self.__chemShiftUnmapped[list_id])
             mapped = parsed - unmapped_error
             shift_summary_table[list_id] = {'block_id': self.__chemShiftMeta[idx][0],

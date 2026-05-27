@@ -4600,6 +4600,9 @@
               },
               {
                 "$ref": "#/definitions/output_stats_chem_shift_completeness"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_outlier"
               }
             ],
             "minItems": 1
@@ -4776,6 +4779,86 @@
           }
         }
       }
+    },
+    "output_stats_chem_shift_outlier": {
+      "description": "Template for chemical shift outliers of output statistics.",
+      "type": "object",
+      "properties": {
+        "chemical_shift_outlier": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/output_stats_chem_shift_outlier_details"
+          }
+        }
+      }
+    },
+    "output_stats_chem_shift_outlier_details": {
+      "description": "Template for detailed chemical shift outliers of output statistics.",
+      "type": "object",
+      "properties": {
+        "auth_chain_id": {
+          "description": "Auth chain ID of chemical shift outlier (Auth_asym_ID).",
+          "type": "string",
+          "minLength": 1
+        },
+        "auth_seq_id": {
+          "description": "Auth sequence ID of chemical shift outlier (Auth_seq_ID),",
+          "type": "integer"
+        },
+        "ins_code": {
+          "description": "Insertion code of chemical shift outlier (PDB_ins_code).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "comp_id": {
+          "description": "Chemical component ID of chemical shift outlier (Comp_ID).",
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_id": {
+          "description": "Atom ID of chemical shift outlier (Atom_ID).",
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "description": "Chemical shift value of chemical shift outlier (Val).",
+          "type": "number"
+        },
+        "ambig_code": {
+          "description": "Ambiguity code of chemical shift outlier (Ambigity_code).",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "z_score": {
+          "description": "Z score of chemical shift outlier.",
+          "type": "number"
+        },
+        "expected_range": {
+          "description": "Expected range of chemical shift value for a given atom.",
+          "type": "object",
+          "properties": {
+            "max_value": {
+              "type": "number"
+            },
+            "min_value": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "required": [
+        "auth_chain_id",
+        "auth_seq_id",
+        "comp_id",
+        "atom_id",
+        "value",
+        "z_score",
+        "expected_range"
+      ]
     },
     "common_message": {
       "description": "Template for common structure of error/warning message.",

@@ -15960,13 +15960,35 @@ class NmrDpUtility:
                                         sf_info['number_of_unmapped_to_model'] =\
                                             sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
 
-                                if vrpt_cs is not None and 'completeness_items' in vrpt_cs\
-                                   and list_id in vrpt_cs['completeness_items']:
-                                    src_item = vrpt_cs['completeness_items'][list_id]['well_defined']
-                                    sf_info['completeness_in_well_defined_region'] = map_completeness_of(src_item)
+                                if vrpt_cs is not None:
+                                    if 'completeness_items' in vrpt_cs\
+                                       and list_id in vrpt_cs['completeness_items']:
+                                        src_item = vrpt_cs['completeness_items'][list_id]['well_defined']
+                                        sf_info['completeness_in_well_defined_region'] = map_completeness_of(src_item)
 
-                                    src_item = vrpt_cs['completeness_items'][list_id]['full_length']
-                                    sf_info['completeness_in_full_length_region'] = map_completeness_of(src_item)
+                                        src_item = vrpt_cs['completeness_items'][list_id]['full_length']
+                                        sf_info['completeness_in_full_length_region'] = map_completeness_of(src_item)
+
+                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER']:
+                                        outliers = vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER'][list_id]
+                                        if len(outliers) > 0:
+                                            sf_info['chemical_shift_outlier'] = []
+                                            for outlier in outliers:
+                                                auth_seq_id = int(outlier[1]) if outlier[1].isdigit()\
+                                                    else int(re.findall(r'\d+', outlier[1])[0])
+                                                ins_code = None if outlier[1].isdigit() else outlier[1][len(str(auth_seq_id)):]
+                                                item = {'auth_chain_id': outlier[0],
+                                                        'auth_seq_id': auth_seq_id,
+                                                        'ins_code': ins_code,
+                                                        'comp_id': outlier[2],
+                                                        'atom_id': outlier[3],
+                                                        'value': outlier[4],
+                                                        'ambig_code': outlier[5],
+                                                        'z_score': outlier[6],
+                                                        'expected_range': {'min_value': outlier[7],
+                                                                           'max_value': outlier[8]}
+                                                        }
+                                                sf_info['chemical_shift_outlier'].append(item)
 
                             elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 

@@ -16032,6 +16032,26 @@ class NmrDpUtility:
                                                         }
                                                 sf_info['chemical_shift_unparsed'].append(item)
 
+                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE']:
+                                        duplicated = vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE'][list_id]
+
+                                        if len(duplicated) > 0:
+                                            sf_info['chemical_shift_duplicated'] = []
+                                            for row in duplicated:
+                                                auth_seq_id = int(row[1]) if row[1].isdigit()\
+                                                    else int(re.findall(r'\d+', row[1])[0])
+                                                ins_code = None if row[1].isdigit() else row[1][len(str(auth_seq_id)):]
+                                                item = {'auth_chain_id': row[0],
+                                                        'auth_seq_id': auth_seq_id,
+                                                        'ins_code': ins_code,
+                                                        'comp_id': row[2],
+                                                        'atom_id': row[3],
+                                                        'value': row[4],
+                                                        'error': row[5],
+                                                        'ambig_code': row[6]
+                                                        }
+                                                sf_info['chemical_shift_duplicated'].append(item)
+
                             elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 
                                 if content_subtype in ('dist_restraint', 'rdc_restraint'):

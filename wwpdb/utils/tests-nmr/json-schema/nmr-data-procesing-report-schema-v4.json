@@ -4606,6 +4606,12 @@
               },
               {
                 "$ref": "#/definitions/output_stats_chem_shift_unparsed"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_duplicated"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_unmapped"
               }
             ],
             "minItems": 1
@@ -4924,7 +4930,69 @@
             "string",
             "null"
           ]
+        }
+      }
+    },
+    "output_stats_chem_shift_duplicated": {
+      "description": "Template for duplicated chemical shifts of output statistics.",
+      "type": "object",
+      "properties": {
+        "chemical_shift_duplicated": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_error_base"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_unmapped_details"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output_stats_chem_shift_unmapped": {
+      "description": "Template for unmapped chemical shifts of output statistics.",
+      "type": "object",
+      "properties": {
+        "chemical_shift_unmapped": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_error_base"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_unmapped_details"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output_stats_chem_shift_unmapped_details": {
+      "description": "Template for unmapped chemical shifts of output statistics.",
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "Chemical shift value of unmapped chemical shift (Val).",
+          "type": "number"
         },
+        "error": {
+          "description": "Chemical shift error value of unmapped chemical shift (Val_err).",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "ambig_code": {
+          "description": "Ambiguity code of unmapped chemical shift (Ambigity_code).",
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
       }
     },
     "common_message": {

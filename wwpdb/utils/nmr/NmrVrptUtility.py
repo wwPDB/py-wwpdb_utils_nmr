@@ -2064,9 +2064,8 @@ class NmrVrptUtility:
                                       {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
                                       {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
                                       {'name': 'Val', 'type': 'str', 'alt_name': 'value'},
-                                      {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
-                                      {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
-                                       'enum': ALLOWED_AMBIGUITY_CODES},
+                                      {'name': 'Val_err', 'type': 'str', 'alt_name': 'error'},
+                                      {'name': 'Ambiguity_code', 'type': 'str', 'alt_name': 'ambig_code'}
                                       ]
 
                         if 'PDB_ins_code' in tags:

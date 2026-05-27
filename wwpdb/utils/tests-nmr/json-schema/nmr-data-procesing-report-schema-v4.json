@@ -4603,6 +4603,9 @@
               },
               {
                 "$ref": "#/definitions/output_stats_chem_shift_outlier"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_unparsed"
               }
             ],
             "minItems": 1
@@ -4655,7 +4658,7 @@
       }
     },
     "output_stats_common_bookkeeping": {
-      "description": "Template for common bookkeeping structure of output statistics.",
+      "description": "Template for common bookkeeping structure in output statistics.",
       "type": "object",
       "properties": {
         "original_file_name": {
@@ -4709,7 +4712,7 @@
       ]
     },
     "output_stats_chem_shift_completeness": {
-      "description": "Template for detailed chemical shift completenesses of output statistics.",
+      "description": "Template for chemical shift completenesses in output statistics.",
       "type": "object",
       "properties": {
         "completeness_in_well_defined_region": {
@@ -4727,7 +4730,7 @@
       }
     },
     "output_stats_chem_shift_completeness_per_atom_group": {
-      "description": "Template for chemical shift completenesses per atom group of output statistics.",
+      "description": "Template for chemical shift completenesses per atom group in output statistics.",
       "type": "object",
       "properties": {
         "completeness_of_overall_assignements": {
@@ -4781,47 +4784,66 @@
       }
     },
     "output_stats_chem_shift_outlier": {
-      "description": "Template for chemical shift outliers of output statistics.",
+      "description": "Template for chemical shift outliers in output statistics.",
       "type": "object",
       "properties": {
         "chemical_shift_outlier": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/output_stats_chem_shift_outlier_details"
+            "allOf": [
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_error_base"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_outlier_details"
+              }
+            ]
           }
         }
       }
     },
-    "output_stats_chem_shift_outlier_details": {
-      "description": "Template for detailed chemical shift outliers of output statistics.",
+    "output_stats_chem_shift_error_base": {
+      "description": "Template for chemical shift errors in output statistics.",
       "type": "object",
       "properties": {
         "auth_chain_id": {
-          "description": "Auth chain ID of chemical shift outlier (Auth_asym_ID).",
+          "description": "Auth chain ID of chemical shift error (Auth_asym_ID).",
           "type": "string",
           "minLength": 1
         },
         "auth_seq_id": {
-          "description": "Auth sequence ID of chemical shift outlier (Auth_seq_ID),",
+          "description": "Auth sequence ID of chemical shift error (Auth_seq_ID),",
           "type": "integer"
         },
         "ins_code": {
-          "description": "Insertion code of chemical shift outlier (PDB_ins_code).",
+          "description": "Insertion code of chemical shift error (PDB_ins_code).",
           "type": [
             "string",
             "null"
           ]
         },
         "comp_id": {
-          "description": "Chemical component ID of chemical shift outlier (Comp_ID).",
+          "description": "Chemical component ID of chemical shift error (Comp_ID).",
           "type": "string",
           "minLength": 1
         },
         "atom_id": {
-          "description": "Atom ID of chemical shift outlier (Atom_ID).",
+          "description": "Atom ID of chemical shift error (Atom_ID).",
           "type": "string",
           "minLength": 1
-        },
+        }
+      },
+      "required": [
+        "auth_chain_id",
+        "auth_seq_id",
+        "comp_id",
+        "atom_id"
+      ]
+    },
+    "output_stats_chem_shift_outlier_details": {
+      "description": "Template for detailes of chemical shift outlier in output statistics.",
+      "type": "object",
+      "properties": {
         "value": {
           "description": "Chemical shift value of chemical shift outlier (Val).",
           "type": "number"
@@ -4851,14 +4873,59 @@
         }
       },
       "required": [
-        "auth_chain_id",
-        "auth_seq_id",
-        "comp_id",
-        "atom_id",
         "value",
         "z_score",
         "expected_range"
       ]
+    },
+    "output_stats_chem_shift_unparsed": {
+      "description": "Template for unparsed chemical shifts of output statistics.",
+      "type": "object",
+      "properties": {
+        "chemical_shift_unparsed": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_error_base"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_unparsed_details"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output_stats_chem_shift_unparsed_details": {
+      "description": "Template for unparsed chemical shifts of output statistics.",
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "Chemical shift value of unparsed chemical shift (Val).",
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "error": {
+          "description": "Chemical shift error value of unparsed chemical shift (Val_err).",
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "ambig_code": {
+          "description": "Ambiguity code of unparsed chemical shift (Ambigity_code).",
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+      }
     },
     "common_message": {
       "description": "Template for common structure of error/warning message.",

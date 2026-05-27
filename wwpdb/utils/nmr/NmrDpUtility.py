@@ -15970,25 +15970,67 @@ class NmrDpUtility:
                                         sf_info['completeness_in_full_length_region'] = map_completeness_of(src_item)
 
                                     if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER']:
-                                        outliers = vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER'][list_id]
-                                        if len(outliers) > 0:
+                                        outlier = vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER'][list_id]
+
+                                        if len(outlier) > 0:
                                             sf_info['chemical_shift_outlier'] = []
-                                            for outlier in outliers:
-                                                auth_seq_id = int(outlier[1]) if outlier[1].isdigit()\
-                                                    else int(re.findall(r'\d+', outlier[1])[0])
-                                                ins_code = None if outlier[1].isdigit() else outlier[1][len(str(auth_seq_id)):]
-                                                item = {'auth_chain_id': outlier[0],
+                                            for row in outlier:
+                                                auth_seq_id = int(row[1]) if row[1].isdigit()\
+                                                    else int(re.findall(r'\d+', row[1])[0])
+                                                ins_code = None if row[1].isdigit() else row[1][len(str(auth_seq_id)):]
+                                                item = {'auth_chain_id': row[0],
                                                         'auth_seq_id': auth_seq_id,
                                                         'ins_code': ins_code,
-                                                        'comp_id': outlier[2],
-                                                        'atom_id': outlier[3],
-                                                        'value': outlier[4],
-                                                        'ambig_code': outlier[5],
-                                                        'z_score': outlier[6],
-                                                        'expected_range': {'min_value': outlier[7],
-                                                                           'max_value': outlier[8]}
+                                                        'comp_id': row[2],
+                                                        'atom_id': row[3],
+                                                        'value': row[4],
+                                                        'ambig_code': row[5],
+                                                        'z_score': row[6],
+                                                        'expected_range': {'min_value': row[7],
+                                                                           'max_value': row[8]}
                                                         }
                                                 sf_info['chemical_shift_outlier'].append(item)
+
+                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['CS_VALUE']:
+                                        unparsed = vrpt_cs['book_keeping']['cs_error']['CS_VALUE'][list_id]
+
+                                        if len(unparsed) > 0:
+                                            sf_info['chemical_shift_unparsed'] = []
+                                            for row in unparsed:
+                                                auth_seq_id = int(row[1]) if row[1].isdigit()\
+                                                    else int(re.findall(r'\d+', row[1])[0])
+                                                ins_code = None if row[1].isdigit() else row[1][len(str(auth_seq_id)):]
+                                                if row[4] in EMPTY_VALUE:
+                                                    value = None
+                                                else:
+                                                    try:
+                                                        value = float(row[4])
+                                                    except ValueError:
+                                                        value = row[4]
+                                                if row[5] in EMPTY_VALUE:
+                                                    error = None
+                                                else:
+                                                    try:
+                                                        error = float(row[5])
+                                                    except ValueError:
+                                                        error = row[5]
+                                                if row[6] in EMPTY_VALUE:
+                                                    ambig_code = None
+                                                else:
+                                                    try:
+                                                        ambig_code = int(row[6])
+                                                    except ValueError:
+                                                        ambig_code = row[6]
+                                                item = {'auth_chain_id': row[0],
+                                                        'auth_seq_id': auth_seq_id,
+                                                        'ins_code': ins_code,
+                                                        'comp_id': row[2],
+                                                        'atom_id': row[3],
+                                                        'value': value,
+                                                        'error': error,
+                                                        'ambig_code': ambig_code
+                                                        }
+                                                sf_info['chemical_shift_unparsed'].append(item)
 
                             elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 

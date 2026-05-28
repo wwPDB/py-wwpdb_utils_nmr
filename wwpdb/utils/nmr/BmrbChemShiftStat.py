@@ -1031,6 +1031,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1062,6 +1064,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1094,6 +1098,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1127,6 +1133,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1164,6 +1172,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1197,6 +1207,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1230,6 +1242,8 @@ class BmrbChemShiftStat:
                     _row['avg'] = float(row['avg'])
                     try:
                         _row['std'] = float(row['std'])
+                        if _row['std'] <= 0.0:
+                            _row['std'] = None
                     except ValueError:
                         _row['std'] = None
                     _row['min'] = float(row['min'])
@@ -1355,6 +1369,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1386,6 +1402,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1418,6 +1436,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1451,6 +1471,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1488,6 +1510,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1521,6 +1545,8 @@ class BmrbChemShiftStat:
                         _row['avg'] = float(row['avg'])
                         try:
                             _row['std'] = float(row['std'])
+                            if _row['std'] <= 0.0:
+                                _row['std'] = None
                         except ValueError:
                             _row['std'] = None
                         _row['min'] = float(row['min'])
@@ -1571,6 +1597,8 @@ class BmrbChemShiftStat:
                             _row['avg'] = float(row['avg'])
                             try:
                                 _row['std'] = float(row['std'])
+                                if _row['std'] <= 0.0:
+                                    _row['std'] = None
                             except ValueError:
                                 _row['std'] = None
                             _row['min'] = float(row['min'])
@@ -1614,6 +1642,8 @@ class BmrbChemShiftStat:
                             _row['avg'] = float(row['avg'])
                             try:
                                 _row['std'] = float(row['std'])
+                                if _row['std'] <= 0.0:
+                                    _row['std'] = None
                             except ValueError:
                                 _row['std'] = None
                             _row['min'] = float(row['min'])
@@ -1656,6 +1686,8 @@ class BmrbChemShiftStat:
                                 _row['avg'] = float(row['avg'])
                                 try:
                                     _row['std'] = float(row['std'])
+                                    if _row['std'] <= 0.0:
+                                        _row['std'] = None
                                 except ValueError:
                                     _row['std'] = None
                                 _row['min'] = float(row['min'])
@@ -1699,6 +1731,8 @@ class BmrbChemShiftStat:
                                 _row['avg'] = float(row['avg'])
                                 try:
                                     _row['std'] = float(row['std'])
+                                    if _row['std'] <= 0.0:
+                                        _row['std'] = None
                                 except ValueError:
                                     _row['std'] = None
                                 _row['min'] = float(row['min'])
@@ -1729,6 +1763,8 @@ class BmrbChemShiftStat:
                     _row['avg'] = float(row['avg'])
                     try:
                         _row['std'] = float(row['std'])
+                        if _row['std'] <= 0.0:
+                            _row['std'] = None
                     except ValueError:
                         _row['std'] = None
                     _row['min'] = float(row['min'])

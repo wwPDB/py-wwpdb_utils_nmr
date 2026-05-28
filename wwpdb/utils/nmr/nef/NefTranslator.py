@@ -127,6 +127,7 @@
 # 27-Jan-2026  M. Yokochi - convert one-letter-code in CS loop if possible (DAOTHER-10487)
 # 05-Mar-2026  M. Yokochi - provide instruction to depositor in case of missing mandatory item error (DAOTHER-10547)
 # 25-Mar-2026  M. Yokochi - rename class from NEFTranslator to NefTranslator
+# 28-May-2026  M. Yokochi - add mandatory saveframe tags if not exists (DAOTHER-10781)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -11868,6 +11869,13 @@ class NefTranslator:
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1])
 
+                # DAOTHER-10781: Add mandatory saveframe tags if not exists
+                for k, v in self.starMandatoryTag.items():
+                    k_split = k.split('.')
+                    if v and k_split[0] == sf.tag_prefix:
+                        if not any(True for tag in sf.tags if tag[0] == k_split[1]):
+                            sf.add_tag(k, None)
+
                 has_covalent_links = any(True for loop in saveframe if loop.category == '_nef_covalent_links')
                 aux_rows = []
 
@@ -12067,6 +12075,13 @@ class NefTranslator:
                         if auth_tag is not None:
                             sf.add_tag(auth_tag, tag[1])
 
+                # DAOTHER-10781: Add mandatory saveframe tags if not exists
+                for k, v in self.starMandatoryTag.items():
+                    k_split = k.split('.')
+                    if v and k_split[0] == sf.tag_prefix:
+                        if not any(True for tag in sf.tags if tag[0] == k_split[1]):
+                            sf.add_tag(k, None)
+
             else:
 
                 if nef_data.category == '_nef_program_script':
@@ -12216,6 +12231,13 @@ class NefTranslator:
 
             if sf.category == 'nef_nmr_meta_data':
                 sf.add_tag('NMR_STAR_version', NMR_STAR_VERSION)
+
+                # DAOTHER-10781: Add mandatory saveframe tags if not exists
+                for k, v in self.starMandatoryTag.items():
+                    k_split = k.split('.')
+                    if v and k_split[0] == sf.tag_prefix:
+                        if not any(True for tag in sf.tags if tag[0] == k_split[1]):
+                            sf.add_tag(k, None)
 
                 try:
                     loop = sf.get_loop('_Software_applied_methods')
@@ -12370,6 +12392,13 @@ class NefTranslator:
                         nef_tag, _ = self.get_nef_tag(f'{saveframe.tag_prefix}.{tag[0]}')
                         if nef_tag is not None:
                             sf.add_tag(nef_tag, tag[1])
+
+                # DAOTHER-10781: Add mandatory saveframe tags if not exists
+                for k, v in self.nefMandatoryTag.items():
+                    k_split = k.split('.')
+                    if v and k_split[0] == sf.tag_prefix:
+                        if not any(True for tag in sf.tags if tag[0] == k_split[1]):
+                            sf.add_tag(k, None)
 
                 entity_del_atom_loop = next((loop for loop in saveframe if loop.category == '_Entity_deleted_atom'), None)
 
@@ -12528,6 +12557,13 @@ class NefTranslator:
                             if nef_tag is not None:
                                 sf.add_tag(nef_tag, tag[1])
 
+                    # DAOTHER-10781: Add mandatory saveframe tags if not exists
+                    for k, v in self.nefMandatoryTag.items():
+                        k_split = k.split('.')
+                        if v and k_split[0] == sf.tag_prefix:
+                            if not any(True for tag in sf.tags if tag[0] == k_split[1]):
+                                sf.add_tag(k, None)
+
             else:
 
                 if star_data.category == '_Software_applied_methods':
@@ -12652,6 +12688,13 @@ class NefTranslator:
                     sf.add_tag('format_name', NEF_FORMAT_NAME)
                 if not has_format_ver:
                     sf.add_tag('format_version', NEF_VERSION)
+
+                # DAOTHER-10781: Add mandatory saveframe tags if not exists
+                for k, v in self.nefMandatoryTag.items():
+                    k_split = k.split('.')
+                    if v and k_split[0] == sf.tag_prefix:
+                        if not any(True for tag in sf.tags if tag[0] == k_split[1]):
+                            sf.add_tag(k, None)
 
                 try:
                     loop = sf.get_loop('_nef_program_script')

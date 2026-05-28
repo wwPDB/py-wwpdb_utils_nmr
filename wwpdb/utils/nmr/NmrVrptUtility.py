@@ -2825,10 +2825,13 @@ class NmrVrptUtility:
                         if cs_stat is None:
                             continue
 
-                        self.__chemShiftUniqDict[list_id][cs_key]['primary'] = True
-
                         avg_value = cs_stat['avg']
                         std_value = cs_stat['std']
+
+                        if None in (avg_value, std_value):
+                            continue
+
+                        self.__chemShiftUniqDict[list_id][cs_key]['primary'] = True
 
                         z_score = float(f"{(cs['value'] - avg_value) / std_value:.2f}")
 

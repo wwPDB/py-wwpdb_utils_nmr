@@ -1675,6 +1675,54 @@ class CifReader:
                     result = {'features': features, 'min_samples': min_samples, 'epsilon': epsilon,
                               'clusters': n_clusters, 'noise': n_noise}
 
+                    mosaic = len(set_labels) > 1
+
+                    if mosaic:
+
+                        mosaic = False
+
+                        seq_ids_set_of = {}
+
+                        for label in set_labels:
+                            monomers = list_labels.count(label)
+
+                            if monomers < self.__min_monomers_for_domain:
+                                continue
+
+                            _atom_site_ref = _atom_site_dict[1]
+                            _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
+
+                            if label != -1:
+                                for chain_id in chain_ids:
+                                    seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p if a['chain_id'] == chain_id))
+                                    if len(seq_ids) > 0:
+                                        gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
+                                        if chain_id not in seq_ids_set_of:
+                                            seq_ids_set_of[chain_id] = []
+                                        seq_ids_set_of[chain_id].append(seq_ids)
+                                        if gaps > monomers * 2:
+                                            mosaic = True
+
+                        if mosaic:
+
+                            mosaic = False
+
+                            for seq_ids_set in seq_ids_set_of.values():
+                                if len(seq_ids_set) < 2:
+                                    continue
+                                for seq_ids_pair in itertools.combinations(seq_ids_set, 2):
+                                    seq_ids1 = seq_ids_pair[0]
+                                    seq_ids2 = seq_ids_pair[1]
+                                    if seq_ids2[0] < seq_ids1[0] < seq_ids2[-1]\
+                                       or seq_ids2[0] < seq_ids1[-1] < seq_ids2[-1]\
+                                       or seq_ids1[0] < seq_ids2[0] < seq_ids1[-1]\
+                                       or seq_ids1[0] < seq_ids2[-1] < seq_ids1[-1]:
+                                        mosaic = True
+                                        break
+
+                            if mosaic:  # 2mze
+                                continue
+
                     score = 0.0
 
                     for label in set_labels:
@@ -1690,18 +1738,18 @@ class CifReader:
 
                         _atom_site_ref = _atom_site_dict[1]
                         _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
-
-                        gaps = 0
-                        if label != -1:
-                            for chain_id in chain_ids:
-                                seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p if a['chain_id'] == chain_id))
-                                if len(seq_ids) > 0:
-                                    gaps = max(seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids), gaps)
-
-                        if gaps > monomers * 2:  # 2mze
-                            score = 0.0
-                            break
-
+                        # """
+                        # gaps = 0
+                        # if label != -1:
+                        #     for chain_id in chain_ids:
+                        #         seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p if a['chain_id'] == chain_id))
+                        #         if len(seq_ids) > 0:
+                        #             gaps = max(seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids), gaps)
+                        #
+                        # if gaps > monomers * 2:  # 2mze
+                        #     score = 0.0
+                        #     break
+                        # """
                         for model_id in range(2, total_models + 1):
 
                             if model_id not in eff_model_ids:

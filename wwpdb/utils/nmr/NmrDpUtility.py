@@ -15619,7 +15619,7 @@ class NmrDpUtility:
                 completeness = vrpt_cs['completeness']
 
                 cs_summary = {}
-                if has_coordinate:
+                if has_coordinate and completeness['well_defined'][1] > 0:
                     cs_summary['number_of_target_shifts_in_well_defined_region'] =\
                         completeness['well_defined'][1]
                     cs_summary['number_of_assigned_shifts_in_well_defined_region'] =\
@@ -15886,11 +15886,12 @@ class NmrDpUtility:
 
                 if 'stereomethyl' in src:
                     v = src['stereomethyl']
-                    ret['completeness_of_stereomethyl_assignments'] =\
-                        [{'atom_group': 'stereomethyl_13c_chemical_shifts',
-                          'number_of_assigned_shifts': v[0],
-                          'number_of_target_shifts': v[1],
-                          'completeness': float(f"{float(v[0]) / v[1]:.3f}")}]
+                    if v[1] > 0:
+                        ret['completeness_of_stereomethyl_assignments'] =\
+                            [{'atom_group': 'stereomethyl_13c_chemical_shifts',
+                              'number_of_assigned_shifts': v[0],
+                              'number_of_target_shifts': v[1],
+                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}]
 
                 return ret
 

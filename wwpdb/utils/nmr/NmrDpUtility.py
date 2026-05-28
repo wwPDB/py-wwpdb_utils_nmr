@@ -7114,7 +7114,10 @@ class NmrDpUtility:
                 try:
 
                     cs_data = next(lp['data'] for lp in self.__reg.lp_data['chem_shift']
-                                   if lp['file_name'] == file_name and lp['sf_framecode'] == cs_list)
+                                   if lp['file_name'] == file_name
+                                   and (lp['sf_framecode'] == cs_list
+                                        or (lp['sf_framecode'].startswith('nef_')  # DAOTHER-9623, 10781
+                                            and lp['sf_framecode'].endswith(cs_list))))
 
                 except StopIteration:
 

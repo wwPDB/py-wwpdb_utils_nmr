@@ -16000,9 +16000,10 @@ class NmrDpUtility:
                                         if len(outlier) > 0:
                                             sf_info['chemical_shift_outlier'] = []
                                             for row in outlier:
-                                                auth_seq_id = int(row[1]) if row[1].isdigit()\
+                                                auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
                                                     else int(re.findall(r'\d+', row[1])[0])
-                                                ins_code = None if row[1].isdigit() else row[1][len(str(auth_seq_id)):]
+                                                ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
+                                                    else row[1][len(str(auth_seq_id)):]
                                                 item = {'auth_chain_id': row[0],
                                                         'auth_seq_id': auth_seq_id,
                                                         'ins_code': ins_code,
@@ -16022,9 +16023,10 @@ class NmrDpUtility:
                                         if len(unparsed) > 0:
                                             sf_info['chemical_shift_unparsed'] = []
                                             for row in unparsed:
-                                                auth_seq_id = int(row[1]) if row[1].isdigit()\
+                                                auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
                                                     else int(re.findall(r'\d+', row[1])[0])
-                                                ins_code = None if row[1].isdigit() else row[1][len(str(auth_seq_id)):]
+                                                ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
+                                                    else row[1][len(str(auth_seq_id)):]
                                                 if row[4] in EMPTY_VALUE:
                                                     value = None
                                                 else:
@@ -16063,9 +16065,10 @@ class NmrDpUtility:
                                         if len(duplicated) > 0:
                                             sf_info['chemical_shift_duplicated'] = []
                                             for row in duplicated:
-                                                auth_seq_id = int(row[1]) if row[1].isdigit()\
+                                                auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
                                                     else int(re.findall(r'\d+', row[1])[0])
-                                                ins_code = None if row[1].isdigit() else row[1][len(str(auth_seq_id)):]
+                                                ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
+                                                    else row[1][len(str(auth_seq_id)):]
                                                 item = {'auth_chain_id': row[0],
                                                         'auth_seq_id': auth_seq_id,
                                                         'ins_code': ins_code,

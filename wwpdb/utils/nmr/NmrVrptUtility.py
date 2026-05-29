@@ -2730,8 +2730,7 @@ class NmrVrptUtility:
     def __validateChemicalShifts(self) -> bool:
         """ Validate assigned chemical shifts.
             @author: Masashi Yokochi
-            @note: Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis.get_chemical_shifts,
-                   Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis.getCompleteness,
+            @note: Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis.get_chemical_shifts
                    written by Aleksandras Gutmanas, Kumaran Baskaran
             @change: class method
         """
@@ -3496,6 +3495,10 @@ class NmrVrptUtility:
 
     def __summarizeCommonCsAnalysis(self) -> bool:
         """ Summarize common chemical shift analysis.
+            @author: Masashi Yokochi
+            @note: Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftsAnalysis.getCompleteness,
+                   written by Aleksandras Gutmanas, Kumaran Baskaran
+            @change: Add support for Phosphorus chemical shift, completeness of assigned chemical shifts in favorable ranges
         """
 
         if self.__has_prev_results:
@@ -3505,6 +3508,27 @@ class NmrVrptUtility:
             self.__results = {'cs_no_file': True}
             self.__log.write("There are no assigned chemical shifts that need to be analyzed.\n")
             return False
+
+        # metadata, bookkeeping
+
+        self.__results = {'meta_data': (os.path.basename(self.__nmrDataPath), self.__chemShiftMeta),
+                          'book_keeping': {'total_shifts': self.__chemShiftTotal,
+                                           'cs_error': {'CS_OUTLIER': self.__chemShiftOutlier,
+                                                        'CS_DUPLICATE': self.__chemShiftDuplicated,
+                                                        'CS_VALUE': self.__chemShiftUnparsed,
+                                                        'NO_MAP': self.__chemShiftUnmapped
+                                                        }
+                                           }
+                          }
+
+        # solid-state NMR
+
+        exptl = self.__cR.getDictList('exptl')
+
+        self.__results['ssnmr'] =\
+            exptl[0]['method'] == 'SOLID-STATE NMR' if len(exptl) > 0 and 'method' in exptl[0] else False
+
+        # completeness of assigned chemical shifts
 
         any_type = 'Total'
 
@@ -3604,6 +3628,7 @@ class NmrVrptUtility:
 
                 if has_all_shifts:
                     output[task_key]['stereomethyl'][0] += 1
+
                 output[task_key]['stereomethyl'][1] += 1
 
         if self.__inputReport is None:
@@ -3734,19 +3759,14 @@ class NmrVrptUtility:
             float(f"{100.0 * favor_completeness['full_length'][0] / favor_completeness['full_length'][1]:.2f}")\
             if favor_completeness['full_length'][1] > 0 else 0.0
 
-        completeness_items = {list_id: calc_completeness([list_id]) for list_id in list_ids}
+        self.__results['completeness'] = completeness
 
-        meta_data = (os.path.basename(self.__nmrDataPath), self.__chemShiftMeta)
+        self.__results['completeness_items'] = {list_id: calc_completeness([list_id]) for list_id in list_ids}
 
-        cs_error = {'CS_OUTLIER': self.__chemShiftOutlier,
-                    'CS_DUPLICATE': self.__chemShiftDuplicated,
-                    'CS_VALUE': self.__chemShiftUnparsed,
-                    'NO_MAP': self.__chemShiftUnmapped}
-
-        book_keeping = {'total_shifts': self.__chemShiftTotal,
-                        'cs_error': cs_error}
+        # shift summary table
 
         shift_summary_table = {}
+
         for idx, list_id in enumerate(list_ids):
             parsed = len(self.__chemShiftDict[list_id])
             unparsed = len(self.__chemShiftUnparsed[list_id])
@@ -3765,16 +3785,15 @@ class NmrVrptUtility:
                                             # 'number_of_warnings_while_mapping': 0
                                             }
 
-        exptl = self.__cR.getDictList('exptl')
+        self.__results['shift_summary_table'] = shift_summary_table
 
-        ssnmr = False
-        if len(exptl) > 0 and 'method' in exptl[0]:
-            ssnmr = exptl[0]['method'] == 'SOLID-STATE NMR'
+        # random coil index
+
+        rci_result = {}
 
         rci = RCI()
 
         rci_atom_ids = ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB')
-        rci_result = {}
 
         for list_id, cs_data in self.__chemShiftUniqDict.items():
             rci_result[list_id] = {}
@@ -3859,14 +3878,7 @@ class NmrVrptUtility:
                     rci_result[list_id][auth_chain_id] =\
                         rci.calculate(rci_residues, rci_assignments, oxidized_cys_seq_ids, seq_ids_wo_assign)
 
-        self.__results = {'completeness': completeness,
-                          'completeness_items': completeness_items,
-                          'meta_data': meta_data,
-                          'book_keeping': book_keeping,
-                          'ssnmr': ssnmr,
-                          'rci': rci_result,
-                          'panav': None,
-                          'shift_summary_table': shift_summary_table}
+        self.__results['rci'] = rci_result
 
         return True
 

@@ -1100,6 +1100,13 @@ class NmrVrptUtility:
                                 'nmr-chemical-shift-validation': __csValidTasks,
                                 'nmr-restraint-validation': __mrValidTasks}  # for backward compatibility
 
+    @property
+    def version(self) -> str:
+        """ Retrieve software version.
+        """
+
+        return __version__
+
     def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.
         """
@@ -3795,6 +3802,8 @@ class NmrVrptUtility:
 
         rci_atom_ids = ('HA', 'HA1', 'HA2', 'HA3', 'H', 'HN', 'NH', 'C', 'CO', 'N', 'CA', 'CB')
 
+        has_rci_results = False
+
         for list_id, cs_data in self.__chemShiftUniqDict.items():
             rci_result[list_id] = {}
 
@@ -3878,7 +3887,12 @@ class NmrVrptUtility:
                     rci_result[list_id][auth_chain_id] =\
                         rci.calculate(rci_residues, rci_assignments, oxidized_cys_seq_ids, seq_ids_wo_assign)
 
+                    has_rci_results = True
+
         self.__results['rci'] = rci_result
+
+        if has_rci_results:
+            self.__results['rci_version'] = rci.version
 
         return True
 

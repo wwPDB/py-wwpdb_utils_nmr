@@ -15550,7 +15550,6 @@ class NmrDpUtility:
                 pass
 
             has_coordinate = self.__reg.cifChecked
-            # self.__reg.report.getInputSourceIdOfCoord() >= 0
 
             cif_poly_seq = None
 
@@ -15575,6 +15574,8 @@ class NmrDpUtility:
 
                     if has_key_value(cif_input_source_dic, 'polymer_sequence'):
                         cif_poly_seq = cif_input_source_dic['polymer_sequence']
+
+            # model
 
             if has_coordinate:
                 model_info = {'file_name': os.path.basename(self.__reg.cifPath),
@@ -15606,8 +15607,24 @@ class NmrDpUtility:
 
                 self.__output_statistics.setItemValue('model', model_info)
 
+            # software
+
+            software_info = [{'name': 'wwpdb.utils.nmr.NmrDpUtility',
+                              'version': __version__,
+                              'classification': 'workflow that performs file conversion, integrity checks, and data validation'}]
+
+            # assembly
+
+            # entity
+
+            # chem_shift_summary
+
             vrpt_util = NmrVrptUtility(self.__reg.verbose, self.__reg.log,
                                        self.__reg.cR, self.__reg.caC, self.__reg.ccU, self.__reg.csStat)
+
+            software_info.append({'name': 'wwpdb.utils.nmr.NmrVrptUtility',
+                                  'version': vrpt_util.version,
+                                  'classification': 'workflow that performs chemical shift and restraint validations'})
 
             vrpt_util.addInput(name='pynmrstar_object', value=self.__reg.star_data[0], type='param')
 
@@ -15634,6 +15651,10 @@ class NmrDpUtility:
                     cs_summary['completeness_in_well_defined_region_with_favorable_shift'] =\
                         float(f"{float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1]:.3f}")
 
+                    software_info.append({'name': 'wwpdb.utils.io.CifReader',
+                                          'version': self.__reg.cR.version,
+                                          'classification': 'PDBx/mmCIF parser and domain recognition of the ensemble structure'})
+
                 cs_summary['number_of_target_shifts_in_full_length_region'] =\
                     completeness['full_length'][1]
                 cs_summary['number_of_assigned_shifts_in_full_length_region'] =\
@@ -15646,6 +15667,14 @@ class NmrDpUtility:
                     float(f"{float(completeness['favor_full_length'][0]) / completeness['full_length'][1]:.3f}")
 
                 self.__output_statistics.setItemValue('chem_shift_summary', cs_summary)
+
+                if 'rci_version' in vrpt_cs\
+                   and not any(True for s in software_info if s['name'] == 'wwpdb.utils.nmr.rci.RCI'):
+                    software_info.append({'name': 'wwpdb.utils.nmr.rci.RCI',
+                                          'version': vrpt_cs['rci_version'],
+                                          'classification': 'random coil index (RCI) calculation'})
+
+            self.__output_statistics.setItemValue('software', software_info)
 
             def map_completeness_of(src):
                 ret = {}
@@ -15897,6 +15926,8 @@ class NmrDpUtility:
                               'completeness': float(f"{float(v[0]) / v[1]:.3f}")}]
 
                 return ret
+
+            # exptl data
 
             for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 

@@ -326,6 +326,13 @@ class CifReader:
         # must be greater than 6 to prevent the 6xHIS tag from being recognized as a well-defined region
         assert self.__min_monomers_for_domain > 6
 
+    @property
+    def version(self) -> str:
+        """ Retrieve software version.
+        """
+
+        return __version__
+
     def parse(self, filePath: str, dirPath: Optional[str] = None) -> bool:
         """ Parse CIF file, and set internal active datablock if possible.
             @return: True for success or False otherwise

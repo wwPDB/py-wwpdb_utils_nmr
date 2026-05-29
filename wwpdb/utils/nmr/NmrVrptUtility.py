@@ -3563,11 +3563,16 @@ class NmrVrptUtility:
                             output[task_key][atom_type]['favorable'][0] += 1
                             output[task_key][any_type]['favorable'][0] += 1
 
-                    # count only carbon/nitrogen if not quaternary (use coordinates to check whether hydrogen attached)
-                    elif atom_type in ('C', 'N'):
+                    # count only nitrogens if not quaternary
+                    # use coordinates to check whether hydrogen attached
+                    elif atom_type == 'N':
                         bonded_protons = self.__ccU.getBondedAtoms(comp_id, atom_id, onlyProton=True)
                         if len(bonded_protons) == 1 and bonded_protons[0] not in coord_atoms:
                             continue
+
+                    # count only phosphorus having chemical shift
+                    elif atom_type == 'P':
+                        continue
 
                     output[task_key][atom_type][atom_category][1] += 1
                     output[task_key][atom_type]['overall'][1] += 1
@@ -3578,25 +3583,28 @@ class NmrVrptUtility:
 
             # Check for stereo-assignment of methyl groups (VAL, LEU)
             for list_id in list_ids:
-                if comp_id == 'LEU':
-                    _cs_key = (auth_chain_id, res_num, comp_id, 'CD1')
-                    if _cs_key in self.__chemShiftUniqDict[list_id]\
-                       and self.__chemShiftUniqDict[list_id][_cs_key]['ambig_code'] == 1:
-                        _cs_key = (auth_chain_id, res_num, comp_id, 'CD2')
-                        if _cs_key in self.__chemShiftUniqDict[list_id]\
-                           and self.__chemShiftUniqDict[list_id][_cs_key]['ambig_code'] == 1:
-                            output[task_key]['stereomethyl'][0] += 1
-                    output[task_key]['stereomethyl'][1] += 1
+                methyl_carbons = [a for a in self.__csStat.getMethylAtoms(comp_id) if a.startswith('C')]
 
-                elif comp_id == 'VAL':
-                    _cs_key = (auth_chain_id, res_num, comp_id, 'CG1')
+                if len(methyl_carbons) < 2:
+                    continue
+
+                geminal_methyl_carbons = [a for a in methyl_carbons if self.getMaxAmbigCodeWoSetId(comp_id, a) == 2]
+
+                if len(geminal_methyl_carbons) < 2:
+                    continue
+
+                has_all_shifts = True
+                for a in geminal_methyl_carbons:
+                    _cs_key = (auth_chain_id, res_num, comp_id, a)
                     if _cs_key in self.__chemShiftUniqDict[list_id]\
                        and self.__chemShiftUniqDict[list_id][_cs_key]['ambig_code'] == 1:
-                        _cs_key = (auth_chain_id, res_num, comp_id, 'CG2')
-                        if _cs_key in self.__chemShiftUniqDict[list_id]\
-                           and self.__chemShiftUniqDict[list_id][_cs_key]['ambig_code'] == 1:
-                            output[task_key]['stereomethyl'][0] += 1
-                    output[task_key]['stereomethyl'][1] += 1
+                        continue
+                    has_all_shifts = False
+                    break
+
+                if has_all_shifts:
+                    output[task_key]['stereomethyl'][0] += 1
+                output[task_key]['stereomethyl'][1] += 1
 
         if self.__inputReport is None:
             polySeq = []

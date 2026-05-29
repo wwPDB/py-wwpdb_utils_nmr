@@ -37,7 +37,7 @@
 # 10-Sep-2024 - my  - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 # 18-Sep-2024 - my  - add 'starts-with-alnum' item type (DAOTHER-9694)
 # 20-May-2026 - my  - add 'enum-int' as filter item type (DAOTHER-9785)
-# 28-May-2026 - my  - avoid mosaic-like domain recognition
+# 28-May-2026 - my  - avoid mosaic-like domain recognition (v1.0.7)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """

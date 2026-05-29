@@ -3588,7 +3588,7 @@ class NmrVrptUtility:
                 if len(methyl_carbons) < 2:
                     continue
 
-                geminal_methyl_carbons = [a for a in methyl_carbons if self.getMaxAmbigCodeWoSetId(comp_id, a) == 2]
+                geminal_methyl_carbons = [a for a in methyl_carbons if self.__csStat.getMaxAmbigCodeWoSetId(comp_id, a) == 2]
 
                 if len(geminal_methyl_carbons) < 2:
                     continue

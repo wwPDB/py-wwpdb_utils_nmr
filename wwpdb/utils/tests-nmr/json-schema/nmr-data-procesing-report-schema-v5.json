@@ -4538,33 +4538,21 @@
             },
             "organic_ligands": {
               "description": "Total number of organic ligands.",
-              "type": [
-                "integer",
-                "null"
-              ],
+              "type": "integer",
               "minimum": 0
             },
             "metal_ions": {
               "description": "Total number of metal ions.",
-              "type": [
-                "integer",
-                "null"
-              ],
+              "type": "integer",
               "minimum": 0
             },
             "non_standard_bonds": {
               "description": "Whether the molecular assembly contains non-standard covalent bonds.",
-              "type": [
-                "boolean",
-                "null"
-              ]
+              "type": "boolean"
             },
             "paramagnetic": {
               "description": "Whether the molecular assembly contains paramagnetic ion(s).",
-              "type": [
-                "boolean",
-                "null"
-              ]
+              "type": "boolean"
             },
             "thiol_state": {
               "description": "The state of the thiol groups in the molecular system.",
@@ -4588,10 +4576,18 @@
               "type": "number"
             },
             "entity_assembly": {
-              "description": "Declaration of each component in the molecular assembly,",
+              "description": "Declaration of each component in the molecular assembly.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/output_stats_entity_assembly",
+                "minItems": 1
+              }
+            },
+            "entity": {
+              "description": "Declaration of entity in the entry.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_entity",
                 "minItems": 1
               }
             }
@@ -4602,10 +4598,6 @@
             "thiol_state",
             "entity_assembly"
           ]
-        },
-        "entity": {
-          "description": "Section for entities.",
-          "type": "null"
         },
         "chem_shift_summary": {
           "description": "Section for completeness of overall assigned chemical shifts.",
@@ -4759,35 +4751,26 @@
           "minLength": 1
         },
         "entity_id": {
-          "description": "Identifier for each component in the entry.",
+          "description": "Identifier for each entity in the entry.",
           "type": "integer",
           "minimum": 1
         },
-        "entity_name": {
-          "description": "Systemtic name for each entity in the entry.",
+        "entity_label": {
+          "description": "Systemtic label for each entity in the entry.",
           "type": "string",
           "minLength": 1
         },
         "chaid_id": {
           "description": "Systemtic chain name in the entry. (i.e. label_asym_id in the coordinates)",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": "string"
         },
         "auth_chaid_id": {
           "description": "Author defined chain name in the entry. (i.e. auth_asym_id in the coordinates)",
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": "string"
         },
         "experimental_data_reported": {
           "description": "Whether experimental data for a specific component of the assembly is reported.",
-          "type": [
-            "boolean",
-            "null"
-          ]
+          "type": "boolean"
         },
         "physical_state": {
           "description": "The conformational state of the component of the assembly.",
@@ -4810,6 +4793,128 @@
       "required": [
         "entity_assembly_id",
         "entity_id"
+      ]
+    },
+    "output_stats_entity": {
+      "description": "Template for entity in output statistics.",
+      "type": "object",
+      "properties": {
+        "entity_id": {
+          "description": "Identifier for each entity in the entry.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "label": {
+          "description": "Systematic label for each entity in the entry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "description": "Name for each entity in the entry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "description": "Type for each entity in the entry.",
+          "type": "string",
+          "enum": [
+            "polymer",
+            "non-polymer",
+            "water",
+            "aggregate",
+            "solvent"
+          ]
+        },
+        "polymer_common_type": {
+          "description": "Common polymer type for each entity in the entry.",
+          "type": "string",
+          "enum": [
+            "protein",
+            "DNA",
+            "RNA",
+            "DNA/RNA hybrid",
+            "polysaccharide"
+          ]
+        },
+        "polymer_type": {
+          "description": "Polymer type for each entity in the entry.",
+          "type": "string",
+          "enum": [
+            "cyclic-pseudo-peptide",
+            "polypeptide(L)",
+            "polydeoxyribonucleotide",
+            "polyribonucleotide",
+            "polydeoxyribonucleotide/polyribonucleotide hybrid",
+            "polypeptide(D)",
+            "polysaccharide(D)",
+            "polysaccharide(L)",
+            "other"
+          ]
+        },
+        "auth_chain_id": {
+          "description": "List of author chain ID(s) assigned to the entity.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "polymer_seq_one_letter_code": {
+          "description": "The sequence of a polymer entity using one-letter code.",
+          "type": "string"
+        },
+        "nstd_monomer": {
+          "description": "Presence of non-standard chemical components in the entity.",
+          "type": "boolean"
+        },
+        "nstd_linkage": {
+          "description": "Presence of non-standard non-standard linkages between monomers in the entity.",
+          "type": "boolean"
+        },
+        "number_of_monomers": {
+          "description": "The number of monomers of a polymer entity.",
+          "type": "integer"
+        },
+        "number_of_nonpolymer_components": {
+          "description": "The number of monomers of a non-polymer entity.",
+          "type": "integer"
+        },
+        "paramagnetic": {
+          "description": "Whether the entity contains paramagnetic ion(s).",
+          "type": "boolean"
+        },
+        "thiol_state": {
+          "description": "The state of the thiol groups in the entity.",
+          "type": "string",
+          "enum": [
+            "all disulfide bound",
+            "all other bound",
+            "all free",
+            "disulfide and other bound",
+            "free and disulfide bound",
+            "free and other bound",
+            "free disulfide and other bound",
+            "not available",
+            "not present",
+            "not reported",
+            "unknown"
+          ]
+        },
+        "fragment": {
+          "description": "The fragment description of the entity.",
+          "type": "string"
+        },
+        "mutation": {
+          "description": "The mutation description of the entity.",
+          "type": "string"
+        },
+        "formula_weight": {
+          "description": "The formula weight of the entity.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "entity_id",
+        "type"
       ]
     },
     "output_stats_common_bookkeeping": {
@@ -4967,7 +5072,7 @@
           "minLength": 1
         },
         "auth_seq_id": {
-          "description": "Auth sequence ID of chemical shift error (Auth_seq_ID),",
+          "description": "Auth sequence ID of chemical shift error (Auth_seq_ID).",
           "type": "integer"
         },
         "ins_code": {

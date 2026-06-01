@@ -15536,6 +15536,8 @@ class NmrDpUtility:
             except IndexError:
                 pass
 
+            # assembly
+
             sf_category = 'assembly'
 
             try:
@@ -15546,7 +15548,6 @@ class NmrDpUtility:
                     ea_lp = sf.get_loop('_Entity_assembly')
                 except KeyError:
                     ea_lp = None
-                    pass
 
                 assembly_info = {'name': get_first_sf_tag(sf, 'Name', None)}
 
@@ -15557,7 +15558,6 @@ class NmrDpUtility:
                     number_of_components = int(number_of_components)
                 elif ea_lp is not None:
                     number_of_components = len(ea_lp)
-
                 assembly_info['number_of_components'] = number_of_components
 
                 organic_ligands = get_first_sf_tag(sf, 'Organic_ligands', None)
@@ -15575,7 +15575,6 @@ class NmrDpUtility:
                     assembly_info['metal_ions'] = metal_ions
 
                 non_standard_bonds = get_first_sf_tag(sf, 'Non_standard_bonds', None)
-
                 if non_standard_bonds is not None:
                     assembly_info['non_standard_bonds'] = non_standard_bonds in TRUE_VALUE
                 else:
@@ -15586,19 +15585,16 @@ class NmrDpUtility:
                         assembly_info['non_standard_bonds'] = False
 
                 paramagnetic = get_first_sf_tag(sf, 'Paramagnetic', None)
-
                 if paramagnetic is not None:
                     assembly_info['paramagnetic'] = paramagnetic in TRUE_VALUE
 
                 thiol_state = get_first_sf_tag(sf, 'Thiol_state', None)
-
                 if thiol_state is not None:
                     assembly_info['thiol_state'] = thiol_state
                 else:
                     assembly_info['thiol_state'] = 'unknown'
 
                 molecular_mass = get_first_sf_tag(sf, 'Molecular_mass', None)
-
                 if molecular_mass is not None:
                     if isinstance(molecular_mass, float):
                         assembly_info['molecular_mass'] = molecular_mass
@@ -15634,7 +15630,7 @@ class NmrDpUtility:
                             item['entity_id'] = int(row[2])
 
                         if row[3] not in EMPTY_VALUE:
-                            item['entity_name'] = row[3][1:] if row[3][0] == '$' else row[3]
+                            item['entity_label'] = row[3][1:] if row[3][0] == '$' else row[3]
 
                         if row[4] not in EMPTY_VALUE:
                             item['chain_id'] = row[4]
@@ -15655,7 +15651,106 @@ class NmrDpUtility:
 
                 self.__output_statistics.setItemValue('assembly', assembly_info)
 
-            except IndexError:
+            except (IndexError, KeyError):
+                pass
+
+            # entity
+
+            sf_category = 'entity'
+
+            try:
+
+                entity_info = []
+
+                for idx, sf in enumerate(master_entry.get_saveframes_by_category(sf_category)):
+                    item = {}
+
+                    entity_id = get_first_sf_tag(sf, 'ID', None)
+                    if isinstance(entity_id, int):
+                        pass
+                    elif isinstance(entity_id, str) and entity_id.isdigit():
+                        entity_id = int(entity_id)
+                    else:
+                        entity_id = idx + 1
+                    item['entity_id'] = entity_id
+
+                    item['label'] = sf.name
+
+                    name = get_first_sf_tag(sf, 'Name', None)
+                    if name not in EMPTY_VALUE:
+                        item['name'] = name
+
+                    _type = get_first_sf_tag(sf, 'Type', None)
+                    if _type not in EMPTY_VALUE:
+                        item['type'] = _type
+
+                    polymer_common_type = get_first_sf_tag(sf, 'Polymer_common_type', None)
+                    if polymer_common_type not in EMPTY_VALUE:
+                        item['polymer_common_type'] = polymer_common_type
+
+                    polymer_type = get_first_sf_tag(sf, 'Polymer_type', None)
+                    if polymer_type not in EMPTY_VALUE:
+                        item['polymer_type'] = polymer_type
+
+                    auth_chain_id = get_first_sf_tag(sf, 'Polymer_strand_ID', None)
+                    if auth_chain_id not in EMPTY_VALUE:
+                        item['auth_chain_id'] = auth_chain_id.split(',')
+
+                    polymer_seq_one_letter_code = get_first_sf_tag(sf, 'Polymer_seq_one_letter_code', None)
+                    if polymer_seq_one_letter_code not in EMPTY_VALUE:
+                        item['polymer_seq_one_letter_code'] = re.sub(r"\s+", "", polymer_seq_one_letter_code)
+
+                    nstd_monomer = get_first_sf_tag(sf, 'Nstd_monomer', None)
+                    if nstd_monomer is not None:
+                        item['nstd_monomer'] = nstd_monomer in TRUE_VALUE
+
+                    nstd_linkage = get_first_sf_tag(sf, 'Nstd_linkage', None)
+                    if nstd_linkage is not None:
+                        item['nstd_linkage'] = nstd_linkage in TRUE_VALUE
+
+                    number_of_monomers = get_first_sf_tag(sf, 'Number_of_monomers', None)
+                    if isinstance(number_of_monomers, int):
+                        item['number_of_monomers'] = number_of_monomers
+                    elif isinstance(number_of_monomers, str) and number_of_monomers.isdigit():
+                        item['number_of_monomers'] = int(number_of_monomers)
+
+                    number_of_nonpolymer_components = get_first_sf_tag(sf, 'Number_of_nonpolymer_components', None)
+                    if isinstance(number_of_nonpolymer_components, int):
+                        item['number_of_nonpolymer_components'] = number_of_nonpolymer_components
+                    elif isinstance(number_of_nonpolymer_components, str) and number_of_nonpolymer_components.isdigit():
+                        item['number_of_nonpolymer_components'] = int(number_of_nonpolymer_components)
+
+                    paramagnetic = get_first_sf_tag(sf, 'Paramagnetic', None)
+                    if paramagnetic is not None:
+                        item['paramagnetic'] = paramagnetic in TRUE_VALUE
+
+                    thiol_state = get_first_sf_tag(sf, 'Thiol_state', None)
+                    if thiol_state not in EMPTY_VALUE:
+                        item['thiol_state'] = thiol_state
+
+                    fragment = get_first_sf_tag(sf, 'Fragment', None)
+                    if fragment not in EMPTY_VALUE:
+                        item['fragment'] = fragment
+
+                    mutation = get_first_sf_tag(sf, 'Mutation', None)
+                    if mutation not in EMPTY_VALUE:
+                        item['mutation'] = mutation
+
+                    formula_weight = get_first_sf_tag(sf, 'Fromula_weight', None)
+                    if isinstance(formula_weight, float):
+                        item['formula_weight'] = formula_weight
+                    elif isinstance(formula_weight, str):
+                        try:
+                            formula_weight = float(formula_weight)
+                            item['formula_weight'] = formula_weight
+                        except ValueError:
+                            pass
+
+                    entity_info.append(item)
+
+                self.__output_statistics.setItemValue('entity', entity_info)
+
+            except KeyError:
                 pass
 
             has_coordinate = self.__reg.cifChecked
@@ -15721,10 +15816,6 @@ class NmrDpUtility:
             software_info = [{'name': 'wwpdb.utils.nmr.NmrDpUtility',
                               'version': __version__,
                               'classification': 'workflow that performs file conversion, integrity checks, and data validation'}]
-
-            # assembly
-
-            # entity
 
             # chem_shift_summary
 

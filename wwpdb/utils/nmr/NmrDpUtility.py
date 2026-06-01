@@ -15484,7 +15484,7 @@ class NmrDpUtility:
         with open(self.__reg.dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
             self.__output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
 
-        entry_title = entry_authors = submission_date = assembly_name = None
+        entry_title = entry_authors = submission_date = None
 
         if file_type == 'nmr-star':
 
@@ -15542,9 +15542,118 @@ class NmrDpUtility:
 
                 sf = master_entry.get_saveframes_by_category(sf_category)[0]
 
-                assembly_name = get_first_sf_tag(sf, 'Name', None)
-                if assembly_name is not None:
-                    self.__output_statistics.setItemValue('assembly_name', assembly_name)
+                try:
+                    ea_lp = sf.get_loop('_Entity_assembly')
+                except KeyError:
+                    ea_lp = None
+                    pass
+
+                assembly_info = {'name': get_first_sf_tag(sf, 'Name', None)}
+
+                number_of_components = get_first_sf_tag(sf, 'Number_of_components', None)
+                if isinstance(number_of_components, int):
+                    pass
+                elif isinstance(number_of_components, str) and number_of_components.isdigit():
+                    number_of_components = int(number_of_components)
+                elif ea_lp is not None:
+                    number_of_components = len(ea_lp)
+
+                assembly_info['number_of_components'] = number_of_components
+
+                organic_ligands = get_first_sf_tag(sf, 'Organic_ligands', None)
+                if isinstance(organic_ligands, int):
+                    assembly_info['organic_ligands'] = organic_ligands
+                elif isinstance(organic_ligands, str) and organic_ligands.isdigit():
+                    organic_ligands = int(organic_ligands)
+                    assembly_info['organic_ligands'] = organic_ligands
+
+                metal_ions = get_first_sf_tag(sf, 'Metal_ions', None)
+                if isinstance(metal_ions, int):
+                    assembly_info['metal_ions'] = metal_ions
+                elif isinstance(metal_ions, str) and metal_ions.isdigit():
+                    metal_ions = int(metal_ions)
+                    assembly_info['metal_ions'] = metal_ions
+
+                non_standard_bonds = get_first_sf_tag(sf, 'Non_standard_bonds', None)
+
+                if non_standard_bonds is not None:
+                    assembly_info['non_standard_bonds'] = non_standard_bonds in TRUE_VALUE
+                else:
+                    try:
+                        sf.get_loop('_Bond')
+                        assembly_info['non_standard_bonds'] = True
+                    except KeyError:
+                        assembly_info['non_standard_bonds'] = False
+
+                paramagnetic = get_first_sf_tag(sf, 'Paramagnetic', None)
+
+                if paramagnetic is not None:
+                    assembly_info['paramagnetic'] = paramagnetic in TRUE_VALUE
+
+                thiol_state = get_first_sf_tag(sf, 'Thiol_state', None)
+
+                if thiol_state is not None:
+                    assembly_info['thiol_state'] = thiol_state
+                else:
+                    assembly_info['thiol_state'] = 'unknown'
+
+                molecular_mass = get_first_sf_tag(sf, 'Molecular_mass', None)
+
+                if molecular_mass is not None:
+                    if isinstance(molecular_mass, float):
+                        assembly_info['molecular_mass'] = molecular_mass
+                    elif isinstance(molecular_mass, str):
+                        try:
+                            molecular_mass = float(molecular_mass)
+                            assembly_info['molecular_mass'] = molecular_mass
+                        except ValueError:
+                            pass
+
+                assembly_info['entity_assembly'] = []
+
+                if ea_lp is not None:
+                    dat = ea_lp.get_tag(['ID', 'Entity_assembly_name', 'Entity_ID', 'Entity_label', 'Asym_ID', 'PDB_chain_ID',
+                                         'Experimental_data_reported', 'Physical_state', 'Role'])
+
+                    for idx, row in enumerate(dat):
+                        item = {}
+                        if isinstance(row[0], int):
+                            entity_assembly_id = row[0]
+                        elif isinstance(row[0], str) and row[0].isdigit():
+                            entity_assembly_id = int(row[0])
+                        else:
+                            entity_assembly_id = idx + 1
+                        item['entity_assembly_id'] = entity_assembly_id
+
+                        if row[1] not in EMPTY_VALUE:
+                            item['entity_assembly_name'] = row[1]
+
+                        if isinstance(row[2], int):
+                            item['entity_id'] = row[2]
+                        elif isinstance(row[2], str) and row[2].isdigit():
+                            item['entity_id'] = int(row[2])
+
+                        if row[3] not in EMPTY_VALUE:
+                            item['entity_name'] = row[3][1:] if row[3][0] == '$' else row[3]
+
+                        if row[4] not in EMPTY_VALUE:
+                            item['chain_id'] = row[4]
+
+                        if row[5] not in EMPTY_VALUE:
+                            item['auth_chain_id'] = row[5]
+
+                        if row[6] not in EMPTY_VALUE:
+                            item['experimental_data_reported'] = row[6] in TRUE_VALUE
+
+                        if row[7] not in EMPTY_VALUE:
+                            item['physical_state'] = row[7]
+
+                        if row[8] not in EMPTY_VALUE:
+                            item['role'] = row[8]
+
+                        assembly_info['entity_assembly'].append(item)
+
+                self.__output_statistics.setItemValue('assembly', assembly_info)
 
             except IndexError:
                 pass

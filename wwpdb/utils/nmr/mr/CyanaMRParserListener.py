@@ -356,7 +356,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif len(self.numberSelection) > 1:
                     value2 = self.numberSelection[1]
 
-                    if value2 <= 1.0 or value2 < value:
+                    if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
                         delta = abs(value2)
                     else:
                         has_square = True
@@ -994,7 +994,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif len(self.numberSelection) > 1:
                     value2 = self.numberSelection[1]
 
-                    if value2 <= 1.0 or value2 < value:
+                    if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
                         delta = abs(value2)
                     else:
                         has_square = True
@@ -2901,7 +2901,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 delta = None
                 has_square = False
 
-                if value2 <= 1.0 or value2 < value:
+                if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
                 else:
                     has_square = True
@@ -3847,7 +3847,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 delta = None
                 has_square = False
 
-                if value2 <= 1.0 or value2 < value:
+                if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
                 else:
                     has_square = True
@@ -4979,7 +4979,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif len(self.numberSelection) > 1:
                     value2 = self.numberSelection[1]
 
-                    if value2 <= 1.0 or value2 < value:
+                    if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
                         delta = abs(value2)
                     else:
                         has_square = True

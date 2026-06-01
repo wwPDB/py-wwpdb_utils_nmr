@@ -21,6 +21,7 @@
 #                           when CCD status is obsolete but not replaced-by (N9K)
 # 25-Mar-2026  M. Yokochi - rename class from BMRBChemShiftStat to BmrbChemShiftStat
 # 22-May-2026  M. Yokochi - add getCategorizedAtomIds() (DAOTHER-9785)
+# 01-Jun-2026  M. Yokochi - add getQuaternaryNitrogensIfNoProtonIsBonded() (DAOTHER-9785)
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -918,6 +919,28 @@ class BmrbChemShiftStat:
             if len(result) > 0:
                 self.__cachedDictForCategorizedAtomIds[comp_id] = result
 
+    def getQuaternaryNitrogensIfNoProtonIsBonded(self, comp_id: str) -> List[str]:
+        """ Return candidate quaternary nitrogen if no hydrogen is bonded of a given comp_id.
+        """
+
+        atom_group = self.getCategorizedAtomIds(comp_id)
+
+        aromatic_or_base = []
+        if 'aromatic' in atom_group:
+            aromatic_or_base.extend(atom_group['aromatic'])
+        if 'base' in atom_group:
+            aromatic_or_base.extend(atom_group['base'])
+
+        if len(aromatic_or_base) == 0:
+            return []
+
+        nitrogen = [a for a in aromatic_or_base if a[0] == 'N']
+
+        if len(nitrogen) < 2:
+            return []
+
+        return [a for a in nitrogen if len(self.__ccU.getBondedAtoms(comp_id, a, onlyProton=True)) == 1]
+
     def loadStatFromCsvFiles(self) -> bool:
         """ Load all BMRB chemical shift statistics from CSV files.
         """
@@ -1293,6 +1316,8 @@ class BmrbChemShiftStat:
 
         self.__detectGeminalCarbon(comp_ids, atm_list)
         self.__detectGeminalNitrogen(comp_ids, atm_list)
+
+        self.__detectAromaticAtoms(comp_ids, atm_list)
 
         self.__detectMajorResonance(comp_ids, atm_list, primary_th, secondary_th)
 
@@ -1815,6 +1840,8 @@ class BmrbChemShiftStat:
         self.__detectGeminalCarbon(comp_ids, atm_list)
         self.__detectGeminalNitrogen(comp_ids, atm_list)
 
+        self.__detectAromaticAtoms(comp_ids, atm_list)
+
         self.__detectMajorResonance(comp_ids, atm_list, primary_th, secondary_th)
 
         return atm_list
@@ -1863,6 +1890,8 @@ class BmrbChemShiftStat:
 
         self.__detectGeminalCarbon(comp_ids, atm_list)
         self.__detectGeminalNitrogen(comp_ids, atm_list)
+
+        self.__detectAromaticAtoms(comp_ids, atm_list)
 
         self.extras.extend(atm_list)
 
@@ -2476,6 +2505,21 @@ class BmrbChemShiftStat:
                         atom_id = n['atom_id']
                         if atom_id in (f'{g}1', f'{g}2'):
                             n['desc'] = 'geminal'
+
+    def __detectAromaticAtoms(self, comp_ids: List[str], atm_list: List[dict]) -> None:
+        """ Detect aromatic atoms.
+        """
+
+        for comp_id in comp_ids:
+            _list = [a for a in atm_list if a['comp_id'] == comp_id]
+
+            if self.__ccU.updateChemCompDict(comp_id):
+                aro_list = [a['atom_id'] for a in self.__ccU.lastAtomDictList
+                            if a['aromatic_flag'] == 'Y']
+
+                for a in _list:
+                    if a['desc'] == 'isolated' and a['atom_id'] in aro_list:
+                        a['desc'] = 'aroma'
 
     def __detectMajorResonance(self, comp_ids: List[str], atm_list: List[dict],  # pylint: disable=no-self-use
                                primary_th: float, secondary_th: Optional[float] = None) -> None:

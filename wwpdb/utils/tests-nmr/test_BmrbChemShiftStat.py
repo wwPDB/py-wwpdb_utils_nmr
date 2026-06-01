@@ -262,6 +262,13 @@ class TestBmrbChemShiftStat(unittest.TestCase):
         h42_stat = next(cs_stat for cs_stat in self.bmrb_cs_stat.get('C') if cs_stat['atom_id'] == "H42")
         self.assertTrue(h42_stat['avg'] > 5.0)
 
+    def test_categorized_atoms(self):
+        self.assertEqual(self.bmrb_cs_stat.getQuaternaryNitrogensIfNoProtonIsBonded('TRP'), [])
+        self.assertEqual(self.bmrb_cs_stat.getQuaternaryNitrogensIfNoProtonIsBonded('HIS'), ['ND1', 'NE2'])
+        self.assertEqual(self.bmrb_cs_stat.getQuaternaryNitrogensIfNoProtonIsBonded('ARG'), [])
+        self.assertEqual(self.bmrb_cs_stat.getQuaternaryNitrogensIfNoProtonIsBonded('DT'), ['N3'])
+        self.assertEqual(self.bmrb_cs_stat.getQuaternaryNitrogensIfNoProtonIsBonded('DG'), ['N1'])
+
 
 if __name__ == '__main__':
     unittest.main()

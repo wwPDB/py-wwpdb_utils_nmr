@@ -3596,7 +3596,7 @@ class NmrVrptUtility:
 
                     # count only nitrogens if not quaternary
                     # use coordinates to check whether hydrogen attached
-                    elif atom_type == 'N':
+                    elif atom_type == 'N' and atom_id in self.__csStat.getQuaternaryNitrogensIfNoProtonIsBonded(comp_id):
                         bonded_protons = self.__ccU.getBondedAtoms(comp_id, atom_id, onlyProton=True)
                         if len(bonded_protons) == 1 and bonded_protons[0] not in coord_atoms:
                             continue

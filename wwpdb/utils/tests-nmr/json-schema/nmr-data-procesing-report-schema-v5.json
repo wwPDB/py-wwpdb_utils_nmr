@@ -4753,6 +4753,22 @@
             "number_of_long_range_restraints_per_residue": {
               "type": "number",
               "minimum": 0.0
+            },
+            "average_number_of_dist_violations_per_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_violations_per_model",
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "average_number_of_dihed_violations_per_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_violations_per_model",
+                "minItems": 3,
+                "maxItems": 3
+              }
             }
           },
           "additionalProperties": false,
@@ -4988,6 +5004,36 @@
       "required": [
         "entity_id",
         "type"
+      ]
+    },
+    "output_stats_violations_per_model": {
+      "description": "Template for common residual restraint analysis in output statistics.",
+      "type": "object",
+      "properties": {
+        "bin": {
+          "type": "string",
+          "minLength": 1
+        },
+        "average_number_of_violations_per_model": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "max_violation_in_bin": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "bin",
+        "average_number_of_violations_per_model",
+        "max_violation_in_bin"
       ]
     },
     "output_stats_common_bookkeeping": {

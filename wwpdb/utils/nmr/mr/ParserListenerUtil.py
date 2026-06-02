@@ -2588,7 +2588,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                     _matched, unmapped, conflict, offset_1, offset_2 = getScoreOfSeqAlign(myAlign)
 
-                    if conflict == 0 and unmapped > 0 and _matched > unmapped:
+                    if conflict == 0 and _matched > unmapped > 0:
 
                         nmr_seq_ids, cif_auth_seq_ids, cif_label_seq_ids = [], [], []
 
@@ -9651,7 +9651,7 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
             return True
 
         return False
-    
+
     _hint = hint.lower()
 
     if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
@@ -9783,20 +9783,20 @@ def getPotentialType(fileType: str, mrSubtype: str, dstFunc: dict
     if 'lower_linear_limit' in dstFunc and 'upper_linear_limit' in dstFunc:
         return 'square-well-parabolic-linear'
 
-    if 'lower_linear_limit' in dstFunc:
-        return 'lower-bound-parabolic-linear'
-
     if 'upper_linear_limit' in dstFunc:
         return 'upper-bound-parabolic-linear'
+
+    if 'lower_linear_limit' in dstFunc:
+        return 'lower-bound-parabolic-linear'
 
     if 'lower_limit' in dstFunc and 'upper_limit' in dstFunc:
         return 'square-well-parabolic'
 
-    if 'lower_limit' in dstFunc:
-        return 'lower-bound-parabolic'
-
     if 'upper_limit' in dstFunc:
         return 'upper-bound-parabolic'
+
+    if 'lower_limit' in dstFunc:
+        return 'lower-bound-parabolic'
 
     if 'target_value' in dstFunc and fileType in ('nm-res-xpl', 'nm-res-cns', 'nmr-star') and mrSubtype == 'dist':
         return 'log-harmonic'

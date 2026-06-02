@@ -4690,6 +4690,79 @@
             "minItems": 1
           }
         },
+        "restraint_summary": {
+          "description": "Section for summary of overall NMR restraints.",
+          "type": "object",
+          "properties": {
+            "total_distance_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "intraresidue": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sequential": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "medium_range": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "long_range": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inter-chain": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "long_range": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inter-chain": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "hydrogen_bond_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "disulfide_bond_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "diselenide_bond_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "metal_coordination_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_unmapped_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_restaints_per_residue": {
+              "type": "number",
+              "minimum": 0.0
+            },
+            "number_of_long_range_restraints_per_residue": {
+              "type": "number",
+              "minimum": 0.0
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "total_distance_restraints",
+            "number_of_unmapped_restraints",
+            "number_of_restaints_per_residue",
+            "number_of_long_range_restraints_per_residue"
+          ]
+        },
         "dist_restraint": {
           "description": "Section for distance restraint validation.",
           "type": [

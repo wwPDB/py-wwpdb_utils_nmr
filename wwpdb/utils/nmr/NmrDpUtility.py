@@ -15834,6 +15834,7 @@ class NmrDpUtility:
                     vrpt_util.addInput(name='report_file_path', value=fPath, type='file')
 
             vrpt_cs = vrpt_util.op('nmr-cs-validation')
+            vrpt_mr = vrpt_util.op('nmr-mr-validation')
 
             if vrpt_cs is not None:
                 completeness = vrpt_cs['completeness']
@@ -16386,6 +16387,100 @@ class NmrDpUtility:
                                                 sf_info['random_coil_index'].append(item)
 
                             elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
+
+                                if _content_subtype == 'dist_restraint':
+                                    if vrpt_mr is not None and 'distance_summary' in vrpt_mr:
+                                        dist_summary = vrpt_mr['distance_summary']
+                                        rest_summary = {}
+                                        rest_summary['total_distance_restraints'] =\
+                                            sum(v[None] for v in dist_summary['total'].values())
+                                        rest_summary['intraresidue'] =\
+                                            sum(v[None] for v in dist_summary['intraresidue'].values())
+                                        rest_summary['sequential'] =\
+                                            sum(v[None] for v in dist_summary['sequential'].values())
+                                        rest_summary['medium_range'] =\
+                                            sum(v[None] for v in dist_summary['medium'].values())
+                                        rest_summary['long_range'] =\
+                                            sum(v[None] for v in dist_summary['long'].values())
+                                        rest_summary['inter-chain'] =\
+                                            sum(v[None] for v in dist_summary['interchain'].values())
+                                        rest_summary['hydrogen_bond_restraints'] =\
+                                            sum(v['hbond'] for v in dist_summary['total'].values())
+                                        rest_summary['disulfide_bond_restraints'] =\
+                                            sum(v['sbond'] for v in dist_summary['total'].values())
+                                        rest_summary['diselenide_bond_restraints'] =\
+                                            sum(v['sebond'] for v in dist_summary['total'].values())
+                                        rest_summary['metal_coordination_restraints'] =\
+                                            sum(v['metal'] for v in dist_summary['total'].values())
+                                        all_unmapped = len(vrpt_mr['unmapped_dist'])
+                                        if 'unmapped_angle' in vrpt_mr:
+                                            all_unmapped += len(vrpt_mr['unmapped_angle'])
+                                        if 'unmapped_rdc' in vrpt_mr:
+                                            all_unmapped += len(vrpt_mr['unmapped_rdc'])
+                                        rest_summary['number_of_unmapped_restraints'] = all_unmapped
+                                        all_total = rest_summary['total_distance_restraints']
+                                        if 'angle_summary' in vrpt_mr:
+                                            angle_summary = vrpt_mr['angle_summary']
+                                            all_total += angle_summary['Total']
+                                        if 'rdc_summary' in vrpt_mr:
+                                            rdc_summary = vrpt_mr['rdc_summary']
+                                            all_total += rdc_summary['Total']
+                                        rest_summary['number_of_restaints_per_residue'] = \
+                                            float(f"{float(all_total) / vrpt_mr['seq_length']:.1f}")
+                                        rest_summary['number_of_long_range_restraints_per_residue'] =\
+                                            float(f"{float(sum(sum(v.values()) for v in dist_summary['long'].values())) / vrpt_mr['seq_length']:.1f}")  # noqa: E501, pylint: disable=line-too-long
+
+                                        self.__output_statistics.setItemValue('restraint_summary', rest_summary)
+
+                                if _content_subtype == 'dihed_restraint':
+                                    if vrpt_mr is not None and 'angle_summary' in vrpt_mr and 'distance_summary' not in vrpt_mr:
+                                        rest_summary = {}
+                                        rest_summary['total_distance_restraints'] = 0
+                                        rest_summary['intraresidue'] = 0
+                                        rest_summary['sequential'] = 0
+                                        rest_summary['medium_range'] = 0
+                                        rest_summary['long_range'] = 0
+                                        rest_summary['inter-chain'] = 0
+                                        rest_summary['hydrogen_bond_restraints'] = 0
+                                        rest_summary['disulfide_bond_restraints'] = 0
+                                        rest_summary['diselenide_bond_restraints'] = 0
+                                        rest_summary['metal_coordination_restraints'] = 0
+                                        all_unmapped = len(vrpt_mr['unmapped_angle'])
+                                        if 'unmapped_rdc' in vrpt_mr:
+                                            all_unmapped += len(vrpt_mr['unmapped_rdc'])
+                                        rest_summary['number_of_unmapped_restraints'] = all_unmapped
+                                        angle_summary = vrpt_mr['angle_summary']
+                                        all_total = angle_summary['Total']
+                                        if 'rdc_summary' in vrpt_mr:
+                                            rdc_summary = vrpt_mr['rdc_summary']
+                                            all_total += rdc_summary['Total']
+                                        rest_summary['number_of_restaints_per_residue'] = \
+                                            float(f"{float(all_total) / vrpt_mr['seq_length']:.1f}")
+                                        rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
+
+                                        self.__output_statistics.setItemValue('restraint_summary', rest_summary)
+
+                                if _content_subtype == 'rdc_restraint':
+                                    if vrpt_mr is not None and 'rdc_summary' in vrpt_mr and 'distance_summary' not in vrpt_mr\
+                                       and 'angle_summary' not in vrpt_mr:
+                                        rest_summary = {}
+                                        rest_summary['total_distance_restraints'] = 0
+                                        rest_summary['intraresidue'] = 0
+                                        rest_summary['sequential'] = 0
+                                        rest_summary['medium_range'] = 0
+                                        rest_summary['long_range'] = 0
+                                        rest_summary['inter-chain'] = 0
+                                        rest_summary['hydrogen_bond_restraints'] = 0
+                                        rest_summary['disulfide_bond_restraints'] = 0
+                                        rest_summary['diselenide_bond_restraints'] = 0
+                                        rest_summary['metal_coordination_restraints'] = 0
+                                        rest_summary['number_of_unmapped_restraints'] = len(vrpt_mr['unmapped_rdc'])
+                                        rdc_summary = vrpt_mr['rdc_summary']
+                                        rest_summary['number_of_restaints_per_residue'] = \
+                                            float(f"{float(rdc_summary['Total']) / vrpt_mr['seq_length']:.1f}")
+                                        rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
+
+                                        self.__output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                 if content_subtype in ('dist_restraint', 'rdc_restraint'):
                                     max_dim = 3

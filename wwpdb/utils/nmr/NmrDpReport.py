@@ -2230,8 +2230,9 @@ class NmrDpReportOutputStatistics:
         self.items = ('file_name', 'file_type', 'entry_id', 'entry_title', 'entry_authors',
                       'submission_date', 'processed_date', 'processed_site',
                       'assembly_name', 'file_size', 'md5_checksum',
-                      'model', 'software', 'assembly', 'entity', 'chem_shift_summary',
-                      'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
+                      'model', 'software', 'assembly', 'entity',
+                      'chem_shift_summary', 'chem_shift',
+                      'restraint_summary', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         self.__contents = {item: None for item in self.items}
 

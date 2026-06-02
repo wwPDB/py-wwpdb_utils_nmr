@@ -2127,6 +2127,7 @@ class NmrVrptUtility:
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
                      define bond types for deselenide bond and metal coordination (sebond, metal)
+                     ignore obvious lower-bound-* potential restraint (e.g. CYAYA .lol file)
         """
 
         if self.__has_prev_results:
@@ -2153,6 +2154,13 @@ class NmrVrptUtility:
                 sf_tag = self.__rR.getDictList(sf_category, datablock_name)
 
                 list_id = int(sf_tag[0]['ID'])
+
+                try:
+                    potential_type = sf_tag[0]['Potential_type']
+                    if 'lower-bound' in potential_type:
+                        continue
+                except KeyError:
+                    pass
 
                 data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
                               {'name': 'Entity_assembly_ID_1', 'type': 'str', 'alt_name': 'entity_asm_id_1'},

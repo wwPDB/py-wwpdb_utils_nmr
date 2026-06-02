@@ -9651,6 +9651,8 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
             return True
 
         return False
+    
+    _hint = hint.lower()
 
     if atom1['chain_id'] == atom2['chain_id'] and atom1['seq_id'] == atom2['seq_id']:
         if upperLimit == 0.0 and 0.0 < lowerLimit <= 1.8\
@@ -9660,9 +9662,9 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
             if is_like_hbond():
                 return 'ambiguous hydrogen bond'
             return 'general distance'
+        if upperLimit <= DIST_AMBIG_LOW and lowerLimit > 0.0:
+            return 'NOE (lower bound)' if 'roe' not in _hint else 'ROE (lower bound)'
         return None
-
-    _hint = hint.lower()
 
     def is_like_sebond():
         return (atom_id_1 == 'SE' and atom_id_2 == 'SE') or 'diselenide' in _hint

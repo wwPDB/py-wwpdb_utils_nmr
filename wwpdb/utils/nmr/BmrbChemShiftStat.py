@@ -925,13 +925,11 @@ class BmrbChemShiftStat:
 
         atom_group = self.getCategorizedAtomIds(comp_id)
 
-        aromatic_or_base = []
         if 'aromatic' in atom_group:
-            aromatic_or_base.extend(atom_group['aromatic'])
-        if 'base' in atom_group:
-            aromatic_or_base.extend(atom_group['base'])
-
-        if len(aromatic_or_base) == 0:
+            aromatic_or_base = atom_group['aromatic']
+        elif 'base' in atom_group:
+            aromatic_or_base = atom_group['base']
+        else:
             return []
 
         nitrogen = [a for a in aromatic_or_base if a[0] == 'N']

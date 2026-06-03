@@ -15779,6 +15779,9 @@ class NmrDpUtility:
                     if has_key_value(cif_input_source_dic, 'polymer_sequence'):
                         cif_poly_seq = cif_input_source_dic['polymer_sequence']
 
+            has_cystain = cif_poly_seq is not None\
+                and not any(ps for ps in cif_poly_seq if 'CYS' in ps['comp_id'] or 'DCY' in ps['comp_id'])
+
             # model
 
             if has_coordinate:
@@ -16128,6 +16131,138 @@ class NmrDpUtility:
 
                 return ret
 
+            def get_dist_violations_per_model():
+                violations_per_model = []
+                for k, v in vrpt_mr['residual_distance_violation'].items():
+                    len_bin = len(violations_per_model)
+                    bin_suffix = ' (' + ('Small' if len_bin == 0
+                                         else 'Medium' if len_bin == 1
+                                         else 'Large') + ')'
+                    violations_per_model.append({'bin_type': k + bin_suffix,
+                                                 'average_number_of_violations_per_model': v[0][3],
+                                                 'max_violation_in_bin': v[0][1]})
+                return violations_per_model
+
+            def get_dihed_violation_per_model():
+                violations_per_model = []
+                for k, v in vrpt_mr['residual_angle_violation'].items():
+                    len_bin = len(violations_per_model)
+                    bin_suffix = ' (' + ('Small' if len_bin == 0
+                                         else 'Medium' if len_bin == 1
+                                         else 'Large') + ')'
+                    violations_per_model.append({'bin_type': k + bin_suffix,
+                                                 'average_number_of_violations_per_model': v[0][3],
+                                                 'max_violation_in_bin': v[0][1]})
+                return violations_per_model
+
+            def get_dist_violation_summary():
+                any_type = 'total'
+
+                distance_type = ('intraresidue', 'sequential', 'medium', 'long', 'interchain',
+                                 'hbond', 'sbond', 'sebond', 'metal', any_type)
+                distance_type_name = ('intra-residue', 'sequential', 'medium_range', 'long_range', 'inter-chain',
+                                      'hydrogen bond', 'disulfide bond', 'diselenide bond', 'metal coordiantion', any_type)
+                distance_type_abbr = ('ir', 'sq', 'mr', 'lr', 'ic', 'hb', 'sb', 'se', 'metal', '')
+                distance_sub_type = ('backbone-backbone', 'backbone-sidechain', 'sidechain-sidechain')
+
+                total_restraint_count = sum(vrpt_mr['distance_summary'][any_type][dist_sub_type][None]
+                                            for dist_sub_type in distance_sub_type)
+
+                if total_restraint_count == 0:
+                    return None
+
+                violation_summary = []
+                for dist_type in distance_type:
+                    name_suffix = ''
+                    if dist_type == 'intraresidue':
+                        name_suffix = ' (|i-j|=0)'
+                    elif dist_type == 'sequential':
+                        name_suffix = ' (|i-j|=1)'
+                    elif dist_type == 'medium':
+                        name_suffix = ' (|i-j|>1 & |i-j|<5)'
+                    elif dist_type == 'long':
+                        name_suffix = ' (|i-j|≥5)'
+                    restraint_type = distance_type_name[distance_type.index(dist_type)] + name_suffix
+                    bond_type = dist_type if dist_type in ('hbond', 'sbond', 'sebond', 'metal') else None
+                    if bond_type is None:
+                        restraint_count = sum(vrpt_mr['distance_summary'][dist_type][dist_sub_type][bond_type]
+                                              for dist_sub_type in distance_sub_type)
+                    else:
+                        restraint_count = sum(vrpt_mr['distance_summary'][any_type][dist_sub_type][bond_type]
+                                              for dist_sub_type in distance_sub_type)
+
+                    if restraint_count == 0:
+                        if dist_type in ('sebond', 'metal'):
+                            continue
+                        if dist_type == 'sbond' and not has_cystain:
+                            continue
+
+                    restraint_percent = float(f"{100.0 * restraint_count / total_restraint_count:.1f}")
+
+                    if bond_type is None:
+                        viol_count = sum(vrpt_mr['distance_violation'][dist_type][dist_sub_type][bond_type]
+                                         for dist_sub_type in distance_sub_type)
+                    else:
+                        viol_count = sum(vrpt_mr['distance_violation'][any_type][dist_sub_type][bond_type]
+                                         for dist_sub_type in distance_sub_type)
+
+                    viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
+                        if restraint_count > 0 else None
+                    viol_absol_percent = float(f"{100.0 * viol_count / total_restraint_count:.1f}")
+
+                    if bond_type is None:
+                        consist_viol_count = sum(vrpt_mr['consistent_distance_violation'][dist_type][dist_sub_type][bond_type]
+                                                 for dist_sub_type in distance_sub_type)
+                    else:
+                        consist_viol_count = sum(vrpt_mr['consistent_distance_violation'][any_type][dist_sub_type][bond_type]
+                                                 for dist_sub_type in distance_sub_type)
+
+                    consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
+                        if restraint_count > 0 else None
+                    consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_restraint_count:.1f}")
+
+                    violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
+                                              'restraint_percent': restraint_percent,
+                                              'viol_count': viol_count, 'viol_inline_percent': viol_inline_percent,
+                                              'viol_absol_percent': viol_absol_percent,
+                                              'consist_viol_count': consist_viol_count,
+                                              'consist_viol_inline_percent': consist_viol_inline_percent,
+                                              'consist_viol_absol_percent': consist_viol_absol_percent
+                                              })
+
+                    if dist_type in ('hbond', 'sbond', 'sebond', 'metal'):
+                        continue
+
+                    for dist_sub_type in distance_sub_type:
+                        restraint_type = distance_type_abbr[distance_type.index(dist_type)] + ': ' + dist_sub_type
+                        bond_type = None
+                        restraint_count = vrpt_mr['distance_summary'][dist_type][dist_sub_type][bond_type]
+
+                        percent = float(f"{100.0 * restraint_count / total_restraint_count:.1f}")
+
+                        viol_count = vrpt_mr['distance_violation'][dist_type][dist_sub_type][bond_type]
+
+                        viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
+                            if restraint_count > 0 else None
+                        viol_absol_percent = float(f"{100.0 * viol_count / total_restraint_count:.1f}")
+
+                        consist_viol_count = vrpt_mr['consistent_distance_violation'][dist_type][dist_sub_type][bond_type]
+
+                        consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
+                            if restraint_count > 0 else None
+                        consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_restraint_count:.1f}")
+
+                        violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
+                                                  'restraint_percent': percent,
+                                                  'viol_count': viol_count, 'viol_inline_percent': viol_inline_percent,
+                                                  'viol_absol_percent': viol_absol_percent,
+                                                  'consist_viol_count': consist_viol_count,
+                                                  'consist_viol_inline_percent': consist_viol_inline_percent,
+                                                  'consist_viol_absol_percent': consist_viol_absol_percent
+                                                  })
+
+                return violation_summary
+
             # exptl data
 
             for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
@@ -16396,7 +16531,7 @@ class NmrDpUtility:
                                             rest_summary = {}
                                             rest_summary['total_distance_restraints'] =\
                                                 sum(v[None] for v in dist_summary['total'].values())
-                                            rest_summary['intraresidue'] =\
+                                            rest_summary['intra-residue'] =\
                                                 sum(v[None] for v in dist_summary['intraresidue'].values())
                                             rest_summary['sequential'] =\
                                                 sum(v[None] for v in dist_summary['sequential'].values())
@@ -16411,11 +16546,8 @@ class NmrDpUtility:
                                             rest_summary['disulfide_bond_restraints'] =\
                                                 sum(v['sbond'] for v in dist_summary['total'].values())
                                             if rest_summary['disulfide_bond_restraints'] == 0:
-                                                if cif_poly_seq is not None\
-                                                   and not any(ps for ps in cif_poly_seq
-                                                               if 'CYS' in ps['comp_id']
-                                                               or 'DCY' in ps['comp_id']):
-                                                    del rest_summary['diselenide_bond_restraints']
+                                                if not has_cystain:
+                                                    del rest_summary['disulfide_bond_restraints']
                                             rest_summary['diselenide_bond_restraints'] =\
                                                 sum(v['sebond'] for v in dist_summary['total'].values())
                                             if rest_summary['diselenide_bond_restraints'] == 0:
@@ -16442,21 +16574,17 @@ class NmrDpUtility:
                                             rest_summary['number_of_long_range_restraints_per_residue'] =\
                                                 float(f"{float(sum(sum(v.values()) for v in dist_summary['long'].values())) / vrpt_mr['seq_length']:.1f}")  # noqa: E501, pylint: disable=line-too-long
 
-                                            violations_per_model = []
-                                            for k, v in vrpt_mr['residual_distance_violation'].items():
-                                                violations_per_model.append({'bin': k,
-                                                                             'average_number_of_violations_per_model': v[0][3],
-                                                                             'max_violation_in_bin': v[0][1]})
-                                            rest_summary['average_number_of_dist_violations_per_model'] = violations_per_model
+                                            rest_summary['average_number_of_dist_violations_per_model'] =\
+                                                get_dist_violations_per_model()
 
                                             if 'residual_angle_violation' in vrpt_mr:
-                                                violations_per_model = []
-                                                for k, v in vrpt_mr['residual_angle_violation'].items():
-                                                    violations_per_model.append({'bin': k,
-                                                                                 'average_number_of_violations_per_model': v[0][3],
-                                                                                 'max_violation_in_bin': v[0][1]})
                                                 rest_summary['average_number_of_dihed_violations_per_model'] =\
-                                                    violations_per_model
+                                                    get_dihed_violation_per_model()
+
+                                            rest_summary['dist_violation_summary'] = get_dist_violation_summary()
+
+                                            if rest_summary['dist_violation_summary'] is None:
+                                                del rest_summary['dist_violation_summary']
 
                                             self.__output_statistics.setItemValue('restraint_summary', rest_summary)
 
@@ -16464,16 +16592,13 @@ class NmrDpUtility:
                                         if vrpt_mr is not None and 'angle_summary' in vrpt_mr and 'distance_summary' not in vrpt_mr:
                                             rest_summary = {}
                                             rest_summary['total_distance_restraints'] = 0
-                                            rest_summary['intraresidue'] = 0
+                                            rest_summary['intra-residue'] = 0
                                             rest_summary['sequential'] = 0
                                             rest_summary['medium_range'] = 0
                                             rest_summary['long_range'] = 0
                                             rest_summary['inter-chain'] = 0
                                             rest_summary['hydrogen_bond_restraints'] = 0
-                                            if cif_poly_seq is not None\
-                                               and not any(ps for ps in cif_poly_seq
-                                                           if 'CYS' in ps['comp_id']
-                                                           or 'DCY' in ps['comp_id']):
+                                            if has_cystain:
                                                 rest_summary['disulfide_bond_restraints'] = 0
                                             all_unmapped = len(vrpt_mr['unmapped_angle'])
                                             if 'unmapped_rdc' in vrpt_mr:
@@ -16488,13 +16613,8 @@ class NmrDpUtility:
                                                 float(f"{float(all_total) / vrpt_mr['seq_length']:.1f}")
                                             rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
 
-                                            violations_per_model = []
-                                            for k, v in vrpt_mr['residual_angle_violation'].items():
-                                                violations_per_model.append({'bin': k,
-                                                                             'average_number_of_violations_per_model': v[0][3],
-                                                                             'max_violation_in_bin': v[0][1]})
                                             rest_summary['average_number_of_dihed_violations_per_model'] =\
-                                                violations_per_model
+                                                get_dihed_violation_per_model()
 
                                             self.__output_statistics.setItemValue('restraint_summary', rest_summary)
 
@@ -16503,16 +16623,13 @@ class NmrDpUtility:
                                            and 'angle_summary' not in vrpt_mr:
                                             rest_summary = {}
                                             rest_summary['total_distance_restraints'] = 0
-                                            rest_summary['intraresidue'] = 0
+                                            rest_summary['intra-residue'] = 0
                                             rest_summary['sequential'] = 0
                                             rest_summary['medium_range'] = 0
                                             rest_summary['long_range'] = 0
                                             rest_summary['inter-chain'] = 0
                                             rest_summary['hydrogen_bond_restraints'] = 0
-                                            if cif_poly_seq is not None\
-                                               and not any(ps for ps in cif_poly_seq
-                                                           if 'CYS' in ps['comp_id']
-                                                           or 'DCY' in ps['comp_id']):
+                                            if has_cystain:
                                                 rest_summary['disulfide_bond_restraints'] = 0
                                             rest_summary['number_of_unmapped_restraints'] = len(vrpt_mr['unmapped_rdc'])
                                             rdc_summary = vrpt_mr['rdc_summary']

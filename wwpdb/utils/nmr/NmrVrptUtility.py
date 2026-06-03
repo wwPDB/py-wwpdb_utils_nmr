@@ -2144,6 +2144,26 @@ class NmrVrptUtility:
 
         try:
 
+            has_upper_bound = False
+
+            for datablock_name in self.__rR.getDataBlockNameList():
+
+                if not self.__rR.hasCategory(lp_category, datablock_name):
+                    continue
+
+                sf_tag = self.__rR.getDictList(sf_category, datablock_name)
+
+                try:
+                    potential_type = sf_tag[0]['Potential_type']
+                    if 'upper-bound' in potential_type\
+                       or 'square-well' in potential_type\
+                       or 'log-harmonic' in potential_type\
+                       or potential_type == 'parabolic':
+                        has_upper_bound = True
+                        break
+                except KeyError:
+                    pass
+
             skipped = False
 
             for datablock_name in self.__rR.getDataBlockNameList():
@@ -2156,8 +2176,15 @@ class NmrVrptUtility:
                 list_id = int(sf_tag[0]['ID'])
 
                 try:
+                    constraint_type = sf_tag[0]['Constraint_type']
+                    if constraint_type == 'covalent bond' or 'reinforced' in constraint_type:
+                        continue
+                except KeyError:
+                    pass
+
+                try:
                     potential_type = sf_tag[0]['Potential_type']
-                    if 'lower-bound' in potential_type:
+                    if 'lower-bound' in potential_type and has_upper_bound:
                         continue
                 except KeyError:
                     pass

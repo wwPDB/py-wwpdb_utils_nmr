@@ -4698,7 +4698,7 @@
               "type": "integer",
               "minimum": 0
             },
-            "intraresidue": {
+            "intra-residue": {
               "type": "integer",
               "minimum": 0
             },
@@ -4768,6 +4768,13 @@
                 "$ref": "#/definitions/output_stats_violations_per_model",
                 "minItems": 3,
                 "maxItems": 3
+              }
+            },
+            "dist_violation_summary": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_dist_violation_summary",
+                "minItems": 25
               }
             }
           },
@@ -5010,7 +5017,7 @@
       "description": "Template for common residual restraint analysis in output statistics.",
       "type": "object",
       "properties": {
-        "bin": {
+        "bin_type": {
           "type": "string",
           "minLength": 1
         },
@@ -5031,9 +5038,74 @@
       },
       "additionalProperties": false,
       "required": [
-        "bin",
+        "bin_type",
         "average_number_of_violations_per_model",
         "max_violation_in_bin"
+      ]
+    },
+    "output_stats_dist_violation_summary": {
+      "description": "Template for distance violation summary in output statistics.",
+      "type": "object",
+      "properties": {
+        "restraint_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "restraint_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "restraint_percent": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "viol_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "viol_inline_percent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "viol_absol_percent": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "consist_viol_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "consist_viol_inline_percent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "consist_viol_absol_percent": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "restraint_type",
+        "restraint_count",
+        "restraint_percent",
+        "viol_count",
+        "viol_inline_percent",
+        "viol_absol_percent",
+        "consist_viol_count",
+        "consist_viol_inline_percent",
+        "consist_viol_absol_percent"
       ]
     },
     "output_stats_common_bookkeeping": {

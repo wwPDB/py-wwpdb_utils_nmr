@@ -19777,6 +19777,9 @@ class NmrDpValidation:
             distance_bond_type = ('hbond', 'sbond', 'sebond', 'metal')
             distance_general_bond_type = ('hbond', 'sbond', 'sebond', 'metal', None)
 
+            total_dist_restraint_count = sum(vrpt_mr['distance_summary'][dist_any_type][dist_sub_type][None]
+                                             for dist_sub_type in distance_sub_type)
+
             def get_dist_violations_per_model():
                 violations_per_model = []
                 for k, v in vrpt_mr['residual_distance_violation'].items():
@@ -19802,12 +19805,6 @@ class NmrDpValidation:
                 return violations_per_model
 
             def get_dist_violation_summary():
-                total_restraint_count = sum(vrpt_mr['distance_summary'][dist_any_type][dist_sub_type][None]
-                                            for dist_sub_type in distance_sub_type)
-
-                if total_restraint_count == 0:
-                    return None
-
                 violation_summary = []
                 for dist_type in distance_type:
                     name_suffix = ''
@@ -19834,7 +19831,7 @@ class NmrDpValidation:
                         if dist_type == 'sbond' and not has_cystain:
                             continue
 
-                    restraint_percent = float(f"{100.0 * restraint_count / total_restraint_count:.1f}")
+                    restraint_percent = float(f"{100.0 * restraint_count / total_dist_restraint_count:.1f}")
 
                     if bond_type is None:
                         viol_count = sum(vrpt_mr['distance_violation'][dist_type][dist_sub_type][bond_type]
@@ -19845,7 +19842,7 @@ class NmrDpValidation:
 
                     viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
                         if restraint_count > 0 else None
-                    viol_absol_percent = float(f"{100.0 * viol_count / total_restraint_count:.1f}")
+                    viol_absol_percent = float(f"{100.0 * viol_count / total_dist_restraint_count:.1f}")
 
                     if bond_type is None:
                         consist_viol_count = sum(vrpt_mr['consistent_distance_violation'][dist_type][dist_sub_type][bond_type]
@@ -19856,7 +19853,7 @@ class NmrDpValidation:
 
                     consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
                         if restraint_count > 0 else None
-                    consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_restraint_count:.1f}")
+                    consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_dist_restraint_count:.1f}")
 
                     violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
                                               'restraint_percent': restraint_percent,
@@ -19875,19 +19872,19 @@ class NmrDpValidation:
                         bond_type = None
                         restraint_count = vrpt_mr['distance_summary'][dist_type][dist_sub_type][bond_type]
 
-                        percent = float(f"{100.0 * restraint_count / total_restraint_count:.1f}")
+                        percent = float(f"{100.0 * restraint_count / total_dist_restraint_count:.1f}")
 
                         viol_count = vrpt_mr['distance_violation'][dist_type][dist_sub_type][bond_type]
 
                         viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
                             if restraint_count > 0 else None
-                        viol_absol_percent = float(f"{100.0 * viol_count / total_restraint_count:.1f}")
+                        viol_absol_percent = float(f"{100.0 * viol_count / total_dist_restraint_count:.1f}")
 
                         consist_viol_count = vrpt_mr['consistent_distance_violation'][dist_type][dist_sub_type][bond_type]
 
                         consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
                             if restraint_count > 0 else None
-                        consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_restraint_count:.1f}")
+                        consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_dist_restraint_count:.1f}")
 
                         violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
                                                   'restraint_percent': percent,
@@ -19901,12 +19898,6 @@ class NmrDpValidation:
                 return violation_summary
 
             def get_dist_violation_for_each_model():
-                total_restraint_count = sum(vrpt_mr['distance_summary'][dist_any_type][dist_sub_type][None]
-                                            for dist_sub_type in distance_sub_type)
-
-                if total_restraint_count == 0:
-                    return None
-
                 violation_summary = []
                 for model_id in self.__reg.eff_model_ids:
                     item = {'model_id': model_id}
@@ -19916,7 +19907,6 @@ class NmrDpValidation:
                             continue
                         viol_type = distance_type_abbr[distance_type.index(dist_type)] + '_viol_count'
                         count = 0
-                        errors = []
                         for dist_sub_type in distance_sub_type:
                             for bond_type in distance_general_bond_type:
                                 count += len(vrpt_mr['distance_violations_in_models'][
@@ -19934,9 +19924,50 @@ class NmrDpValidation:
                         item['std_violation'] = float(f"{numpy.std(_errors):.2f}")
                         item['median_violation'] = float(f"{numpy.median(_errors):.2f}")
 
+                    else:
+                        item['mean_violation'] = item['min_violation'] = item['max_violation'] =\
+                            item['std_violation'] = item['median_violation'] = None
+
                     violation_summary.append(item)
 
                 return violation_summary
+
+            def get_dist_violation_for_ensemble():
+                violation_summary = []
+                len_eff_model_ids = len(self.__reg.eff_model_ids)
+                for fraction in range(1, len_eff_model_ids + 1):
+                    item = {'fraction_count': fraction,
+                            'fraction_percent': float(f"{100.0 * fraction / len_eff_model_ids:.1f}")}
+                    for dist_type in distance_type:
+                        if dist_type in distance_bond_type:
+                            continue
+                        viol_type = distance_type_abbr[distance_type.index(dist_type)] + '_viol_count'
+                        count = 0
+                        for dist_sub_type in distance_sub_type:
+                            for bond_type in distance_general_bond_type:
+                                count += vrpt_mr['distance_violations_vs_models'][
+                                    dist_type][dist_sub_type][bond_type][fraction]
+                        item[viol_type] = count
+
+                    violation_summary.append(item)
+
+                return violation_summary
+
+            def get_most_violated_dist_restraints():
+                if len(vrpt_mr['most_violated_distance']) == 0:
+                    return None
+
+                violations = []
+                for dist_viol in vrpt_mr['most_violated_distance']:
+                    violations.append({'restraint_key': '(' + ','.join([str(k) for k in dist_viol[0]]) + ')',
+                                       'atom_key_1': ':'.join([str(k) for k in dist_viol[1] if k not in EMPTY_VALUE]),
+                                       'atom_key_2': ':'.join([str(k) for k in dist_viol[2] if k not in EMPTY_VALUE]),
+                                       'total_violated_models': dist_viol[6],
+                                       'mean_violation': float(f"{dist_viol[10]:.2f}"),
+                                       'std_violation': float(f"{dist_viol[11]:.2f}"),
+                                       'median_violation': float(f"{dist_viol[12]:.2f}")})
+
+                return violations
 
             # exptl data
 
@@ -20256,17 +20287,21 @@ class NmrDpValidation:
                                                 rest_summary['average_number_of_dihed_violations_per_model'] =\
                                                     get_dihed_violation_per_model()
 
-                                            rest_summary['dist_violation_summary'] =\
-                                                get_dist_violation_summary()
+                                            if total_dist_restraint_count > 0:
+                                                rest_summary['dist_violation_summary'] =\
+                                                    get_dist_violation_summary()
 
-                                            if rest_summary['dist_violation_summary'] is None:
-                                                del rest_summary['dist_violation_summary']
+                                                rest_summary['dist_violation_for_each_model'] =\
+                                                    get_dist_violation_for_each_model()
 
-                                            rest_summary['dist_violation_for_each_model'] =\
-                                                get_dist_violation_for_each_model()
+                                                rest_summary['dist_violation_for_ensemble'] =\
+                                                    get_dist_violation_for_ensemble()
 
-                                            if rest_summary['dist_violation_for_each_model'] is None:
-                                                del rest_summary['dist_violation_for_each_model']
+                                                rest_summary['most_violated_dist_restraints'] =\
+                                                    get_most_violated_dist_restraints()
+
+                                                if rest_summary['most_violated_dist_restraints'] is None:
+                                                    del rest_summary['most_violated_dist_restraints']
 
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 

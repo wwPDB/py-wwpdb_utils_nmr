@@ -4783,6 +4783,20 @@
                 "$ref": "#/definitions/output_stats_dist_violation_for_each_model",
                 "minItems": 1
               }
+            },
+            "dist_violation_for_ensemble": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_dist_violation_for_ensemble",
+                "minItems": 1
+              }
+            },
+            "most_violated_dist_restraints": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_most_violated_dist_restraints",
+                "minItems": 1
+              }
             }
           },
           "additionalProperties": false,
@@ -5148,23 +5162,38 @@
           "minimum": 0
         },
         "mean_violation": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0.0
         },
         "min_violation": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0.0
         },
         "max_violation": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0.0
         },
         "std_violation": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0.0
         },
         "median_violation": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0.0
         }
       },
@@ -5176,7 +5205,129 @@
         "mr_viol_count",
         "lr_viol_count",
         "ic_viol_count",
-        "total_viol_count"
+        "total_viol_count",
+        "mean_violation",
+        "min_violation",
+        "max_violation",
+        "std_violation",
+        "median_violation"
+      ]
+    },
+    "output_stats_dist_violation_for_ensemble": {
+      "description": "Template for distance violation for the ensemble in output statistics.",
+      "type": "object",
+      "properties": {
+        "fraction_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fraction_percent": {
+          "type": "number",
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0
+        },
+        "ir_viol_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sq_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mr_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lr_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ic_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "fraction_count",
+        "fraction_percent",
+        "ir_viol_count",
+        "sq_viol_count",
+        "mr_viol_count",
+        "lr_viol_count",
+        "ic_viol_count",
+        "total_viol_count",
+      ]
+    },
+    "output_stats_most_violated_dist_restraints": {
+      "description": "Template for most violated distance restraints in output statistics.",
+      "type": "object",
+      "properties": {
+        "restraint_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_2": {
+          "type": "string",
+          "minLength": 1
+        },
+        "total_violated_models": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "mean_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "min_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "max_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "std_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "median_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "restraint_key",
+        "atom_key_1",
+        "atom_key_2",
+        "total_violated_models",
+        "mean_violation",
+        "std_violation",
+        "median_violation"
       ]
     },
     "output_stats_common_bookkeeping": {

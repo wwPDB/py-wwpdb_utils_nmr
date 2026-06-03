@@ -4776,6 +4776,13 @@
                 "$ref": "#/definitions/output_stats_dist_violation_summary",
                 "minItems": 25
               }
+            },
+            "dist_violation_for_each_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_dist_violation_for_each_model",
+                "minItems": 1
+              }
             }
           },
           "additionalProperties": false,
@@ -5106,6 +5113,70 @@
         "consist_viol_count",
         "consist_viol_inline_percent",
         "consist_viol_absol_percent"
+      ]
+    },
+    "output_stats_dist_violation_for_each_model": {
+      "description": "Template for distance violation for each model in output statistics.",
+      "type": "object",
+      "properties": {
+        "model_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ir_viol_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sq_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mr_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lr_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ic_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_viol_count":  {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mean_violation": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "min_violation": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "max_violation": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "std_violation": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "median_violation": {
+          "type": "number",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "model_id",
+        "ir_viol_count",
+        "sq_viol_count",
+        "mr_viol_count",
+        "lr_viol_count",
+        "ic_viol_count",
+        "total_viol_count"
       ]
     },
     "output_stats_common_bookkeeping": {

@@ -2155,11 +2155,12 @@ class NmrVrptUtility:
 
                 try:
                     potential_type = sf_tag[0]['Potential_type']
-                    if 'upper-bound' in potential_type\
-                       or 'square-well' in potential_type\
-                       or 'log-harmonic' in potential_type\
-                       or potential_type == 'parabolic':
-                        has_upper_bound = True
+                    if potential_type not in EMPTY_VALUE:
+                        if 'upper-bound' in potential_type\
+                           or 'square-well' in potential_type\
+                           or 'log-harmonic' in potential_type\
+                           or potential_type == 'parabolic':
+                            has_upper_bound = True
                         break
                 except KeyError:
                     pass
@@ -2184,7 +2185,7 @@ class NmrVrptUtility:
 
                 try:
                     potential_type = sf_tag[0]['Potential_type']
-                    if 'lower-bound' in potential_type and has_upper_bound:
+                    if potential_type not in EMPTY_VALUE and 'lower-bound' in potential_type and has_upper_bound:
                         continue
                 except KeyError:
                     pass
@@ -2324,16 +2325,16 @@ class NmrVrptUtility:
 
                     const_type = getDistConstraintType(atom_sels, dst_func, self.__csStat)
 
-                    if 'hydrogen bond' in const_type:
-                        bond_flag = 'hbond'
-                    elif 'disulfide bond' in const_type:
-                        bond_flag = 'sbond'
-                    elif 'diselenide bond' in const_type:
-                        bond_flag = 'sebond'
-                    elif const_type == 'metal coordination':
-                        bond_flag = 'metal'
-                    else:
-                        bond_flag = None
+                    bond_flag = None
+                    if const_type is not None:
+                        if 'hydrogen bond' in const_type:
+                            bond_flag = 'hbond'
+                        elif 'disulfide bond' in const_type:
+                            bond_flag = 'sbond'
+                        elif 'diselenide bond' in const_type:
+                            bond_flag = 'sebond'
+                        elif const_type == 'metal coordination':
+                            bond_flag = 'metal'
 
                     or_member = r.get('member_logic_code') != 'AND'
 

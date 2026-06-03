@@ -20043,6 +20043,25 @@ class NmrDpValidation:
 
                 return violations
 
+            def get_most_violated_dihed_restraints():
+                if len(vrpt_mr['most_violated_angle']) == 0:
+                    return None
+
+                violations = []
+                for dist_viol in vrpt_mr['most_violated_angle']:
+                    violations.append({'restraint_key': '(' + ','.join([str(k) for k in dist_viol[0]]) + ')',
+                                       'atom_key_1': ':'.join([str(k) for k in dist_viol[1] if k not in EMPTY_VALUE]),
+                                       'atom_key_2': ':'.join([str(k) for k in dist_viol[2] if k not in EMPTY_VALUE]),
+                                       'atom_key_3': ':'.join([str(k) for k in dist_viol[3] if k not in EMPTY_VALUE]),
+                                       'atom_key_4': ':'.join([str(k) for k in dist_viol[4] if k not in EMPTY_VALUE]),
+                                       'dihedral_angle_name': dist_viol[5],
+                                       'total_violated_models': dist_viol[6],
+                                       'mean_violation': float(f"{dist_viol[10]:.2f}"),
+                                       'std_violation': float(f"{dist_viol[11]:.2f}"),
+                                       'median_violation': float(f"{dist_viol[12]:.2f}")})
+
+                return violations
+
             def get_all_dist_violations():
                 if len(vrpt_mr['all_distance_violations']) == 0:
                     return None
@@ -20407,6 +20426,12 @@ class NmrDpValidation:
                                                 rest_summary['dihed_violation_for_ensemble'] =\
                                                     get_dihed_violation_for_ensemble()
 
+                                                rest_summary['most_violated_dihed_restraints'] =\
+                                                    get_most_violated_dihed_restraints()
+
+                                                if rest_summary['most_violated_dihed_restraints'] is None:
+                                                    del rest_summary['most_violated_dihed_restraints']
+
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                     if _content_subtype == 'dihed_restraint':
@@ -20445,6 +20470,12 @@ class NmrDpValidation:
 
                                             rest_summary['dihed_violation_for_ensemble'] =\
                                                 get_dihed_violation_for_ensemble()
+
+                                            rest_summary['most_violated_dihed_restraints'] =\
+                                                get_most_violated_dihed_restraints()
+
+                                            if rest_summary['most_violated_dihed_restraints'] is None:
+                                                del rest_summary['most_violated_dihed_restraints']
 
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 

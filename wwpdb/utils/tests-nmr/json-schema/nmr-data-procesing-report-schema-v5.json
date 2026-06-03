@@ -4794,7 +4794,7 @@
             "most_violated_dist_restraints": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/output_stats_most_violated_dist_restraints",
+                "$ref": "#/definitions/output_stats_common_most_violated_restraints",
                 "minItems": 1
               }
             },
@@ -4823,6 +4823,13 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/output_stats_common_violation_for_ensemble",
+                "minItems": 1
+              }
+            },
+            "most_violated_dihed_restraints": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_most_violated_restraints",
                 "minItems": 1
               }
             }
@@ -5241,8 +5248,8 @@
         "fraction_percent"
       ]
     },
-    "output_stats_most_violated_dist_restraints": {
-      "description": "Template for most violated distance restraints in output statistics.",
+    "output_stats_common_most_violated_restraints": {
+      "description": "Template for common most violated restraints in output statistics.",
       "type": "object",
       "properties": {
         "restraint_key": {
@@ -5254,6 +5261,18 @@
           "minLength": 1
         },
         "atom_key_2": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_3": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_4": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dihedral_angle_name": {
           "type": "string",
           "minLength": 1
         },

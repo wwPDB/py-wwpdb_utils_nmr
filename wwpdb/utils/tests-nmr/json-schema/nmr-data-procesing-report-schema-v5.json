@@ -4797,6 +4797,13 @@
                 "$ref": "#/definitions/output_stats_most_violated_dist_restraints",
                 "minItems": 1
               }
+            },
+            "all_dist_violations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_all_dist_violations",
+                "minItems": 1
+              }
             }
           },
           "additionalProperties": false,
@@ -5283,6 +5290,14 @@
           "type": "integer",
           "minimum": 2
         },
+        "violated_model_id": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minumum": 1,
+            "minItems": 1
+          }
+        },
         "mean_violation": {
           "type": [
             "number",
@@ -5328,6 +5343,40 @@
         "mean_violation",
         "std_violation",
         "median_violation"
+      ]
+    },
+    "output_stats_all_dist_violations": {
+      "description": "Template for all distance violations in output statistics.",
+      "type": "object",
+      "properties": {
+        "restraint_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_2": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "violation": {
+          "type": "number",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "restraint_key",
+        "atom_key_1",
+        "atom_key_2",
+        "model_id",
+        "violation"
       ]
     },
     "output_stats_common_bookkeeping": {

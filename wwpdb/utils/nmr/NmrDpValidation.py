@@ -19965,6 +19965,33 @@ class NmrDpValidation:
 
                 return violation_summary
 
+            def get_dihed_violation_for_each_model():
+                violation_summary = []
+                for model_id in self.__reg.eff_model_ids:
+                    item = {'model_id': model_id}
+                    errors = []
+                    for dihed_type in dihed_angle_type:
+                        viol_type = dihed_type.lower() + '_viol_count'
+                        item[viol_type] = len(vrpt_mr['angle_violations_in_models'][model_id][dihed_type])
+                        errors.extend(vrpt_mr['angle_violations_in_models'][model_id][dihed_type])
+
+                    if len(errors) > 1:
+                        _errors = numpy.array(errors, dtype=float)
+
+                        item['mean_violation'] = float(f"{numpy.mean(_errors):.2f}")
+                        item['min_violation'] = float(f"{numpy.min(_errors):.2f}")
+                        item['max_violation'] = float(f"{numpy.max(_errors):.2f}")
+                        item['std_violation'] = float(f"{numpy.std(_errors):.2f}")
+                        item['median_violation'] = float(f"{numpy.median(_errors):.2f}")
+
+                    else:
+                        item['mean_violation'] = item['min_violation'] = item['max_violation'] =\
+                            item['std_violation'] = item['median_violation'] = None
+
+                    violation_summary.append(item)
+
+                return violation_summary
+
             def get_dist_violation_for_ensemble():
                 violation_summary = []
                 len_eff_model_ids = len(self.__reg.eff_model_ids)
@@ -20359,6 +20386,9 @@ class NmrDpValidation:
                                             if total_dihed_restraint_count > 0:
                                                 rest_summary['dihed_violation_summary'] =\
                                                     get_dihed_violation_summary()
+
+                                                rest_summary['dihed_violation_for_each_model'] =\
+                                                    get_dihed_violation_for_each_model()
 
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 

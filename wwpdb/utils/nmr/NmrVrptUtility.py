@@ -2177,7 +2177,7 @@ class NmrVrptUtility:
 
                 try:
                     constraint_type = sf_tag[0]['Constraint_type']
-                    if constraint_type == 'covalent bond' or 'reinforced' in constraint_type:
+                    if constraint_type == 'covalent bond':
                         continue
                 except KeyError:
                     pass
@@ -2324,11 +2324,11 @@ class NmrVrptUtility:
 
                     const_type = getDistConstraintType(atom_sels, dst_func, self.__csStat)
 
-                    if const_type == 'hydrogen bond':
+                    if 'hydrogen bond' in const_type:
                         bond_flag = 'hbond'
-                    elif const_type == 'disulfide bond':
+                    elif 'disulfide bond' in const_type:
                         bond_flag = 'sbond'
-                    elif const_type == 'diselenide bond':
+                    elif 'diselenide bond' in const_type:
                         bond_flag = 'sebond'
                     elif const_type == 'metal coordination':
                         bond_flag = 'metal'

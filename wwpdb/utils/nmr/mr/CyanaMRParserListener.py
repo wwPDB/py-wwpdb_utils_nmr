@@ -356,7 +356,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif len(self.numberSelection) > 1:
                     value2 = self.numberSelection[1]
 
-                    if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
+                    if 5.0 <= value2 <= DIST_AMBIG_UP:
+                        weight = abs(value2)
+                    elif value2 <= 1.0 or value2 < value:
                         delta = abs(value2)
                     else:
                         has_square = True
@@ -438,7 +440,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             else:
                                 lower_limit = value
                             if value2 > 0.0:
-                                target_value_uncertainty = value2
+                                weight = value2
 
                 elif 'upl' in (self.file_ext, self.cur_dist_type) or self.file_ext == 'upv':
                     upper_limit = value
@@ -667,8 +669,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
                 if self.createSfDict:
-                    sf = self.getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
-                                                                         self.csStat, self.originalFileName),
+                    constraintType = getDistConstraintType(self.atomSelectionSet, dstFunc, self.csStat, self.originalFileName)
+                    if upper_limit is None and lower_limit is not None and constraintType == 'metal coordination':  # 2mze
+                        dstFunc = self.validateDistanceRange(weight, target_value, None, lower_limit,
+                                                             target_value_uncertainty,
+                                                             self.omitDistLimitOutlier)
+                    sf = self.getSf(constraintType=constraintType,
                                     potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -994,7 +1000,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif len(self.numberSelection) > 1:
                     value2 = self.numberSelection[1]
 
-                    if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
+                    if 5.0 <= value2 <= DIST_AMBIG_UP:
+                        weight = abs(value2)
+                    elif value2 <= 1.0 or value2 < value:
                         delta = abs(value2)
                     else:
                         has_square = True
@@ -1073,7 +1081,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             upper_limit = value
                             if value2 > 0.0:
-                                target_value_uncertainty = value2
+                                weight = value2
 
                 elif 'upl' in (self.file_ext, self.cur_dist_type) or self.file_ext == 'upv':
                     upper_limit = value
@@ -1300,8 +1308,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
                 if self.createSfDict:
-                    sf = self.getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
-                                                                         self.csStat, self.originalFileName),
+                    constraintType = getDistConstraintType(self.atomSelectionSet, dstFunc, self.csStat, self.originalFileName)
+                    if upper_limit is None and lower_limit is not None and constraintType == 'metal coordination':  # 2mze
+                        dstFunc = self.validateDistanceRange(weight, target_value, None, lower_limit,
+                                                             target_value_uncertainty,
+                                                             self.omitDistLimitOutlier)
+                    sf = self.getSf(constraintType=constraintType,
                                     potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -2901,7 +2913,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 delta = None
                 has_square = False
 
-                if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
+                if 5.0 <= value2 <= DIST_AMBIG_UP:
+                    weight = abs(value2)
+                elif value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
                 else:
                     has_square = True
@@ -2969,7 +2983,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             else:
                                 upper_limit = value
                                 if value2 > 0.0:
-                                    target_value_uncertainty = value2
+                                    weight = value2
 
                     elif 'upl' in (self.file_ext, self.cur_dist_type):
                         upper_limit = value
@@ -3108,8 +3122,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         return
 
                 if self.createSfDict:
-                    sf = self.getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
-                                                                         self.csStat, self.originalFileName),
+                    constraintType = getDistConstraintType(self.atomSelectionSet, dstFunc, self.csStat, self.originalFileName)
+                    if upper_limit is None and lower_limit is not None and constraintType == 'metal coordination':  # 2mze
+                        dstFunc = self.validateDistanceRange(weight, target_value, None, lower_limit,
+                                                             target_value_uncertainty,
+                                                             omit_dist_limit_outlier)
+                    sf = self.getSf(constraintType=constraintType,
                                     potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -3847,7 +3865,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 delta = None
                 has_square = False
 
-                if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
+                if 5.0 <= value2 <= DIST_AMBIG_UP:
+                    weight = abs(value2)
+                elif value2 <= 1.0 or value2 < value:
                     delta = abs(value2)
                 else:
                     has_square = True
@@ -4054,8 +4074,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         return
 
                 if self.createSfDict:
-                    sf = self.getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
-                                                                         self.csStat, self.originalFileName),
+                    constraintType = getDistConstraintType(self.atomSelectionSet, dstFunc, self.csStat, self.originalFileName)
+                    if upper_limit is None and lower_limit is not None and constraintType == 'metal coordination':  # 2mze
+                        dstFunc = self.validateDistanceRange(weight, target_value, None, lower_limit,
+                                                             target_value_uncertainty,
+                                                             omit_dist_limit_outlier)
+                    sf = self.getSf(constraintType=constraintType,
                                     potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
@@ -4979,7 +5003,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 elif len(self.numberSelection) > 1:
                     value2 = self.numberSelection[1]
 
-                    if value2 >= 5.0 or value2 <= 1.0 or value2 < value:
+                    if 5.0 <= value2 <= DIST_AMBIG_UP:
+                        weight = abs(value2)
+                    elif value2 <= 1.0 or value2 < value:
                         delta = abs(value2)
                     else:
                         has_square = True
@@ -5058,7 +5084,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         else:
                             upper_limit = value
                             if value2 > 0.0:
-                                target_value_uncertainty = value2
+                                weight = value2
 
                 elif 'upl' in (self.file_ext, self.cur_dist_type) or self.file_ext == 'upv':
                     upper_limit = value
@@ -5312,8 +5338,12 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     return
 
                 if self.createSfDict:
-                    sf = self.getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
-                                                                         self.csStat, self.originalFileName),
+                    constraintType = getDistConstraintType(self.atomSelectionSet, dstFunc, self.csStat, self.originalFileName)
+                    if upper_limit is None and lower_limit is not None and constraintType == 'metal coordination':  # 2mze
+                        dstFunc = self.validateDistanceRange(weight, target_value, None, lower_limit,
+                                                             target_value_uncertainty,
+                                                             self.omitDistLimitOutlier)
+                    sf = self.getSf(constraintType=constraintType,
                                     potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc))
                     sf['id'] += 1
                     memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'

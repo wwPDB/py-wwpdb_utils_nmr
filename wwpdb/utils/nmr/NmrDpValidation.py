@@ -19766,6 +19766,7 @@ class NmrDpValidation:
 
                 return ret
 
+            has_dist = vrpt_mr is not None and 'distance_summary' in vrpt_mr
             dist_any_type = 'total'
             distance_type = ('intraresidue', 'sequential', 'medium', 'long', 'interchain',
                              'hbond', 'sbond', 'sebond', 'metal', dist_any_type)
@@ -19776,12 +19777,12 @@ class NmrDpValidation:
             distance_bond_type = ('hbond', 'sbond', 'sebond', 'metal')
             distance_general_bond_type = ('hbond', 'sbond', 'sebond', 'metal', None)
 
-            has_dihed = 'angle_summary' in vrpt_mr
+            has_dihed = vrpt_mr is not None and 'angle_summary' in vrpt_mr
             dihed_any_type = 'Total'
             dihed_angle_type = vrpt_mr['key_lists']['angle_type'] if has_dihed else []
 
             total_dist_restraint_count = sum(vrpt_mr['distance_summary'][dist_any_type][dist_sub_type][None]
-                                             for dist_sub_type in distance_sub_type)
+                                             for dist_sub_type in distance_sub_type) if has_dist else 0
 
             total_dihed_restraint_count = vrpt_mr['angle_summary'][dihed_any_type] if has_dihed else 0
 

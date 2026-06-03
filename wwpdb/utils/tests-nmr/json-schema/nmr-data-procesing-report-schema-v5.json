@@ -4773,7 +4773,7 @@
             "dist_violation_summary": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/output_stats_dist_violation_summary",
+                "$ref": "#/definitions/output_stats_common_violation_summary",
                 "minItems": 25
               }
             },
@@ -4804,7 +4804,14 @@
                 "$ref": "#/definitions/output_stats_all_dist_violations",
                 "minItems": 1
               }
-            }
+            },
+            "dihed_violation_summary": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_summary",
+                "minItems": 2
+              }
+            },
           },
           "additionalProperties": false,
           "required": [
@@ -5071,8 +5078,8 @@
         "max_violation_in_bin"
       ]
     },
-    "output_stats_dist_violation_summary": {
-      "description": "Template for distance violation summary in output statistics.",
+    "output_stats_common_violation_summary": {
+      "description": "Template for common violation summary in output statistics.",
       "type": "object",
       "properties": {
         "restraint_type": {

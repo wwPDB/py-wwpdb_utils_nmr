@@ -19767,7 +19767,6 @@ class NmrDpValidation:
                 return ret
 
             dist_any_type = 'total'
-
             distance_type = ('intraresidue', 'sequential', 'medium', 'long', 'interchain',
                              'hbond', 'sbond', 'sebond', 'metal', dist_any_type)
             distance_type_name = ('intra-residue', 'sequential', 'medium_range', 'long_range', 'inter-chain',
@@ -19777,8 +19776,14 @@ class NmrDpValidation:
             distance_bond_type = ('hbond', 'sbond', 'sebond', 'metal')
             distance_general_bond_type = ('hbond', 'sbond', 'sebond', 'metal', None)
 
+            has_dihed = 'angle_summary' in vrpt_mr
+            dihed_any_type = 'Total'
+            dihed_angle_type = vrpt_mr['key_lists']['angle_type'] if has_dihed else []
+
             total_dist_restraint_count = sum(vrpt_mr['distance_summary'][dist_any_type][dist_sub_type][None]
                                              for dist_sub_type in distance_sub_type)
+
+            total_dihed_restraint_count = vrpt_mr['angle_summary'][dihed_any_type] if has_dihed else 0
 
             def get_dist_violations_per_model():
                 violations_per_model = []
@@ -19894,6 +19899,34 @@ class NmrDpValidation:
                                                   'consist_viol_inline_percent': consist_viol_inline_percent,
                                                   'consist_viol_absol_percent': consist_viol_absol_percent
                                                   })
+
+                return violation_summary
+
+            def get_dihed_violation_summary():
+                violation_summary = []
+                for dihed_type in dihed_angle_type:
+                    restraint_type = dihed_type.lower()
+                    restraint_count = vrpt_mr['angle_summary'][dihed_type]
+                    restraint_percent = float(f"{100.0 * restraint_count / total_dihed_restraint_count:.1f}")
+
+                    viol_count = vrpt_mr['angle_violation'][dihed_type]
+                    viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
+                        if restraint_count > 0 else None
+                    viol_absol_percent = float(f"{100.0 * viol_count / total_dihed_restraint_count:.1f}")
+
+                    consist_viol_count = vrpt_mr['consistent_angle_violation'][dihed_type]
+                    consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
+                        if restraint_count > 0 else None
+                    consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_dihed_restraint_count:.1f}")
+
+                    violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
+                                              'restraint_percent': restraint_percent,
+                                              'viol_count': viol_count, 'viol_inline_percent': viol_inline_percent,
+                                              'viol_absol_percent': viol_absol_percent,
+                                              'consist_viol_count': consist_viol_count,
+                                              'consist_viol_inline_percent': consist_viol_inline_percent,
+                                              'consist_viol_absol_percent': consist_viol_absol_percent
+                                              })
 
                 return violation_summary
 
@@ -20323,6 +20356,10 @@ class NmrDpValidation:
                                                 if rest_summary['all_dist_violations'] is None:
                                                     del rest_summary['all_dist_violations']
 
+                                            if total_dihed_restraint_count > 0:
+                                                rest_summary['dihed_violation_summary'] =\
+                                                    get_dihed_violation_summary()
+
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                     if _content_subtype == 'dihed_restraint':
@@ -20352,6 +20389,9 @@ class NmrDpValidation:
 
                                             rest_summary['average_number_of_dihed_violations_per_model'] =\
                                                 get_dihed_violation_per_model()
+
+                                            rest_summary['dihed_violation_summary'] =\
+                                                get_dihed_violation_summary()
 
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 

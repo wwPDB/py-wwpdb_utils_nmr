@@ -4801,7 +4801,7 @@
             "all_dist_violations": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/output_stats_all_dist_violations",
+                "$ref": "#/definitions/output_stats_common_all_violations",
                 "minItems": 1
               }
             },
@@ -4830,6 +4830,13 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/output_stats_common_most_violated_restraints",
+                "minItems": 1
+              }
+            },
+            "all_dihed_violations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_all_violations",
                 "minItems": 1
               }
             }
@@ -5335,8 +5342,8 @@
         "median_violation"
       ]
     },
-    "output_stats_all_dist_violations": {
-      "description": "Template for all distance violations in output statistics.",
+    "output_stats_common_all_violations": {
+      "description": "Template for common all violations in output statistics.",
       "type": "object",
       "properties": {
         "restraint_key": {
@@ -5348,6 +5355,18 @@
           "minLength": 1
         },
         "atom_key_2": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_3": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_4": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dihedral_angle_name": {
           "type": "string",
           "minLength": 1
         },

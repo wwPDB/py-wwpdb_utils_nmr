@@ -20076,6 +20076,23 @@ class NmrDpValidation:
 
                 return violations
 
+            def get_all_dihed_violations():
+                if len(vrpt_mr['all_angle_violations']) == 0:
+                    return None
+
+                violations = []
+                for dist_viol in vrpt_mr['all_angle_violations']:
+                    violations.append({'restraint_key': '(' + ','.join([str(k) for k in dist_viol[0]]) + ')',
+                                       'atom_key_1': ':'.join([str(k) for k in dist_viol[1] if k not in EMPTY_VALUE]),
+                                       'atom_key_2': ':'.join([str(k) for k in dist_viol[2] if k not in EMPTY_VALUE]),
+                                       'atom_key_3': ':'.join([str(k) for k in dist_viol[3] if k not in EMPTY_VALUE]),
+                                       'atom_key_4': ':'.join([str(k) for k in dist_viol[4] if k not in EMPTY_VALUE]),
+                                       'dihedral_angle_name': dist_viol[6],
+                                       'model_id': dist_viol[5],
+                                       'violation': dist_viol[7]})
+
+                return violations
+
             # exptl data
 
             for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
@@ -20432,6 +20449,12 @@ class NmrDpValidation:
                                                 if rest_summary['most_violated_dihed_restraints'] is None:
                                                     del rest_summary['most_violated_dihed_restraints']
 
+                                                rest_summary['all_dihed_violations'] =\
+                                                    get_all_dihed_violations()
+
+                                                if rest_summary['all_dihed_violations'] is None:
+                                                    del rest_summary['all_dihed_violations']
+
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                     if _content_subtype == 'dihed_restraint':
@@ -20476,6 +20499,12 @@ class NmrDpValidation:
 
                                             if rest_summary['most_violated_dihed_restraints'] is None:
                                                 del rest_summary['most_violated_dihed_restraints']
+
+                                            rest_summary['all_dihed_violations'] =\
+                                                get_all_dihed_violations()
+
+                                            if rest_summary['all_dihed_violations'] is None:
+                                                del rest_summary['all_dihed_violations']
 
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 

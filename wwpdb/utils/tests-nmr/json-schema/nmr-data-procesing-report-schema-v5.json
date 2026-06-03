@@ -4787,7 +4787,7 @@
             "dist_violation_for_ensemble": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/output_stats_dist_violation_for_ensemble",
+                "$ref": "#/definitions/output_stats_common_violation_for_ensemble",
                 "minItems": 1
               }
             },
@@ -4816,6 +4816,13 @@
               "type": "array",
               "items": {
                 "$ref": "#/definitions/output_stats_common_violation_for_each_model",
+                "minItems": 1
+              }
+            },
+            "dihed_violation_for_ensemble": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_for_ensemble",
                 "minItems": 1
               }
             }
@@ -5198,7 +5205,7 @@
         "^.*_viol_count$": {
           "type": "integer",
           "minimum": 0
-        },
+        }
       },
       "required": [
         "model_id",
@@ -5209,8 +5216,8 @@
         "median_violation"
       ]
     },
-    "output_stats_dist_violation_for_ensemble": {
-      "description": "Template for distance violation for the ensemble in output statistics.",
+    "output_stats_common_violation_for_ensemble": {
+      "description": "Template for common violation for the ensemble in output statistics.",
       "type": "object",
       "properties": {
         "fraction_count": {
@@ -5221,42 +5228,17 @@
           "type": "number",
           "exclusiveMinimum": 0.0,
           "maximum": 100.0
-        },
-        "ir_viol_count": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "sq_viol_count":  {
-          "type": "integer",
-          "minimum": 0
-        },
-        "mr_viol_count":  {
-          "type": "integer",
-          "minimum": 0
-        },
-        "lr_viol_count":  {
-          "type": "integer",
-          "minimum": 0
-        },
-        "ic_viol_count":  {
-          "type": "integer",
-          "minimum": 0
-        },
-        "total_viol_count":  {
+        }
+      },
+      "patternProperties": {
+        "^.*_viol_count$": {
           "type": "integer",
           "minimum": 0
         }
       },
-      "additionalProperties": false,
       "required": [
         "fraction_count",
-        "fraction_percent",
-        "ir_viol_count",
-        "sq_viol_count",
-        "mr_viol_count",
-        "lr_viol_count",
-        "ic_viol_count",
-        "total_viol_count",
+        "fraction_percent"
       ]
     },
     "output_stats_most_violated_dist_restraints": {

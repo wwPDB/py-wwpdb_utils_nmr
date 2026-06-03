@@ -20013,6 +20013,20 @@ class NmrDpValidation:
 
                 return violation_summary
 
+            def get_dihed_violation_for_ensemble():
+                violation_summary = []
+                len_eff_model_ids = len(self.__reg.eff_model_ids)
+                for fraction in range(1, len_eff_model_ids + 1):
+                    item = {'fraction_count': fraction,
+                            'fraction_percent': float(f"{100.0 * fraction / len_eff_model_ids:.1f}")}
+                    for dihed_type in dihed_angle_type:
+                        viol_type = dihed_type.lower() + '_viol_count'
+                        item[viol_type] = vrpt_mr['angle_violations_vs_models'][dihed_type][fraction]
+
+                    violation_summary.append(item)
+
+                return violation_summary
+
             def get_most_violated_dist_restraints():
                 if len(vrpt_mr['most_violated_distance']) == 0:
                     return None
@@ -20390,6 +20404,9 @@ class NmrDpValidation:
                                                 rest_summary['dihed_violation_for_each_model'] =\
                                                     get_dihed_violation_for_each_model()
 
+                                                rest_summary['dihed_violation_for_ensemble'] =\
+                                                    get_dihed_violation_for_ensemble()
+
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                     if _content_subtype == 'dihed_restraint':
@@ -20422,6 +20439,12 @@ class NmrDpValidation:
 
                                             rest_summary['dihed_violation_summary'] =\
                                                 get_dihed_violation_summary()
+
+                                            rest_summary['dihed_violation_for_each_model'] =\
+                                                get_dihed_violation_for_each_model()
+
+                                            rest_summary['dihed_violation_for_ensemble'] =\
+                                                get_dihed_violation_for_ensemble()
 
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 

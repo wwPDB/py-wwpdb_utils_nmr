@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.0.0"
+__version__ = "5.1.0"
 
 import copy
 import sys
@@ -36,7 +36,8 @@ try:
                                                REPRESENTATIVE_ALT_ID,
                                                DEFAULT_SUBTYPE_DATA,
                                                DEFAULT_COORD_PROPERTIES)
-    from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
+    from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,
+                                             NmrDpReportOutputStatistics)
 except ImportError:
     from nmr.NmrDpConstant import (INITIAL_ENTRY_ID,
                                    RMSD_NOT_SUPERIMPOSED,
@@ -53,7 +54,8 @@ except ImportError:
                                    REPRESENTATIVE_ALT_ID,
                                    DEFAULT_SUBTYPE_DATA,
                                    DEFAULT_COORD_PROPERTIES)
-    from nmr.NmrDpReport import NmrDpReport
+    from nmr.NmrDpReport import (NmrDpReport,
+                                 NmrDpReportOutputStatistics)
 
 
 @dataclass
@@ -188,6 +190,12 @@ class NmrDpRegistry:
 
     # data processing report
     report: NmrDpReport = None
+
+    # previous data processing report
+    report_prev: NmrDpReport = None
+
+    # statistics of output file
+    output_statistics: NmrDpReportOutputStatistics = None
 
     # ChemCompUtil
     ccU = None

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://bmrb-extract.pdbj.org/schema/nmr-data-processing-report-schema.json",
-  "title": "JSON Schema for NMR data processing report v4",
+  "title": "JSON Schema for NMR data processing report v5",
   "description": "The NMR data processing report provides statistics and diagnostic information for NMR data with reference to associated atomic coordinates.",
   "definitions": {
     "input_source": {
@@ -4445,11 +4445,6 @@
           "description": "Host name of processed server.",
           "type": "string"
         },
-        "assembly_name": {
-          "description": "Summary of the molecular system.",
-          "type": "string",
-          "minLength": 1
-        },
         "file_size": {
           "description": "File size of the output file.",
           "type": "integer",
@@ -4505,29 +4500,104 @@
           "items": {
             "type": "object",
             "properties": {
-              "software_name": {
+              "name": {
                 "type": "string",
                 "minLength": 1
               },
-              "software_version": {
-              "type": "string",
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "classification": {
+                "type": "string",
                 "minLength": 1
               }
             },
             "additionalProperties": false,
             "required": [
-              "software_name",
-              "software_version"
+              "name",
+              "version"
             ]
           }
         },
         "assembly": {
           "description": "Section for the molecular assembly.",
-          "type": "null"
-        },
-        "entity": {
-          "description": "Section for entities.",
-          "type": "null"
+          "type" : [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "name": {
+              "description": "Summary of the molecular system.",
+              "type": "string",
+            },
+            "number_of_components": {
+              "description": "Total number of molecular components.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "organic_ligands": {
+              "description": "Total number of organic ligands.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "metal_ions": {
+              "description": "Total number of metal ions.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "non_standard_bonds": {
+              "description": "Whether the molecular assembly contains non-standard covalent bonds.",
+              "type": "boolean"
+            },
+            "paramagnetic": {
+              "description": "Whether the molecular assembly contains paramagnetic ion(s).",
+              "type": "boolean"
+            },
+            "thiol_state": {
+              "description": "The state of the thiol groups in the molecular system.",
+              "type": "string",
+              "enum": [
+                "all disulfide bound",
+                "all other bound",
+                "all free",
+                "disulfide and other bound",
+                "free and disulfide bound",
+                "free and other bound",
+                "free disulfide and other bound",
+                "not available",
+                "not present",
+                "not reported",
+                "unknown"
+              ]
+            },
+            "molecular_mass": {
+              "description": "Mass of the molecular system in Daltons.",
+              "type": "number"
+            },
+            "entity_assembly": {
+              "description": "Declaration of each component in the molecular assembly.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_entity_assembly",
+                "minItems": 1
+              }
+            },
+            "entity": {
+              "description": "Declaration of entity in the entry.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_entity",
+                "minItems": 1
+              }
+            }
+          },
+          "required": [
+            "name",
+            "number_of_components",
+            "thiol_state",
+            "entity_assembly"
+          ]
         },
         "chem_shift_summary": {
           "description": "Section for completeness of overall assigned chemical shifts.",
@@ -4620,6 +4690,165 @@
             "minItems": 1
           }
         },
+        "restraint_summary": {
+          "description": "Section for summary of overall NMR restraints.",
+          "type": "object",
+          "properties": {
+            "total_distance_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "intra-residue": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sequential": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "medium_range": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "long_range": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inter-chain": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "long_range": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "inter-chain": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "hydrogen_bond_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "disulfide_bond_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "diselenide_bond_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "metal_coordination_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_unmapped_restraints": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "number_of_restaints_per_residue": {
+              "type": "number",
+              "minimum": 0.0
+            },
+            "number_of_long_range_restraints_per_residue": {
+              "type": "number",
+              "minimum": 0.0
+            },
+            "average_number_of_dist_violations_per_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_violations_per_model",
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "average_number_of_dihed_violations_per_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_violations_per_model",
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "dist_violation_summary": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_summary",
+                "minItems": 25
+              }
+            },
+            "dist_violation_for_each_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_for_each_model",
+                "minItems": 1
+              }
+            },
+            "dist_violation_for_ensemble": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_for_ensemble",
+                "minItems": 1
+              }
+            },
+            "most_violated_dist_restraints": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_most_violated_restraints",
+                "minItems": 1
+              }
+            },
+            "all_dist_violations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_all_violations",
+                "minItems": 1
+              }
+            },
+            "dihed_violation_summary": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_summary",
+                "minItems": 2
+              }
+            },
+            "dihed_violation_for_each_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_for_each_model",
+                "minItems": 1
+              }
+            },
+            "dihed_violation_for_ensemble": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_for_ensemble",
+                "minItems": 1
+              }
+            },
+            "most_violated_dihed_restraints": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_most_violated_restraints",
+                "minItems": 1
+              }
+            },
+            "all_dihed_violations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_all_violations",
+                "minItems": 1
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "total_distance_restraints",
+            "number_of_unmapped_restraints",
+            "number_of_restaints_per_residue",
+            "number_of_long_range_restraints_per_residue"
+          ]
+        },
         "dist_restraint": {
           "description": "Section for distance restraint validation.",
           "type": [
@@ -4665,6 +4894,499 @@
           }
         }
       }
+    },
+    "output_stats_entity_assembly": {
+      "description": "Template for entity_assembly in output statistics.",
+      "type": "object",
+      "properties": {
+        "entity_assembly_id": {
+          "description": "Unique identifier for each component in the entity_assembly.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "entity_assembly_name": {
+          "description": "Systemtic name for each component in the entity_assembly.",
+          "type": "string",
+          "minLength": 1
+        },
+        "entity_id": {
+          "description": "Identifier for each entity in the entry.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "entity_label": {
+          "description": "Systemtic label for each entity in the entry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "chaid_id": {
+          "description": "Systemtic chain name in the entry. (i.e. label_asym_id in the coordinates)",
+          "type": "string"
+        },
+        "auth_chaid_id": {
+          "description": "Author defined chain name in the entry. (i.e. auth_asym_id in the coordinates)",
+          "type": "string"
+        },
+        "experimental_data_reported": {
+          "description": "Whether experimental data for a specific component of the assembly is reported.",
+          "type": "boolean"
+        },
+        "physical_state": {
+          "description": "The conformational state of the component of the assembly.",
+          "type": "string",
+          "enum": [
+            "denatured",
+            "intrinsically disordered",
+            "molten globule",
+            "na",
+            "native",
+            "partially disordered",
+            "unfolded"
+          ]
+        },
+        "role": {
+          "description": "The function of the component within the assembly.",
+          "type": "string"
+        },
+      },
+      "required": [
+        "entity_assembly_id",
+        "entity_id"
+      ]
+    },
+    "output_stats_entity": {
+      "description": "Template for entity in output statistics.",
+      "type": "object",
+      "properties": {
+        "entity_id": {
+          "description": "Identifier for each entity in the entry.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "label": {
+          "description": "Systematic label for each entity in the entry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "description": "Name for each entity in the entry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "description": "Type for each entity in the entry.",
+          "type": "string",
+          "enum": [
+            "polymer",
+            "non-polymer",
+            "water",
+            "aggregate",
+            "solvent"
+          ]
+        },
+        "polymer_common_type": {
+          "description": "Common polymer type for each entity in the entry.",
+          "type": "string",
+          "enum": [
+            "protein",
+            "DNA",
+            "RNA",
+            "DNA/RNA hybrid",
+            "polysaccharide"
+          ]
+        },
+        "polymer_type": {
+          "description": "Polymer type for each entity in the entry.",
+          "type": "string",
+          "enum": [
+            "cyclic-pseudo-peptide",
+            "polypeptide(L)",
+            "polydeoxyribonucleotide",
+            "polyribonucleotide",
+            "polydeoxyribonucleotide/polyribonucleotide hybrid",
+            "polypeptide(D)",
+            "polysaccharide(D)",
+            "polysaccharide(L)",
+            "other"
+          ]
+        },
+        "auth_chain_id": {
+          "description": "List of author chain ID(s) assigned to the entity.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "polymer_seq_one_letter_code": {
+          "description": "The sequence of a polymer entity using one-letter code.",
+          "type": "string"
+        },
+        "nstd_monomer": {
+          "description": "Presence of non-standard chemical components in the entity.",
+          "type": "boolean"
+        },
+        "nstd_linkage": {
+          "description": "Presence of non-standard non-standard linkages between monomers in the entity.",
+          "type": "boolean"
+        },
+        "number_of_monomers": {
+          "description": "The number of monomers of a polymer entity.",
+          "type": "integer"
+        },
+        "number_of_nonpolymer_components": {
+          "description": "The number of monomers of a non-polymer entity.",
+          "type": "integer"
+        },
+        "paramagnetic": {
+          "description": "Whether the entity contains paramagnetic ion(s).",
+          "type": "boolean"
+        },
+        "thiol_state": {
+          "description": "The state of the thiol groups in the entity.",
+          "type": "string",
+          "enum": [
+            "all disulfide bound",
+            "all other bound",
+            "all free",
+            "disulfide and other bound",
+            "free and disulfide bound",
+            "free and other bound",
+            "free disulfide and other bound",
+            "not available",
+            "not present",
+            "not reported",
+            "unknown"
+          ]
+        },
+        "fragment": {
+          "description": "The fragment description of the entity.",
+          "type": "string"
+        },
+        "mutation": {
+          "description": "The mutation description of the entity.",
+          "type": "string"
+        },
+        "formula_weight": {
+          "description": "The formula weight of the entity.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "entity_id",
+        "type"
+      ]
+    },
+    "output_stats_violations_per_model": {
+      "description": "Template for common residual restraint analysis in output statistics.",
+      "type": "object",
+      "properties": {
+        "bin_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "average_number_of_violations_per_model": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "max_violation_in_bin": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "bin_type",
+        "average_number_of_violations_per_model",
+        "max_violation_in_bin"
+      ]
+    },
+    "output_stats_common_violation_summary": {
+      "description": "Template for common violation summary in output statistics.",
+      "type": "object",
+      "properties": {
+        "restraint_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "restraint_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "restraint_percent": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "viol_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "viol_inline_percent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "viol_absol_percent": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "consist_viol_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "consist_viol_inline_percent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "consist_viol_absol_percent": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "restraint_type",
+        "restraint_count",
+        "restraint_percent",
+        "viol_count",
+        "viol_inline_percent",
+        "viol_absol_percent",
+        "consist_viol_count",
+        "consist_viol_inline_percent",
+        "consist_viol_absol_percent"
+      ]
+    },
+    "output_stats_common_violation_for_each_model": {
+      "description": "Template for common violation for each model in output statistics.",
+      "type": "object",
+      "properties": {
+        "model_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mean_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "min_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "max_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "std_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "median_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        }
+      },
+      "patternProperties": {
+        "^.*_viol_count$": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "model_id",
+        "mean_violation",
+        "min_violation",
+        "max_violation",
+        "std_violation",
+        "median_violation"
+      ]
+    },
+    "output_stats_common_violation_for_ensemble": {
+      "description": "Template for common violation for the ensemble in output statistics.",
+      "type": "object",
+      "properties": {
+        "fraction_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fraction_percent": {
+          "type": "number",
+          "exclusiveMinimum": 0.0,
+          "maximum": 100.0
+        }
+      },
+      "patternProperties": {
+        "^.*_viol_count$": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "fraction_count",
+        "fraction_percent"
+      ]
+    },
+    "output_stats_common_most_violated_restraints": {
+      "description": "Template for common most violated restraints in output statistics.",
+      "type": "object",
+      "properties": {
+        "restraint_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_2": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_3": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_4": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dihedral_angle_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "total_violated_models": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "violated_model_id": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minumum": 1,
+            "minItems": 1
+          }
+        },
+        "mean_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "min_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "max_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "std_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        },
+        "median_violation": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "restraint_key",
+        "atom_key_1",
+        "atom_key_2",
+        "total_violated_models",
+        "mean_violation",
+        "std_violation",
+        "median_violation"
+      ]
+    },
+    "output_stats_common_all_violations": {
+      "description": "Template for common all violations in output statistics.",
+      "type": "object",
+      "properties": {
+        "restraint_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_1": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_2": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_3": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom_key_4": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dihedral_angle_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "violation": {
+          "type": "number",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "restraint_key",
+        "atom_key_1",
+        "atom_key_2",
+        "model_id",
+        "violation"
+      ]
     },
     "output_stats_common_bookkeeping": {
       "description": "Template for common bookkeeping structure in output statistics.",
@@ -4821,7 +5543,7 @@
           "minLength": 1
         },
         "auth_seq_id": {
-          "description": "Auth sequence ID of chemical shift error (Auth_seq_ID),",
+          "description": "Auth sequence ID of chemical shift error (Auth_seq_ID).",
           "type": "integer"
         },
         "ins_code": {

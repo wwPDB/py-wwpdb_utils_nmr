@@ -285,7 +285,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.0.0"
+__version__ = "5.1.0"
 
 import collections
 import copy
@@ -296,7 +296,6 @@ import re
 import shutil
 import sys
 import time
-from datetime import datetime
 from operator import itemgetter
 from typing import Any, IO, List, Optional, Union
 
@@ -380,7 +379,6 @@ try:
                                                PDB_ID_PAT,
                                                BMRB_ID_PAT,
                                                WORK_MODEL_FILE_NAME_PAT,
-                                               INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT,
                                                CHK_DESC_PAT,
                                                CHK_DESC_ONE_PAT,
                                                CHK_DESC_MAND_PAT,
@@ -409,8 +407,7 @@ try:
     from wwpdb.utils.nmr.NmrDpRemediation import (NmrDpRemediation,
                                                   get_chem_shift_format_from_string)
     from wwpdb.utils.nmr.NmrDpReport import (NmrDpReport,
-                                             NmrDpReportInputSource,
-                                             NmrDpReportOutputStatistics)
+                                             NmrDpReportInputSource)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
@@ -519,7 +516,6 @@ except ImportError:
                                    PDB_ID_PAT,
                                    BMRB_ID_PAT,
                                    WORK_MODEL_FILE_NAME_PAT,
-                                   INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT,
                                    CHK_DESC_PAT,
                                    CHK_DESC_ONE_PAT,
                                    CHK_DESC_MAND_PAT,
@@ -548,8 +544,7 @@ except ImportError:
     from nmr.NmrDpRemediation import (NmrDpRemediation,
                                       get_chem_shift_format_from_string)
     from nmr.NmrDpReport import (NmrDpReport,
-                                 NmrDpReportInputSource,
-                                 NmrDpReportOutputStatistics)
+                                 NmrDpReportInputSource)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.AlignUtil import (deepcopy,
@@ -598,8 +593,6 @@ class NmrDpUtility:
                  '__alt_chain',
                  '__valid_seq',
                  '__remediation_loop_count',
-                 '__report_prev',
-                 '__output_statistics',
                  '__dstPath__',
                  '__logPath',
                  '__tmpPath',
@@ -849,12 +842,6 @@ class NmrDpUtility:
 
         # loop count of remediation
         self.__remediation_loop_count: int = 0
-
-        # previous data processing report
-        self.__report_prev: NmrDpReport = None
-
-        # statistics of output file
-        self.__output_statistics: NmrDpReportOutputStatistics = None
 
         # copy of dstPath
         self.__dstPath__: str = None
@@ -1424,7 +1411,7 @@ class NmrDpUtility:
 
         finally:
             self.__reg.report = None
-            self.__report_prev = None
+            self.__reg.report_prev = None
 
             self.__reg.inputParamDict.clear()
             self.__inputParamDict__ = None
@@ -1457,19 +1444,19 @@ class NmrDpUtility:
         """ Dump current NMR data processing report.
         """
 
-        if self.__report_prev is not None:
-            self.__reg.report.inheritFormatIssueErrors(self.__report_prev)
-            self.__reg.report.inheritCorrectedFormatIssueWarnings(self.__report_prev)
-            self.__reg.report.inheritCorrectedSaveframeNameWarnings(self.__report_prev)
+        if self.__reg.report_prev is not None:
+            self.__reg.report.inheritFormatIssueErrors(self.__reg.report_prev)
+            self.__reg.report.inheritCorrectedFormatIssueWarnings(self.__reg.report_prev)
+            self.__reg.report.inheritCorrectedSaveframeNameWarnings(self.__reg.report_prev)
 
-            if self.__report_prev.error.get() is not None:
-                self.__reg.report.setCorrectedError(self.__report_prev)
+            if self.__reg.report_prev.error.get() is not None:
+                self.__reg.report.setCorrectedError(self.__reg.report_prev)
 
-            if self.__report_prev.warning.get() is not None:
-                self.__reg.report.setCorrectedWarning(self.__report_prev)
+            if self.__reg.report_prev.warning.get() is not None:
+                self.__reg.report.setCorrectedWarning(self.__reg.report_prev)
 
-        if self.__output_statistics is not None:
-            self.__reg.report.setOutputStatistics(self.__output_statistics)
+        if self.__reg.output_statistics is not None:
+            self.__reg.report.setOutputStatistics(self.__reg.output_statistics)
 
         self.__reg.report.error.sortFormatIssueError()
         self.__reg.report.warning.sortChemicalShiftValidation()
@@ -1499,11 +1486,11 @@ class NmrDpUtility:
             fPath = self.__reg.inputParamDict[REPORT_FILE_PATH_KEY]
 
             if os.access(fPath, os.F_OK) and os.path.getsize(fPath) > 0:
-                self.__report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
-                self.__report_prev.loadFile(fPath)
-                self.__reg.report.inheritFormatIssueErrors(self.__report_prev)
-                self.__reg.report.inheritPreviousErrors(self.__report_prev)
-                self.__reg.report.inheritPreviousWarnings(self.__report_prev)
+                self.__reg.report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
+                self.__reg.report_prev.loadFile(fPath)
+                self.__reg.report.inheritFormatIssueErrors(self.__reg.report_prev)
+                self.__reg.report.inheritPreviousErrors(self.__reg.report_prev)
+                self.__reg.report.inheritPreviousWarnings(self.__reg.report_prev)
 
                 if calcOutputStats and self.__reg.combined_mode and self.__reg.dstPath is not None:
 
@@ -1514,7 +1501,7 @@ class NmrDpUtility:
                             or self.__reg.dstPath != self.__reg.srcPath:
 
                         if not self.__reg.op.endswith('consistency-check'):
-                            self.__calculateOutputStats()
+                            self.__reg.dpV.calculateOutputStats()
 
         input_source = None
 
@@ -2034,7 +2021,7 @@ class NmrDpUtility:
         if self.__reg.remediation_mode and corrected:
 
             self.__reg.report = None
-            self.__report_prev = None
+            self.__reg.report_prev = None
 
             self.__reg.star_data_type.clear()
             self.__reg.star_data.clear()
@@ -7112,7 +7099,10 @@ class NmrDpUtility:
                 try:
 
                     cs_data = next(lp['data'] for lp in self.__reg.lp_data['chem_shift']
-                                   if lp['file_name'] == file_name and lp['sf_framecode'] == cs_list)
+                                   if lp['file_name'] == file_name
+                                   and (lp['sf_framecode'] == cs_list
+                                        or (lp['sf_framecode'].startswith('nef_')  # DAOTHER-9623, 10781
+                                            and lp['sf_framecode'].endswith(cs_list))))
 
                 except StopIteration:
 
@@ -8786,8 +8776,8 @@ class NmrDpUtility:
                 if content_subtype in ('entry_info', 'entity', 'ph_param_data'):
                     continue
 
-                if self.__report_prev is not None and content_subtype != 'chem_shift':
-                    prev_stats = self.__report_prev.getNmrLegacyStatsOfExptlData(fileListId, content_subtype)
+                if self.__reg.report_prev is not None and content_subtype != 'chem_shift':
+                    prev_stats = self.__reg.report_prev.getNmrLegacyStatsOfExptlData(fileListId, content_subtype)
                     if prev_stats is not None:
                         stats[content_subtype] = prev_stats
                         continue
@@ -12578,8 +12568,8 @@ class NmrDpUtility:
         self.__reg.report = NmrDpReport(self.__reg.verbose, self.__reg.log)
         self.__reg.report.loadFile(fPath)
 
-        self.__report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
-        self.__report_prev.loadFile(fPath)
+        self.__reg.report_prev = NmrDpReport(self.__reg.verbose, self.__reg.log)
+        self.__reg.report_prev.loadFile(fPath)
 
         return True
 
@@ -15454,372 +15444,6 @@ class NmrDpUtility:
 
         return not self.__reg.report.isError()
 
-    def __calculateOutputStats(self) -> bool:
-        """ Calculate statistics and validation metrics of output NMR data file.
-        """
-
-        if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
-            return False
-
-        __errors = self.__reg.report.getTotalErrors()
-
-        master_entry = self.__reg.star_data[0]
-
-        file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
-
-        self.__output_statistics = NmrDpReportOutputStatistics(self.__reg.verbose, self.__reg.log)
-
-        self.__output_statistics.setItemValue('file_name', os.path.basename(self.__reg.dstPath))
-        self.__output_statistics.setItemValue('file_type', file_type)
-        self.__output_statistics.setItemValue('entry_id', self.__reg.entry_id)
-        self.__output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
-        self.__output_statistics.setItemValue('processed_site', os.uname()[1])
-
-        self.__output_statistics.setItemValue('file_size', os.path.getsize(self.__reg.dstPath))
-        with open(self.__reg.dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
-            self.__output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
-
-        entry_title = entry_authors = submission_date = assembly_name = None
-
-        if file_type == 'nmr-star':
-
-            sf_category = 'entry_information'
-
-            try:
-
-                sf = master_entry.get_saveframes_by_category(sf_category)[0]
-
-                entry_title = get_first_sf_tag(sf, 'Title', None)
-                if entry_title is not None:
-                    self.__output_statistics.setItemValue('entry_title', entry_title)
-
-                submission_date = get_first_sf_tag(sf, 'Submission_date', None)
-                if submission_date is not None:
-                    self.__output_statistics.setItemValue('submission_date', submission_date)
-
-                lp_category = '_Entry_author'
-
-                try:
-
-                    lp = sf.get_loop(lp_category)
-
-                    tags = ['Given_name', 'Family_name']
-
-                    author_list = []
-
-                    if set(tags) & set(lp.tags) == set(tags):
-
-                        for row in lp:
-
-                            if row[1] in EMPTY_VALUE:
-                                continue
-
-                            author_name = row[1].title()
-                            if row[0] not in EMPTY_VALUE:
-                                author_name += f', {row[0].upper()}.'
-
-                            if author_name not in author_list:
-                                author_list.append(author_name)
-
-                        if len(author_list) > 0:
-                            entry_authors = ', '.join(author_list)
-                            self.__output_statistics.setItemValue('entry_authors', entry_authors)
-
-                except KeyError:
-                    pass
-
-            except IndexError:
-                pass
-
-            sf_category = 'assembly'
-
-            try:
-
-                sf = master_entry.get_saveframes_by_category(sf_category)[0]
-
-                assembly_name = get_first_sf_tag(sf, 'Name', None)
-                if assembly_name is not None:
-                    self.__output_statistics.setItemValue('assembly_name', assembly_name)
-
-            except IndexError:
-                pass
-
-            has_coordinate = self.__reg.report.getInputSourceIdOfCoord() >= 0
-
-            if has_coordinate:
-                model_info = {'file_name': os.path.basename(self.__reg.cifPath),
-                              'file_type': 'pdbx',
-                              'file_size': os.path.getsize(self.__reg.cifPath),
-                              'md5_checksum': self.__reg.cR.getHashCode()
-                              }
-
-                struct = self.__reg.cR.getDictList('struct')
-                if len(struct) > 0 and 'title' in struct[0]:
-                    struct_title = struct[0]['title']
-                    if struct_title not in EMPTY_VALUE:
-                        model_info['struct_title'] = struct_title
-                        if entry_title is None:
-                            self.__output_statistics.setItemValue('entry_title', struct_title)
-
-                audit = self.__reg.cR.getDictList('audit')
-                if len(audit) > 0 and 'name' in audit[0]:
-                    author_list = []
-                    for row in audit:
-                        if row['name'] not in EMPTY_VALUE:
-                            if row['name'] not in author_list:
-                                author_list.append(row['name'])
-                    if len(author_list) > 0:
-                        audit_authors = ', '.join(author_list)
-                        model_info['audit_authors'] = audit_authors
-                        if entry_authors is None:
-                            self.__output_statistics.setItemValue('entry_authors', audit_authors)
-
-                self.__output_statistics.setItemValue('model', model_info)
-
-            for content_subtype in ('chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
-
-                sf_category = SF_CATEGORIES[file_type][content_subtype]
-
-                sf_list = master_entry.get_saveframes_by_category(sf_category)
-
-                if len(sf_list) == 0:
-                    continue
-
-                sf_info_list = []
-
-                for sf in sf_list:
-
-                    list_id = get_first_sf_tag(sf, 'ID', None)
-
-                    if list_id is None:
-                        continue
-
-                    if isinstance(list_id, str):
-                        list_id = int(list_id)
-
-                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
-
-                    sf_info = {'list_id': list_id,
-                               'sf_framecode': sf_framecode
-                               }
-
-                    data_file_name = get_first_sf_tag(sf, 'Data_file_name', None)
-                    if data_file_name is not None:
-                        sf_info['original_file_name'] = data_file_name
-
-                    consist_id_tag = CONSIST_ID_TAGS[file_type][content_subtype]
-                    lp_category = LP_CATEGORIES[file_type][content_subtype]
-
-                    _content_subtype = content_subtype
-                    if content_subtype == 'spectral_peak':
-                        try:
-                            sf.get_loop(lp_category)
-                        except KeyError:
-                            _content_subtype = 'spectral_peak_alt'
-                            lp_category = LP_CATEGORIES[file_type][_content_subtype]
-
-                    err_data_type = ''
-
-                    try:
-
-                        lp = sf.get_loop(lp_category)
-
-                        consist_ids = set(row for row in lp.get_tag([consist_id_tag]))
-
-                        sf_info['number_of_parsed'] = len(consist_ids)
-
-                        if has_coordinate:
-
-                            if content_subtype == 'chem_shift':
-                                tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
-
-                                if set(tags) & set(lp.tags) != set(tags):
-                                    sf_info['number_of_mapped_to_model'] = 0
-                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                                else:
-
-                                    dat = lp.get_tag(tags)
-
-                                    mapped_ids = set()
-                                    for row in dat:
-
-                                        if row[5] == 'UNMAPPED':
-                                            continue
-
-                                        if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
-                                            mapped_ids.add(row[0])
-
-                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                    sf_info['number_of_unmapped_to_model'] =\
-                                        sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
-
-                            elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
-
-                                if content_subtype in ('dist_restraint', 'rdc_restraint'):
-                                    max_dim = 3
-
-                                elif content_subtype == 'dihed_restraint':
-                                    max_dim = 5
-
-                                else:  # 'spectral_peak'
-
-                                    try:
-
-                                        _num_dim = get_first_sf_tag(sf, NUM_DIM_ITEMS[file_type])
-                                        num_dim = int(_num_dim)
-
-                                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                                            raise ValueError()
-
-                                    except ValueError:  # raised error already at __testIndexConsistency()
-                                        continue
-
-                                    max_dim = num_dim + 1
-
-                                tags = [consist_id_tag]
-                                for j in range(1, max_dim):
-                                    tags.extend([f'Auth_asym_ID_{j}', f'Auth_seq_ID_{j}', f'Auth_comp_ID_{j}', f'Auth_atom_ID_{j}'])
-
-                                if set(tags) & set(lp.tags) != set(tags):
-                                    sf_info['number_of_mapped_to_model'] = 0
-                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                                else:
-
-                                    max_col = (max_dim - 1) * 4 + 1
-
-                                    dat = lp.get_tag(tags)
-
-                                    mapped_ids = set()
-                                    for row in dat:
-                                        if all(row[col] not in EMPTY_VALUE for col in range(1, max_col)):
-                                            mapped_ids.add(row[0])
-
-                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                    sf_info['number_of_unmapped_to_model'] =\
-                                        sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
-
-                            else:  # 'spectral_peak_alt'
-
-                                try:
-
-                                    _num_dim = get_first_sf_tag(sf, NUM_DIM_ITEMS[file_type])
-                                    num_dim = int(_num_dim)
-
-                                    if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                                        raise ValueError()
-
-                                except ValueError:  # raised error already at __testIndexConsistency()
-                                    continue
-
-                                max_dim = num_dim + 1
-
-                                try:
-
-                                    lp = sf.get_loop('_Assigned_peak_chem_shift')
-
-                                    tags = ['Peak_ID', 'Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID']
-
-                                    if set(tags) & set(lp.tags) != set(tags):
-                                        sf_info['number_of_mapped_to_model'] = 0
-                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                                    else:
-
-                                        dat = lp.get_tag(tags)
-
-                                        mapped_ids = set()
-                                        unmapped_ids = set()
-                                        for row in dat:
-                                            if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
-                                                mapped_ids.add(row[0])
-                                            else:
-                                                unmapped_ids.add(row[0])
-
-                                        sf_info['number_of_mapped_to_model'] =\
-                                            len(mapped_ids) - len(unmapped_ids)
-                                        sf_info['number_of_unmapped_to_model'] =\
-                                            sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
-
-                                except KeyError:
-                                    sf_info['number_of_mapped_to_model'] = 0
-                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
-
-                        else:
-                            sf_info['number_of_mapped_to_model'] = sf_info['number_of_unmapped_to_model'] = 0
-
-                        errors = self.__reg.report.error.getInheritableDictBySf(sf_framecode)
-
-                        err_ordinals = set()
-
-                        if errors is None:
-                            sf_info['number_of_unparsed_with_error'] = 0
-
-                        else:
-
-                            for k, v in errors.items():
-                                for item in v:
-                                    for msg in item['description'].split('\n'):
-                                        if INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.match(msg):
-                                            g = INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.search(msg).groups()
-                                            if g not in EMPTY_VALUE:
-                                                err_ordinals.add(g[0])
-                                                if len(err_data_type) == 0:
-                                                    err_data_type = g[1]
-
-                            sf_info['number_of_unparsed_with_error'] = len(err_ordinals)
-
-                        warnings = self.__reg.report.warning.getInheritableDictBySf(sf_framecode)
-
-                        if warnings is None:
-                            sf_info['number_of_parsed_with_warning'] = 0
-
-                        else:
-
-                            warn_ordinals = set()
-                            for k, v in warnings.items():
-                                is_err = 'restraint' in content_subtype and k in self.__reg.report.warning.mr_err_items
-                                for item in v:
-                                    for msg in item['description'].split('\n'):
-                                        if INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.match(msg):
-                                            g = INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT.search(msg).groups()
-                                            if g not in EMPTY_VALUE:
-                                                if is_err:
-                                                    err_ordinals.add(g[0])
-                                                    if len(err_data_type) == 0:
-                                                        err_data_type = g[1]
-                                                else:
-                                                    warn_ordinals.add(g[0])
-
-                            sf_info['number_of_parsed_with_warning'] = len(warn_ordinals)
-                            sf_info['number_of_unparsed_with_error'] = len(err_ordinals)
-
-                    except KeyError:
-                        sf_info['number_of_parsed'] = \
-                            sf_info['number_of_mapped_to_model'] = \
-                            sf_info['number_of_unmapped_to_model'] = \
-                            sf_info['number_of_unparsed_with_error'] =\
-                            sf_info['number_of_parsed_with_warning'] = 0
-
-                    if self.__reg.conversion_server and 'number_of_unparsed_with_error' in sf_info\
-                       and sf_info['number_of_unparsed_with_error'] > 0:
-
-                        err = f"Failed in data conversion of {sf_info['number_of_unparsed_with_error']} {err_data_type}s "\
-                            f"of {data_file_name!r}."
-
-                        self.__reg.report.error.appendDescription('unparsed_data',
-                                                                  {'file_name': data_file_name, 'sf_framecode': sf_framecode,
-                                                                   'description': err})
-
-                        self.__reg.log.write(f"+{self.__class_name__}.__calculateOutputStats() ++ Error  - {err}\n")
-
-                    sf_info_list.append(sf_info)
-
-                self.__output_statistics.setItemValue(content_subtype, sf_info_list)
-
-        return self.__reg.report.getTotalErrors() == __errors
-
     def __depositLegacyNmrData(self) -> bool:
         """ Deposit next NMR legacy data files.
         """
@@ -16171,7 +15795,7 @@ class NmrDpUtility:
 
         self.__reg.rescue_mode = False
 
-        self.__report_prev = None
+        self.__reg.report_prev = None
 
         try:
 
@@ -16279,7 +15903,7 @@ class NmrDpUtility:
 
         self.__reg.rescue_mode = False
 
-        self.__report_prev = None
+        self.__reg.report_prev = None
 
         try:
 

@@ -5584,6 +5584,13 @@ class RCI:
 
         self.__coef_mean = self.__mean_coef()
 
+    @property
+    def version(self) -> str:
+        """ Retrieve software version.
+        """
+
+        return __version__
+
     def __mean_coef(self) -> float:
         """ Function to calculate mean weighting coefficient.
         """

@@ -145,7 +145,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.0.0"
+__version__ = "5.1.0"
 
 import copy
 import json
@@ -2231,7 +2231,8 @@ class NmrDpReportOutputStatistics:
                       'submission_date', 'processed_date', 'processed_site',
                       'assembly_name', 'file_size', 'md5_checksum',
                       'model', 'software', 'assembly', 'entity',
-                      'chem_shift', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
+                      'chem_shift_summary', 'chem_shift',
+                      'restraint_summary', 'dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak')
 
         self.__contents = {item: None for item in self.items}
 

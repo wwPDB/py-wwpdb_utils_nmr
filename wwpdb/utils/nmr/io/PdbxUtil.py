@@ -15,7 +15,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Zukang Feng, Masashi Yokochi"
 __email__ = "zfeng@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.6"
+__version__ = "1.0.7"
 
 import copy
 import os

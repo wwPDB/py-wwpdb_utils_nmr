@@ -5366,6 +5366,10 @@
           "type": "string",
           "minLength": 1
         },
+        "distance_type": {
+          "type": "string",
+          "minLength": 1
+        },
         "dihedral_angle_name": {
           "type": "string",
           "minLength": 1

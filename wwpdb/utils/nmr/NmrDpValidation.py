@@ -19771,7 +19771,7 @@ class NmrDpValidation:
             distance_type = ('intraresidue', 'sequential', 'medium', 'long', 'interchain',
                              'hbond', 'sbond', 'sebond', 'metal', dist_any_type)
             distance_type_name = ('intra-residue', 'sequential', 'medium_range', 'long_range', 'inter-chain',
-                                  'hydrogen bond', 'disulfide bond', 'diselenide bond', 'metal coordiantion', dist_any_type)
+                                  'hydrogen_bond', 'disulfide_bond', 'diselenide_bond', 'metal_coordiantion', dist_any_type)
             distance_type_abbr = ('ir', 'sq', 'mr', 'lr', 'ic', 'hb', 'sb', 'seb', 'metal', 'total')
             distance_sub_type = ('backbone-backbone', 'backbone-sidechain', 'sidechain-sidechain')
             distance_bond_type = ('hbond', 'sbond', 'sebond', 'metal')
@@ -19874,7 +19874,7 @@ class NmrDpValidation:
                         continue
 
                     for dist_sub_type in distance_sub_type:
-                        restraint_type = distance_type_abbr[distance_type.index(dist_type)] + ': ' + dist_sub_type
+                        restraint_type = distance_type_abbr[distance_type.index(dist_type)] + '; ' + dist_sub_type
                         bond_type = None
                         restraint_count = vrpt_mr['distance_summary'][dist_type][dist_sub_type][bond_type]
 
@@ -19980,8 +19980,8 @@ class NmrDpValidation:
                         _errors = numpy.array(errors, dtype=float)
 
                         item['mean_violation'] = float(f"{numpy.mean(_errors):.2f}")
-                        item['min_violation'] = float(f"{numpy.min(_errors):.2f}")
-                        item['max_violation'] = float(f"{numpy.max(_errors):.2f}")
+                        item['min_violation'] = min(errors)
+                        item['max_violation'] = max(errors)
                         item['std_violation'] = float(f"{numpy.std(_errors):.2f}")
                         item['median_violation'] = float(f"{numpy.median(_errors):.2f}")
 
@@ -20028,16 +20028,41 @@ class NmrDpValidation:
 
                 return violation_summary
 
+            def convert_to_rest_key(array):
+                return '(' + ','.join([str(k) for k in array]) + ')'
+
+            def convert_to_atom_key(array):
+                _array = list(array[:-1])
+                _array[1] = str(array[1])
+                _ins_code = array[-1]
+                if _ins_code in EMPTY_VALUE:
+                    return ':'.join(_array)
+                _array[1] += _ins_code
+                return ':'.join(_array)
+
+            def convert_to_distance_type(d_type, b_type):
+                if b_type is None:
+                    if d_type in distance_type:
+                        return distance_type_name[distance_type.index(d_type)]
+                    return 'unknown'
+                if b_type in distance_type:
+                    return distance_type_name[distance_type.index(b_type)]
+                return 'unknown'
+
             def get_most_violated_dist_restraints():
                 if len(vrpt_mr['most_violated_distance']) == 0:
                     return None
 
                 violations = []
                 for dist_viol in vrpt_mr['most_violated_distance']:
-                    violations.append({'restraint_key': '(' + ','.join([str(k) for k in dist_viol[0]]) + ')',
-                                       'atom_key_1': ':'.join([str(k) for k in dist_viol[1] if k not in EMPTY_VALUE]),
-                                       'atom_key_2': ':'.join([str(k) for k in dist_viol[2] if k not in EMPTY_VALUE]),
+                    violations.append({'restraint_key': convert_to_rest_key(dist_viol[0]),
+                                       'atom_key_1': convert_to_atom_key(dist_viol[1]),
+                                       'atom_key_2': convert_to_atom_key(dist_viol[2]),
+                                       'distance_type': convert_to_distance_type(dist_viol[3], dist_viol[5]),
                                        'total_violated_models': dist_viol[6],
+                                       'violated_model_id': dist_viol[7],
+                                       'min_violation': dist_viol[8],
+                                       'max_violation': dist_viol[9],
                                        'mean_violation': float(f"{dist_viol[10]:.2f}"),
                                        'std_violation': float(f"{dist_viol[11]:.2f}"),
                                        'median_violation': float(f"{dist_viol[12]:.2f}")})
@@ -20049,17 +20074,20 @@ class NmrDpValidation:
                     return None
 
                 violations = []
-                for dist_viol in vrpt_mr['most_violated_angle']:
-                    violations.append({'restraint_key': '(' + ','.join([str(k) for k in dist_viol[0]]) + ')',
-                                       'atom_key_1': ':'.join([str(k) for k in dist_viol[1] if k not in EMPTY_VALUE]),
-                                       'atom_key_2': ':'.join([str(k) for k in dist_viol[2] if k not in EMPTY_VALUE]),
-                                       'atom_key_3': ':'.join([str(k) for k in dist_viol[3] if k not in EMPTY_VALUE]),
-                                       'atom_key_4': ':'.join([str(k) for k in dist_viol[4] if k not in EMPTY_VALUE]),
-                                       'dihedral_angle_name': dist_viol[5],
-                                       'total_violated_models': dist_viol[6],
-                                       'mean_violation': float(f"{dist_viol[10]:.2f}"),
-                                       'std_violation': float(f"{dist_viol[11]:.2f}"),
-                                       'median_violation': float(f"{dist_viol[12]:.2f}")})
+                for dihed_viol in vrpt_mr['most_violated_angle']:
+                    violations.append({'restraint_key': convert_to_rest_key(dihed_viol[0]),
+                                       'atom_key_1': convert_to_atom_key(dihed_viol[1]),
+                                       'atom_key_2': convert_to_atom_key(dihed_viol[2]),
+                                       'atom_key_3': convert_to_atom_key(dihed_viol[3]),
+                                       'atom_key_4': convert_to_atom_key(dihed_viol[4]),
+                                       'dihedral_angle_name': dihed_viol[5],
+                                       'total_violated_models': dihed_viol[6],
+                                       'violated_model_id': dihed_viol[7],
+                                       'min_violation': dihed_viol[8],
+                                       'max_violation': dihed_viol[9],
+                                       'mean_violation': float(f"{dihed_viol[10]:.2f}"),
+                                       'std_violation': float(f"{dihed_viol[11]:.2f}"),
+                                       'median_violation': float(f"{dihed_viol[12]:.2f}")})
 
                 return violations
 
@@ -20069,9 +20097,10 @@ class NmrDpValidation:
 
                 violations = []
                 for dist_viol in vrpt_mr['all_distance_violations']:
-                    violations.append({'restraint_key': '(' + ','.join([str(k) for k in dist_viol[0]]) + ')',
-                                       'atom_key_1': ':'.join([str(k) for k in dist_viol[1] if k not in EMPTY_VALUE]),
-                                       'atom_key_2': ':'.join([str(k) for k in dist_viol[2] if k not in EMPTY_VALUE]),
+                    violations.append({'restraint_key': convert_to_rest_key(dist_viol[0]),
+                                       'atom_key_1': convert_to_atom_key(dist_viol[1]),
+                                       'atom_key_2': convert_to_atom_key(dist_viol[2]),
+                                       'distance_type': convert_to_distance_type(dist_viol[4], dist_viol[6]),
                                        'model_id': dist_viol[3],
                                        'violation': dist_viol[7]})
 
@@ -20082,15 +20111,15 @@ class NmrDpValidation:
                     return None
 
                 violations = []
-                for dist_viol in vrpt_mr['all_angle_violations']:
-                    violations.append({'restraint_key': '(' + ','.join([str(k) for k in dist_viol[0]]) + ')',
-                                       'atom_key_1': ':'.join([str(k) for k in dist_viol[1] if k not in EMPTY_VALUE]),
-                                       'atom_key_2': ':'.join([str(k) for k in dist_viol[2] if k not in EMPTY_VALUE]),
-                                       'atom_key_3': ':'.join([str(k) for k in dist_viol[3] if k not in EMPTY_VALUE]),
-                                       'atom_key_4': ':'.join([str(k) for k in dist_viol[4] if k not in EMPTY_VALUE]),
-                                       'dihedral_angle_name': dist_viol[6],
-                                       'model_id': dist_viol[5],
-                                       'violation': dist_viol[7]})
+                for dihed_viol in vrpt_mr['all_angle_violations']:
+                    violations.append({'restraint_key': convert_to_rest_key(dihed_viol[0]),
+                                       'atom_key_1': convert_to_atom_key(dihed_viol[1]),
+                                       'atom_key_2': convert_to_atom_key(dihed_viol[2]),
+                                       'atom_key_3': convert_to_atom_key(dihed_viol[3]),
+                                       'atom_key_4': convert_to_atom_key(dihed_viol[4]),
+                                       'dihedral_angle_name': dihed_viol[6],
+                                       'model_id': dihed_viol[5],
+                                       'violation': dihed_viol[7]})
 
                 return violations
 

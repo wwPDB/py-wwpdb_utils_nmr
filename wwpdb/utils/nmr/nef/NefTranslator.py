@@ -9728,7 +9728,7 @@ class NefTranslator:
                                 offset = _cif_seq - _star_seq
                         if cif_ps is not None and 'auth_seq_id' in cif_ps:
                             _cif_seq = cif_ps['auth_seq_id'][cif_ps['seq_id'].index(_cif_seq)]  # auth_seq_id
-                    except IndexError:
+                    except (IndexError, ValueError):
                         pass
 
                 star_seq = str(_star_seq)
@@ -12073,7 +12073,6 @@ class NefTranslator:
 
         # DAOTHER-9623
         def get_red_sf_framecode(sf):
-
             pattern = re.compile(fr'{sf.category}(_|_\d+)?$')
 
             return sf.name if pattern.match(sf.name) or not sf.name.startswith(f'{sf.category}_')\
@@ -12614,6 +12613,8 @@ class NefTranslator:
 
         # DAOTHER-9623
         def get_nef_sf_framecode(sf, prefix):
+            if prefix in ('nef_nmr_meta_data', 'nef_molecular_system'):  # DAOTHER-10781: NEF specification 5. Mandatory content
+                return prefix
             return sf.name if sf.name.startswith(prefix) else f'{prefix}_{sf.name}'
 
         # DAOTHER-10781: Add mandatory saveframe tags if not exists

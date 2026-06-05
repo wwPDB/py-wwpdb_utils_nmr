@@ -4730,17 +4730,29 @@
               "type": "integer",
               "minimum": 0
             },
+            "hydrogen_bond_dist_types": {
+              "type": "string"
+            },
             "disulfide_bond_restraints": {
               "type": "integer",
               "minimum": 0
+            },
+            "disulfide_bond_dist_types": {
+              "type": "string"
             },
             "diselenide_bond_restraints": {
               "type": "integer",
               "minimum": 0
             },
+            "diselenide_bond_dist_types": {
+              "type": "string"
+            },
             "metal_coordination_restraints": {
               "type": "integer",
               "minimum": 0
+            },
+            "metal_coordination_dist_types": {
+              "type": "string"
             },
             "number_of_unmapped_restraints": {
               "type": "integer",

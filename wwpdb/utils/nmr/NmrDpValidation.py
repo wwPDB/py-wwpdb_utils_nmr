@@ -20403,19 +20403,51 @@ class NmrDpValidation:
                                                 sum(v[None] for v in dist_summary['interchain'].values())
                                             rest_summary['hydrogen_bond_restraints'] =\
                                                 sum(v['hbond'] for v in dist_summary['total'].values())
+                                            if rest_summary['hydrogen_bond_restraints'] > 0:
+                                                rest_summary['hydrogen_bond_dist_types'] =\
+                                                    ','.join(distance_type_abbr[distance_type.index(d_type)]
+                                                             for d_type in distance_type
+                                                             if d_type != dist_any_type
+                                                             and d_type in dist_summary
+                                                             and any(True for s_type in distance_sub_type
+                                                                     if dist_summary[d_type][s_type]['hbond'] > 0))
                                             rest_summary['disulfide_bond_restraints'] =\
                                                 sum(v['sbond'] for v in dist_summary['total'].values())
                                             if rest_summary['disulfide_bond_restraints'] == 0:
                                                 if not has_cystain:
                                                     del rest_summary['disulfide_bond_restraints']
+                                            else:
+                                                rest_summary['disulfide_bond_dist_types'] =\
+                                                    ','.join(distance_type_abbr[distance_type.index(d_type)]
+                                                             for d_type in distance_type
+                                                             if d_type != dist_any_type
+                                                             and d_type in dist_summary
+                                                             and any(True for s_type in distance_sub_type
+                                                                     if dist_summary[d_type][s_type]['sbond'] > 0))
                                             rest_summary['diselenide_bond_restraints'] =\
                                                 sum(v['sebond'] for v in dist_summary['total'].values())
                                             if rest_summary['diselenide_bond_restraints'] == 0:
                                                 del rest_summary['diselenide_bond_restraints']
+                                            else:
+                                                rest_summary['diselenide_bond_dist_types'] =\
+                                                    ','.join(distance_type_abbr[distance_type.index(d_type)]
+                                                             for d_type in distance_type
+                                                             if d_type != dist_any_type
+                                                             and d_type in dist_summary
+                                                             and any(True for s_type in distance_sub_type
+                                                                     if dist_summary[d_type][s_type]['sebond'] > 0))
                                             rest_summary['metal_coordination_restraints'] =\
                                                 sum(v['metal'] for v in dist_summary['total'].values())
                                             if rest_summary['metal_coordination_restraints'] == 0:
                                                 del rest_summary['metal_coordination_restraints']
+                                            else:
+                                                rest_summary['metal_coordination_dist_types'] =\
+                                                    ','.join(distance_type_abbr[distance_type.index(d_type)]
+                                                             for d_type in distance_type
+                                                             if d_type != dist_any_type
+                                                             and d_type in dist_summary
+                                                             and any(True for s_type in distance_sub_type
+                                                                     if dist_summary[d_type][s_type]['metal'] > 0))
                                             all_unmapped = len(vrpt_mr['unmapped_dist'])
                                             if 'unmapped_angle' in vrpt_mr:
                                                 all_unmapped += len(vrpt_mr['unmapped_angle'])

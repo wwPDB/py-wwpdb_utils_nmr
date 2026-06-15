@@ -59,7 +59,7 @@ RUN rm -f .dockerignore \
 # ============================================================
 # Stage 2: Runtime (minimal, non-root)
 # ============================================================
-FROM python:3.12-alpine
+FROM python:3.12-slim
 
 # Runtime OS deps
 RUN apk add --no-cache ca-certificates

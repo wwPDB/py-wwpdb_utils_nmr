@@ -62,11 +62,13 @@ RUN rm -f .dockerignore \
 FROM python:3.12-slim
 
 # Runtime OS deps
-RUN apk add --no-cache ca-certificates
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN addgroup -S appuser && \
-    adduser -S appuser -G appuser -D
+RUN useradd -m -u 1000 appuser
 
 # Copy installed Python environment
 COPY --from=builder /install /opt/py-packages

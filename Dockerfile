@@ -44,7 +44,7 @@ RUN python wwpdb/utils/nmr/BmrbCsStatUpdater.py
 # Install Python dependencies for runtime
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
         --no-cache-dir \
-        --prefix=/install \
+        --target=/install \
         -r standalone_runtime_requirements.txt
 
 # Remove micellaneous files to reduce image size
@@ -69,13 +69,11 @@ RUN addgroup -S appuser && \
     adduser -S appuser -G appuser -D
 
 # Copy installed Python environment
-COPY --from=builder /install /usr/local
+COPY --from=builder /install /opt/py-packages
+ENV PYTHONPATH=/opt/py-packages:/opt/py-wwpdb_utils_nmr/wwpdb/utils
 
 # Copy application code with generated ligand_dict
 COPY --from=builder --chown=appuser:appuser /opt/py-wwpdb_utils_nmr /opt/py-wwpdb_utils_nmr
-
-# Set Python path for standalone mode
-ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
 
 # Set working directory
 WORKDIR /mnt

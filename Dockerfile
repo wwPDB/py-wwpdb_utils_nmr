@@ -61,8 +61,22 @@ RUN rm -f .dockerignore \
 # ============================================================
 FROM python:3.12-alpine
 
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Ignore irrelevant warning of pip
+ENV PIP_ROOT_USER_ACTION=ignore
+
 # Runtime OS deps
 RUN apk add --no-cache ca-certificates
+
+# Upgrade pip
+RUN pip install --upgrade pip
+
+# Install Python dependencies for resource update
+RUN pip install \
+        --no-cache-dir \
+        -r standalone_runtime_requirements.txt
 
 # Create non-root user
 RUN addgroup -S appuser && \

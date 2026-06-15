@@ -52,7 +52,6 @@ RUN rm -f .dockerignore \
           Dockerfile \
           *.txt \
           wwpdb/utils/nmr/components.cif.gz \
-          wwpdb/utils/nmr/bmrb_cs_stat/*.csv \
           wwpdb/utils/nmr/ChemCompUpdater.py \
           wwpdb/utils/nmr/BmrbCsStatUpdater.py
 

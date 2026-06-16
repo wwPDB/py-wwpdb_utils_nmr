@@ -12036,7 +12036,7 @@ class NefTranslator:
         info, error = [], []
 
         if star_file is None:
-            star_file = file_path + '/' + file_name.split('.')[0] + '.str'
+            star_file = os.path.join(file_path, f"{file_name.split('.')[0]}.str")
 
         is_ok, data_type, nef_data = self.read_input_file(nef_file)
 
@@ -12572,7 +12572,7 @@ class NefTranslator:
         info, error = [], []
 
         if nef_file is None:
-            nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'
+            nef_file = os.path.join(file_path, f"{file_name.split('.')[0]}.nef")
 
         is_ok, data_type, star_data = self.read_input_file(star_file)
 

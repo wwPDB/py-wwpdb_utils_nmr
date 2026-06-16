@@ -2642,7 +2642,7 @@ class BmrbChemShiftStat:
                     f_out.write(r.text)
                 if csv_file in ('rna_filt.csv', 'rna_full.csv'):
                     src_csv_file = os.path.join(self.__work_dir, csv_file)
-                    dst_csv_file = src_csv_file + '~'
+                    dst_csv_file = f'{src_csv_file}~'
                     shutil.copyfile(src_csv_file, dst_csv_file)
                     with open(dst_csv_file, 'r', encoding='utf-8') as f_in, \
                             open(src_csv_file, 'w', encoding='utf-8') as f_out:

@@ -277,6 +277,7 @@
 #                           and NmrDpRemediation classes, v5.0.0)
 # 27-Jan-2026  M. Yokochi - raise error when entity exists and sequence inconsistency between the entity and loops,
 #                           instead of warning, do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
+# 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and chache file directory (DAOTHER-9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -433,7 +434,8 @@ try:
                                               set_sf_tag)
     from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,
                                                 load_from_pickle,
-                                                write_as_pickle)
+                                                write_as_pickle,
+                                                get_temp_file_path)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.io.PdbxUtil import abandon_symbolic_labels
@@ -570,7 +572,8 @@ except ImportError:
                                   set_sf_tag)
     from nmr.NmrVrptUtility import (uncompress_gzip_file,
                                     load_from_pickle,
-                                    write_as_pickle)
+                                    write_as_pickle,
+                                    get_temp_file_path)
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.io.PdbxUtil import abandon_symbolic_labels
@@ -622,7 +625,7 @@ class NmrDpUtility:
         self.__reg.pA = PairwiseAlign()
         self.__reg.pA.setVerbose(verbose)
 
-        self.__reg.cR = CifReader(verbose, log, use_cache=True, sub_dir_name_for_cache=SUB_DIR_NAME_FOR_CACHE)
+        self.__reg.cR = CifReader(verbose, log, use_cache=True)
 
         mr_content_subtypes = MR_CONTENT_SUBTYPES
         nmr_rep_content_subtypes = ['chem_shift', 'spectral_peak']
@@ -906,6 +909,22 @@ class NmrDpUtility:
         if fPath is not None:
             self.__logPath = os.path.abspath(fPath)
 
+    def setWorkspace(self, dirPath: str, cacheDirPath: str = None) -> None:
+        """ Set working directory and cache directory (optional).
+        """
+
+        if dirPath is not None:
+            if not os.path.isdir(dirPath):
+                os.makedirs(dirPath)
+            self.__reg.dirPath = dirPath
+
+        if cacheDirPath is not None:
+            if not os.path.isdir(cacheDirPath):
+                os.makedirs(cacheDirPath)
+            self.__reg.cacheDirPath = cacheDirPath
+
+            self.__reg.cR.cacheDirPath = cacheDirPath
+
     def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file') -> None:  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
         """ Add a named input and value to the dictionary of input parameters.
         """
@@ -1119,12 +1138,12 @@ class NmrDpUtility:
                 raise KeyError(f"+{self.__class_name__}.op() "
                                f"++ Error  - Could not find {NMR_CIF_FILE_PATH_KEY!r} output parameter.")
             if self.__reg.dstPath is None:
-                self.__reg.dstPath = self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY] + '.tmp'
+                self.__reg.dstPath = get_temp_file_path(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY])
                 self.__dstPath__ = copy.copy(self.__reg.dstPath)
                 self.__tmpPath = self.__dstPath__
 
         if self.__reg.release_mode and self.__reg.dstPath is None:
-            self.__reg.dstPath = self.__reg.srcPath + '.tmp'
+            self.__reg.dstPath = get_temp_file_path(self.__reg.srcPath)
             self.__dstPath__ = copy.copy(self.__reg.dstPath)
             self.__tmpPath = self.__dstPath__
 
@@ -1372,7 +1391,7 @@ class NmrDpUtility:
                     and self.__reg.remediation_mode))\
                and self.__reg.report.isError() and self.__reg.dstPath is not None:
 
-                dir_path = os.path.dirname(self.__reg.dstPath)
+                dir_path = os.path.dirname(self.__reg.dstPath) if self.__reg.dirPath is None else self.__reg.dirPath
 
                 rem_dir = os.path.join(dir_path, 'remediation')
 
@@ -1410,6 +1429,11 @@ class NmrDpUtility:
             return False
 
         finally:
+            self.__reg.dirPath = None
+            self.__reg.cacheDirPath = None
+
+            self.__reg.cR.cacheDirPath = None
+
             self.__reg.report = None
             self.__reg.report_prev = None
 
@@ -1473,6 +1497,12 @@ class NmrDpUtility:
     def __initializeDpReport(self, srcPath: str = None, calcOutputStats: bool = False) -> bool:
         """ Initialize NMR data processing report.
         """
+
+        def get_next_file_path(src_path, suffix='~'):
+            src_path_next = src_path + suffix
+            if self.__reg.dirPath is not None:
+                src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
+            return src_path_next
 
         srcName = None
         if srcPath is None:
@@ -1562,7 +1592,7 @@ class NmrDpUtility:
 
                             input_source.setItemValue('original_file_name', os.path.basename(cs))
 
-                            _cs = cs + '.cif2str'
+                            _cs = get_next_file_path(cs, '.cif2str')
                             if not self.__reg.c2S.convert(cs, _cs):
                                 _cs = cs
 
@@ -1606,7 +1636,7 @@ class NmrDpUtility:
                             if 'original_file_name' not in cs:
                                 input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
 
-                            _cs = cs['file_name'] + '.cif2str'
+                            _cs = get_next_file_path(cs['file_name'], '.cif2str')
                             if not self.__reg.c2S.convert(cs['file_name'], _cs, originalFileName=cs.get('original_file_name')):
                                 _cs = cs['file_name']
 
@@ -1663,7 +1693,7 @@ class NmrDpUtility:
 
                         input_source.setItemValue('original_file_name', os.path.basename(cs))
 
-                        _cs = cs + '.cif2str'
+                        _cs = get_next_file_path(cs, '.cif2str')
                         if not self.__reg.c2S.convert(cs, _cs):
                             _cs = cs
 
@@ -1708,7 +1738,7 @@ class NmrDpUtility:
                         if 'original_file_name' not in cs:
                             input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
 
-                        _cs = cs['file_name'] + '.cif2str'
+                        _cs = get_next_file_path(cs['file_name'], '.cif2str')
                         if not self.__reg.c2S.convert(cs['file_name'], _cs, originalFileName=cs.get('original_file_name')):
                             _cs = cs['file_name']
 
@@ -1738,7 +1768,7 @@ class NmrDpUtility:
 
                             input_source.setItemValue('original_file_name', os.path.basename(mr))
 
-                            _mr = mr + '.cif2str'
+                            _mr = get_next_file_path(mr, '.cif2str')
                             if not self.__reg.c2S.convert(mr, _mr):
                                 _mr = mr
 
@@ -1757,7 +1787,7 @@ class NmrDpUtility:
                             if 'original_file_name' not in mr:
                                 input_source.setItemValue('original_file_name', os.path.basename(mr['file_name']))
 
-                            _mr = mr['file_name'] + '.cif2str'
+                            _mr = get_next_file_path(mr['file_name'], '.cif2str')
                             if not self.__reg.c2S.convert(mr['file_name'], _mr, originalFileName=mr.get('original_file_name')):
                                 _mr = mr['file_name']
 
@@ -1923,7 +1953,7 @@ class NmrDpUtility:
                             codec = detect_bom(arPath, 'utf-8')
 
                             if codec != 'utf-8':
-                                _arPath = arPath + '~'
+                                _arPath = get_next_file_path(arPath)
                                 convert_codec(arPath, _arPath, codec, 'utf-8')
                                 arPath = _arPath
 
@@ -1956,7 +1986,7 @@ class NmrDpUtility:
 
                 nmr_cif = self.__reg.inputParamDict[NMR_CIF_FILE_PATH_KEY]
 
-                _nmr_cif = nmr_cif + '.cif2str'
+                _nmr_cif = get_next_file_path(nmr_cif, '.cif2str')
                 if self.__reg.c2S.convert(nmr_cif, _nmr_cif):
                     self.__reg.srcNmrCifPath = _nmr_cif
                     self.__reg.native_combined = True  # DAOTHER-8855
@@ -8368,9 +8398,9 @@ class NmrDpUtility:
         if self.__cifHashCode is not None:
 
             self.__reg.asmChkCachePath =\
-                os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}{hash_code_ext}_asm_chk.pkl")
+                os.path.join(self.__reg.cacheDirPath, f"{self.__cifHashCode}{hash_code_ext}_asm_chk.pkl")
             self.__reg.coordPropCachePath =\
-                os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}{hash_code_ext}_coord_prop.pkl")
+                os.path.join(self.__reg.cacheDirPath, f"{self.__cifHashCode}{hash_code_ext}_coord_prop.pkl")
 
             self.__reg.caC = load_from_pickle(self.__reg.asmChkCachePath)
             self.__reg.cpC = load_from_pickle(self.__reg.coordPropCachePath, default=copy.copy(DEFAULT_COORD_PROPERTIES))
@@ -9247,6 +9277,12 @@ class NmrDpUtility:
                             return True
                 return False
 
+            def get_next_file_path(src_path, suffix='~'):
+                src_path_next = src_path + suffix
+                if self.__reg.dirPath is not None:
+                    src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
+                return src_path_next
+
             if self.__reg.internal_mode and self.__reg.cR.hasCategory('database_2')\
                and self.__reg.cR.hasCategory('pdbx_audit_revision_history'):
                 extended_pdb_id = None
@@ -9279,7 +9315,7 @@ class NmrDpUtility:
 
                     if len(revision_history) > 1:
                         self.__reg.versioned_atom_name_mapping =\
-                            retrieveAtomNameMappingFromRevisions(self.__reg.cR, self.__reg.cahceDirPath,
+                            retrieveAtomNameMappingFromRevisions(self.__reg.cR, self.__reg.cacheDirPath,
                                                                  extended_pdb_id, revision_history,
                                                                  self.__reg.representative_model_id,
                                                                  self.__reg.representative_alt_id,
@@ -9456,7 +9492,7 @@ class NmrDpUtility:
                             minor = revision_history[major] + ver - 1
                             revision_history[major] = minor
                             self.__reg.internal_atom_name_mapping[ver] =\
-                                retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath,
+                                retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cacheDirPath,
                                                                     revision_history, f'{internal_cif_file_prefix}{ver}',
                                                                     self.__reg.representative_model_id,
                                                                     self.__reg.representative_alt_id,
@@ -9467,7 +9503,7 @@ class NmrDpUtility:
                         minor = revision_history[major] - 1
                         revision_history[major] = minor
                         self.__reg.internal_atom_name_mapping[0] =\
-                            retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath,
+                            retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cacheDirPath,
                                                                 revision_history, internal_cif_file0,
                                                                 self.__reg.representative_model_id,
                                                                 self.__reg.representative_alt_id,
@@ -9564,7 +9600,7 @@ class NmrDpUtility:
                                 minor = revision_history[major] - 2
                                 revision_history[major] = minor
                                 self.__reg.internal_atom_name_mapping[-1] =\
-                                    retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath,
+                                    retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cacheDirPath,
                                                                         revision_history, other_internal_cif_file,
                                                                         self.__reg.representative_model_id,
                                                                         self.__reg.representative_alt_id,
@@ -9584,7 +9620,7 @@ class NmrDpUtility:
 
                         cur_dir_path = self.__reg.cR.getDirPath()
                         dep_id = WORK_MODEL_FILE_NAME_PAT.search(cif_file_name).groups()[0]
-                        internal_cif_file = os.path.join(cur_dir_path, self.__reg.cahceDirPath, f'{dep_id}_model-upload_P1.cif.V1')
+                        internal_cif_file = os.path.join(cur_dir_path, self.__reg.cacheDirPath, f'{dep_id}_model-upload_P1.cif.V1')
 
                         if not os.path.exists(internal_cif_file):
                             ret_code = -1
@@ -9626,7 +9662,7 @@ class NmrDpUtility:
 
                         if os.path.exists(internal_cif_file):
                             self.__reg.internal_atom_name_mapping[1] =\
-                                retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cahceDirPath, {0: 0},
+                                retrieveAtomNameMappingFromInternal(self.__reg.cR, self.__reg.cacheDirPath, {0: 0},
                                                                     internal_cif_file,
                                                                     self.__reg.representative_model_id,
                                                                     self.__reg.representative_alt_id,
@@ -9642,7 +9678,7 @@ class NmrDpUtility:
                and not self.__reg.cR.hasCategory('pdbx_poly_seq_scheme') and not self.__reg.cifPath.endswith('~'):
 
                 srcCifPath = self.__reg.cifPath
-                dstCifPath = self.__reg.cifPath + '~'
+                dstCifPath = get_next_file_path(self.__reg.cifPath)
 
                 done = False
 
@@ -9670,18 +9706,24 @@ class NmrDpUtility:
 
                     try:
 
-                        dirPath = os.path.join(self.__reg.dirPath, 'cif2cif')
-                        if not os.path.isdir(dirPath):
-                            os.makedirs(dirPath)
+                        if self.__reg.cacheDirPath is None:
+                            self.__reg.cacheDirPath = os.path.join(self.__reg.dirPath, SUB_DIR_NAME_FOR_CACHE)
+
+                        if not os.path.isdir(self.__reg.cacheDirPath):
+                            os.makedirs(self.__reg.cacheDirPath)
+
+                        tmp_path = os.path.join(self.__reg.cacheDirPath, 'cif2cif')
+                        if not os.path.isdir(tmp_path):
+                            os.makedirs(tmp_path)
 
                         cI = ConfigInfo()
                         siteId = cI.get('SITE_PREFIX')
-                        rdU = RcsbDpUtility(tmpPath=dirPath, siteId=siteId, verbose=self.__reg.verbose, log=self.__reg.log)
+                        rdU = RcsbDpUtility(tmpPath=tmp_path, siteId=siteId, verbose=self.__reg.verbose, log=self.__reg.log)
                         rdU.imp(srcCifPath)
                         rdU.op('annot-cif2cif-dep')
                         rdU.exp(dstCifPath)
                         rdU.cleanup()
-                        os.rmdir(dirPath)
+                        os.rmdir(tmp_path)
 
                     except Exception as e:  # pylint: disable=broad-exception-caught
 
@@ -9752,15 +9794,10 @@ class NmrDpUtility:
                 if self.__reg.dirPath is None:
                     self.__reg.dirPath = os.path.dirname(fPath)
 
-                # if self.__sub_dir_name_for_cache != 'nmr_dp_util'\
-                #    and os.path.isdir(os.path.join(self.__reg.dirPath, 'nmr_dp_util')):
-                #     os.rename(os.path.join(self.__reg.dirPath, 'nmr_dp_util'),
-                #               os.path.join(self.__reg.dirPath, self.__sub_dir_name_for_cache))
+                if self.__reg.cacheDirPath is None:
+                    self.__reg.cacheDirPath = os.path.join(self.__reg.dirPath, SUB_DIR_NAME_FOR_CACHE)
 
-                self.__reg.cahceDirPath = os.path.join(self.__reg.dirPath, SUB_DIR_NAME_FOR_CACHE)
-
-                if not os.path.isdir(self.__reg.cahceDirPath):
-                    os.makedirs(self.__reg.cahceDirPath)
+                self.__reg.cR.cacheDirPath = self.__reg.cacheDirPath
 
                 self.__reg.cifPath = fPath
 
@@ -9861,7 +9898,8 @@ class NmrDpUtility:
                             if k == 'missing_mandatory_content'\
                                and 'Deposition of assigned chemical shifts is mandatory' in v['description']\
                                and self.__reg.remediation_mode:
-                                dir_path = os.path.dirname(self.__reg.dstPath)
+                                dir_path = os.path.dirname(self.__reg.dstPath)\
+                                    if self.__reg.dirPath is None else self.__reg.dirPath
 
                                 touch_file = os.path.join(dir_path, '.entry_without_cs')
                                 if not os.path.exists(touch_file):
@@ -9919,7 +9957,7 @@ class NmrDpUtility:
             poly_seq = poly_seq_cache_path = None
 
             if self.__cifHashCode is not None:
-                poly_seq_cache_path = os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
+                poly_seq_cache_path = os.path.join(self.__reg.cacheDirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
                 poly_seq = load_from_pickle(poly_seq_cache_path)
 
             if poly_seq is None:
@@ -10028,7 +10066,8 @@ class NmrDpUtility:
                             if k == 'missing_mandatory_content'\
                                and 'Deposition of assigned chemical shifts is mandatory' in v['description']\
                                and self.__reg.remediation_mode:
-                                dir_path = os.path.dirname(self.__reg.dstPath)
+                                dir_path = os.path.dirname(self.__reg.dstPath)\
+                                    if self.__reg.dirPath is None else self.__reg.dirPath
 
                                 touch_file = os.path.join(dir_path, '.entry_without_cs')
                                 if not os.path.exists(touch_file):
@@ -10280,7 +10319,7 @@ class NmrDpUtility:
                 poly_seq = poly_seq_cache_path = None
 
                 if self.__cifHashCode is not None:
-                    poly_seq_cache_path = os.path.join(self.__reg.cahceDirPath, f"{self.__cifHashCode}_poly_seq.pkl")
+                    poly_seq_cache_path = os.path.join(self.__reg.cacheDirPath, f"{self.__cifHashCode}_poly_seq.pkl")
                     poly_seq = load_from_pickle(poly_seq_cache_path)
 
                 if poly_seq is None:
@@ -15388,7 +15427,7 @@ class NmrDpUtility:
 
         if self.__reg.op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate') and self.__reg.remediation_mode:
 
-            dir_path = os.path.dirname(self.__reg.dstPath)
+            dir_path = os.path.dirname(self.__reg.dstPath) if self.__reg.dirPath is None else self.__reg.dirPath
 
             rem_dir = os.path.join(dir_path, 'remediation')
 

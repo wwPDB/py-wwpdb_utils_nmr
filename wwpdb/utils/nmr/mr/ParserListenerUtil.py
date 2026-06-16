@@ -6352,45 +6352,45 @@ def retrieveOriginalFileName(filePath: str) -> str:
 
     if fileName.endswith('.mr'):
         if fileName.endswith('-trimmed.mr'):
-            fileName = fileName[:-11] + '.mr'
+            fileName = f'{fileName[:-11]}.mr'
         if fileName.endswith('-corrected.mr'):
-            fileName = fileName[:-13] + '.mr'
+            fileName = f'{fileName[:-13]}.mr'
         if fileName.endswith('-trimmed.mr'):
-            fileName = fileName[:-11] + '.mr'
+            fileName = f'{fileName[:-11]}.mr'
         if fileName.endswith('-remediated.mr'):
-            fileName = fileName[:-13] + '.mr'
+            fileName = f'{fileName[:-13]}.mr'
 
         if '-div_' in fileName:
             idx = fileName.index('-div_')
-            fileName = fileName[:idx] + '.mr'
+            fileName = f'{fileName[:idx]}.mr'
 
     if fileName.endswith('.str'):
         if fileName.endswith('-trimmed.str'):
-            fileName = fileName[:-12] + '.str'
+            fileName = f'{fileName[:-12]}.str'
         if fileName.endswith('-corrected.str'):
-            fileName = fileName[:-14] + '.str'
+            fileName = f'{fileName[:-14]}.str'
         if fileName.endswith('-trimmed.str'):
-            fileName = fileName[:-12] + '.str'
+            fileName = f'{fileName[:-12]}.str'
         if fileName.endswith('-remediated.str'):
-            fileName = fileName[:-14] + '.str'
+            fileName = f'{fileName[:-14]}.str'
 
         if '-div_' in fileName:
             idx = fileName.index('-div_')
-            fileName = fileName[:idx] + '.str'
+            fileName = f'{fileName[:idx]}.str'
 
     if fileName.endswith('.cif'):
         if fileName.endswith('-trimmed.cif'):
-            fileName = fileName[:-12] + '.cif'
+            fileName = f'{fileName[:-12]}.cif'
         if fileName.endswith('-corrected.cif'):
-            fileName = fileName[:-14] + '.cif'
+            fileName = f'{fileName[:-14]}.cif'
         if fileName.endswith('-trimmed.cif'):
-            fileName = fileName[:-12] + '.cif'
+            fileName = f'{fileName[:-12]}.cif'
         if fileName.endswith('-remediated.cif'):
-            fileName = fileName[:-14] + '.cif'
+            fileName = f'{fileName[:-14]}.cif'
 
         if '-div_' in fileName:
             idx = fileName.index('-div_')
-            fileName = fileName[:idx] + '.cif'
+            fileName = f'{fileName[:idx]}.cif'
 
     return fileName
 

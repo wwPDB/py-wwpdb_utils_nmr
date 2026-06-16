@@ -108,6 +108,12 @@ class NmrDpFirstAid:
         """ Fix format issue of NMR data.
         """
 
+        def get_next_file_path(src_path, suffix='~'):
+            src_path_next = src_path + suffix
+            if self.__reg.dirPath is not None:
+                src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
+            return src_path_next
+
         if not self.__reg.fix_format_issue or srcPath is None or fileSubType not in ('A', 'S', 'R', 'O') or message is None:
 
             if message is not None:
@@ -177,8 +183,10 @@ class NmrDpFirstAid:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
+            _srcPath_next = get_next_file_path(_srcPath)
+
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                 for line in ifh:
                     ofh.write(line)
 
@@ -198,8 +206,10 @@ class NmrDpFirstAid:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
+            _srcPath_next = get_next_file_path(_srcPath)
+
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                 for line in ifh:
                     ofh.write(line)
 
@@ -234,8 +244,10 @@ class NmrDpFirstAid:
             j += 1
             i = 0
 
+            _srcPath_next = get_next_file_path(_srcPath)
+
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                 ofh.write(f'data_{os.path.basename(srcPath)}\n\n')
                 for line in ifh:
                     if i < j:
@@ -246,8 +258,9 @@ class NmrDpFirstAid:
                 tmpPaths.append(_srcPath)
 
             # fix single loop file without datablock (D_1300055931)
-            if self.__reg.c2S.convert(_srcPath, _srcPath + '~'):
-                _srcPath = _srcPath + '~'
+            _srcPath_next = get_next_file_path(_srcPath)
+            if self.__reg.c2S.convert(_srcPath, _srcPath_next):
+                _srcPath = _srcPath_next
                 tmpPaths.append(_srcPath)
 
         msg_template = "Only 'save_NAME' is valid in the body of a NMR-STAR file. Found 'loop_'."
@@ -263,8 +276,10 @@ class NmrDpFirstAid:
 
             pass_datablock = False
 
+            _srcPath_next = get_next_file_path(_srcPath)
+
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                    open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                 for line in ifh:
                     if pass_datablock:
                         ofh.write(line)
@@ -300,8 +315,10 @@ class NmrDpFirstAid:
 
                 i = 0
 
+                _srcPath_next = get_next_file_path(_srcPath)
+
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                        open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i == line_num:
                             ofh.write('stop_\n')
@@ -343,8 +360,10 @@ class NmrDpFirstAid:
 
                 i = 0
 
+                _srcPath_next = get_next_file_path(_srcPath)
+
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                        open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i == line_num - 1:
                             ofh.write('loop_\n')
@@ -396,8 +415,10 @@ class NmrDpFirstAid:
 
                             in_lp = False
 
+                            _srcPath_next = get_next_file_path(_srcPath)
+
                             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                                    open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                                    open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                                 for line in ifh:
                                     if DATABLOCK_PAT.match(line):
                                         g = DATABLOCK_PAT.search(line).groups()
@@ -424,8 +445,9 @@ class NmrDpFirstAid:
 
                         else:
 
-                            if self.__reg.c2S.convert(_srcPath, _srcPath + '~'):
-                                _srcPath += '~'
+                            _srcPath_next = get_next_file_path(_srcPath)
+                            if self.__reg.c2S.convert(_srcPath, _srcPath_next):
+                                _srcPath = _srcPath_next
                                 tmpPaths.append(_srcPath)
 
                 except AttributeError:
@@ -452,8 +474,10 @@ class NmrDpFirstAid:
 
                     tag_name_pattern = re.compile(r'\s*' + tag_name + r'\s*')
 
+                    _srcPath_next = get_next_file_path(_srcPath)
+
                     with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                            open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                            open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                         for line in ifh:
                             if tag_name_pattern.match(line) is None:
                                 ofh.write(line)
@@ -493,8 +517,10 @@ class NmrDpFirstAid:
 
                 i = 0
 
+                _srcPath_next = get_next_file_path(_srcPath)
+
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                        open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if i != line_num:
                             ofh.write(line)
@@ -579,8 +605,10 @@ class NmrDpFirstAid:
 
                 sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
+                _srcPath_next = get_next_file_path(_srcPath)
+
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
-                        open(_srcPath + '~', 'w', encoding='utf-8') as ofh:
+                        open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                     for line in ifh:
                         if pass_sf_loop:
                             ofh.write(line)

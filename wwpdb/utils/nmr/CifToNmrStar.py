@@ -30,6 +30,7 @@ import json
 import logging
 import os
 import sys
+import tempfile
 from operator import itemgetter
 from typing import Any, IO, Optional, Union
 
@@ -63,6 +64,15 @@ if __pynmrstar_v3_3_1__:
     logger.setLevel(logging.ERROR)
 else:
     logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
+
+
+def get_temp_file_path(src_path: str = None, suffix: str = '~'):
+    """ Return tempfile path based on given hints.
+    """
+
+    if src_path is None:
+        return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # noqa: E501, pylint: disable=protected-access,line-too-long
+    return os.path.join(tempfile.gettempdir(), f"{os.path.basename(src_path)}{suffix}")
 
 
 def has_key_value(d: dict, key: Any) -> bool:
@@ -287,8 +297,10 @@ class CifToNmrStar:
                 elif has_datablock or not has_anonymous_saveframe:
                     return False
 
+                _cifPath = get_temp_file_path(cifPath)
+
                 with open(cifPath, 'r', encoding='utf-8') as ifh, \
-                        open(cifPath + '~', 'w', encoding='utf-8') as ofh:
+                        open(_cifPath, 'w', encoding='utf-8') as ofh:
                     name = datablockName
                     if datablockName is None:
                         name = originalFileName
@@ -298,7 +310,7 @@ class CifToNmrStar:
                     for line in ifh:
                         ofh.write(line)
 
-                    os.replace(cifPath + '~', cifPath)
+                    os.replace(_cifPath, cifPath)
 
                 return self.convert(cifPath, strPath, datablockName, originalFileName, maxRepeat - 1)
 

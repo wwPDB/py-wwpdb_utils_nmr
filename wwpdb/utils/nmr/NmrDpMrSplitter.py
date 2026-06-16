@@ -68,7 +68,8 @@ try:
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.AlignUtil import (getRestraintFormatName,
                                            getRestraintFormatNames)
-    from wwpdb.utils.nmr.NmrVrptUtility import uncompress_gzip_file
+    from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,
+                                                get_temp_file_path)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        startsWithPdbRecord,
                                                        getRestraintName)
@@ -149,7 +150,8 @@ except ImportError:
     from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.AlignUtil import (getRestraintFormatName,
                                getRestraintFormatNames)
-    from nmr.NmrVrptUtility import uncompress_gzip_file
+    from nmr.NmrVrptUtility import (uncompress_gzip_file,
+                                    get_temp_file_path)
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            startsWithPdbRecord,
                                            getRestraintName)
@@ -451,12 +453,12 @@ def get_type_of_star_file(fPath: str) -> str:
     _fPath = __fPath = None
 
     if codec != 'utf-8':
-        _fPath = fPath + '~'
+        _fPath = get_temp_file_path(fPath)
         convert_codec(fPath, _fPath, codec, 'utf-8')
         fPath = _fPath
 
     if is_rtf_file(fPath):
-        __fPath = fPath + '.rtf2txt'
+        __fPath = get_temp_file_path(fPath, '.rtf2txt')
         convert_rtf_to_ascii(fPath, __fPath)
         fPath = __fPath
 
@@ -590,15 +592,17 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                         try:
 
+                            fPath_next = get_temp_file_path(fPath)
+
                             with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                    open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                    open(fPath_next, 'w', encoding='utf-8') as ofh:
                                 ofh.write(header)
                                 for _line in ifh:
                                     if 'peaks' in _line or 'Shift (ppm)' in _line:
                                         continue
                                     ofh.write(_line)
 
-                            os.replace(fPath + '~', fPath)
+                            os.replace(fPath_next, fPath)
 
                         except OSError:
                             pass
@@ -611,8 +615,10 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
+                        fPath_next = get_temp_file_path(fPath)
+
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                open(fPath_next, 'w', encoding='utf-8') as ofh:
                             ofh.write(header)
                             for _line in ifh:
 
@@ -625,7 +631,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
                                 if not _line.startswith('#'):
                                     ofh.write(_line)
 
-                        os.replace(fPath + '~', fPath)
+                        os.replace(fPath_next, fPath)
 
                     except OSError:
                         pass
@@ -636,12 +642,14 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
+                        fPath_next = get_temp_file_path(fPath)
+
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                open(fPath_next, 'w', encoding='utf-8') as ofh:
                             for _line in ifh:
                                 ofh.write(_line.replace(',', ' '))
 
-                        os.replace(fPath + '~', fPath.replace('~', ''))
+                        os.replace(fPath_next, fPath.replace('~', ''))
 
                     except OSError:
                         pass
@@ -658,8 +666,10 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                         i = 0
 
+                        fPath_next = get_temp_file_path(fPath)
+
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                open(fPath_next, 'w', encoding='utf-8') as ofh:
                             for _line in ifh:
                                 if i == idx - 1:
                                     ofh.write('label dataset sw sf\n')
@@ -669,7 +679,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
                                     ofh.write(_line)
                                 i += 1
 
-                        os.replace(fPath + '~', fPath)
+                        os.replace(fPath_next, fPath)
 
                     except OSError:
                         pass
@@ -711,13 +721,15 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
+                        fPath_next = get_temp_file_path(fPath)
+
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                open(fPath_next, 'w', encoding='utf-8') as ofh:
                             ofh.write(header)
                             for _line in ifh:
                                 ofh.write(_line)
 
-                        os.replace(fPath + '~', fPath)
+                        os.replace(fPath_next, fPath)
 
                     except OSError:
                         pass
@@ -2762,6 +2774,12 @@ class NmrDpMrSplitter:
         if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 
+        def get_next_file_path(src_path, suffix='~'):
+            src_path_next = src_path + suffix
+            if self.__reg.dirPath is not None:
+                src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
+            return src_path_next
+
         fileListId = self.__reg.file_path_list_len
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
@@ -2807,7 +2825,7 @@ class NmrDpMrSplitter:
             codec = detect_bom(file_path, 'utf-8')
 
             if codec != 'utf-8':
-                _file_path = file_path + '~'
+                _file_path = get_next_file_path(file_path)
                 convert_codec(file_path, _file_path, codec, 'utf-8')
                 file_path = _file_path
 
@@ -2953,7 +2971,7 @@ class NmrDpMrSplitter:
 
                 elif has_cif_format:
 
-                    _file_path = file_path + '.cif2str'
+                    _file_path = get_next_file_path(file_path, '.cif2str')
                     if not self.__reg.c2S.convert(file_path, _file_path):
                         _file_path = file_path
 
@@ -3100,6 +3118,12 @@ class NmrDpMrSplitter:
         if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 
+        def get_next_file_path(src_path, suffix='~'):
+            src_path_next = src_path + suffix
+            if self.__reg.dirPath is not None:
+                src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
+            return src_path_next
+
         fileListId = self.__reg.file_path_list_len
 
         dir_path = mr_file_name = '.'
@@ -3189,7 +3213,7 @@ class NmrDpMrSplitter:
 
                 src_file = dst_file
 
-            dir_path = os.path.dirname(src_file)
+            dir_path = os.path.dirname(src_file) if self.__reg.dirPath is None else self.__reg.dirPath
 
             _div_file_names = {div_file_name: len(div_file_name) + (0 if div_file_name.endswith('-div_src.mr')
                                                                     else (1 if div_file_name.endswith('-div_ext.mr') else 2))
@@ -3202,7 +3226,11 @@ class NmrDpMrSplitter:
             div_file_names = [k for k, v in sorted(_div_file_names.items(), key=itemgetter(1))]
 
             src_basename = os.path.splitext(src_file)[0]
-            ar['original_file_name'] = src_basename + '.mr'
+
+            if self.__reg.dirPath is not None:
+                src_basename = os.path.join(self.__reg.dirPath, os.path.basename(src_basename))
+
+            ar['original_file_name'] = f'{src_basename}.mr'
 
             dst_file = src_basename + '-trimmed.mr'
             header_file = src_basename + '-header.mr'
@@ -3236,7 +3264,7 @@ class NmrDpMrSplitter:
 
                 peak_file_list.append(_ar)
 
-                pk_list_paths.append({'nmr-peaks': src_basename + '.mr'})
+                pk_list_paths.append({'nmr-peaks': f'{src_basename}.mr'})
 
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
                 if not os.path.exists(touch_file):
@@ -3278,7 +3306,7 @@ class NmrDpMrSplitter:
                     pass
 
                 mr_file_path = src_basename + '-remediated.mr'
-                mr_file_link = os.path.join(rem_dir, os.path.basename(src_basename) + '.mr')
+                mr_file_link = os.path.join(rem_dir, f'{os.path.basename(src_basename)}.mr')
 
                 mr_part_paths.append({'header': header_file})
                 mr_part_paths.append({'footer': footer_file})
@@ -3535,12 +3563,12 @@ class NmrDpMrSplitter:
                         _mrPath = None
 
                         if codec != 'utf-8':
-                            _mrPath = mrPath + '~'
+                            _mrPath = get_next_file_path(mrPath)
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
                             mrPath = _mrPath
 
                         if is_rtf_file(mrPath):
-                            _mrPath = mrPath + '.rtf2txt'
+                            _mrPath = get_next_file_path(mrPath, '.rtf2txt')
                             convert_rtf_to_ascii(mrPath, _mrPath)
                             mrPath = _mrPath
 
@@ -3688,7 +3716,7 @@ class NmrDpMrSplitter:
 
                                 ofh.write(line)
 
-                        _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
+                        _mrPath = get_next_file_path(os.path.splitext(mrPath)[0], '.cif2str')
                         if not self.__reg.c2S.convert(mrPath, _mrPath):
                             _mrPath = mrPath
 
@@ -3723,12 +3751,12 @@ class NmrDpMrSplitter:
                         _mrPath = None
 
                         if codec != 'utf-8':
-                            _mrPath = mrPath + '~'
+                            _mrPath = get_next_file_path(mrPath)
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
                             mrPath = _mrPath
 
                         if is_rtf_file(mrPath):
-                            _mrPath = mrPath + '.rtf2txt'
+                            _mrPath = get_next_file_path(mrPath, '.rtf2txt')
                             convert_rtf_to_ascii(mrPath, _mrPath)
                             mrPath = _mrPath
 
@@ -3851,7 +3879,7 @@ class NmrDpMrSplitter:
 
                 item = {'file_name': mrPath,
                         'file_type': 'nmr-star',
-                        'original_file_name': os.path.basename(src_basename) + '.mr'}
+                        'original_file_name': f'{os.path.basename(src_basename)}.mr'}
 
                 if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
                     self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY] = [item]
@@ -3876,19 +3904,19 @@ class NmrDpMrSplitter:
                 input_source.setItemValue('file_name', file_name)
                 input_source.setItemValue('file_type', file_type)
                 input_source.setItemValue('content_type', 'nmr-restraints')
-                input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
+                input_source.setItemValue('original_file_name', f'{os.path.basename(src_basename)}.mr')
 
                 codec = detect_bom(mrPath, 'utf-8')
 
                 _mrPath = None
 
                 if codec != 'utf-8':
-                    _mrPath = mrPath + '~'
+                    _mrPath = get_next_file_path(mrPath)
                     convert_codec(mrPath, _mrPath, codec, 'utf-8')
                     mrPath = _mrPath
 
                 if is_rtf_file(mrPath):
-                    _mrPath = mrPath + '.rtf2txt'
+                    _mrPath = get_next_file_path(mrPath, '.rtf2txt')
                     convert_rtf_to_ascii(mrPath, _mrPath)
                     mrPath = _mrPath
 
@@ -4663,7 +4691,7 @@ class NmrDpMrSplitter:
 
                             item = {'file_name': mrPath,
                                     'file_type': 'nmr-star',
-                                    'original_file_name': os.path.basename(src_basename) + '.mr'}
+                                    'original_file_name': f'{os.path.basename(src_basename)}.mr'}
 
                             if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
                                 self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY] = [item]
@@ -4688,19 +4716,19 @@ class NmrDpMrSplitter:
                             input_source.setItemValue('file_name', file_name)
                             input_source.setItemValue('file_type', file_type)
                             input_source.setItemValue('content_type', 'nmr-restraints')
-                            input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
+                            input_source.setItemValue('original_file_name', f'{os.path.basename(src_basename)}.mr')
 
                             codec = detect_bom(mrPath, 'utf-8')
 
                             _mrPath = None
 
                             if codec != 'utf-8':
-                                _mrPath = mrPath + '~'
+                                _mrPath = get_next_file_path(mrPath)
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
                                 mrPath = _mrPath
 
                             if is_rtf_file(mrPath):
-                                _mrPath = mrPath + '.rtf2txt'
+                                _mrPath = get_next_file_path(mrPath, '.rtf2txt')
                                 convert_rtf_to_ascii(mrPath, _mrPath)
                                 mrPath = _mrPath
 
@@ -4797,7 +4825,7 @@ class NmrDpMrSplitter:
 
                             mrPath = dst_file
 
-                            _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
+                            _mrPath = get_next_file_path(os.path.splitext(mrPath)[0], '.cif2str')
                             if not self.__reg.c2S.convert(mrPath, _mrPath):
                                 _mrPath = mrPath
 
@@ -4805,7 +4833,7 @@ class NmrDpMrSplitter:
 
                             item = {'file_name': mrPath,
                                     'file_type': 'nmr-star',
-                                    'original_file_name': os.path.basename(src_basename) + '.mr'}
+                                    'original_file_name': f'{os.path.basename(src_basename)}.mr'}
 
                             if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
                                 self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY] = [item]
@@ -4830,19 +4858,19 @@ class NmrDpMrSplitter:
                             input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', file_name))
                             input_source.setItemValue('file_type', file_type)
                             input_source.setItemValue('content_type', 'nmr-restraints')
-                            input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
+                            input_source.setItemValue('original_file_name', f'{os.path.basename(src_basename)}.mr')
 
                             codec = detect_bom(mrPath, 'utf-8')
 
                             _mrPath = None
 
                             if codec != 'utf-8':
-                                _mrPath = mrPath + '~'
+                                _mrPath = get_next_file_path(mrPath)
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
                                 mrPath = _mrPath
 
                             if is_rtf_file(mrPath):
-                                _mrPath = mrPath + '.rtf2txt'
+                                _mrPath = get_next_file_path(mrPath, '.rtf2txt')
                                 convert_rtf_to_ascii(mrPath, _mrPath)
                                 mrPath = _mrPath
 
@@ -5455,7 +5483,7 @@ class NmrDpMrSplitter:
         """ Return corrected MR file path.
         """
 
-        dir_path = os.path.dirname(src_path)
+        dir_path = os.path.dirname(src_path) if self.__reg.dirPath is None else self.__reg.dirPath
 
         for div_file_name in os.listdir(dir_path):
             if os.path.isfile(os.path.join(dir_path, div_file_name))\
@@ -5468,7 +5496,7 @@ class NmrDpMrSplitter:
             src_file_name = os.path.basename(src_path)
             cor_test = '-corrected' in src_file_name
             if cor_test:
-                cor_src_path = src_path + '~'
+                cor_src_path = f'{src_path}~'
             else:
                 if src_path.endswith('.mr'):
                     cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
@@ -5650,6 +5678,10 @@ class NmrDpMrSplitter:
         """
 
         src_basename = os.path.splitext(file_path)[0]
+
+        if self.__reg.dirPath is not None:
+            src_basename = os.path.join(self.__reg.dirPath, os.path.basename(src_basename))
+
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
         div_ext_file = src_basename + '-div_ext.mr'
@@ -6587,6 +6619,10 @@ class NmrDpMrSplitter:
         """
 
         src_basename = os.path.splitext(file_path)[0]
+
+        if self.__reg.dirPath is not None:
+            src_basename = os.path.join(self.__reg.dirPath, os.path.basename(src_basename))
+
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
         div_ext_file = src_basename + '-div_ext.mr'
@@ -6999,6 +7035,10 @@ class NmrDpMrSplitter:
         """
 
         src_basename = os.path.splitext(file_path)[0]
+
+        if self.__reg.dirPath is not None:
+            src_basename = os.path.join(self.__reg.dirPath, os.path.basename(src_basename))
+
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
         div_ext_file = src_basename + '-div_ext.mr'

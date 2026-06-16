@@ -57,7 +57,6 @@ except ImportError:
     from nmr.NmrDpReport import (NmrDpReport,
                                  NmrDpReportOutputStatistics)
 
-
 @dataclass
 class NmrDpRegistry:
     """ Registry class for NMR data processing.
@@ -173,6 +172,9 @@ class NmrDpRegistry:
 
     # current working directory
     dirPath: str = None
+
+    # directory for cache files
+    cacheDirPath: str = None
 
     # whether coordinate file is already examined
     cifChecked: bool = False

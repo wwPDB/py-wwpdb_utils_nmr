@@ -26,15 +26,11 @@ NmrDpUtility accepts unified NMR data file as primary data source by default. Th
     util.setLog(data_dir_path + entry_id + '-nef-consistency-log.json')
     util.op('nmr-nef-consistency-check')
 ```
-where **setSource()** and **setLog()** are methods to add unified NMR data file and log file. The last **op()** runs designated tasks. The other source files, such as coordinate file, chemical shift files, and restraint files, should be set through the following method. NmrDpUtility supports combining assigned chemical shifts and NMR restraints into single NMR data file.
+where **setSource(fPath: str, originalName: str = None)** and **setLog(fPath: str)** are methods to add unified NMR data file and log file. The last **op()** runs designated tasks. The other source files, such as coordinate file, chemical shift files, and restraint files, should be set through the following method. NmrDpUtility supports combining assigned chemical shifts and NMR restraints into single NMR data file.
 
 3. Add input file path and parameters
 
-Any input file paths and parameters should be set through **addInput()** method:
-
-```python
-   def addInput(self, name=None, value=None, type='file')
-```
+Any input file paths and parameters should be set through **addInput(name: Optional[str] = None, value: Any = None, type: str = 'file')** method:
 
 The **name** argument should be chosen from effective names shown in a table below, and the **type** argument should be chosen from (`param`, `file`, `file_list`, and `file_dict_list`). At first, 'param' is used to set a named parameter, Next, `file` and `file_list` are used to specify single file path and multiple file paths respectively, whereas their file types are automatically decided by the **name**. For example, `pdbx` for coordinate file and `nmr-star` for chemical shift file(s). Finally, `file_dict_list` indicates **value** is a list of dictionary,
 ```python
@@ -78,11 +74,7 @@ name|type|description
 
 4. Add primary output file path, other output file path and parameters
 
-NmrDpUtility outputs processed primary input data source set by **setSource()** as primary output file, which is specified by **setDestination()** method. When you select NEF as the input resource, the primary output should be converted NEF file. The other output file paths (e.g. NMR-STAR and CIF formatted NMR-STAR) and parameters should be set through **addOutput()** method:
-
-```python
-    def addOutput(self, name=None, value=None, type='file')
-```
+NmrDpUtility outputs processed primary input data source set by the **setSource()** as primary output file, which is specified by **setDestination(fPath: str)** method. When you select NEF as the input resource, the primary output should be converted NEF file. The other output file paths (e.g. NMR-STAR and CIF formatted NMR-STAR) and parameters should be set through **addOutput(name: Optional[str] = None, value: Any = None, type: str = 'file')** method:
 
 The argument **name** should be chosen from effective names shown in a table below, and the **type** argument should be chosen from (`param` and `file`). At first, `param` is used to set a named parameter, Next, `file` is used to specify output file path.
 
@@ -100,7 +92,7 @@ name|type|description
 
 5. Invoke defined workflow operation
 
-After the input and output resources are complete, calling **op()** for a particular workflow operation performs a series of data processing.
+After the input and output resources are complete, calling **op(op: str)** for a particular workflow operation performs a series of data processing.
 
 workflow operation|role|primary output file(s) and its file path API
 ------------------|----|-----------------------------------------
@@ -117,6 +109,10 @@ workflow operation|role|primary output file(s) and its file path API
 `nmr-str2cif-annotate`|OneDep system only, Update NMR-STAR file based on annotated model file|CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 `nmr-if-merge-deposit`|Merge available NMR metadata (aka. NMRIF) to NMR-STAR file|CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 `nmr-str-replace-cs`|Replace the assigned chemical shifts in the combined NMR-STAR file with those in new chemical shift files|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
+
+6. Set working and cache directory if necessary
+
+By default, NmrDpUtility sets the current working directory to store intermediate processing files and creates a directory named `utils_nmr` within the current working directory to store cache files for performance improvement. The working directory and the cache file directory can be configured independently by using **setWorkspace(dirPath: str, cacheDirPath: str = None)**. If cacheDirPath is None, the cache file directory will be created under the specified working directory. Considering the reprocessing of files using the same coordinates or the same NMR data, cache files can be reused, resulting in improved performance. It would be better to share a common cache directory across all sessions.
 
 ## Typical workflow operations
 
@@ -323,7 +319,7 @@ The codes used for specifying each file type in NmrDpUtility are compatible with
 
 NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 ------------|--------------|----------------------------|-----------
-`nmr-star`|`nm-shi`,<br/>`nm-uni-str`|`nmr-chemical-shifts` / `nmr-star`,<br/>`nmr-data-str` / `nmr-star`|NMR data file in NMR-STAR format
+`nmr-star`|`nm-shi`,<br/>`nm-uni-str`|`nmr-chemical-shifts` / `nmr-star`,<br/>`nmr-data-str` / `nmr-star`|NMR data file in NMR-STAR V3 format
 `nef`|`nm-uni-nef`|`nmr-data-nef` / `nmr-star`|NMR data file in NEF (NMR Exchange Format)
 `pdbx`|`co-cif`|`model` / `pdbx`|Coordinates file in PDBx/mmCIF format
 `nm-aux-amb`|`nm-aux-amb`|`nmr-restraints` / `any`|Topology file in AMBER format
@@ -346,7 +342,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-sch`|`nm-res-sch`|`nmr-restraints` / `schrodinger`|Restraint file in Schröginder/ASL format
 `nm-res-syb`|`nm-res-syb`|`nmr-restraints` / `sybyl`|Restraint file in SYBYL format
 `nm-res-xpl`|`nm-res-xpl`|`nmr-restraints` / `xplor-nih`|Restraint file in XPLOR-NIH format
-`nm-res-oth`|`nm-res-oth`|`nmr-restraints` / `any`|Restraint file in other format
+`nm-res-oth`|`nm-res-oth`|`nmr-restraints` / `any`|Restraint file in other format including NMR-STAR V3
 `nm-res-mr`|**internal use**|`nmr-restraints` / `pdb-mr`|Restraint file in PDB-MR format
 `nm-res-sax`|**internal use**|`nmr-restraints` / `any`|SAX WSV/TSV/CSV file (q, I(q), sigma(I))
 `nm-pea-ari`|`nm-pea-any`|`nmr-peaks` / `any`|Spectral peak list file in ARIA format
@@ -372,5 +368,5 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-shi-oli`|**internal use**|`nmr-chemical-shifts` / `any`|OLIVIA chemical shift file
 `nm-shi-pip`|**internal use**|`nmr-chemical-shifts` / `any`|PIPP chemical shift file
 `nm-shi-ppm`|**internal use**|`nmr-chemical-shifts` / `any`|PPM chemical shift file (NMRVIEW, CAMRA)
-`nm-shi-st2`|**internal use**|`nmr-chemical-shifts` / `any`|NMR-STAR V2.1 chemical shift file (loop only)
+`nm-shi-st2`|**internal use**|`nmr-chemical-shifts` / `any`|NMR-STAR V2 chemical shift file (loop only)
 `nm-shi-xea`|**internal use**|`nmr-chemical-shifts` / `any`|XEASY chemical shift file same as `nm-aux-xea`

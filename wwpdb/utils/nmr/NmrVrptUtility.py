@@ -13,6 +13,7 @@
 #                           to prevent MISSING ATOM IN MODEL KeyError in restraintsanalysis.py (DAOTHER-9200)
 # 22-May-2026  M. Yokochi - transplant BMRB chemical shift analysis except for PANAV support,
 #                           add 'nmr-chemical-shift-validation' workflow operation (DAOTHER-9785)
+# 16-Jun-2025  M. Yokochi - enable to set working directory and cache file directory (DAOTHER-9785)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -175,6 +176,15 @@ def write_as_pickle(obj: Any, file_name: str) -> None:
 
         with open(file_name, 'wb') as ofh:
             pickle.dump(obj, ofh)
+
+
+def get_temp_file_path(src_path: str = None, suffix: str = '~'):
+    """ Return tempfile path based on given hints.
+    """
+
+    if src_path is None:
+        return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # noqa: E501, pylint: disable=protected-access,line-too-long
+    return os.path.join(tempfile.gettempdir(), f"{os.path.basename(src_path)}{suffix}")
 
 
 def distance(p0: list, p1: list) -> float:
@@ -1107,6 +1117,42 @@ class NmrVrptUtility:
 
         return __version__
 
+    @property
+    def dirPath(self) -> Optional[str]:
+        """ Retrieve the current working directory.
+        """
+
+        return self.__dirPath
+
+    @dirPath.setter
+    def dirPath(self, dirPath: Optional[str]) -> None:
+        """ Set cache directory path.
+        """
+
+        self.__dirPath = dirPath
+
+        if dirPath is not None:
+            if not os.path.isdir(dirPath):
+                os.makedirs(dirPath)
+
+    @property
+    def cacheDirPath(self) -> Optional[str]:
+        """ Retrieve cache directory path.
+        """
+
+        return self.__cacheDirPath
+
+    @cacheDirPath.setter
+    def cacheDirPath(self, cacheDirPath: Optional[str]) -> None:
+        """ Set cache directory path.
+        """
+
+        self.__cacheDirPath = cacheDirPath
+
+        if self.__use_cache and cacheDirPath is not None:
+            if not os.path.isdir(cacheDirPath):
+                os.makedirs(cacheDirPath)
+
     def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.
         """
@@ -1320,7 +1366,8 @@ class NmrVrptUtility:
                 if self.__dirPath is None:
                     self.__dirPath = os.path.dirname(self.__cifPath)
 
-                self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
+                if self.__cacheDirPath is None:
+                    self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
 
                 if not os.path.isdir(self.__cacheDirPath):
                     os.makedirs(self.__cacheDirPath)
@@ -1394,7 +1441,8 @@ class NmrVrptUtility:
                     if self.__dirPath is None:
                         self.__dirPath = os.path.dirname(fPath)
 
-                    self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
+                    if self.__cacheDirPath is None:
+                        self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
 
                     if not os.path.isdir(self.__cacheDirPath):
                         os.makedirs(self.__cacheDirPath)
@@ -1423,7 +1471,8 @@ class NmrVrptUtility:
                 if self.__dirPath is None:
                     self.__dirPath = os.path.dirname(self.__cifPath)
 
-                self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
+                if self.__cacheDirPath is None:
+                    self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
 
                 if not os.path.isdir(self.__cacheDirPath):
                     os.makedirs(self.__cacheDirPath)
@@ -1506,14 +1555,17 @@ class NmrVrptUtility:
 
             return True
 
-        def get_tempfile_name(suffix: str = ''):
-            return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # noqa: E501, pylint: disable=protected-access,line-too-long
+        def get_next_file_path(src_path, suffix='~'):
+            src_path_next = src_path + suffix
+            if self.__dirPath is not None:
+                src_path_next = os.path.join(self.__dirPath, os.path.basename(src_path_next))
+            return src_path_next
 
         if NMR_STR_FILE_PATH_KEY in self.__inputParamDict:
 
             fPath = self.__inputParamDict[NMR_STR_FILE_PATH_KEY]
 
-            _fPath = get_tempfile_name('.str2cif')
+            _fPath = get_next_file_path(fPath, '.str2cif')
 
             try:
 
@@ -1533,7 +1585,7 @@ class NmrVrptUtility:
                     self.__rR = CifReader(self.__verbose, self.__log,
                                           use_cache=False)
 
-                    if self.__rR.parse(_fPath, self.__dirPath):
+                    if self.__rR.parse(_fPath):
                         self.__nmrDataPath = fPath
                         if self.__use_cache:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
@@ -1553,8 +1605,8 @@ class NmrVrptUtility:
 
             master_entry = self.__inputParamDict[PYNMRSTAR_OBJ_KEY]
 
-            _fPath = get_tempfile_name('.str')
-            __fPath = _fPath + '.str2cif'
+            _fPath = get_temp_file_path(None, '.str')
+            __fPath = f'{_fPath}.str2cif'
 
             try:
 
@@ -1576,7 +1628,7 @@ class NmrVrptUtility:
                     self.__rR = CifReader(self.__verbose, self.__log,
                                           use_cache=False)
 
-                    if self.__rR.parse(__fPath, self.__dirPath):
+                    if self.__rR.parse(__fPath):
                         self.__nmrDataPath = _fPath
                         if self.__use_cache:
                             self.__nmrDataHashCode = self.__rR.getHashCode()

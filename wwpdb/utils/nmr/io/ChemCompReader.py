@@ -175,7 +175,7 @@ class ChemCompReader:
         self.__filePath = os.path.join(self.__topCachePath,
                                        self.__compId[-2:] if len(self.__compId) > 3 else self.__compId[0],
                                        self.__compId,
-                                       self.__compId + '.cif')
+                                       f'{self.__compId}.cif')
 
         if not os.access(self.__filePath, os.R_OK):
             if self.__verbose:

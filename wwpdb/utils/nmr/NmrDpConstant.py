@@ -539,6 +539,8 @@ BMRB_ID_PAT = re.compile(r'^(bmr)?([1-9]\d{0,4})$')
 
 DEP_ID_PAT = re.compile(r'^D_[1-9]\d{5,9}$')
 
+CNV_ID_PAT = re.compile(r'^C_[1-9]\d{6}$')
+
 CCD_ID_PAT = re.compile(r'^(\w{1,3}|\w{5})$')
 
 BMRB_NMR_STAR_FILE_NAME_PAT = re.compile(r'^bmr[1-9]\d{0,4}_3.str$')

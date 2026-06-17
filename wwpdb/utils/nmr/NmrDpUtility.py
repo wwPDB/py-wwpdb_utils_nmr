@@ -379,6 +379,7 @@ try:
                                                MAX_CONFLICT_ATTEMPT,
                                                PDB_ID_PAT,
                                                BMRB_ID_PAT,
+                                               CNV_ID_PAT,
                                                WORK_MODEL_FILE_NAME_PAT,
                                                CHK_DESC_PAT,
                                                CHK_DESC_ONE_PAT,
@@ -517,6 +518,7 @@ except ImportError:
                                    MAX_CONFLICT_ATTEMPT,
                                    PDB_ID_PAT,
                                    BMRB_ID_PAT,
+                                   CNV_ID_PAT,
                                    WORK_MODEL_FILE_NAME_PAT,
                                    CHK_DESC_PAT,
                                    CHK_DESC_ONE_PAT,
@@ -1174,6 +1176,17 @@ class NmrDpUtility:
                 if self.__reg.bmrb_id is not None:
                     # DAOTHER-9511: replace white space in a datablock name to underscore
                     self.__reg.entry_id = self.__reg.bmrb_id.strip().replace(' ', '_')
+
+            if self.__reg.conversion_server:
+                if self.__reg.entry_id is not None and CNV_ID_PAT.match(self.__reg.entry_id):
+                    self.__reg.bmrb_id = self.__reg.entry_id
+                elif has_key_value(self.__reg.inputParamDict, 'bmrb_id'):
+                    if isinstance(self.__reg.inputParamDict['bmrb_id'], int):
+                        if CNV_ID_PAT.match(f"C_{self.__reg.inputParamDict['bmrb_id']}"):
+                            self.__reg.entry_id = self.__reg.bmrb_id = f"C_{self.__reg.inputParamDict['bmrb_id']}"
+                    elif isinstance(self.__reg.inputParamDict['bmrb_id'], str):
+                        if CNV_ID_PAT.match(self.__reg.inputParamDict['bmrb_id']):
+                            self.__reg.entry_id = self.__reg.bmrb_id = self.__reg.inputParamDict['bmrb_id']
 
         self.__reg.assembly_name = '?'
 

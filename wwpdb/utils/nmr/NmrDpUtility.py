@@ -1149,6 +1149,25 @@ class NmrDpUtility:
             self.__dstPath__ = copy.copy(self.__reg.dstPath)
             self.__tmpPath = self.__dstPath__
 
+        if has_key_value(self.__reg.outputParamDict, 'entry_id'):
+            # DAOTHER-9511: replace white space in a datablock name to underscore
+            self.__reg.entry_id = self.__reg.outputParamDict['entry_id'].strip().replace(' ', '_')
+
+        if has_key_value(self.__reg.inputParamDict, 'validation_server'):
+            if isinstance(self.__reg.inputParamDict['validation_server'], bool):
+                self.__reg.validation_server = self.__reg.inputParamDict['validation_server']
+            else:
+                self.__reg.validation_server = self.__reg.inputParamDict['validation_server'] in TRUE_VALUE
+
+        if has_key_value(self.__reg.inputParamDict, 'conversion_server'):
+            if isinstance(self.__reg.inputParamDict['conversion_server'], bool):
+                self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server']
+            else:
+                self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server'] in TRUE_VALUE
+
+            self.__reg.nefT.permit_missing_chem_shift(True)
+            self.__reg.bmrb_only = self.__reg.internal_mode = True
+
         if has_key_value(self.__reg.inputParamDict, 'bmrb_only'):
             if isinstance(self.__reg.inputParamDict['bmrb_only'], bool):
                 self.__reg.bmrb_only = self.__reg.inputParamDict['bmrb_only']
@@ -1161,7 +1180,19 @@ class NmrDpUtility:
             self.__reg.cs_diff_error_scaled_by_sigma = 5.0
             self.__reg.nefT.set_bmrb_only_mode(True)
 
-            if has_key_value(self.__reg.inputParamDict, 'bmrb_id'):
+            if self.__reg.conversion_server:
+                if self.__reg.entry_id is not None and CNV_ID_PAT.match(self.__reg.entry_id):
+                    self.__reg.bmrb_id = self.__reg.entry_id
+                # mitigation: in case bmrb_id has valid conversion_id, instead of entry_id
+                elif has_key_value(self.__reg.inputParamDict, 'bmrb_id'):
+                    if isinstance(self.__reg.inputParamDict['bmrb_id'], int):
+                        if CNV_ID_PAT.match(f"C_{self.__reg.inputParamDict['bmrb_id']}"):
+                            self.__reg.entry_id = self.__reg.bmrb_id = f"C_{self.__reg.inputParamDict['bmrb_id']}"
+                    elif isinstance(self.__reg.inputParamDict['bmrb_id'], str):
+                        if CNV_ID_PAT.match(self.__reg.inputParamDict['bmrb_id']):
+                            self.__reg.entry_id = self.__reg.bmrb_id = self.__reg.inputParamDict['bmrb_id']
+
+            elif has_key_value(self.__reg.inputParamDict, 'bmrb_id'):
                 if isinstance(self.__reg.inputParamDict['bmrb_id'], int):
                     self.__reg.bmrb_id = str(self.__reg.inputParamDict['bmrb_id'])
                 elif isinstance(self.__reg.inputParamDict['bmrb_id'], str):
@@ -1176,17 +1207,6 @@ class NmrDpUtility:
                 if self.__reg.bmrb_id is not None:
                     # DAOTHER-9511: replace white space in a datablock name to underscore
                     self.__reg.entry_id = self.__reg.bmrb_id.strip().replace(' ', '_')
-
-            if self.__reg.conversion_server:
-                if self.__reg.entry_id is not None and CNV_ID_PAT.match(self.__reg.entry_id):
-                    self.__reg.bmrb_id = self.__reg.entry_id
-                elif has_key_value(self.__reg.inputParamDict, 'bmrb_id'):
-                    if isinstance(self.__reg.inputParamDict['bmrb_id'], int):
-                        if CNV_ID_PAT.match(f"C_{self.__reg.inputParamDict['bmrb_id']}"):
-                            self.__reg.entry_id = self.__reg.bmrb_id = f"C_{self.__reg.inputParamDict['bmrb_id']}"
-                    elif isinstance(self.__reg.inputParamDict['bmrb_id'], str):
-                        if CNV_ID_PAT.match(self.__reg.inputParamDict['bmrb_id']):
-                            self.__reg.entry_id = self.__reg.bmrb_id = self.__reg.inputParamDict['bmrb_id']
 
         self.__reg.assembly_name = '?'
 
@@ -1247,16 +1267,6 @@ class NmrDpUtility:
             else:
                 self.__reg.validation_server = self.__reg.inputParamDict['validation_server'] in TRUE_VALUE
 
-        if has_key_value(self.__reg.inputParamDict, 'conversion_server'):
-            if isinstance(self.__reg.inputParamDict['conversion_server'], bool):
-                self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server']
-            else:
-                self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server'] in TRUE_VALUE
-
-        if self.__reg.conversion_server:
-            self.__reg.nefT.permit_missing_chem_shift(True)
-            self.__reg.bmrb_only = self.__reg.internal_mode = True
-
         if has_key_value(self.__reg.inputParamDict, 'transl_pseudo_name'):
             if isinstance(self.__reg.inputParamDict['transl_pseudo_name'], bool):
                 self.__reg.transl_pseudo_name = self.__reg.inputParamDict['transl_pseudo_name']
@@ -1311,10 +1321,6 @@ class NmrDpUtility:
         if has_key_value(self.__reg.inputParamDict, 'rmsd_overlaid_exactly'):
             if isinstance(self.__reg.inputParamDict['rmsd_overlaid_exactly'], float):
                 self.__reg.rmsd_overlaid_exactly = self.__reg.inputParamDict['rmsd_overlaid_exactly']
-
-        if has_key_value(self.__reg.outputParamDict, 'entry_id'):
-            # DAOTHER-9511: replace white space in a datablock name to underscore
-            self.__reg.entry_id = self.__reg.outputParamDict['entry_id'].strip().replace(' ', '_')
 
         if has_key_value(self.__reg.outputParamDict, 'retain_original'):
             if isinstance(self.__reg.outputParamDict['retain_original'], bool):

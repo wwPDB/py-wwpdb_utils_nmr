@@ -1153,6 +1153,18 @@ class NmrVrptUtility:
             if not os.path.isdir(cacheDirPath):
                 os.makedirs(cacheDirPath)
 
+    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+        """ Return candidate next file path.
+        """
+        assert len(suffix) > 0
+
+        src_path_next = src_path + suffix
+
+        if self.__dirPath is not None:
+            src_path_next = os.path.join(self.__dirPath, os.path.basename(src_path_next))
+
+        return src_path_next
+
     def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.
         """
@@ -1555,18 +1567,11 @@ class NmrVrptUtility:
 
             return True
 
-        def get_next_file_path(src_path, suffix='~'):
-            assert len(suffix) > 0
-            src_path_next = src_path + suffix
-            if self.__dirPath is not None:
-                src_path_next = os.path.join(self.__dirPath, os.path.basename(src_path_next))
-            return src_path_next
-
         if NMR_STR_FILE_PATH_KEY in self.__inputParamDict:
 
             fPath = self.__inputParamDict[NMR_STR_FILE_PATH_KEY]
 
-            _fPath = get_next_file_path(fPath, '.str2cif')
+            _fPath = self.getNextFilePath(fPath, '.str2cif')
 
             try:
 

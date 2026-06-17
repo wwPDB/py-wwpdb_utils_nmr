@@ -285,6 +285,7 @@ class CifReader:
 
         # the current working directory
         self.__dirPath = None
+
         # directory for cache files
         self.__cacheDirPath = None
 

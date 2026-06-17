@@ -351,6 +351,28 @@ class NmrDpRemediation:
 
         self.__paramag = False
 
+    def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
+        """ Return basename(src_path) + suffix file in either current workspace or default workspace if possible.
+        """
+        assert len(suffix) > 0
+
+        test_path = src_path + suffix
+
+        if os.path.exists(test_path):
+            return test_path
+
+        if self.__reg.dirPath == self.__reg.spareDirPath:
+            return test_path if defer_check else src_path
+
+        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
+
+        if not os.path.exists(chk_path):
+            return test_path if defer_check else src_path
+
+        os.symlink(chk_path, test_path)
+
+        return test_path
+
     def cleanUpSf(self) -> bool:
         """ Clean-up third-party saveframes.
         """
@@ -10168,11 +10190,10 @@ class NmrDpRemediation:
             if file_type is None or (not file_type.startswith('nm-shi-') and file_type != 'nm-aux-xea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
-            if os.path.exists(file_path + '-corrected'):
-                file_path = file_path + '-corrected'
+            file_path = self.testPathWithSuffix(file_path, '-corrected')
 
             file_name = input_source_dic['file_name']
 
@@ -11074,8 +11095,7 @@ class NmrDpRemediation:
                                                self.__reg.cR, self.__reg.caC,
                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
 
-                        if os.path.exists(file_path + '-corrected'):
-                            file_path = file_path + '-corrected'
+                        file_path = self.testPathWithSuffix(file_path, '-corrected')
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath)
 
@@ -11226,7 +11246,7 @@ class NmrDpRemediation:
                or file_type.startswith('nm-pea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             content_subtype = input_source_dic['content_subtype']
@@ -11636,7 +11656,7 @@ class NmrDpRemediation:
                or file_type.startswith('nm-pea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             file_name = input_source_dic['file_name']
@@ -13364,10 +13384,7 @@ class NmrDpRemediation:
             fileListId = self.__reg.file_path_list_len
 
             for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
-                file_path = ar['file_name']
-
-                if os.path.exists(file_path + '-corrected'):
-                    file_path = file_path + '-corrected'
+                file_path = self.testPathWithSuffix(ar['file_name'], '-corrected')
 
                 input_source = self.__reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
@@ -13724,11 +13741,10 @@ class NmrDpRemediation:
             if file_type.startswith('nm-res') or file_type.startswith('nm-aux'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
-            if os.path.exists(file_path + '-corrected'):
-                file_path = file_path + '-corrected'
+            file_path = self.testPathWithSuffix(file_path, '-corrected')
 
             file_name = input_source_dic['file_name']
 
@@ -18124,8 +18140,8 @@ class NmrDpRemediation:
                             data_format
                         software_dict[data_format] = (software_id, _code)
 
-                sel_res_cif_file = os.path.join(dir_path, file_path + '-selected-as-res-cif')
-                sel_res_oth_file = os.path.join(dir_path, file_path + '-selected-as-res-oth')
+                sel_res_cif_file = self.testPathWithSuffix(os.path.join(dir_path, file_path), '-selected-as-res-cif', True)
+                sel_res_oth_file = self.testPathWithSuffix(os.path.join(dir_path, file_path), '-selected-as-res-oth', True)
 
                 if os.path.exists(sel_res_cif_file):
                     data_format = 'mmCIF'

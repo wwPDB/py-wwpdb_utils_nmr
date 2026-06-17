@@ -404,6 +404,40 @@ class NmrDpValidation:
         # RCI
         self.__rci = RCI(False, self.__reg.log)
 
+    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+        """ Return candidate next file path.
+        """
+        assert len(suffix) > 0
+
+        src_path_next = src_path + suffix
+
+        if self.__reg.dirPath is not None:
+            src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
+
+        return src_path_next
+
+    def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
+        """ Return basename(src_path) + suffix file in either current workspace or default workspace if possible.
+        """
+        assert len(suffix) > 0
+
+        test_path = src_path + suffix
+
+        if os.path.exists(test_path):
+            return test_path
+
+        if self.__reg.dirPath == self.__reg.spareDirPath:
+            return test_path if defer_check else src_path
+
+        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
+
+        if not os.path.exists(chk_path):
+            return test_path if defer_check else src_path
+
+        os.symlink(chk_path, test_path)
+
+        return test_path
+
     def getChemCompNameAndStatusOf(self, comp_id: str
                                    ) -> Tuple[bool, Optional[str], Optional[str]]:
         """ Return _chem_comp.name and release status a given CCD ID, if possible.
@@ -523,13 +557,6 @@ class NmrDpValidation:
         """ Validate NMR data as primary input source.
         """
 
-        def get_next_file_path(src_path, suffix='~'):
-            assert len(suffix) > 0
-            src_path_next = src_path + suffix
-            if self.__reg.dirPath is not None:
-                src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
-            return src_path_next
-
         if srcPath is None:
             srcPath = self.__reg.srcPath
 
@@ -537,8 +564,9 @@ class NmrDpValidation:
 
         if self.__reg.combined_mode:
 
+            self.__reg.spareDirPath = os.path.dirname(srcPath)
             if self.__reg.dirPath is None:
-                self.__reg.dirPath = os.path.dirname(srcPath)
+                self.__reg.dirPath = self.__reg.spareDirPath
 
             if os.path.exists(srcPath):
                 codec = detect_bom(srcPath, 'utf-8')
@@ -546,12 +574,12 @@ class NmrDpValidation:
                 _srcPath = None
 
                 if codec != 'utf-8':
-                    _srcPath = get_next_file_path(srcPath)
+                    _srcPath = self.getNextFilePath(srcPath)
                     convert_codec(srcPath, _srcPath, codec, 'utf-8')
                     srcPath = _srcPath
 
                 if is_rtf_file(srcPath):
-                    _srcPath = get_next_file_path(srcPath, '.rtf2txt')
+                    _srcPath = self.getNextFilePath(srcPath, '.rtf2txt')
                     convert_rtf_to_ascii(srcPath, _srcPath)
                     srcPath = _srcPath
 
@@ -559,7 +587,7 @@ class NmrDpValidation:
 
             if not is_valid:
 
-                _srcPath = get_next_file_path(srcPath, '.cif2str')
+                _srcPath = self.getNextFilePath(srcPath, '.cif2str')
                 if self.__reg.c2S.convert(srcPath, _srcPath):
                     is_valid, message = self.__reg.nefT.validate_file(_srcPath, 'A')  # 'A' for NMR unified data
                     self.__reg.srcPath = srcPath = _srcPath
@@ -678,7 +706,7 @@ class NmrDpValidation:
 
                     if not os.path.basename(csPath).startswith('bmr'):
 
-                        _csPath = get_next_file_path(csPath, '.cif2str')
+                        _csPath = self.getNextFilePath(csPath, '.cif2str')
                         if not self.__reg.c2S.convert(csPath, _csPath,
                                                       originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):  # noqa: E501, pylint: disable=line-too-long
                             _csPath = csPath
@@ -690,12 +718,12 @@ class NmrDpValidation:
                     _csPath = None
 
                     if codec != 'utf-8':
-                        _csPath = get_next_file_path(csPath)
+                        _csPath = self.getNextFilePath(csPath)
                         convert_codec(csPath, _csPath, codec, 'utf-8')
                         csPath = _csPath
 
                     if is_rtf_file(csPath):
-                        _csPath = get_next_file_path(csPath, '.rtf2txt')
+                        _csPath = self.getNextFilePath(csPath, '.rtf2txt')
                         convert_rtf_to_ascii(csPath, _csPath)
                         csPath = _csPath
 
@@ -721,7 +749,7 @@ class NmrDpValidation:
 
                             if self.__reg.internal_mode and _file_type == 'nef':
 
-                                _csPath = get_next_file_path(csPath, '.nef2str')
+                                _csPath = self.getNextFilePath(csPath, '.nef2str')
 
                                 try:
 
@@ -854,8 +882,9 @@ class NmrDpValidation:
                     csPath = cs['file_name']
 
                 if csListId == 0:
+                    self.__reg.spareDirPath = os.path.dirname(csPath)
                     if self.__reg.dirPath is None:
-                        self.__reg.dirPath = os.path.dirname(csPath)
+                        self.__reg.dirPath = self.__reg.spareDirPath
 
                 if csPath.endswith('.gz'):
 
@@ -883,7 +912,7 @@ class NmrDpValidation:
 
                 if self.__reg.op == 'nmr-cs-mr-merge' and not os.path.basename(csPath).startswith('bmr'):
 
-                    _csPath = get_next_file_path(csPath, '.cif2str')
+                    _csPath = self.getNextFilePath(csPath, '.cif2str')
                     if not self.__reg.c2S.convert(csPath, _csPath,
                                                   originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):
                         _csPath = csPath
@@ -895,12 +924,12 @@ class NmrDpValidation:
                 _csPath = None
 
                 if codec != 'utf-8':
-                    _csPath = get_next_file_path(csPath)
+                    _csPath = self.getNextFilePath(csPath)
                     convert_codec(csPath, _csPath, codec, 'utf-8')
                     csPath = _csPath
 
                 if is_rtf_file(csPath):
-                    _csPath = get_next_file_path(csPath, '.rtf2txt')
+                    _csPath = self.getNextFilePath(csPath, '.rtf2txt')
                     convert_rtf_to_ascii(csPath, _csPath)
                     csPath = _csPath
 
@@ -963,7 +992,7 @@ class NmrDpValidation:
 
                         if self.__reg.internal_mode and _file_type == 'nef':
 
-                            _csPath = get_next_file_path(csPath, '.nef2str')
+                            _csPath = self.getNextFilePath(csPath, '.nef2str')
 
                             try:
 
@@ -1105,12 +1134,12 @@ class NmrDpValidation:
                     _mrPath = None
 
                     if codec != 'utf-8':
-                        _mrPath = get_next_file_path(mrPath)
+                        _mrPath = self.getNextFilePath(mrPath)
                         convert_codec(mrPath, _mrPath, codec, 'utf-8')
                         mrPath = _mrPath
 
                     if is_rtf_file(mrPath):
-                        _mrPath = get_next_file_path(mrPath, '.rtf2txt')
+                        _mrPath = self.getNextFilePath(mrPath, '.rtf2txt')
                         convert_rtf_to_ascii(mrPath, _mrPath)
                         mrPath = _mrPath
 
@@ -1148,12 +1177,11 @@ class NmrDpValidation:
                     else:
                         mrPath = mr['file_name']
 
-                    if os.path.exists(mrPath + '-corrected'):
-                        mrPath = mrPath + '-corrected'
+                    mrPath = self.testPathWithSuffix(mrPath, '-corrected')
 
                     if self.__reg.op == 'nmr-cs-mr-merge':
 
-                        _mrPath = get_next_file_path(mrPath, '.cif2str')
+                        _mrPath = self.getNextFilePath(mrPath, '.cif2str')
                         if not self.__reg.c2S.convert(mrPath, _mrPath,
                                                       originalFileName=mr.get('original_file_name') if isinstance(mr, dict) else None):  # noqa: E501, pylint: disable=line-too-long
                             mrPath = _mrPath
@@ -1163,12 +1191,12 @@ class NmrDpValidation:
                     _mrPath = None
 
                     if codec != 'utf-8':
-                        _mrPath = get_next_file_path(mrPath)
+                        _mrPath = self.getNextFilePath(mrPath)
                         convert_codec(mrPath, _mrPath, codec, 'utf-8')
                         mrPath = _mrPath
 
                     if is_rtf_file(mrPath):
-                        _mrPath = get_next_file_path(mrPath, '.rtf2txt')
+                        _mrPath = self.getNextFilePath(mrPath, '.rtf2txt')
                         convert_rtf_to_ascii(mrPath, _mrPath)
                         mrPath = _mrPath
 
@@ -1293,12 +1321,12 @@ class NmrDpValidation:
                     codec = detect_bom(arPath, 'utf-8')
 
                     if codec != 'utf-8':
-                        arPath_ = get_next_file_path(arPath)
+                        arPath_ = self.getNextFilePath(arPath)
                         convert_codec(arPath, arPath_, codec, 'utf-8')
                         arPath = arPath_
 
                     if is_rtf_file(arPath):
-                        arPath_ = get_next_file_path(arPath, '.rtf2txt')
+                        arPath_ = self.getNextFilePath(arPath, '.rtf2txt')
                         convert_rtf_to_ascii(arPath, arPath_)
                         arPath = arPath_
 
@@ -1312,12 +1340,12 @@ class NmrDpValidation:
                     codec = detect_bom(acsPath, 'utf-8')
 
                     if codec != 'utf-8':
-                        acsPath_ = get_next_file_path(acsPath)
+                        acsPath_ = self.getNextFilePath(acsPath)
                         convert_codec(acsPath, acsPath_, codec, 'utf-8')
                         acsPath = acsPath_
 
                     if is_rtf_file(acsPath):
-                        acsPath_ = get_next_file_path(acsPath, '.rtf2txt')
+                        acsPath_ = self.getNextFilePath(acsPath, '.rtf2txt')
                         convert_rtf_to_ascii(acsPath, acsPath_)
                         acsPath = acsPath_
 
@@ -1699,8 +1727,7 @@ class NmrDpValidation:
                                 cs_file_name = cs_file_name[:-10]
 
                             cs_base_name = cs_file_name
-                            cs_file_name = cs_base_name + '-corrected.str'
-                            cs_file_path = os.path.join(dir_path, cs_file_name)
+                            cs_file_path = self.testPathWithSuffix(os.path.join(dir_path, cs_base_name), '-corrected.str')
 
                             if not os.path.exists(cs_file_path):
                                 self.__reg.star_data[0].write_to_file(cs_file_path,

@@ -30,7 +30,6 @@ import json
 import logging
 import os
 import sys
-import tempfile
 from operator import itemgetter
 from typing import Any, IO, Optional, Union
 
@@ -64,15 +63,6 @@ if __pynmrstar_v3_3_1__:
     logger.setLevel(logging.ERROR)
 else:
     logging.getLogger().setLevel(logging.ERROR)  # set level for pynmrstar
-
-
-def get_temp_file_path(src_path: str = None, suffix: str = '~'):
-    """ Return tempfile path based on given hints.
-    """
-
-    if src_path is None:
-        return os.path.join(tempfile.gettempdir(), f"{next(tempfile._get_candidate_names())}{suffix}")  # noqa: E501, pylint: disable=protected-access,line-too-long
-    return os.path.join(tempfile.gettempdir(), f"{os.path.basename(src_path)}{suffix}")
 
 
 def has_key_value(d: dict, key: Any) -> bool:
@@ -232,7 +222,8 @@ class CifToNmrStar:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__log',
-                 'schema_dir',
+                 '__dirPath',
+                 '__schemaDirPath',
                  'pynmrstar_schema',
                  'schema',
                  'category_order',
@@ -244,10 +235,13 @@ class CifToNmrStar:
 
         self.__log = log
 
-        # directory
-        self.schema_dir = os.path.join(os.path.dirname(__file__), 'nmr-star_schema')
+        # the current working directory
+        self.__dirPath = None
 
-        self.pynmrstar_schema = pynmrstar.Schema(os.path.join(self.schema_dir, 'xlschem_ann.csv'))
+        # directory contains schema
+        self.__schemaDirPath = os.path.join(os.path.dirname(__file__), 'nmr-star_schema')
+
+        self.pynmrstar_schema = pynmrstar.Schema(os.path.join(self.__schemaDirPath, 'xlschem_ann.csv'))
 
         self.schema = self.pynmrstar_schema.schema
         self.category_order = self.pynmrstar_schema.category_order
@@ -261,6 +255,32 @@ class CifToNmrStar:
                                    '_nef_rdc_restraint_list',
                                    '_nef_nmr_spectrum',
                                    '_nef_peak_restraint_links')
+
+    @property
+    def dirPath(self) -> Optional[str]:
+        """ Retrieve current working directory.
+        """
+
+        return self.__dirPath
+
+    @dirPath.setter
+    def dirPath(self, dirPath: Optional[str]) -> None:
+        """ Set current working directory.
+        """
+
+        self.__dirPath = dirPath
+
+    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+        """ Return candidate next file path.
+        """
+        assert len(suffix) > 0
+
+        src_path_next = src_path + suffix
+
+        if self.__dirPath is not None:
+            src_path_next = os.path.join(self.__dirPath, os.path.basename(src_path_next))
+
+        return src_path_next
 
     def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None,
                 datablockName: Optional[str] = None, originalFileName: Optional[str] = None, maxRepeat: int = 1) -> bool:
@@ -297,7 +317,7 @@ class CifToNmrStar:
                 elif has_datablock or not has_anonymous_saveframe:
                     return False
 
-                _cifPath = get_temp_file_path(cifPath)
+                _cifPath = self.getNextFilePath(cifPath)
 
                 with open(cifPath, 'r', encoding='utf-8') as ifh, \
                         open(_cifPath, 'w', encoding='utf-8') as ofh:
@@ -629,6 +649,8 @@ class CifToNmrStar:
 
             split_ext = os.path.splitext(cifPath)
             _cifPath = split_ext[0] + '-corrected' + ('' if len(split_ext) == 1 else split_ext[1])
+            if self.__dirPath is not None:
+                _cifPath = os.path.join(self.__dirPath, os.path.basename(_cifPath))
 
             changed = False
 

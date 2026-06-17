@@ -112,7 +112,7 @@ workflow operation|role|primary output file(s) and its file path API
 
 6. Setup working and cache directory if necessary
 
-By default, NmrDpUtility sets the current working directory to store intermediate processing files and creates a directory named `utils_nmr` within the current working directory to store cache files for performance improvement. The working directory and the cache directory can be configured independently by using **setWorkspace(dirPath: str, cacheDirPath: str = None)**. If cacheDirPath is None, the cache directory will be created under the specified working directory. Considering the reprocessing of files using the same coordinates or the same NMR data, stored cache files can be reused, resulting in improved performance. It would be better to share a common cache directory across a session.
+By default, NmrDpUtility sets the current working directory to store intermediate processing files and creates a directory named `utils_nmr` within the current working directory to store cache files for performance improvement. The working directory and the cache directory can be configured independently by using **setWorkspace(dirPath: str, cacheDirPath: str = None)**. If cacheDirPath is None, the cache directory will be created under the specified working directory. Considering the reprocessing of files using the same coordinates or the same NMR data, stored cache files can be reused, resulting in improved performance. It would be better to share a common cache directory across a session. NOTE: The specified workspace is updated to its default settings after each workflow operation is completed. Therefore, in order to continue applying the workspace settings, you need to configure the workspace again.
 
 ## Typical workflow operations
 

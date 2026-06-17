@@ -57,6 +57,7 @@ except ImportError:
     from nmr.NmrDpReport import (NmrDpReport,
                                  NmrDpReportOutputStatistics)
 
+
 @dataclass
 class NmrDpRegistry:
     """ Registry class for NMR data processing.
@@ -172,6 +173,9 @@ class NmrDpRegistry:
 
     # current working directory
     dirPath: str = None
+
+    # spare working directory for backward compatibility (to find manual remediated files in the default workspace)
+    spareDirPath: str = None
 
     # directory for cache files
     cacheDirPath: str = None

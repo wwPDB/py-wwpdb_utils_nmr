@@ -869,6 +869,40 @@ class NmrDpUtility:
         # NMRIF reader
         self.__nmrIfR = None
 
+    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+        """ Return candidate next file path.
+        """
+        assert len(suffix) > 0
+
+        src_path_next = src_path + suffix
+
+        if self.__reg.dirPath is not None:
+            src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
+
+        return src_path_next
+
+    def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
+        """ Return basename(src_path) + suffix file in either current workspace or default workspace if possible.
+        """
+        assert len(suffix) > 0
+
+        test_path = src_path + suffix
+
+        if os.path.exists(test_path):
+            return test_path
+
+        if self.__reg.dirPath == self.__reg.spareDirPath:
+            return test_path if defer_check else src_path
+
+        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
+
+        if not os.path.exists(chk_path):
+            return test_path if defer_check else src_path
+
+        os.symlink(chk_path, test_path)
+
+        return test_path
+
     def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.
         """
@@ -920,11 +954,15 @@ class NmrDpUtility:
                 os.makedirs(dirPath)
             self.__reg.dirPath = dirPath
 
+            # share current working directory with Cif2NmrStar
+            self.__reg.c2S.dirPath = dirPath
+
         if cacheDirPath is not None:
             if not os.path.isdir(cacheDirPath):
                 os.makedirs(cacheDirPath)
             self.__reg.cacheDirPath = cacheDirPath
 
+            # share the cache directory with CifReader
             self.__reg.cR.cacheDirPath = cacheDirPath
 
     def addInput(self, name: Optional[str] = None, value: Any = None, type: str = 'file') -> None:  # noqa: E501, pylint: disable=redefined-builtin,line-too-long
@@ -1448,9 +1486,13 @@ class NmrDpUtility:
             return False
 
         finally:
+            # NOTE: The specified workspace by setWorkspace() is updated to its default settings
+            # after each workflow operation is completed.
+            # Therefore, in order to continue applying the workspace settings, you need to configure the workspace again.
             self.__reg.dirPath = None
             self.__reg.cacheDirPath = None
 
+            self.__reg.c2S.dirPath = None
             self.__reg.cR.cacheDirPath = None
 
             self.__reg.report = None
@@ -1516,13 +1558,6 @@ class NmrDpUtility:
     def __initializeDpReport(self, srcPath: str = None, calcOutputStats: bool = False) -> bool:
         """ Initialize NMR data processing report.
         """
-
-        def get_next_file_path(src_path, suffix='~'):
-            assert len(suffix) > 0
-            src_path_next = src_path + suffix
-            if self.__reg.dirPath is not None:
-                src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
-            return src_path_next
 
         srcName = None
         if srcPath is None:
@@ -1612,7 +1647,7 @@ class NmrDpUtility:
 
                             input_source.setItemValue('original_file_name', os.path.basename(cs))
 
-                            _cs = get_next_file_path(cs, '.cif2str')
+                            _cs = self.getNextFilePath(cs, '.cif2str')
                             if not self.__reg.c2S.convert(cs, _cs):
                                 _cs = cs
 
@@ -1656,7 +1691,7 @@ class NmrDpUtility:
                             if 'original_file_name' not in cs:
                                 input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
 
-                            _cs = get_next_file_path(cs['file_name'], '.cif2str')
+                            _cs = self.getNextFilePath(cs['file_name'], '.cif2str')
                             if not self.__reg.c2S.convert(cs['file_name'], _cs, originalFileName=cs.get('original_file_name')):
                                 _cs = cs['file_name']
 
@@ -1713,7 +1748,7 @@ class NmrDpUtility:
 
                         input_source.setItemValue('original_file_name', os.path.basename(cs))
 
-                        _cs = get_next_file_path(cs, '.cif2str')
+                        _cs = self.getNextFilePath(cs, '.cif2str')
                         if not self.__reg.c2S.convert(cs, _cs):
                             _cs = cs
 
@@ -1758,7 +1793,7 @@ class NmrDpUtility:
                         if 'original_file_name' not in cs:
                             input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
 
-                        _cs = get_next_file_path(cs['file_name'], '.cif2str')
+                        _cs = self.getNextFilePath(cs['file_name'], '.cif2str')
                         if not self.__reg.c2S.convert(cs['file_name'], _cs, originalFileName=cs.get('original_file_name')):
                             _cs = cs['file_name']
 
@@ -1788,7 +1823,7 @@ class NmrDpUtility:
 
                             input_source.setItemValue('original_file_name', os.path.basename(mr))
 
-                            _mr = get_next_file_path(mr, '.cif2str')
+                            _mr = self.getNextFilePath(mr, '.cif2str')
                             if not self.__reg.c2S.convert(mr, _mr):
                                 _mr = mr
 
@@ -1807,7 +1842,7 @@ class NmrDpUtility:
                             if 'original_file_name' not in mr:
                                 input_source.setItemValue('original_file_name', os.path.basename(mr['file_name']))
 
-                            _mr = get_next_file_path(mr['file_name'], '.cif2str')
+                            _mr = self.getNextFilePath(mr['file_name'], '.cif2str')
                             if not self.__reg.c2S.convert(mr['file_name'], _mr, originalFileName=mr.get('original_file_name')):
                                 _mr = mr['file_name']
 
@@ -1953,7 +1988,7 @@ class NmrDpUtility:
                         for test_file_type in ARCHIVAL_MR_FILE_TYPES:
                             if test_file_type == 'nmr-star':
                                 continue
-                            if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
+                            if os.path.exists(self.testPathWithSuffix(arPath, f'-selected-as-{test_file_type[-7:]}', True)):
                                 ar['file_type'] = test_file_type
                                 break
 
@@ -1964,7 +1999,7 @@ class NmrDpUtility:
                                 ar['file_type'] = file_type
 
                             for test_file_type in PARSABLE_PK_FILE_TYPES:
-                                if os.path.exists(arPath + f'-selected-as-{test_file_type[-7:]}'):
+                                if os.path.exists(self.testPathWithSuffix(arPath, f'-selected-as-{test_file_type[-7:]}', True)):
                                     ar['file_type'] = test_file_type
                                     break
 
@@ -1973,7 +2008,7 @@ class NmrDpUtility:
                             codec = detect_bom(arPath, 'utf-8')
 
                             if codec != 'utf-8':
-                                _arPath = get_next_file_path(arPath)
+                                _arPath = self.getNextFilePath(arPath)
                                 convert_codec(arPath, _arPath, codec, 'utf-8')
                                 arPath = _arPath
 
@@ -2006,7 +2041,7 @@ class NmrDpUtility:
 
                 nmr_cif = self.__reg.inputParamDict[NMR_CIF_FILE_PATH_KEY]
 
-                _nmr_cif = get_next_file_path(nmr_cif, '.cif2str')
+                _nmr_cif = self.getNextFilePath(nmr_cif, '.cif2str')
                 if self.__reg.c2S.convert(nmr_cif, _nmr_cif):
                     self.__reg.srcNmrCifPath = _nmr_cif
                     self.__reg.native_combined = True  # DAOTHER-8855
@@ -9297,13 +9332,6 @@ class NmrDpUtility:
                             return True
                 return False
 
-            def get_next_file_path(src_path, suffix='~'):
-                assert len(suffix) > 0
-                src_path_next = src_path + suffix
-                if self.__reg.dirPath is not None:
-                    src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
-                return src_path_next
-
             if self.__reg.internal_mode and self.__reg.cR.hasCategory('database_2')\
                and self.__reg.cR.hasCategory('pdbx_audit_revision_history'):
                 extended_pdb_id = None
@@ -9699,7 +9727,7 @@ class NmrDpUtility:
                and not self.__reg.cR.hasCategory('pdbx_poly_seq_scheme') and not self.__reg.cifPath.endswith('~'):
 
                 srcCifPath = self.__reg.cifPath
-                dstCifPath = get_next_file_path(self.__reg.cifPath)
+                dstCifPath = self.getNextFilePath(self.__reg.cifPath)
 
                 done = False
 
@@ -9812,12 +9840,14 @@ class NmrDpUtility:
 
             try:
 
+                self.__reg.spareDirPath = os.path.dirname(fPath)
                 if self.__reg.dirPath is None:
-                    self.__reg.dirPath = os.path.dirname(fPath)
+                    self.__reg.dirPath = self.__reg.spareDirPath
 
                 if self.__reg.cacheDirPath is None:
                     self.__reg.cacheDirPath = os.path.join(self.__reg.dirPath, SUB_DIR_NAME_FOR_CACHE)
 
+                # share the cache directory with CifReader
                 self.__reg.cR.cacheDirPath = self.__reg.cacheDirPath
 
                 self.__reg.cifPath = fPath

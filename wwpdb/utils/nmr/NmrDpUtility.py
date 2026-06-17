@@ -1499,6 +1499,7 @@ class NmrDpUtility:
         """
 
         def get_next_file_path(src_path, suffix='~'):
+            assert len(suffix) > 0
             src_path_next = src_path + suffix
             if self.__reg.dirPath is not None:
                 src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
@@ -9278,6 +9279,7 @@ class NmrDpUtility:
                 return False
 
             def get_next_file_path(src_path, suffix='~'):
+                assert len(suffix) > 0
                 src_path_next = src_path + suffix
                 if self.__reg.dirPath is not None:
                     src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))

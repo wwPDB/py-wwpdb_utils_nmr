@@ -26,7 +26,7 @@ NmrDpUtility accepts unified NMR data file as primary data source by default. Th
     util.setLog(data_dir_path + entry_id + '-nef-consistency-log.json')
     util.op('nmr-nef-consistency-check')
 ```
-where **setSource(fPath: str, originalName: str = None)** and **setLog(fPath: str)** are methods to add unified NMR data file and log file. The last **op()** runs designated tasks. The other source files, such as coordinate file, chemical shift files, and restraint files, should be set through the following method. NmrDpUtility supports combining assigned chemical shifts and NMR restraints into single NMR data file.
+where **setSource(fPath: str, originalName: str = None)** and **setLog(fPath: str)** are methods to add unified NMR data file and log file. The last **op(op: str)** runs designated tasks. The other source files, such as coordinate file, chemical shift files, and restraint files, should be set through the following method. NmrDpUtility supports combining assigned chemical shifts and NMR restraints into single NMR data file.
 
 3. Add input file path and parameters
 
@@ -92,7 +92,7 @@ name|type|description
 
 5. Invoke defined workflow operation
 
-After the input and output resources are complete, calling **op(op: str)** for a particular workflow operation performs a series of data processing.
+Once the input and output resources are ready, calling the **op()** on a specific workflow operation will execute a series of data processing steps.
 
 workflow operation|role|primary output file(s) and its file path API
 ------------------|----|-----------------------------------------
@@ -110,9 +110,9 @@ workflow operation|role|primary output file(s) and its file path API
 `nmr-if-merge-deposit`|Merge available NMR metadata (aka. NMRIF) to NMR-STAR file|CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 `nmr-str-replace-cs`|Replace the assigned chemical shifts in the combined NMR-STAR file with those in new chemical shift files|NMR-STAR file: **setDestination(file_path)**,<br />CIF formatted NMR-STAR file: **addOutput('`nmr_cif_file_path`', '`file`', file_path)**
 
-6. Set working and cache directory if necessary
+6. Setup working and cache directory if necessary
 
-By default, NmrDpUtility sets the current working directory to store intermediate processing files and creates a directory named `utils_nmr` within the current working directory to store cache files for performance improvement. The working directory and the cache file directory can be configured independently by using **setWorkspace(dirPath: str, cacheDirPath: str = None)**. If cacheDirPath is None, the cache file directory will be created under the specified working directory. Considering the reprocessing of files using the same coordinates or the same NMR data, cache files can be reused, resulting in improved performance. It would be better to share a common cache directory across all sessions.
+By default, NmrDpUtility sets the current working directory to store intermediate processing files and creates a directory named `utils_nmr` within the current working directory to store cache files for performance improvement. The working directory and the cache directory can be configured independently by using **setWorkspace(dirPath: str, cacheDirPath: str = None)**. If cacheDirPath is None, the cache directory will be created under the specified working directory. Considering the reprocessing of files using the same coordinates or the same NMR data, stored cache files can be reused, resulting in improved performance. It would be better to share a common cache directory across a session.
 
 ## Typical workflow operations
 

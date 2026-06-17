@@ -1556,6 +1556,7 @@ class NmrVrptUtility:
             return True
 
         def get_next_file_path(src_path, suffix='~'):
+            assert len(suffix) > 0
             src_path_next = src_path + suffix
             if self.__dirPath is not None:
                 src_path_next = os.path.join(self.__dirPath, os.path.basename(src_path_next))

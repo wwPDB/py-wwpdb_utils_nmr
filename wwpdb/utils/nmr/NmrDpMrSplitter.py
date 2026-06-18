@@ -69,7 +69,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import (getRestraintFormatName,
                                            getRestraintFormatNames)
     from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,
-                                                get_temp_file_path)
+                                                get_temp_path)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        startsWithPdbRecord,
                                                        getRestraintName)
@@ -151,7 +151,7 @@ except ImportError:
     from nmr.AlignUtil import (getRestraintFormatName,
                                getRestraintFormatNames)
     from nmr.NmrVrptUtility import (uncompress_gzip_file,
-                                    get_temp_file_path)
+                                    get_temp_path)
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            startsWithPdbRecord,
                                            getRestraintName)
@@ -453,12 +453,12 @@ def get_type_of_star_file(fPath: str) -> str:
     _fPath = __fPath = None
 
     if codec != 'utf-8':
-        _fPath = get_temp_file_path(fPath)
+        _fPath = get_temp_path(fPath)
         convert_codec(fPath, _fPath, codec, 'utf-8')
         fPath = _fPath
 
     if is_rtf_file(fPath):
-        __fPath = get_temp_file_path(fPath, '.rtf2txt')
+        __fPath = get_temp_path(fPath, '.rtf2txt')
         convert_rtf_to_ascii(fPath, __fPath)
         fPath = __fPath
 
@@ -592,7 +592,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                         try:
 
-                            fPath_next = get_temp_file_path(fPath)
+                            fPath_next = get_temp_path(fPath)
 
                             with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
                                     open(fPath_next, 'w', encoding='utf-8') as ofh:
@@ -615,7 +615,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
-                        fPath_next = get_temp_file_path(fPath)
+                        fPath_next = get_temp_path(fPath)
 
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
                                 open(fPath_next, 'w', encoding='utf-8') as ofh:
@@ -642,7 +642,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
-                        fPath_next = get_temp_file_path(fPath)
+                        fPath_next = get_temp_path(fPath)
 
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
                                 open(fPath_next, 'w', encoding='utf-8') as ofh:
@@ -666,7 +666,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                         i = 0
 
-                        fPath_next = get_temp_file_path(fPath)
+                        fPath_next = get_temp_path(fPath)
 
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
                                 open(fPath_next, 'w', encoding='utf-8') as ofh:
@@ -721,7 +721,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
-                        fPath_next = get_temp_file_path(fPath)
+                        fPath_next = get_temp_path(fPath)
 
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
                                 open(fPath_next, 'w', encoding='utf-8') as ofh:
@@ -1206,7 +1206,7 @@ class NmrDpMrSplitter:
 
         self.__cur_original_ar_file_name: str = None
 
-    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+    def getNextPath(self, src_path: str, suffix: str = '~') -> str:
         """ Return candidate next file path.
         """
         assert len(suffix) > 0
@@ -1219,7 +1219,7 @@ class NmrDpMrSplitter:
         return src_path_next
 
     def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
-        """ Return basename(src_path) + suffix file in either current workspace or default workspace if possible.
+        """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
         """
         assert len(suffix) > 0
 
@@ -1228,7 +1228,7 @@ class NmrDpMrSplitter:
         if os.path.exists(test_path):
             return test_path
 
-        if self.__reg.dirPath == self.__reg.spareDirPath:
+        if None in (self.__reg.dirPath, self.__reg.spareDirPath) or self.__reg.dirPath == self.__reg.spareDirPath:
             return test_path if defer_check else src_path
 
         chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
@@ -2863,7 +2863,7 @@ class NmrDpMrSplitter:
             codec = detect_bom(file_path, 'utf-8')
 
             if codec != 'utf-8':
-                _file_path = self.getNextFilePath(file_path)
+                _file_path = self.getNextPath(file_path)
                 convert_codec(file_path, _file_path, codec, 'utf-8')
                 file_path = _file_path
 
@@ -3009,7 +3009,7 @@ class NmrDpMrSplitter:
 
                 elif has_cif_format:
 
-                    _file_path = self.getNextFilePath(file_path, '.cif2str')
+                    _file_path = self.getNextPath(file_path, '.cif2str')
                     if not self.__reg.c2S.convert(file_path, _file_path):
                         _file_path = file_path
 
@@ -3595,12 +3595,12 @@ class NmrDpMrSplitter:
                         _mrPath = None
 
                         if codec != 'utf-8':
-                            _mrPath = self.getNextFilePath(mrPath)
+                            _mrPath = self.getNextPath(mrPath)
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
                             mrPath = _mrPath
 
                         if is_rtf_file(mrPath):
-                            _mrPath = self.getNextFilePath(mrPath, '.rtf2txt')
+                            _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                             convert_rtf_to_ascii(mrPath, _mrPath)
                             mrPath = _mrPath
 
@@ -3748,7 +3748,7 @@ class NmrDpMrSplitter:
 
                                 ofh.write(line)
 
-                        _mrPath = self.getNextFilePath(os.path.splitext(mrPath)[0], '.cif2str')
+                        _mrPath = self.getNextPath(os.path.splitext(mrPath)[0], '.cif2str')
                         if not self.__reg.c2S.convert(mrPath, _mrPath):
                             _mrPath = mrPath
 
@@ -3783,12 +3783,12 @@ class NmrDpMrSplitter:
                         _mrPath = None
 
                         if codec != 'utf-8':
-                            _mrPath = self.getNextFilePath(mrPath)
+                            _mrPath = self.getNextPath(mrPath)
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
                             mrPath = _mrPath
 
                         if is_rtf_file(mrPath):
-                            _mrPath = self.getNextFilePath(mrPath, '.rtf2txt')
+                            _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                             convert_rtf_to_ascii(mrPath, _mrPath)
                             mrPath = _mrPath
 
@@ -3943,12 +3943,12 @@ class NmrDpMrSplitter:
                 _mrPath = None
 
                 if codec != 'utf-8':
-                    _mrPath = self.getNextFilePath(mrPath)
+                    _mrPath = self.getNextPath(mrPath)
                     convert_codec(mrPath, _mrPath, codec, 'utf-8')
                     mrPath = _mrPath
 
                 if is_rtf_file(mrPath):
-                    _mrPath = self.getNextFilePath(mrPath, '.rtf2txt')
+                    _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                     convert_rtf_to_ascii(mrPath, _mrPath)
                     mrPath = _mrPath
 
@@ -4755,12 +4755,12 @@ class NmrDpMrSplitter:
                             _mrPath = None
 
                             if codec != 'utf-8':
-                                _mrPath = self.getNextFilePath(mrPath)
+                                _mrPath = self.getNextPath(mrPath)
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
                                 mrPath = _mrPath
 
                             if is_rtf_file(mrPath):
-                                _mrPath = self.getNextFilePath(mrPath, '.rtf2txt')
+                                _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                                 convert_rtf_to_ascii(mrPath, _mrPath)
                                 mrPath = _mrPath
 
@@ -4857,7 +4857,7 @@ class NmrDpMrSplitter:
 
                             mrPath = dst_file
 
-                            _mrPath = self.getNextFilePath(os.path.splitext(mrPath)[0], '.cif2str')
+                            _mrPath = self.getNextPath(os.path.splitext(mrPath)[0], '.cif2str')
                             if not self.__reg.c2S.convert(mrPath, _mrPath):
                                 _mrPath = mrPath
 
@@ -4897,12 +4897,12 @@ class NmrDpMrSplitter:
                             _mrPath = None
 
                             if codec != 'utf-8':
-                                _mrPath = self.getNextFilePath(mrPath)
+                                _mrPath = self.getNextPath(mrPath)
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
                                 mrPath = _mrPath
 
                             if is_rtf_file(mrPath):
-                                _mrPath = self.getNextFilePath(mrPath, '.rtf2txt')
+                                _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                                 convert_rtf_to_ascii(mrPath, _mrPath)
                                 mrPath = _mrPath
 

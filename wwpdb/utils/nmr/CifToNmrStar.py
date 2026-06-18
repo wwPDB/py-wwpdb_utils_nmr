@@ -270,7 +270,7 @@ class CifToNmrStar:
 
         self.__dirPath = dirPath
 
-    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+    def getNextPath(self, src_path: str, suffix: str = '~') -> str:
         """ Return candidate next file path.
         """
         assert len(suffix) > 0
@@ -317,7 +317,7 @@ class CifToNmrStar:
                 elif has_datablock or not has_anonymous_saveframe:
                     return False
 
-                _cifPath = self.getNextFilePath(cifPath)
+                _cifPath = self.getNextPath(cifPath)
 
                 with open(cifPath, 'r', encoding='utf-8') as ifh, \
                         open(_cifPath, 'w', encoding='utf-8') as ofh:

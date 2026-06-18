@@ -100,7 +100,7 @@ class NmrDpFirstAid:
 
         self.__reg = registry
 
-    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+    def getNextPath(self, src_path: str, suffix: str = '~') -> str:
         """ Return candidate next file path.
         """
         assert len(suffix) > 0
@@ -189,7 +189,7 @@ class NmrDpFirstAid:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
-            _srcPath_next = self.getNextFilePath(_srcPath)
+            _srcPath_next = self.getNextPath(_srcPath)
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -212,7 +212,7 @@ class NmrDpFirstAid:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
-            _srcPath_next = self.getNextFilePath(_srcPath)
+            _srcPath_next = self.getNextPath(_srcPath)
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -250,7 +250,7 @@ class NmrDpFirstAid:
             j += 1
             i = 0
 
-            _srcPath_next = self.getNextFilePath(_srcPath)
+            _srcPath_next = self.getNextPath(_srcPath)
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -264,7 +264,7 @@ class NmrDpFirstAid:
                 tmpPaths.append(_srcPath)
 
             # fix single loop file without datablock (D_1300055931)
-            _srcPath_next = self.getNextFilePath(_srcPath)
+            _srcPath_next = self.getNextPath(_srcPath)
             if self.__reg.c2S.convert(_srcPath, _srcPath_next):
                 _srcPath = _srcPath_next
                 tmpPaths.append(_srcPath)
@@ -282,7 +282,7 @@ class NmrDpFirstAid:
 
             pass_datablock = False
 
-            _srcPath_next = self.getNextFilePath(_srcPath)
+            _srcPath_next = self.getNextPath(_srcPath)
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -321,7 +321,7 @@ class NmrDpFirstAid:
 
                 i = 0
 
-                _srcPath_next = self.getNextFilePath(_srcPath)
+                _srcPath_next = self.getNextPath(_srcPath)
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -366,7 +366,7 @@ class NmrDpFirstAid:
 
                 i = 0
 
-                _srcPath_next = self.getNextFilePath(_srcPath)
+                _srcPath_next = self.getNextPath(_srcPath)
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -421,7 +421,7 @@ class NmrDpFirstAid:
 
                             in_lp = False
 
-                            _srcPath_next = self.getNextFilePath(_srcPath)
+                            _srcPath_next = self.getNextPath(_srcPath)
 
                             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                                     open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -451,7 +451,7 @@ class NmrDpFirstAid:
 
                         else:
 
-                            _srcPath_next = self.getNextFilePath(_srcPath)
+                            _srcPath_next = self.getNextPath(_srcPath)
                             if self.__reg.c2S.convert(_srcPath, _srcPath_next):
                                 _srcPath = _srcPath_next
                                 tmpPaths.append(_srcPath)
@@ -480,7 +480,7 @@ class NmrDpFirstAid:
 
                     tag_name_pattern = re.compile(r'\s*' + tag_name + r'\s*')
 
-                    _srcPath_next = self.getNextFilePath(_srcPath)
+                    _srcPath_next = self.getNextPath(_srcPath)
 
                     with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                             open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -523,7 +523,7 @@ class NmrDpFirstAid:
 
                 i = 0
 
-                _srcPath_next = self.getNextFilePath(_srcPath)
+                _srcPath_next = self.getNextPath(_srcPath)
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath_next, 'w', encoding='utf-8') as ofh:
@@ -611,7 +611,7 @@ class NmrDpFirstAid:
 
                 sf_named_pattern = re.compile(r'\s*save_' + sf_framecode + r'\s*')
 
-                _srcPath_next = self.getNextFilePath(_srcPath)
+                _srcPath_next = self.getNextPath(_srcPath)
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath_next, 'w', encoding='utf-8') as ofh:

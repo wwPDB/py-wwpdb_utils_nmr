@@ -436,7 +436,7 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,
                                                 load_from_pickle,
                                                 write_as_pickle,
-                                                get_temp_file_path)
+                                                get_temp_path)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.io.PdbxUtil import abandon_symbolic_labels
@@ -575,7 +575,7 @@ except ImportError:
     from nmr.NmrVrptUtility import (uncompress_gzip_file,
                                     load_from_pickle,
                                     write_as_pickle,
-                                    get_temp_file_path)
+                                    get_temp_path)
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.io.PdbxUtil import abandon_symbolic_labels
@@ -869,7 +869,7 @@ class NmrDpUtility:
         # NMRIF reader
         self.__nmrIfR = None
 
-    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+    def getNextPath(self, src_path: str, suffix: str = '~') -> str:
         """ Return candidate next file path.
         """
         assert len(suffix) > 0
@@ -882,7 +882,7 @@ class NmrDpUtility:
         return src_path_next
 
     def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
-        """ Return basename(src_path) + suffix file in either current workspace or default workspace if possible.
+        """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
         """
         assert len(suffix) > 0
 
@@ -891,7 +891,7 @@ class NmrDpUtility:
         if os.path.exists(test_path):
             return test_path
 
-        if self.__reg.dirPath == self.__reg.spareDirPath:
+        if None in (self.__reg.dirPath, self.__reg.spareDirPath) or self.__reg.dirPath == self.__reg.spareDirPath:
             return test_path if defer_check else src_path
 
         chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
@@ -1178,12 +1178,12 @@ class NmrDpUtility:
                 raise KeyError(f"+{self.__class_name__}.op() "
                                f"++ Error  - Could not find {NMR_CIF_FILE_PATH_KEY!r} output parameter.")
             if self.__reg.dstPath is None:
-                self.__reg.dstPath = get_temp_file_path(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY])
+                self.__reg.dstPath = get_temp_path(self.__reg.outputParamDict[NMR_CIF_FILE_PATH_KEY])
                 self.__dstPath__ = copy.copy(self.__reg.dstPath)
                 self.__tmpPath = self.__dstPath__
 
         if self.__reg.release_mode and self.__reg.dstPath is None:
-            self.__reg.dstPath = get_temp_file_path(self.__reg.srcPath)
+            self.__reg.dstPath = get_temp_path(self.__reg.srcPath)
             self.__dstPath__ = copy.copy(self.__reg.dstPath)
             self.__tmpPath = self.__dstPath__
 
@@ -1647,7 +1647,7 @@ class NmrDpUtility:
 
                             input_source.setItemValue('original_file_name', os.path.basename(cs))
 
-                            _cs = self.getNextFilePath(cs, '.cif2str')
+                            _cs = self.getNextPath(cs, '.cif2str')
                             if not self.__reg.c2S.convert(cs, _cs):
                                 _cs = cs
 
@@ -1691,7 +1691,7 @@ class NmrDpUtility:
                             if 'original_file_name' not in cs:
                                 input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
 
-                            _cs = self.getNextFilePath(cs['file_name'], '.cif2str')
+                            _cs = self.getNextPath(cs['file_name'], '.cif2str')
                             if not self.__reg.c2S.convert(cs['file_name'], _cs, originalFileName=cs.get('original_file_name')):
                                 _cs = cs['file_name']
 
@@ -1748,7 +1748,7 @@ class NmrDpUtility:
 
                         input_source.setItemValue('original_file_name', os.path.basename(cs))
 
-                        _cs = self.getNextFilePath(cs, '.cif2str')
+                        _cs = self.getNextPath(cs, '.cif2str')
                         if not self.__reg.c2S.convert(cs, _cs):
                             _cs = cs
 
@@ -1793,7 +1793,7 @@ class NmrDpUtility:
                         if 'original_file_name' not in cs:
                             input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
 
-                        _cs = self.getNextFilePath(cs['file_name'], '.cif2str')
+                        _cs = self.getNextPath(cs['file_name'], '.cif2str')
                         if not self.__reg.c2S.convert(cs['file_name'], _cs, originalFileName=cs.get('original_file_name')):
                             _cs = cs['file_name']
 
@@ -1823,7 +1823,7 @@ class NmrDpUtility:
 
                             input_source.setItemValue('original_file_name', os.path.basename(mr))
 
-                            _mr = self.getNextFilePath(mr, '.cif2str')
+                            _mr = self.getNextPath(mr, '.cif2str')
                             if not self.__reg.c2S.convert(mr, _mr):
                                 _mr = mr
 
@@ -1842,7 +1842,7 @@ class NmrDpUtility:
                             if 'original_file_name' not in mr:
                                 input_source.setItemValue('original_file_name', os.path.basename(mr['file_name']))
 
-                            _mr = self.getNextFilePath(mr['file_name'], '.cif2str')
+                            _mr = self.getNextPath(mr['file_name'], '.cif2str')
                             if not self.__reg.c2S.convert(mr['file_name'], _mr, originalFileName=mr.get('original_file_name')):
                                 _mr = mr['file_name']
 
@@ -2008,7 +2008,7 @@ class NmrDpUtility:
                             codec = detect_bom(arPath, 'utf-8')
 
                             if codec != 'utf-8':
-                                _arPath = self.getNextFilePath(arPath)
+                                _arPath = self.getNextPath(arPath)
                                 convert_codec(arPath, _arPath, codec, 'utf-8')
                                 arPath = _arPath
 
@@ -2041,7 +2041,7 @@ class NmrDpUtility:
 
                 nmr_cif = self.__reg.inputParamDict[NMR_CIF_FILE_PATH_KEY]
 
-                _nmr_cif = self.getNextFilePath(nmr_cif, '.cif2str')
+                _nmr_cif = self.getNextPath(nmr_cif, '.cif2str')
                 if self.__reg.c2S.convert(nmr_cif, _nmr_cif):
                     self.__reg.srcNmrCifPath = _nmr_cif
                     self.__reg.native_combined = True  # DAOTHER-8855
@@ -9727,7 +9727,7 @@ class NmrDpUtility:
                and not self.__reg.cR.hasCategory('pdbx_poly_seq_scheme') and not self.__reg.cifPath.endswith('~'):
 
                 srcCifPath = self.__reg.cifPath
-                dstCifPath = self.getNextFilePath(self.__reg.cifPath)
+                dstCifPath = self.getNextPath(self.__reg.cifPath)
 
                 done = False
 

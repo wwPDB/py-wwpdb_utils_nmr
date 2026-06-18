@@ -352,7 +352,7 @@ class NmrDpRemediation:
         self.__paramag = False
 
     def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
-        """ Return basename(src_path) + suffix file in either current workspace or default workspace if possible.
+        """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
         """
         assert len(suffix) > 0
 
@@ -361,7 +361,7 @@ class NmrDpRemediation:
         if os.path.exists(test_path):
             return test_path
 
-        if self.__reg.dirPath == self.__reg.spareDirPath:
+        if None in (self.__reg.dirPath, self.__reg.spareDirPath) or self.__reg.dirPath == self.__reg.spareDirPath:
             return test_path if defer_check else src_path
 
         chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))

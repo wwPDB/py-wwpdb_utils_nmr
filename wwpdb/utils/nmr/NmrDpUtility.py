@@ -1184,8 +1184,12 @@ class NmrDpUtility:
 
         if self.__reg.release_mode and self.__reg.dstPath is None:
             self.__reg.dstPath = get_temp_path(self.__reg.srcPath)
-            self.__dstPath__ = copy.copy(self.__reg.dstPath)
-            self.__tmpPath = self.__dstPath__
+            try:
+                shutil.copyfile(self.__reg.srcPath, self.__reg.dstPath)
+                self.__dstPath__ = copy.copy(self.__reg.dstPath)
+                self.__tmpPath = self.__dstPath__
+            except Exception:  # pylint: disable=broad-exception-caught
+                self.__reg.dstPath = self.__reg.srcPath
 
         if has_key_value(self.__reg.outputParamDict, 'entry_id'):
             # DAOTHER-9511: replace white space in a datablock name to underscore
@@ -9409,7 +9413,6 @@ class NmrDpUtility:
                                                        '-o', '1']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
-                                                # print(f'{" ".join(com)}\n -> {ret_code}')
                                                 if ret_code == 0:
                                                     max_ver += 1
                                                     # break
@@ -9421,7 +9424,6 @@ class NmrDpUtility:
                                                        '-o', '8']
                                                 result = subprocess.run(com, check=False)
                                                 ret_code = result.returncode
-                                                # print(f'{" ".join(com)}\n -> {ret_code}')
                                                 if ret_code == 0:
                                                     max_ver += 1
                                                     # break
@@ -9438,7 +9440,6 @@ class NmrDpUtility:
                                                     com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
-                                                    # print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
                                                 elif file_name.endswith('.cif'):
@@ -9447,7 +9448,6 @@ class NmrDpUtility:
                                                     com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '8']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
-                                                    # print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
                                     if ret_code != 0:
@@ -9459,7 +9459,6 @@ class NmrDpUtility:
                                                     com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '1']
                                                     result = subprocess.run(com, check=False)
                                                     ret_code = result.returncode
-                                                    # print(f'{" ".join(com)}\n -> {ret_code}')
                                                     if ret_code == 0:
                                                         break
                                             if ret_code != 0:
@@ -9469,14 +9468,13 @@ class NmrDpUtility:
                                                         com = [maxitpath, '-input', file_path, '-output', internal_cif_file, '-o', '8']  # noqa: E501, pylint: disable=line-too-long
                                                         result = subprocess.run(com, check=False)
                                                         ret_code = result.returncode
-                                                        # print(f'{" ".join(com)}\n -> {ret_code}')
                                                         if ret_code == 0:
                                                             break
 
                         except ImportError:
                             pass
-                        except Exception as e:  # pylint: disable=broad-exception-caught
-                            print(str(e))
+                        except Exception:  # pylint: disable=broad-exception-caught
+                            pass
 
                     if not os.path.exists(internal_cif_file0):
 
@@ -9528,8 +9526,8 @@ class NmrDpUtility:
                                                         ret_code = 0
                                                         break
 
-                        except Exception as e:  # pylint: disable=broad-exception-caught
-                            print(str(e))
+                        except Exception:  # pylint: disable=broad-exception-caught
+                            pass
 
                     if os.path.exists(internal_cif_file):
                         for ver in range(1, 10):
@@ -9589,7 +9587,6 @@ class NmrDpUtility:
                                                                    '-o', '1']
                                                             result = subprocess.run(com, check=False)
                                                             ret_code = result.returncode
-                                                            # print(f'{" ".join(com)}\n -> {ret_code}')
                                                             if ret_code == 0:
                                                                 break
                                                     if ret_code != 0:
@@ -9623,7 +9620,6 @@ class NmrDpUtility:
                                                                        '-o', '1']
                                                                 result = subprocess.run(com, check=False)
                                                                 ret_code = result.returncode
-                                                                # print(f'{" ".join(com)}\n -> {ret_code}')
                                                                 if ret_code == 0:
                                                                     break
                                                             if ret_code != 0:
@@ -9655,8 +9651,8 @@ class NmrDpUtility:
                                                                         self.__reg.representative_alt_id,
                                                                         self.__reg.csStat)
 
-                        except Exception as e:  # pylint: disable=broad-exception-caught
-                            print(str(e))
+                        except Exception:  # pylint: disable=broad-exception-caught
+                            pass
 
             if len(self.__reg.internal_atom_name_mapping) == 0:
                 cif_file_name = os.path.basename(self.__reg.cifPath)

@@ -178,7 +178,7 @@ def write_as_pickle(obj: Any, file_name: str) -> None:
             pickle.dump(obj, ofh)
 
 
-def get_temp_file_path(src_path: str = None, suffix: str = '~'):
+def get_temp_path(src_path: str = None, suffix: str = '~'):
     """ Return tempfile path based on given hints.
     """
 
@@ -1153,7 +1153,7 @@ class NmrVrptUtility:
             if not os.path.isdir(cacheDirPath):
                 os.makedirs(cacheDirPath)
 
-    def getNextFilePath(self, src_path: str, suffix: str = '~') -> str:
+    def getNextPath(self, src_path: str, suffix: str = '~') -> str:
         """ Return candidate next file path.
         """
         assert len(suffix) > 0
@@ -1571,7 +1571,7 @@ class NmrVrptUtility:
 
             fPath = self.__inputParamDict[NMR_STR_FILE_PATH_KEY]
 
-            _fPath = self.getNextFilePath(fPath, '.str2cif')
+            _fPath = self.getNextPath(fPath, '.str2cif')
 
             try:
 
@@ -1611,7 +1611,7 @@ class NmrVrptUtility:
 
             master_entry = self.__inputParamDict[PYNMRSTAR_OBJ_KEY]
 
-            _fPath = get_temp_file_path(None, '.str')
+            _fPath = get_temp_path(None, '.str')
             __fPath = f'{_fPath}.str2cif'
 
             try:

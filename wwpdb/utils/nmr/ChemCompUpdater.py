@@ -146,6 +146,9 @@ class ChemCompUpdater:
 
         url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
 
+        with open(os.path.join(self.__work_dir, '.ccd_rel_date'), 'w', encoding='utf-8') as f:
+            f.write(url_last_modified.strftime('%Y-%m-%d'))
+
         if os.path.exists(self.__components_cif_gz_path):
             file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__components_cif_gz_path)).astimezone()
             if url_last_modified > file_last_modified:

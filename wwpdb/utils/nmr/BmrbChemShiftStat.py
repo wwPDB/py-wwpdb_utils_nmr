@@ -2678,7 +2678,7 @@ class BmrbChemShiftStat:
             except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__log.write(f"+{self.__class_name__}.updateStatCsvFiles() ++ Error  - {e}\n")
 
-        for csv_file in self.csv_files:
+        for idx, csv_file in enumerate(self.csv_files):
 
             try:
                 r = requests.head(self.url_for_bmrb_cs_stat_dir + csv_file, timeout=5.0)
@@ -2691,6 +2691,10 @@ class BmrbChemShiftStat:
                 return False
 
             url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
+
+            if idx == 0:
+                with open(os.path.join(self.__work_dir, '.cs_stat_rel_date'), 'w', encoding='utf-8') as f:
+                    f.write(url_last_modified.strftime('%Y-%m-%d'))
 
             if not os.path.exists(os.path.join(self.__work_dir, csv_file)):
                 update_csv_file(csv_file)

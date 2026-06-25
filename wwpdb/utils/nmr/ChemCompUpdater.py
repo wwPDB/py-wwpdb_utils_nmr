@@ -146,24 +146,28 @@ class ChemCompUpdater:
 
         url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
 
-        with open(os.path.join(self.__work_dir, '.ccd_rel_date'), 'w', encoding='utf-8') as f:
-            f.write(url_last_modified.strftime('%Y-%m-%d'))
+        try:
 
-        if os.path.exists(self.__components_cif_gz_path):
-            file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__components_cif_gz_path)).astimezone()
-            if url_last_modified > file_last_modified:
+            if os.path.exists(self.__components_cif_gz_path):
+                file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__components_cif_gz_path)).astimezone()
+                if url_last_modified > file_last_modified:
+                    self.download()
+                    self.deploy()
+
+                elif not os.path.isdir(self.__work_dir) or self.__force:
+                    self.deploy()
+
+                else:
+                    print(f"{self.__components_cif_gz!r} is up-to-date. (use '--force' argument)")
+
+            else:
                 self.download()
                 self.deploy()
 
-            elif not os.path.isdir(self.__work_dir) or self.__force:
-                self.deploy()
+        finally:
 
-            else:
-                print(f"{self.__components_cif_gz!r} is up-to-date. (use '--force' argument)")
-
-        else:
-            self.download()
-            self.deploy()
+            with open(os.path.join(self.__work_dir, '.ccd_rel_date'), 'w', encoding='utf-8') as f:
+                f.write(url_last_modified.strftime('%Y-%m-%d'))
 
 
 if __name__ == '__main__':

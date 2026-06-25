@@ -39,19 +39,19 @@ RUN grep version wwpdb/utils/nmr/__init__.py | \
 
 # Run ChemCompUpdater.py
 # This creates: wwpdb/utils/nmr/ligand_dict
-RUN CCD_REL_DATE_FILE=wwpdb/utils/nmr/ligand_dict/.ccd_rel_date \
-    && python wwpdb/utils/nmr/ChemCompUpdater.py \
-    && CCD_REL=`cat ${CCD_REL_DATE_FILE}` \
-    && rm -f ${CCD_REL_DATE_FILE} \
-    && echo "export CCD_REL=${CCD_REL}" >> .ver_inf
+RUN CCD_REL_DATE_FILE=wwpdb/utils/nmr/ligand_dict/.ccd_rel_date && \
+    python wwpdb/utils/nmr/ChemCompUpdater.py && \
+    CCD_REL=`cat ${CCD_REL_DATE_FILE}` && \
+    rm -f ${CCD_REL_DATE_FILE} && \
+    echo "export CCD_REL=${CCD_REL}" >> .ver_inf
 
 # Run BMRBCsStatUpdater.py
 # This updates: wwpdb/utils/nmr/bmrb_cs_stat
-RUN CS_STAT_REL_DATE_FILE=wwpdb/utils/nmr/bmrb_cs_stat/.cs_stat_rel_date \
-    && python wwpdb/utils/nmr/BmrbCsStatUpdater.py \
-    && CS_STAT_REL=`cat ${CS_STAT_REL_DATE_FILE}` \
-    && rm -f ${CS_STAT_REL_DATE_FILE} \
-    && echo "export CS_STAT_REL=${CS_STAT_REL}" >> .ver_inf
+RUN CS_STAT_REL_DATE_FILE=wwpdb/utils/nmr/bmrb_cs_stat/.cs_stat_rel_date && \
+    python wwpdb/utils/nmr/BmrbCsStatUpdater.py && \
+    CS_STAT_REL=`cat ${CS_STAT_REL_DATE_FILE}` && \
+    rm -f ${CS_STAT_REL_DATE_FILE} && \
+    echo "export CS_STAT_REL=${CS_STAT_REL}" >> .ver_inf
 
 # Install Python dependencies for runtime
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
@@ -91,7 +91,7 @@ COPY --from=builder --chown=appuser:appuser /opt/py-wwpdb_utils_nmr /opt/py-wwpd
 # Create entrypoint script executable with exporting version information
 RUN echo "#!/bin/sh" > /opt/entrypoint.sh && \
     echo "set -e" >> /opt/entrypoint.sh && \
-    cat /opt/py-wwpdb_utils_nmr/.ver_info >> /opt/entrypoint.sh && \
+    cat /opt/py-wwpdb_utils_nmr/.ver_inf >> /opt/entrypoint.sh && \
     echo 'exec "$@"' >> /opt/entrypoint.sh && \
     chmod +x /opt/entrypoint.sh && \
     rm -f /opt/py-wwpdb_utils_nmr/.ver_inf

@@ -70,13 +70,14 @@ class TestBmrbChemShiftStat(unittest.TestCase):
                          {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P'})
         self.assertEqual(set(self.bmrb_cs_stat.getBackBoneAtoms('A', excl_minor_atom=True)),
                          {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''"})
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC'),
-                         ["H1'", "H2'", "HO2'", "H3'", "H4'", "H5'", "H5''", 'P', "C5'", "C4'", "C3'", "C2'", "C1'"])
+        self.assertEqual(set(self.bmrb_cs_stat.getBackBoneAtoms('5MC')),
+                         {"H1'", "H2'", "HO2'", "HO3'", "H3'", "H4'", "H5'", "H5''", "HOP2", "HOP3",
+                         'P', "C5'", "C4'", "C3'", "C2'", "C1'"})
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polypeptide_like=True),
                          [])
-        self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True),
-                         ["H1'", "H2'", "HO2'", "H3'", "H4'", "H5'", "H5''",
-                          'P', "C5'", "C4'", "C3'", "C2'", "C1'"])
+        self.assertEqual(set(self.bmrb_cs_stat.getBackBoneAtoms('5MC', polynucleotide_like=True)),
+                         {"H1'", "H2'", "HO2'", "H3'", "HO3'", "H4'", "H5'", "H5''", "HOP2", "HOP3",
+                          'P', "C5'", "C4'", "C3'", "C2'", "C1'"})
 
     def test_arom_atoms(self):
         self.assertEqual(self.bmrb_cs_stat.getAromaticAtoms('ALA'),
@@ -180,7 +181,7 @@ class TestBmrbChemShiftStat(unittest.TestCase):
                          ['C2', 'C4', 'C5', 'C6', 'C8', 'H2', 'H61', 'H62', 'H8', 'N1', 'N3', 'N6', 'N7', 'N9'])
         self.assertEqual(self.bmrb_cs_stat.getSideChainAtoms('5MC', polynucleotide_like=True),
                          ['HN41', 'HN42', 'H6', 'HM51', 'HM52', 'HM53',
-                          'N1', 'C2', 'N3', 'C4', 'N4', 'C5', 'C6', 'CM5', 'HOP2', 'HOP3'])
+                          'N1', 'C2', 'N3', 'C4', 'N4', 'C5', 'C6', 'CM5'])
 
     def test_geminal_atom(self):
         self.assertEqual(self.bmrb_cs_stat.getGeminalAtom('ARG', 'HB2'), 'HB3')
@@ -271,4 +272,4 @@ class TestBmrbChemShiftStat(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(failfast=True)

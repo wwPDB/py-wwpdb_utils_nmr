@@ -102,7 +102,8 @@ try:
                                                XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                                XPLOR_NITROXIDE_NAMES,
                                                NITROOXIDE_ANCHOR_RES_NAMES,
-                                               CARTN_DATA_ITEMS)
+                                               CARTN_DATA_ITEMS,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            indexToLetter,
                                            updatePolySeqRst,
@@ -232,7 +233,8 @@ except ImportError:
                                    XPLOR_RDC_PRINCIPAL_AXIS_NAMES,
                                    XPLOR_NITROXIDE_NAMES,
                                    NITROOXIDE_ANCHOR_RES_NAMES,
-                                   CARTN_DATA_ITEMS)
+                                   CARTN_DATA_ITEMS,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (deepcopy,
                                indexToLetter,
                                updatePolySeqRst,
@@ -6903,8 +6905,7 @@ class BaseStackedMRParserListener():
                                                   f"{chainId}:{seqId}:{compId}:{origAtomId0} "
                                                   "is not present in the coordinates. "
                                                   f"The residue number '{seqId}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                     if 'alt_chain_id' in _factor:
                                         self.__failure_chain_ids.append(chainId)
                                 else:
@@ -7000,8 +7001,7 @@ class BaseStackedMRParserListener():
                                           f"{chainId}:{seqId}:{compId}:{origAtomId0} "
                                           "is not present in the coordinates. "
                                           f"The residue number '{seqId}' is not present in polymer sequence "
-                                          f"of chain {chainId} of the coordinates. "
-                                          "Please update the sequence in the Macromolecules page.")
+                                          f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                             if 'alt_chain_id' in _factor:
                                 self.__failure_chain_ids.append(chainId)
 
@@ -7110,8 +7110,7 @@ class BaseStackedMRParserListener():
                             if extSeqScheme:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue '{seqId}:{compId}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 if 'expected_comp_id' not in _factor:
                                     _factor['expected_comp_id'] = [compId]
                                 if compId not in _factor['expected_comp_id']:
@@ -7474,8 +7473,7 @@ class BaseStackedMRParserListener():
                                                       if 'ref_seq_id' in u and u['ref_seq_id'] == _seqId + nmr_offset), None)
                                             if refCompId is not None:
                                                 hint = f" The residue '{_seqId}:{refCompId}' is not present in polymer sequence "\
-                                                    f"of chain {_chainId} of the coordinates. "\
-                                                    "Please update the sequence in the Macromolecules page."
+                                                    f"of chain {_chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}"
                                                 if self.reasons is not None:
                                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                                   f"The {clauseName} has no effect "
@@ -7491,8 +7489,7 @@ class BaseStackedMRParserListener():
                                                or (_seqId > max_auth_seq_id
                                                    and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
                                                 hint = f" The residue '{_seqId}' is not present in polymer sequence "\
-                                                    f"of chain {_chainId} of the coordinates. "\
-                                                    "Please update the sequence in the Macromolecules page."
+                                                    f"of chain {_chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}"
                                                 if self.reasons is not None:
                                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                                   f"The {clauseName} has no effect "
@@ -7538,8 +7535,7 @@ class BaseStackedMRParserListener():
                                                or (_seqId > max_auth_seq_id
                                                    and _seqId - max_auth_seq_id <= MIN_EXT_SEQ_FOR_ATOM_SEL_ERR):
                                                 hint = f" The residue '{_seqId}' is not present in polymer sequence "\
-                                                    f"of chain {_chainId} of the coordinates. "\
-                                                    "Please update the sequence in the Macromolecules page."
+                                                    f"of chain {_chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}"
                                                 if self.reasons is not None:
                                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                                   f"The {clauseName} has no effect "
@@ -7577,7 +7573,7 @@ class BaseStackedMRParserListener():
             else:
                 self.g.append(f"[Insufficient atom selection] {self.getCurrentRestraint()}"
                               f"The {clauseName} has no effect for a factor {self.getReadableFactor(__factor)}. "
-                              "Please update the sequence in the Macromolecules page.")
+                              f"{INSTRUCTION_FOR_FULL_SEQUENCE}")
         elif self.cur_subtype == 'plane':
             if 'atom_id' not in _factor or ('H5T' not in _factor['atom_id'] and 'H3T' not in _factor['atom_id']
                                             and 'HOP2' not in _factor['atom_id'] and "HO3'" not in _factor['atom_id']

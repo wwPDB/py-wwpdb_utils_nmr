@@ -32,7 +32,8 @@ try:
                                                KNOWN_ANGLE_SEQ_OFFSET,
                                                KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                                KNOWN_ANGLE_CARBO_SEQ_OFFSET,
-                                               CARTN_DATA_ITEMS)
+                                               CARTN_DATA_ITEMS,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (indexToLetter,
                                            updatePolySeqRst,
                                            sortPolySeqRst,
@@ -74,7 +75,8 @@ except ImportError:
                                    KNOWN_ANGLE_SEQ_OFFSET,
                                    KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                    KNOWN_ANGLE_CARBO_SEQ_OFFSET,
-                                   CARTN_DATA_ITEMS)
+                                   CARTN_DATA_ITEMS,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (indexToLetter,
                                updatePolySeqRst,
                                sortPolySeqRst,
@@ -1033,8 +1035,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if offset != 0 and ps is None:
                             self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                           f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                          f"of chain {chainId} of the coordinates. "
-                                          "Please update the sequence in the Macromolecules page.")
+                                          f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                             return
 
                         _cifSeqId = cifSeqId + offset
@@ -1064,8 +1065,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -1122,8 +1122,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")
@@ -1293,8 +1292,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -1309,8 +1307,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.__name!r} is unknown for the residue {_compId!r}.")

@@ -355,6 +355,7 @@ try:
                                                MANDATORY_SF_TAG_ITEMS,
                                                SF_ALLOWED_TAGS,
                                                WARN_TEMPLATE_FOR_MISSING_MANDATORY_SF_TAG,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE,
                                                AUX_LP_CATEGORIES,
                                                LINKED_LP_CATEGORIES,
                                                AUX_ALLOWED_TAGS,
@@ -494,6 +495,7 @@ except ImportError:
                                    MANDATORY_SF_TAG_ITEMS,
                                    SF_ALLOWED_TAGS,
                                    WARN_TEMPLATE_FOR_MISSING_MANDATORY_SF_TAG,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE,
                                    AUX_LP_CATEGORIES,
                                    LINKED_LP_CATEGORIES,
                                    AUX_ALLOWED_TAGS,
@@ -2984,8 +2986,7 @@ class NmrDpUtility:
                                                 else:
 
                                                     warn = f"Unmapped seq_id {str(seq_id)!r} (chain_id {chain_id}) "\
-                                                        f"in a loop {lp_category2}. "\
-                                                        "Please update the sequence in the Macromolecules page."
+                                                        f"in a loop {lp_category2}. {INSTRUCTION_FOR_FULL_SEQUENCE}"
 
                                                     self.__reg.report.warning.appendDescription('sequence_mismatch',
                                                                                                 {'file_name': file_name,
@@ -3822,7 +3823,7 @@ class NmrDpUtility:
                         # DAOTHER-9065
                         else:
                             warn = f"Residue ({ps['chain_id']}:{seq_id}:{comp_id}) was not specified. "\
-                                   "Please update the sequence in the Macromolecules page."
+                                f"{INSTRUCTION_FOR_FULL_SEQUENCE}"
 
                             self.__reg.report.warning.appendDescription('sequence_mismatch',
                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
@@ -11652,8 +11653,7 @@ class NmrDpUtility:
                                        or chain_id2 not in concatenated_nmr_chain[chain_id]:
 
                                         warn = f"{chain_id}:{_seq_id1}:{nmr_comp_id} is not present "\
-                                            f"in the coordinates (chain_id {chain_id2}). "\
-                                            "Please update the sequence in the Macromolecules page."
+                                            f"in the coordinates (chain_id {chain_id2}). {INSTRUCTION_FOR_FULL_SEQUENCE}"
 
                                         self.__reg.suspended_warnings_for_lazy_eval.append({'sequence_mismatch':
                                                                                             {'ca_idx': ca_idx,

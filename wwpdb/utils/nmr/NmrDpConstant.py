@@ -6057,7 +6057,8 @@ AUX_DATA_ITEMS = {'nef': {'entry_info': None,
                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
-                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
+                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Type', 'type': 'str', 'mandatory': False}
                                              ],
                                    '_Entity_deleted_atom': [{'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},

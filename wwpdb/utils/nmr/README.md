@@ -311,6 +311,17 @@ Then, prepare an arbitrary directory named `tmp` that includes your Python scrip
     docker run --rm -it -v tmp:/mnt/tmp -u $(id -u):$(id -g) ghcr.io/yokochi47/py-wwpdb_utils_nmr:main python tmp/app.py
 ```
 
+### Check software and resource version information
+You can check installed software and resource version information as environment variables.
+```shell
+docker run ghcr.io/yokochi47/py-wwpdb_utils_nmr:main env
+
+UTILS_NMR_VER=5.1.0       # NmrDpUtility version
+CCD_REL=2026-06-20        # Chemical Component Dictionary (CCD) release date
+CS_STAT_REL=2026-06-24    # BMRB chemical shift statistics release date
+...
+```
+
 For more information, see [Docker image in forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr/blob/main/Dockerfile)
 
 ## Appendix

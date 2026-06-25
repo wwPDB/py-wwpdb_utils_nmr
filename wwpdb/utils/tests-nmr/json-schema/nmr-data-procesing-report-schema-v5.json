@@ -1188,6 +1188,10 @@
           ],
           "minimum": 0.9
         },
+        "bond_type": {
+          "type": "string",
+          "minLength": 1
+        },
         "warning_description_1": {
           "type": [
             "string",

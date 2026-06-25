@@ -5323,6 +5323,9 @@ class NmrDpUtility:
                                     disulf['warning_description_1'] = None
                                     disulf['warning_description_2'] = None
 
+                                    if 'Type' in row and row['Type'] not in EMPTY_VALUE:
+                                        disulf['bond_type'] = row['Type']
+
                                     if cs_lp_data is not None:
 
                                         ca_chem_shift_1 = cb_chem_shift_1 = None
@@ -5512,6 +5515,9 @@ class NmrDpUtility:
                                                       if b['model_id'] == self.__reg.representative_model_id), None)
                                     other['warning_description_1'] = None
                                     other['warning_description_2'] = None
+
+                                    if 'Type' in row and row['Type'] not in EMPTY_VALUE:
+                                        other['bond_type'] = row['Type']
 
                                     if cs_lp_data is not None:
 

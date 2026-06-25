@@ -22,6 +22,9 @@ COPY . /opt/py-wwpdb_utils_nmr
 # Move working directory to the repo directory
 WORKDIR /opt/py-wwpdb_utils_nmr
 
+# System version information holder file under the current working directory
+ENV VER_INFO=.ver_info
+
 # Upgrade pip
 RUN pip install --upgrade pip
 
@@ -33,25 +36,28 @@ RUN pip install \
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
 
-RUN grep version wwpdb/utils/nmr/__init__.py | \
-    sed -e 's/__version__ = /export UTILS_NMR_VER=/' | \
-    sed -e 's/"//g' > .ver_inf
+# Extract package version information -> UTILS_NMR_VER
+RUN grep version wwpdb/utils/nmr/__init__.py \
+    | sed -e 's/__version__ = /export UTILS_NMR_VER=/' \
+    | sed -e 's/"//g' > ${VER_INFO}
 
 # Run ChemCompUpdater.py
 # This creates: wwpdb/utils/nmr/ligand_dict
-RUN CCD_REL_DATE_FILE=wwpdb/utils/nmr/ligand_dict/.ccd_rel_date && \
-    python wwpdb/utils/nmr/ChemCompUpdater.py && \
-    CCD_REL=`cat ${CCD_REL_DATE_FILE}` && \
-    rm -f ${CCD_REL_DATE_FILE} && \
-    echo "export CCD_REL=${CCD_REL}" >> .ver_inf
+# Release date of Chemical Component Dictionary (CCD) -> CCD_REL
+RUN CCD_REL_DATE_FILE=wwpdb/utils/nmr/ligand_dict/.ccd_rel_date \
+    && python wwpdb/utils/nmr/ChemCompUpdater.py \
+    && CCD_REL=`cat ${CCD_REL_DATE_FILE}` \
+    && rm -f ${CCD_REL_DATE_FILE} \
+    && echo "export CCD_REL=${CCD_REL}" >> ${VER_INFO}
 
 # Run BMRBCsStatUpdater.py
 # This updates: wwpdb/utils/nmr/bmrb_cs_stat
-RUN CS_STAT_REL_DATE_FILE=wwpdb/utils/nmr/bmrb_cs_stat/.cs_stat_rel_date && \
-    python wwpdb/utils/nmr/BmrbCsStatUpdater.py && \
-    CS_STAT_REL=`cat ${CS_STAT_REL_DATE_FILE}` && \
-    rm -f ${CS_STAT_REL_DATE_FILE} && \
-    echo "export CS_STAT_REL=${CS_STAT_REL}" >> .ver_inf
+# Release date of BMRB chemical shift statistics -> CS_STAT_REL
+RUN CS_STAT_REL_DATE_FILE=wwpdb/utils/nmr/bmrb_cs_stat/.cs_stat_rel_date \
+    && python wwpdb/utils/nmr/BmrbCsStatUpdater.py \
+    && CS_STAT_REL=`cat ${CS_STAT_REL_DATE_FILE}` \
+    && rm -f ${CS_STAT_REL_DATE_FILE} \
+    && echo "export CS_STAT_REL=${CS_STAT_REL}" >> ${VER_INFO}
 
 # Install Python dependencies for runtime
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
@@ -83,18 +89,23 @@ RUN useradd -m -u 1000 appuser
 
 # Copy installed Python environment
 COPY --from=builder /install /opt/py-packages
+
+# Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-packages:/opt/py-wwpdb_utils_nmr/wwpdb/utils
 
 # Copy application code with generated ligand_dict
 COPY --from=builder --chown=appuser:appuser /opt/py-wwpdb_utils_nmr /opt/py-wwpdb_utils_nmr
 
+# System version information holder file
+ENV VER_INFO=/opt/py-wwpdb_utils_nmr/.ver_info
+
 # Create entrypoint script executable with exporting version information
 RUN echo "#!/bin/sh" > /opt/entrypoint.sh && \
     echo "set -e" >> /opt/entrypoint.sh && \
-    cat /opt/py-wwpdb_utils_nmr/.ver_inf >> /opt/entrypoint.sh && \
+    cat ${VER_INFO} >> /opt/entrypoint.sh && \
     echo 'exec "$@"' >> /opt/entrypoint.sh && \
     chmod +x /opt/entrypoint.sh && \
-    rm -f /opt/py-wwpdb_utils_nmr/.ver_inf
+    rm -f ${VER_INFO}
 
 # Set working directory
 WORKDIR /mnt

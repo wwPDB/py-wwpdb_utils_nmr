@@ -33,13 +33,25 @@ RUN pip install \
 # Set Python path for standalone mode
 ENV PYTHONPATH=/opt/py-wwpdb_utils_nmr/wwpdb/utils
 
+RUN grep version wwpdb/utils/nmr/__init__.py | \
+    sed -e 's/__version__ = /export UTILS_NMR_VER=/' | \
+    sed -e 's/"//g' > .ver_inf
+
 # Run ChemCompUpdater.py
 # This creates: wwpdb/utils/nmr/ligand_dict
-RUN python wwpdb/utils/nmr/ChemCompUpdater.py
+RUN CCD_REL_DATE_FILE=wwpdb/utils/nmr/ligand_dict/.ccd_rel_date \
+    python wwpdb/utils/nmr/ChemCompUpdater.py \
+    && CCD_REL=`cat ${CCD_REL_DATE_FILE}` \
+    && rm -f ${CCD_REL_DATE_FILE} \
+    && echo "export CCD_REL=${CCD_REL}" >> .ver_inf
 
 # Run BMRBCsStatUpdater.py
 # This updates: wwpdb/utils/nmr/bmrb_cs_stat
-RUN python wwpdb/utils/nmr/BmrbCsStatUpdater.py
+RUN CS_STAT_REL_DATE_FILE=wwpdb/utils_nmr/bmrb_cs_stat/.cs_stat_rel_date \
+    python wwpdb/utils/nmr/BmrbCsStatUpdater.py \
+    && CS_STAT_REL=`cat ${CS_STAT_REL_DATE_FILE}` \
+    && rm -f ${CS_STAT_REL_DATE_FILE} \
+    && echo "export CS_STAT_REL=${CS_STAT_REL}" >> .ver_inf
 
 # Install Python dependencies for runtime
 RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
@@ -76,11 +88,19 @@ ENV PYTHONPATH=/opt/py-packages:/opt/py-wwpdb_utils_nmr/wwpdb/utils
 # Copy application code with generated ligand_dict
 COPY --from=builder --chown=appuser:appuser /opt/py-wwpdb_utils_nmr /opt/py-wwpdb_utils_nmr
 
+# Create entrypoint script executable with exporting version information
+RUN echo "#!/bin/sh" > /opt/entrypoint.sh && \
+    echo "set -e" >> /opt/entrypoint.sh && \
+    cat /opt/py-wwpdb_utils_nmr/.ver_info >> /opt/entrypoint.sh && \
+    echo 'exec "$@"' >> /opt/entrypoint.sh && \
+    chmod +x /opt/entrypoint.sh && \
+    rm -f /opt/py-wwpdb_utils_nmr/.ver_inf
+
 # Set working directory
 WORKDIR /mnt
 
 # Switch to no-root user
 USER appuser
 
-# Default command
-CMD ["python"]
+# Set the entrypoint
+ENTRYPOINT ["/opt/entrypoint.sh"]

@@ -40,7 +40,7 @@ RUN grep version wwpdb/utils/nmr/__init__.py | \
 # Run ChemCompUpdater.py
 # This creates: wwpdb/utils/nmr/ligand_dict
 RUN CCD_REL_DATE_FILE=wwpdb/utils/nmr/ligand_dict/.ccd_rel_date \
-    python wwpdb/utils/nmr/ChemCompUpdater.py \
+    && python wwpdb/utils/nmr/ChemCompUpdater.py \
     && CCD_REL=`cat ${CCD_REL_DATE_FILE}` \
     && rm -f ${CCD_REL_DATE_FILE} \
     && echo "export CCD_REL=${CCD_REL}" >> .ver_inf
@@ -48,7 +48,7 @@ RUN CCD_REL_DATE_FILE=wwpdb/utils/nmr/ligand_dict/.ccd_rel_date \
 # Run BMRBCsStatUpdater.py
 # This updates: wwpdb/utils/nmr/bmrb_cs_stat
 RUN CS_STAT_REL_DATE_FILE=wwpdb/utils_nmr/bmrb_cs_stat/.cs_stat_rel_date \
-    python wwpdb/utils/nmr/BmrbCsStatUpdater.py \
+    && python wwpdb/utils/nmr/BmrbCsStatUpdater.py \
     && CS_STAT_REL=`cat ${CS_STAT_REL_DATE_FILE}` \
     && rm -f ${CS_STAT_REL_DATE_FILE} \
     && echo "export CS_STAT_REL=${CS_STAT_REL}" >> .ver_inf

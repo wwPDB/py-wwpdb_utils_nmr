@@ -80,7 +80,8 @@ try:
                                                H_ALIPHATIC_CENTER_MIN,
                                                H_METHYL_CENTER_MAX,
                                                H_METHYL_CENTER_MIN,
-                                               MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER)
+                                               MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            getOneLetterCode,
                                            updatePolySeqRst,
@@ -194,7 +195,8 @@ except ImportError:
                                    H_ALIPHATIC_CENTER_MIN,
                                    H_METHYL_CENTER_MAX,
                                    H_METHYL_CENTER_MIN,
-                                   MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER)
+                                   MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (deepcopy,
                                getOneLetterCode,
                                updatePolySeqRst,
@@ -9712,8 +9714,7 @@ class BasePKParserListener():
                             or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     resKey = (_seqId, _compId)
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
@@ -9723,8 +9724,7 @@ class BasePKParserListener():
                         and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     resKey = (_seqId, _compId)
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
@@ -9732,8 +9732,7 @@ class BasePKParserListener():
                     self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
             else:
                 ext_seq = False
                 if (compId in STD_MON_DICT or compId in ('ACE', 'NH2'))\
@@ -9762,8 +9761,7 @@ class BasePKParserListener():
                     refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     resKey = (_seqId, _compId)
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
@@ -10409,8 +10407,7 @@ class BasePKParserListener():
                                 or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         resKey = (_seqId, _compId)
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
@@ -10420,8 +10417,7 @@ class BasePKParserListener():
                             and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         resKey = (_seqId, _compId)
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
@@ -10429,8 +10425,7 @@ class BasePKParserListener():
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     ext_seq = False
                     if (compId in STD_MON_DICT or compId in ('ACE', 'NH2'))\
@@ -10459,8 +10454,7 @@ class BasePKParserListener():
                         refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         resKey = (_seqId, _compId)
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
@@ -10681,8 +10675,7 @@ class BasePKParserListener():
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     if self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
@@ -10902,8 +10895,7 @@ class BasePKParserListener():
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     if self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
@@ -11375,8 +11367,7 @@ class BasePKParserListener():
                         if self.__allow_ext_seq:
                             self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                           f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence "
-                                          f"of chain {chainId} of the coordinates. "
-                                          "Please update the sequence in the Macromolecules page.")
+                                          f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                             asis = True
                         else:
                             if seqKey in self.__coordUnobsAtom\

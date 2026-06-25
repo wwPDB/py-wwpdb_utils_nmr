@@ -579,7 +579,12 @@ SF_FRAMECODE_PAT = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
 SEQ_MISMATCH_WARNING_PAT = re.compile(r"\[Sequence mismatch warning\] \[.*\] The residue '(\d+):([0-9A-Z]+)' is not present "
                                       r"in polymer sequence of chain (\S+) of the coordinates. "
-                                      r"Please update the sequence in the Macromolecules page.")
+                                      r"Please update the sequence in the OneDep's Macromolecules page or "
+                                      r"embed the sample sequence into the NMR data file.")
+
+INSTRUCTION_FOR_FULL_SEQUENCE = "Please update the sequence in the OneDep's Macromolecules page or "\
+                                "embed the sample sequence into the NMR data file."
+
 INCONSISTENT_RESTRAINT_WARNING_PAT = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s ?.*, (\S+)\] .*$")
 INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of ([^,]+)s.*\] .*$")
 

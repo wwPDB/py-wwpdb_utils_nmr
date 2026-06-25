@@ -29,7 +29,8 @@ try:
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP,
                                                KNOWN_ANGLE_ATOM_NAMES,
-                                               KNOWN_ANGLE_SEQ_OFFSET)
+                                               KNOWN_ANGLE_SEQ_OFFSET,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
@@ -61,7 +62,8 @@ except ImportError:
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP,
                                    KNOWN_ANGLE_ATOM_NAMES,
-                                   KNOWN_ANGLE_SEQ_OFFSET)
+                                   KNOWN_ANGLE_SEQ_OFFSET,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.DynamoMRParser import DynamoMRParser
@@ -2715,8 +2717,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -2742,8 +2743,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.")
@@ -2988,8 +2988,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -3004,8 +3003,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.")

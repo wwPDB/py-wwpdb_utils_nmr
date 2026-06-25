@@ -78,7 +78,8 @@ try:
                                                DIST_AMBIG_UP,
                                                CARTN_DATA_ITEMS,
                                                REMEDIATE_BACKBONE_ANGLE_NAME_PAT,
-                                               DEFAULT_LIST_ID_COUNTER)
+                                               DEFAULT_LIST_ID_COUNTER,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            letterToDigit,
                                            alignPolymerSequence,
@@ -128,7 +129,8 @@ except ImportError:
                                    DIST_AMBIG_UP,
                                    CARTN_DATA_ITEMS,
                                    REMEDIATE_BACKBONE_ANGLE_NAME_PAT,
-                                   DEFAULT_LIST_ID_COUNTER)
+                                   DEFAULT_LIST_ID_COUNTER,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (deepcopy,
                                letterToDigit,
                                alignPolymerSequence,
@@ -9214,7 +9216,7 @@ def assignCoordPolymerSequenceWithChainId(caC: dict, nefT,
             warningMessage = f"[Atom not found] "\
                 f"{_seqId}:{compId}:{atomId} is not present in the coordinates. "\
                 f"The residue number '{_seqId}' is not present in polymer sequence of chain {refChainId} of the coordinates. "\
-                "Please update the sequence in the Macromolecules page."
+                f"{INSTRUCTION_FOR_FULL_SEQUENCE}"
         else:
             warningMessage = f"[Atom not found] "\
                 f"{_seqId}:{compId}:{atomId} is not present in the coordinates."

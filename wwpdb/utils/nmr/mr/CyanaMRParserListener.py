@@ -38,7 +38,8 @@ try:
                                                KNOWN_ANGLE_SEQ_OFFSET,
                                                KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                                KNOWN_ANGLE_CARBO_SEQ_OFFSET,
-                                               CARTN_DATA_ITEMS)
+                                               CARTN_DATA_ITEMS,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
@@ -84,7 +85,8 @@ except ImportError:
                                    KNOWN_ANGLE_SEQ_OFFSET,
                                    KNOWN_ANGLE_CARBO_ATOM_NAMES,
                                    KNOWN_ANGLE_CARBO_SEQ_OFFSET,
-                                   CARTN_DATA_ITEMS)
+                                   CARTN_DATA_ITEMS,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance)
     from nmr.nef.NefTranslator import NefTranslator
@@ -1788,8 +1790,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if offset != 0 and ps is None:
                             self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                           f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                          f"of chain {chainId} of the coordinates. "
-                                          "Please update the sequence in the Macromolecules page.")
+                                          f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                             return
 
                         _cifSeqId = cifSeqId + offset
@@ -1819,8 +1820,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -1877,8 +1877,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
@@ -2050,8 +2049,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -2066,8 +2064,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
@@ -5882,8 +5879,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if offset != 0 and ps is None:
                             self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                           f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                          f"of chain {chainId} of the coordinates. "
-                                          "Please update the sequence in the Macromolecules page.")
+                                          f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                             return
 
                         _cifSeqId = cifSeqId + offset
@@ -5913,8 +5909,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -5971,8 +5966,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
@@ -6144,8 +6138,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -6160,8 +6153,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
                                                   f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "

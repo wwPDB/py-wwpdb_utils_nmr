@@ -68,7 +68,8 @@ try:
                                                RDC_RANGE_MAX,
                                                RDC_ERROR_MIN,
                                                RDC_ERROR_MAX,
-                                               CARTN_DATA_ITEMS)
+                                               CARTN_DATA_ITEMS,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -172,7 +173,8 @@ except ImportError:
                                    RDC_RANGE_MAX,
                                    RDC_ERROR_MIN,
                                    RDC_ERROR_MAX,
-                                   CARTN_DATA_ITEMS)
+                                   CARTN_DATA_ITEMS,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (deepcopy,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
@@ -1942,8 +1944,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                                    f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     ext_seq = False
                     if self.__reasons is None\
@@ -1978,8 +1979,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if not self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{_seqId}' is not present in polymer sequence "
-                                            f"of chain {refChainId} of the coordinates. "
-                                            "Please update the sequence in the Macromolecules page.")
+                                            f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     else:
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{_seqId}:{atomId} is not present in the coordinates.")
@@ -1999,8 +1999,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                                    f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in the coordinates.")
@@ -2218,8 +2217,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                         f"The residue number '{_seqId}' is not present in polymer sequence "
-                                        f"of chain {refChainId} of the coordinates. "
-                                        "Please update the sequence in the Macromolecules page.")
+                                        f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     else:
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
@@ -2235,8 +2233,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                                    f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in the coordinates.")
@@ -2783,8 +2780,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{seqId}:{compId}' is not present in polymer sequence "
-                                            f"of chain {chainId} of the coordinates. "
-                                            "Please update the sequence in the Macromolecules page.")
+                                            f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                             asis = True
                         else:
                             if seqKey in self.__coordUnobsAtom\

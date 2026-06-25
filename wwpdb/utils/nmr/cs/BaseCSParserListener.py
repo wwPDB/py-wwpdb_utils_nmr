@@ -43,7 +43,8 @@ try:
                                                WEIGHT_RANGE_MAX,
                                                ASSIGNMENT_SEPARATOR_PAT,
                                                ASSIGNMENT_RESID_PAT,
-                                               ASSIGNMENT_HALF_SPIN_NUCLEUS)
+                                               ASSIGNMENT_HALF_SPIN_NUCLEUS,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            getOneLetterCode,
                                            updatePolySeqRst,
@@ -98,7 +99,8 @@ except ImportError:
                                    WEIGHT_RANGE_MIN,
                                    WEIGHT_RANGE_MAX,
                                    ASSIGNMENT_SEPARATOR_PAT,
-                                   ASSIGNMENT_RESID_PAT)
+                                   ASSIGNMENT_RESID_PAT,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (deepcopy,
                                getOneLetterCode,
                                updatePolySeqRst,
@@ -2841,22 +2843,19 @@ class BaseCSParserListener():
                             or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentAssignment(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     chainAssign.add((refChainId, _seqId, compId, True))
                     asis = True
                 elif compId in STD_MON_DICT\
                         and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentAssignment(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 elif self.no_extra_comment:
                     self.f.append(f"[Atom not found] {self.getCurrentAssignment(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
             else:
                 ext_seq = False
                 if (compId in STD_MON_DICT or compId in ('ACE', 'NH2'))\
@@ -2885,8 +2884,7 @@ class BaseCSParserListener():
                     refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentAssignment(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     if isinstance(refChainId, str):
                         chainAssign.add((refChainId, _seqId, compId, True))
                     else:
@@ -3214,22 +3212,19 @@ class BaseCSParserListener():
                             or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentAssignment(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     chainAssign.add((refChainId, _seqId, compId, True))
                     asis = True
                 elif compId in STD_MON_DICT\
                         and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentAssignment(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 elif self.no_extra_comment:
                     self.f.append(f"[Atom not found] {self.getCurrentAssignment(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
             else:
                 ext_seq = False
                 if (compId in STD_MON_DICT or compId in ('ACE', 'NH2'))\
@@ -3258,8 +3253,7 @@ class BaseCSParserListener():
                     refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentAssignment(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     if isinstance(refChainId, str):
                         chainAssign.add((refChainId, _seqId, compId, True))
                     else:
@@ -3424,8 +3418,7 @@ class BaseCSParserListener():
                         self.f.append(f"[Atom not found] {self.getCurrentAssignment(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     if self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentAssignment(n=index)}"
@@ -3590,8 +3583,7 @@ class BaseCSParserListener():
                         self.f.append(f"[Atom not found] {self.getCurrentAssignment(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     if self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentAssignment(n=index)}"
@@ -3986,8 +3978,7 @@ class BaseCSParserListener():
                     if self.__allow_ext_seq:
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentAssignment(n=index)}"
                                       f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence "
-                                      f"of chain {chainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         asis = True
                     else:
                         if self.no_extra_comment:

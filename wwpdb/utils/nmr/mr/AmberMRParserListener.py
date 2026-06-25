@@ -81,7 +81,8 @@ try:
                                                CS_ERROR_MAX,
                                                NMR_STAR_LP_KEY_ITEMS,
                                                CARTN_DATA_ITEMS,
-                                               AUTH_ATOM_CARTN_DATA_ITEMS)
+                                               AUTH_ATOM_CARTN_DATA_ITEMS,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (getOneLetterCodeCan,
                                            updatePolySeqRst,
                                            updatePolySeqRstFromAtomSelectionSet,
@@ -184,7 +185,8 @@ except ImportError:
                                    CS_ERROR_MAX,
                                    NMR_STAR_LP_KEY_ITEMS,
                                    CARTN_DATA_ITEMS,
-                                   AUTH_ATOM_CARTN_DATA_ITEMS)
+                                   AUTH_ATOM_CARTN_DATA_ITEMS,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (getOneLetterCodeCan,
                                updatePolySeqRst,
                                updatePolySeqRstFromAtomSelectionSet,
@@ -11333,8 +11335,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.__f.append("[Atom not found] "
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refAuthChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                                    f"of chain {refAuthChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     self.__f.append("[Atom not found] "
                                     f"{_seqId}:{atomId} is not present in the coordinates.")

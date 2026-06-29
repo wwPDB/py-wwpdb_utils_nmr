@@ -12054,11 +12054,16 @@ class NefTranslator:
             error.append('Input file not readable.')
             return False, {'info': info, 'error': error}
 
+        has_nef_seq = False
         if data_type == 'Entry':
-            if len(nef_data.get_loops_by_category('nef_sequence')) == 0:  # DAOTHER-6694
-                error.append("Missing mandatory '_nef_sequence' category.")
-                return False, {'info': info, 'error': error}
-            self.authChainId = sorted(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code')))
+            if len(nef_data.get_loops_by_category('nef_sequence')) == 0:
+                if not self.__internal_mode:  # DAOTHER-6694
+                    error.append("Missing mandatory '_nef_sequence' category.")
+                    return False, {'info': info, 'error': error}
+                self.authChainId = ('A', )
+            else:
+                self.authChainId = sorted(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code')))
+                has_nef_seq = True
 
         elif data_type == 'Saveframe':
             self.authChainId = sorted(set(nef_data[0].get_tag('chain_code')))
@@ -12068,6 +12073,14 @@ class NefTranslator:
 
         self.authSeqMap = None
         self.selfSeqMap = None
+
+        # generate default sequence mapping on a best-effort basis
+        # when nef sequence is not provided and internal mode is on (DAOTHER-9705)
+        if not has_nef_seq:
+            self.authSeqMap = {}
+            for dummy_seq_id in range(1, 1000):
+                self.authSeqMap[('A', dummy_seq_id)] = ('1', dummy_seq_id)
+            self.selfSeqMap = self.authSeqMap
 
         asm_id = cs_list_id = dist_list_id = dihed_list_id = rdc_list_id = peak_list_id = 0
 

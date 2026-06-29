@@ -562,319 +562,11 @@ class NmrDpValidation:
 
         is_done = True
 
-        if self.__reg.combined_mode:
+        self.__reg.legacy_dist_restraint_uploaded = False
 
-            self.__reg.spareDirPath = os.path.dirname(srcPath)
-            if self.__reg.dirPath is None:
-                self.__reg.dirPath = self.__reg.spareDirPath
+        def proc_cs_path_path_list(offset):
 
-            if os.path.exists(srcPath):
-                codec = detect_bom(srcPath, 'utf-8')
-
-                _srcPath = None
-
-                if codec != 'utf-8':
-                    _srcPath = self.getNextPath(srcPath)
-                    convert_codec(srcPath, _srcPath, codec, 'utf-8')
-                    srcPath = _srcPath
-
-                if is_rtf_file(srcPath):
-                    _srcPath = self.getNextPath(srcPath, '.rtf2txt')
-                    convert_rtf_to_ascii(srcPath, _srcPath)
-                    srcPath = _srcPath
-
-            is_valid, message = self.__reg.nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
-
-            if not is_valid:
-
-                _srcPath = self.getNextPath(srcPath, '.cif2str')
-                if self.__reg.c2S.convert(srcPath, _srcPath):
-                    is_valid, message = self.__reg.nefT.validate_file(_srcPath, 'A')  # 'A' for NMR unified data
-                    self.__reg.srcPath = srcPath = _srcPath
-
-            self.__reg.original_error_message.append(message)
-
-            _file_type = message['file_type']  # nef/nmr-star/unknown
-
-            input_source = self.__reg.report.input_sources[0]
-            input_source_dic = input_source.get()
-
-            file_name = input_source_dic['file_name']
-            file_type = input_source_dic['file_type']
-
-            if is_valid:
-
-                if _file_type != file_type:
-
-                    err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
-                          f"but recognized as {READABLE_FILE_TYPE[_file_type]} file. Please re-upload the file."
-
-                    if len(message['error']) > 0:
-                        for err_message in message['error']:
-                            if 'No such file or directory' not in err_message:
-                                err += ' ' + re.sub('not in list', 'unknown item.', err_message)
-
-                    self.__reg.report.error.appendDescription('content_mismatch',
-                                                              {'file_name': file_name, 'description': err})
-
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                             f"++ Error  - {err}\n")
-
-                    is_done = False
-
-                else:
-
-                    is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(srcPath)
-
-                    if len(self.__reg.star_data_type) > 0:
-                        del self.__reg.star_data_type[-1]
-                        del self.__reg.star_data[-1]
-
-                    self.__reg.star_data_type.append(star_data_type)
-                    self.__reg.star_data.append(star_data)
-
-                    self.__reg.dpA.rescueFormerNef(0)
-                    self.__reg.dpA.rescueImmatureStr(0)
-
-            else:
-
-                if not self.__reg.dpA.fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message):
-
-                    if any(True for err_message in message['error'] if 'The mandatory loop' in err_message):
-
-                        _, star_data_type, star_data = self.__reg.nefT.read_input_file(srcPath)
-
-                        if len(self.__reg.star_data_type) > 0:
-                            del self.__reg.star_data_type[-1]
-                            del self.__reg.star_data[-1]
-
-                        self.__reg.star_data_type.append(star_data_type)
-                        self.__reg.star_data.append(star_data)
-
-                        self.__reg.dpA.rescueFormerNef(0)
-                        self.__reg.dpA.rescueImmatureStr(0)
-
-                    is_done = False
-
-            if _srcPath is not None and not self.__reg.submission_mode and not self.__reg.annotation_mode:
-                try:
-                    os.remove(_srcPath)
-                except OSError:
-                    pass
-
-            if is_done and file_type == 'nmr-star':
-                for sf in self.__reg.star_data[0].get_saveframes_by_category('assembly'):
-                    self.__reg.assembly_name = get_first_sf_tag(sf, 'Name', '?')
-                    details = get_first_sf_tag(sf, 'Details')
-                    if details not in EMPTY_VALUE and WS_PAT.match(details):
-                        set_sf_tag(sf, 'Details', None)
-                    break
-
-            if self.__reg.op == 'nmr-str-replace-cs':
-
-                for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY], start=1):
-
-                    if isinstance(cs, str):
-                        csPath = cs
-                    else:
-                        csPath = cs['file_name']
-
-                    if csPath.endswith('.gz'):
-
-                        _csPath = os.path.splitext(csPath)[0]
-
-                        if not os.path.exists(_csPath):
-
-                            try:
-
-                                uncompress_gzip_file(csPath, _csPath)
-
-                            except Exception as e:  # pylint: disable=broad-exception-caught
-
-                                self.__reg.report.error.appendDescription('internal_error',
-                                                                          f"+{self.__class_name__}.validateInputSource() "
-                                                                          "++ Error  - " + str(e))
-
-                                if self.__reg.verbose:
-                                    self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                                         "++ Error  - {str(e)}\n")
-
-                                return False
-
-                        csPath = _csPath
-
-                    if not os.path.basename(csPath).startswith('bmr'):
-
-                        _csPath = self.getNextPath(csPath, '.cif2str')
-                        if not self.__reg.c2S.convert(csPath, _csPath,
-                                                      originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):  # noqa: E501, pylint: disable=line-too-long
-                            _csPath = csPath
-
-                        csPath = _csPath
-
-                    codec = detect_bom(csPath, 'utf-8')
-
-                    _csPath = None
-
-                    if codec != 'utf-8':
-                        _csPath = self.getNextPath(csPath)
-                        convert_codec(csPath, _csPath, codec, 'utf-8')
-                        csPath = _csPath
-
-                    if is_rtf_file(csPath):
-                        _csPath = self.getNextPath(csPath, '.rtf2txt')
-                        convert_rtf_to_ascii(csPath, _csPath)
-                        csPath = _csPath
-
-                    allow_empty = self.__reg.bmrb_only and self.__reg.internal_mode\
-                        and (NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict
-                             or (csListId == 1 and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1))
-
-                    is_valid, message = self.__reg.nefT.validate_file(csPath, 'S', allow_empty)  # 'S' for assigned chemical shifts
-
-                    self.__reg.original_error_message.append(message)
-
-                    _file_type = message['file_type']  # nef/nmr-star/unknown
-
-                    input_source = self.__reg.report.input_sources[csListId]
-                    input_source_dic = input_source.get()
-
-                    file_name = input_source_dic['file_name']
-                    file_type = input_source_dic['file_type']
-
-                    if is_valid:
-
-                        if _file_type != file_type:
-
-                            if self.__reg.internal_mode and _file_type == 'nef':
-
-                                _csPath = self.getNextPath(csPath, '.nef2str')
-
-                                try:
-
-                                    is_valid, message = self.__reg.nefT.nef_to_nmrstar(csPath, _csPath)
-
-                                    if is_valid:
-                                        csPath = _csPath
-
-                                        _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
-
-                                        self.__reg.has_legacy_sf_issue = False
-
-                                        if star_data_type == 'Saveframe':
-                                            self.__reg.has_legacy_sf_issue = True
-
-                                            self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath,
-                                                                                       'S', message,
-                                                                                       allowEmpty=allow_empty,
-                                                                                       hasLegacySfIssue=self.__reg.has_legacy_sf_issue)  # noqa: E501, pylint: disable=line-too-long
-
-                                        if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
-
-                                            if len(self.__reg.star_data_type) > csListId:
-                                                self.__reg.star_data_type[csListId] = star_data_type
-                                                self.__reg.star_data[csListId] = star_data
-                                            else:
-                                                self.__reg.star_data_type.append(star_data_type)
-                                                self.__reg.star_data.append(star_data)
-
-                                            self.__reg.dpA.rescueFormerNef(csListId)
-                                            self.__reg.dpA.rescueImmatureStr(csListId)
-
-                                        if star_data_type != 'Entry':
-                                            _star_data = self.__convertCsToEntry(star_data, csListId + 1)
-                                            if isinstance(_star_data, pynmrstar.Entry):
-                                                self.__reg.star_data[-1] = _star_data
-                                                self.__reg.star_data_type[-1] = 'Entry'
-                                        else:
-                                            self.__reg.star_data[-1] = self.__convertCsToEntry(star_data)
-
-                                except Exception as e:  # pylint: disable=broad-exception-caught
-
-                                    err = f"{file_name!r} is not compliant with the {READABLE_FILE_TYPE[_file_type]} dictionary."
-
-                                    if 'No such file or directory' not in str(e):
-                                        err += ' ' + re.sub('not in list', 'unknown item.', str(e))
-
-                                    self.__reg.report.error.appendDescription('format_issue',
-                                                                              {'file_name': file_name, 'description': err})
-
-                                    self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                                         f"++ Error  - {file_name} {err}\n")
-
-                            else:
-
-                                err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
-                                      f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
-                                # DAOTHER-5673
-                                err += " Please re-upload the NEF file as an NMR unified data file." if _file_type == 'nef'\
-                                    else " Please re-upload the file."
-                                if len(message['error']) > 0:
-                                    for err_message in message['error']:
-                                        if 'No such file or directory' not in err_message:
-                                            err += ' ' + re.sub('not in list', 'unknown item.', err_message)
-
-                                self.__reg.report.error.appendDescription('content_mismatch',
-                                                                          {'file_name': file_name, 'description': err})
-
-                                if self.__reg.verbose:
-                                    self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                                         f"++ Error  - {err}\n")
-
-                                is_done = False
-
-                        else:
-
-                            _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
-
-                            self.__reg.has_legacy_sf_issue = False
-
-                            if star_data_type == 'Saveframe':
-                                self.__reg.has_legacy_sf_issue = True
-
-                                self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                           allowEmpty=allow_empty,
-                                                                           hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
-
-                                _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(csPath)
-
-                            if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
-
-                                if len(self.__reg.star_data_type) > csListId:
-                                    self.__reg.star_data_type[csListId] = star_data_type
-                                    self.__reg.star_data[csListId] = star_data
-                                else:
-                                    self.__reg.star_data_type.append(star_data_type)
-                                    self.__reg.star_data.append(star_data)
-
-                                self.__reg.dpA.rescueFormerNef(csListId)
-                                self.__reg.dpA.rescueImmatureStr(csListId)
-
-                            if star_data_type != 'Entry':
-                                _star_data = self.__convertCsToEntry(star_data, csListId + 1)
-                                if isinstance(_star_data, pynmrstar.Entry):
-                                    self.__reg.star_data[-1] = _star_data
-                                    self.__reg.star_data_type[-1] = 'Entry'
-                            else:
-                                self.__reg.star_data[-1] = self.__convertCsToEntry(star_data)
-
-                    else:
-
-                        if not self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                          allowEmpty=allow_empty,
-                                                                          hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
-                            is_done = False
-
-                    if _csPath is not None:
-                        try:
-                            os.remove(_csPath)
-                        except OSError:
-                            pass
-
-        else:
-
-            for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]):
+            for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY], start=offset):
 
                 if isinstance(cs, str):
                     csPath = cs
@@ -1068,7 +760,7 @@ class NmrDpValidation:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() "
                                                      f"++ Error  - {err}\n")
 
-                            is_done = False
+                            return False
 
                     else:
 
@@ -1110,7 +802,7 @@ class NmrDpValidation:
                     if not self.__reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
                                                                       allowEmpty=allow_empty,
                                                                       hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
-                        is_done = False
+                        pass
 
                 if _csPath is not None:
                     try:
@@ -1118,7 +810,9 @@ class NmrDpValidation:
                     except OSError:
                         pass
 
-            self.__reg.legacy_dist_restraint_uploaded = False
+            return True
+
+        def proc_mr_file_path_list():
 
             if MR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
@@ -1242,44 +936,42 @@ class NmrDpValidation:
                                 self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() "
                                                      f"++ Error  - {err}\n")
 
-                            is_done = False
+                            return False
 
-                        else:
+                        _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
+
+                        self.__reg.has_legacy_sf_issue = False
+
+                        if star_data_type == 'Saveframe':
+                            self.__reg.has_legacy_sf_issue = True
+
+                            self.__reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type,
+                                                                       mrPath, file_subtype, message,
+                                                                       hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
 
                             _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
 
-                            self.__reg.has_legacy_sf_issue = False
+                        self.__reg.star_data_type.append(star_data_type)
+                        self.__reg.star_data.append(star_data)
 
-                            if star_data_type == 'Saveframe':
-                                self.__reg.has_legacy_sf_issue = True
+                        if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
+                            if len(self.__reg.star_data_type) > file_path_list_len:
+                                self.__reg.star_data_type[file_path_list_len] = star_data_type
+                                self.__reg.star_data[file_path_list_len] = star_data
+                            else:
 
-                                self.__reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type,
-                                                                           mrPath, file_subtype, message,
-                                                                           hasLegacySfIssue=self.__reg.has_legacy_sf_issue)
+                                self.__reg.dpA.rescueFormerNef(file_path_list_len)
+                                self.__reg.dpA.rescueImmatureStr(file_path_list_len)
 
-                                _is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(mrPath)
-
-                            self.__reg.star_data_type.append(star_data_type)
-                            self.__reg.star_data.append(star_data)
-
-                            if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
-                                if len(self.__reg.star_data_type) > file_path_list_len:
-                                    self.__reg.star_data_type[file_path_list_len] = star_data_type
-                                    self.__reg.star_data[file_path_list_len] = star_data
-                                else:
-
-                                    self.__reg.dpA.rescueFormerNef(file_path_list_len)
-                                    self.__reg.dpA.rescueImmatureStr(file_path_list_len)
-
-                            if not _is_done:
-                                is_done = False
+                        if not _is_done:
+                            pass
 
                     else:
 
                         if not self.__reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type,
                                                                           mrPath, file_subtype, message,
                                                                           hasLegacySfIssue=self.__reg.has_legacy_sf_issue):
-                            is_done = False
+                            pass
 
                     file_path_list_len += 1
 
@@ -1288,6 +980,10 @@ class NmrDpValidation:
                             os.remove(_mrPath)
                         except OSError:
                             pass
+
+            return True
+
+        def proc_ar_file_path_list():
 
             if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
@@ -1332,6 +1028,10 @@ class NmrDpValidation:
 
                     ar['file_name'] = arPath
 
+            return True
+
+        def proc_ac_file_path_list():
+
             if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.bmrb_only and self.__reg.conversion_server:
 
                 for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
@@ -1351,8 +1051,39 @@ class NmrDpValidation:
 
                     acs['file_name'] = acsPath
 
-            if self.__reg.bmrb_only and self.__reg.internal_mode and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1:
-                for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]):
+        def post_internal_processing():
+
+            if not self.__reg.bmrb_only or not self.__reg.internal_mode:
+                return
+
+            if self.__reg.combined_mode and self.__reg.op == 'nmr-cs-mr-merge'\
+               and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 0:
+                src_cs_sfs = []
+                cs_list_id = 0
+                for csListId in range(len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY])):
+                    _csListId = csListId + 1
+                    if _csListId == 1:
+                        dst_sf_category_list, _ = self.__reg.nefT.get_inventory_list(self.__reg.star_data[0])
+                        if 'assigned_chemical_shifts' in dst_sf_category_list:
+                            src_cs_sfs = self.__reg.star_data[0].get_saveframes_by_category('assigned_chemical_shifts')
+                            for sf in src_cs_sfs:
+                                self.__reg.star_data[0].remove_saveframe(sf.name)
+                    if _csListId < len(self.__reg.star_data) and self.__reg.star_data_type[_csListId] == 'Entry'\
+                       and self.__reg.star_data[_csListId] is not None:
+                        src_sf_category_list, _ = self.__reg.nefT.get_inventory_list(self.__reg.star_data[_csListId])
+                        # copy cs data of the annotated cs file to the master template
+                        if 'assigned_chemical_shifts' in src_sf_category_list:
+                            for sf in self.__reg.star_data[_csListId].get_saveframes_by_category('assigned_chemical_shifts'):
+                                if cs_list_id < len(src_cs_sfs):
+                                    for src_cs_lp in src_cs_sfs[cs_list_id]:
+                                        if not any(True for lp in sf if lp.category == src_cs_lp.category):
+                                            sf.add_loop(src_cs_lp)
+                                self.__reg.star_data[0].add_saveframe(sf)
+                                self.__reg.star_data[_csListId].remove_saveframe(sf.name)
+                                cs_list_id += 1
+
+            elif len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1:
+                for csListId in range(len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY])):
                     if csListId == 0:
                         dst_sf_category_list, _ = self.__reg.nefT.get_inventory_list(self.__reg.star_data[0])
                         if 'assigned_chemical_shifts' in dst_sf_category_list:
@@ -1369,13 +1100,12 @@ class NmrDpValidation:
                                 self.__reg.star_data[0].add_saveframe(_sf)
                                 self.__reg.star_data[csListId].remove_saveframe(_sf.name)
 
-            if self.__reg.bmrb_only and self.__reg.internal_mode and self.__reg.srcNmrCifPath is not None:
+            if self.__reg.srcNmrCifPath is not None:
 
                 is_valid, message = self.__reg.nefT.validate_file(self.__reg.srcNmrCifPath, 'A')  # 'A' for NMR unified data
 
                 _file_type = message['file_type']  # nef/nmr-star/unknown
 
-                file_name = self.__reg.srcNmrCifPath
                 file_type = 'nmr-star'
 
                 if is_valid:
@@ -1420,6 +1150,160 @@ class NmrDpValidation:
                                                 self.__reg.star_data[0].remove_saveframe(_sf.name)
                                                 break
                                         self.__reg.star_data[0].add_saveframe(_sf)
+
+        if self.__reg.combined_mode:
+
+            self.__reg.spareDirPath = os.path.dirname(srcPath)
+            if self.__reg.dirPath is None:
+                self.__reg.dirPath = self.__reg.spareDirPath
+
+            if os.path.exists(srcPath):
+                codec = detect_bom(srcPath, 'utf-8')
+
+                _srcPath = None
+
+                if codec != 'utf-8':
+                    _srcPath = self.getNextPath(srcPath)
+                    convert_codec(srcPath, _srcPath, codec, 'utf-8')
+                    srcPath = _srcPath
+
+                if is_rtf_file(srcPath):
+                    _srcPath = self.getNextPath(srcPath, '.rtf2txt')
+                    convert_rtf_to_ascii(srcPath, _srcPath)
+                    srcPath = _srcPath
+
+            is_valid, message = self.__reg.nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
+
+            if not is_valid:
+
+                _srcPath = self.getNextPath(srcPath, '.cif2str')
+                if self.__reg.c2S.convert(srcPath, _srcPath):
+                    is_valid, message = self.__reg.nefT.validate_file(_srcPath, 'A')  # 'A' for NMR unified data
+                    self.__reg.srcPath = srcPath = _srcPath
+
+            self.__reg.original_error_message.append(message)
+
+            _file_type = message['file_type']  # nef/nmr-star/unknown
+
+            input_source = self.__reg.report.input_sources[0]
+            input_source_dic = input_source.get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+
+            if is_valid:
+
+                if _file_type != file_type:
+
+                    err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                          f"but recognized as {READABLE_FILE_TYPE[_file_type]} file. Please re-upload the file."
+
+                    if len(message['error']) > 0:
+                        for err_message in message['error']:
+                            if 'No such file or directory' not in err_message:
+                                err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+
+                    self.__reg.report.error.appendDescription('content_mismatch',
+                                                              {'file_name': file_name, 'description': err})
+
+                    if self.__reg.verbose:
+                        self.__reg.log.write(f"+{self.__class_name__}.validateInputSource() "
+                                             f"++ Error  - {err}\n")
+
+                    is_done = False
+
+                else:
+
+                    is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(srcPath)
+
+                    if len(self.__reg.star_data_type) > 0:
+                        del self.__reg.star_data_type[-1]
+                        del self.__reg.star_data[-1]
+
+                    self.__reg.star_data_type.append(star_data_type)
+                    self.__reg.star_data.append(star_data)
+
+                    self.__reg.dpA.rescueFormerNef(0)
+                    self.__reg.dpA.rescueImmatureStr(0)
+
+            else:
+
+                is_done = False
+
+                if self.__reg.op == 'nmr-str-replace-cs'\
+                   or (self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode
+                       and CS_FILE_PATH_LIST_KEY in self.__reg.inputParamDict):
+                    is_done, star_data_type, star_data = self.__reg.nefT.read_input_file(srcPath)
+                    if is_done and star_data_type == 'Entry':
+                        self.__reg.star_data_type.append(star_data_type)
+                        self.__reg.star_data.append(star_data)
+
+                        self.__reg.dpA.rescueFormerNef(0)
+                        self.__reg.dpA.rescueImmatureStr(0)
+
+                if not is_done and not self.__reg.dpA.fixFormatIssueOfInputSource(0, file_name, file_type, srcPath, 'A', message):
+
+                    if any(True for err_message in message['error'] if 'The mandatory loop' in err_message):
+
+                        _, star_data_type, star_data = self.__reg.nefT.read_input_file(srcPath)
+
+                        if len(self.__reg.star_data_type) > 0:
+                            del self.__reg.star_data_type[-1]
+                            del self.__reg.star_data[-1]
+
+                        self.__reg.star_data_type.append(star_data_type)
+                        self.__reg.star_data.append(star_data)
+
+                        self.__reg.dpA.rescueFormerNef(0)
+                        self.__reg.dpA.rescueImmatureStr(0)
+
+                    is_done = False
+
+            if _srcPath is not None and not self.__reg.submission_mode and not self.__reg.annotation_mode:
+                try:
+                    os.remove(_srcPath)
+                except OSError:
+                    pass
+
+            if is_done and file_type == 'nmr-star':
+                for sf in self.__reg.star_data[0].get_saveframes_by_category('assembly'):
+                    self.__reg.assembly_name = get_first_sf_tag(sf, 'Name', '?')
+                    details = get_first_sf_tag(sf, 'Details')
+                    if details not in EMPTY_VALUE and WS_PAT.match(details):
+                        set_sf_tag(sf, 'Details', None)
+                    break
+
+            if self.__reg.op == 'nmr-str-replace-cs'\
+               or (self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode):  # DAOTHER-9785:
+                if not proc_cs_path_path_list(1):
+                    return False
+
+            # DAOTHER-9785
+            if self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode:
+                if not proc_mr_file_path_list():
+                    return False
+
+                if not proc_ar_file_path_list():
+                    return False
+
+                proc_ac_file_path_list()
+
+                post_internal_processing()
+
+        else:
+
+            if not proc_cs_path_path_list(0):
+                return False
+
+            if not proc_mr_file_path_list():
+                return False
+
+            if not proc_ar_file_path_list():
+                return False
+
+            proc_ac_file_path_list()
+
+            post_internal_processing()
 
         return is_done
 
@@ -1826,7 +1710,7 @@ class NmrDpValidation:
 
         content_subtype = 'dist_restraint'
 
-        if lp_counts[content_subtype] == 0 and self.__reg.combined_mode and file_list_id == 0:
+        if lp_counts[content_subtype] == 0 and self.__reg.combined_mode and file_list_id == 0 and not self.__reg.conversion_server:
 
             sf_category = SF_CATEGORIES[file_type][content_subtype]
             lp_category = LP_CATEGORIES[file_type][content_subtype]
@@ -1896,7 +1780,7 @@ class NmrDpValidation:
             if 'spectral_peak_list' in self.__reg.sf_category_list:
                 has_spectral_peak = True
 
-        if not has_spectral_peak and self.__reg.combined_mode and file_list_id == 0:
+        if not has_spectral_peak and self.__reg.combined_mode and file_list_id == 0 and not self.__reg.conversion_server:
 
             primary_spectra_for_structure_determination =\
                 'NOESY or ROESY' if self.__reg.exptl_method != 'SOLID-STATE NMR' else 'DARR, REDOR, TEDOR or RFDR'
@@ -1936,7 +1820,7 @@ class NmrDpValidation:
                 if content_subtype in lp_counts:
                     mr_loops += lp_counts[content_subtype]
 
-            if mr_loops == 0 and not self.__reg.validation_server:
+            if mr_loops == 0 and not self.__reg.validation_server and not self.__reg.bmrb_only:
 
                 if 'other_data_types' not in self.__reg.sf_category_list:
 

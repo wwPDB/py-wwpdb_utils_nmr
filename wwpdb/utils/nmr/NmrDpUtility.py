@@ -15660,7 +15660,8 @@ class NmrDpUtility:
                                               'metal coordination',
                                               'diselenide bond',
                                               'disulfide bond',
-                                              'hydrogen bond')
+                                              'hydrogen bond',
+                                              'covalent bond')
 
             if len(dist_rows) == 0\
                or any(True for row in dist_rows
@@ -15767,6 +15768,37 @@ class NmrDpUtility:
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.__detectSimpleDistanceRestraint() ++ Warning  - {warn}\n")
+
+            has_upper_bound = False
+            lower_bound_sf_names = []
+            for block_id in block_ids:
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    if block_id == get_first_sf_tag(sf, 'Block_ID'):
+                        potential_type = get_first_sf_tag(sf, 'Potential_type')
+                        if potential_type not in EMPTY_VALUE:
+                            if 'upper-bound' in potential_type\
+                               or 'square-well' in potential_type\
+                               or 'log-harmonic' in potential_type\
+                               or potential_type == 'parabolic':
+                                has_upper_bound = True
+                            if 'lower-bound' in potential_type:
+                                lower_bound_sf_names.append(f'{sf.name!r}')
+
+            if not has_upper_bound and len(lower_bound_sf_names) > 0:
+                if len(lower_bound_sf_names) == 0:
+                    lower_bound_sf_names = lower_bound_sf_names[0]
+
+                err = "There is no attractive distance restraints expressed by upper limit potential, "\
+                      f"except for repulsive distance restraints, {lower_bound_sf_names}. "\
+                      "It means that your restraints does not have sufficient power to determine the structure. "\
+                      "Please re-upload all restraints used for the structure detemination."
+
+                self.__reg.report.error.appendDescription('missing_mandatory_content',
+                                                          {'file_name': data_file_name, 'category': lp_category,
+                                                           'description': err})
+
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.__detectSimpleDistanceRestraint() ++ Error  - {err}\n")
 
             return False
 

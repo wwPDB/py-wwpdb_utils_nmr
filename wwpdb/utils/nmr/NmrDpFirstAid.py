@@ -1165,7 +1165,7 @@ class NmrDpFirstAid:
         if file_type != 'nmr-star' or file_list_id >= len(self.__reg.star_data) or self.__reg.star_data[file_list_id] is None:
             return True
 
-        if self.__reg.combined_mode or self.__reg.star_data_type[file_list_id] == 'Entry':
+        if self.__reg.combined_mode and self.__reg.star_data_type[file_list_id] == 'Entry':
 
             for content_subtype in NMR_CONTENT_SUBTYPES:
 

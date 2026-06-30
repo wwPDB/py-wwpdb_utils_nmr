@@ -7649,6 +7649,16 @@ class BasePKParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
+                            # 'THR' should not be split 'T' and 'HR' (bmr26379)
+                            if compId.endswith(atomId) and len(compId) > 2 and compId != atomId:
+                                atomNameLike[idx] = False
+                                break
+                            # need to check the next token in case of 'MET' (bmr26379)
+                            if compId == atomId == 'MET' and idx < len(_str) - 1:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _str[idx + 1], leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = False
+                                    break
 
                         if not atomNameLike[idx] and hint is not None and 'comp_id' in hint[0] and self.cur_list_id != -1:
                             _compId = hint[0]['comp_id']

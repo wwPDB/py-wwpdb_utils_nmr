@@ -1213,6 +1213,16 @@ class BaseCSParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
+                            # 'THR' should not be split 'T' and 'HR' (bmr26379)
+                            if compId.endswith(atomId) and len(compId) > 2 and compId != atomId:
+                                atomNameLike[idx] = False
+                                break
+                            # need to check the next token in case of 'MET' (bmr26379)
+                            if compId == atomId == 'MET' and idx < len(_str) - 1:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _str[idx + 1], leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = False
+                                    break
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
                             if details is None:
@@ -2502,7 +2512,8 @@ class BaseCSParserListener():
                 or not ('seq_id_remap' in self.reasons or 'chain_seq_id_remap' in self.reasons
                         or 'ext_chain_seq_id_remap' in self.reasons)):
             try:
-                if not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])
+                if not any(_ps['auth_seq_id' if 'auth_seq_id' in _ps else 'seq_id'][0] - len(_ps['seq_id']) <= seqId
+                           <= _ps['auth_seq_id' if 'auth_seq_id' in _ps else 'seq_id'][-1] + len(_ps['seq_id'])
                            for _ps in self.polySeq):
                     self.__preferAuthSeq = not self.__preferAuthSeq
                     trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
@@ -2823,7 +2834,7 @@ class BaseCSParserListener():
                                     self.chainNumberDict[refChainId] = chainId
 
         if len(chainAssign) == 0:
-            auth_seq_id_list = list(filter(None, self.polySeq[0]['auth_seq_id']))
+            auth_seq_id_list = list(filter(None, self.polySeq[0]['auth_seq_id' if 'auth_seq_id' in self.polySeq[0] else 'seq_id']))
             min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
             if len(auth_seq_id_list) > 0:
                 min_auth_seq_id = min(auth_seq_id_list)
@@ -3192,7 +3203,7 @@ class BaseCSParserListener():
                                     self.chainNumberDict[refChainId] = chainId
 
         if len(chainAssign) == 0:
-            auth_seq_id_list = list(filter(None, self.polySeq[0]['auth_seq_id']))
+            auth_seq_id_list = list(filter(None, self.polySeq[0]['auth_seq_id' if 'auth_seq_id' in self.polySeq[0] else 'seq_id']))
             min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
             if len(auth_seq_id_list) > 0:
                 min_auth_seq_id = min(auth_seq_id_list)

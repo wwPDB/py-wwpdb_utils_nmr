@@ -215,6 +215,13 @@ class BareCSReader:
 if __name__ == "__main__":
     from wwpdb.utils.nmr.NmrVrptUtility import load_from_pickle  # pylint: disable=ungrouped-imports
 
+    nmr_poly_seq = load_from_pickle('../../tests-nmr/mock-data-bmr26379/nmr_poly_seq.pkl')
+    entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
+    reader = BareCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
+    reader.setDebugMode(True)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-bmr26379/upload/titration_1_02.csv')
+
     nmr_poly_seq = load_from_pickle('../../tests-nmr/mock-data-atypical-cs/bmr26356/upload/nmr_poly_seq.pkl')
     entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': '.'}}
     reader = BareCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)

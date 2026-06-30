@@ -14,6 +14,7 @@ __version__ = "1.1.1"
 
 import re
 import sys
+from itertools import zip_longest
 from typing import IO, List, Optional
 
 from antlr4 import ParseTreeListener
@@ -119,7 +120,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 self.__col_order.append('assignment')
             elif 'ID' in col_name or 'NUM' in col_name or 'INDEX' in col_name:
                 self.__col_order.append('index')
-            elif ('SHIFT' in col_name or 'VAL' in col_name) and 'ERR' not in col_name and 'UNCERT' not in col_name:
+            elif ('SHIFT' in col_name or 'VAL' in col_name or 'POS' in col_name)\
+                    and 'ERR' not in col_name and 'UNCERT' not in col_name:
                 self.__col_order.append('value')
             elif 'ERR' in col_name or 'UNCERT' in col_name or 'DEV' in col_name:
                 self.__col_order.append('value_uncertainty')
@@ -138,7 +140,9 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                     self.__col_order.append('ambiguity_code')
                 else:
                     self.__col_order.append('ambiguity_set_id')
-            else:
+            elif col_name not in ('X', 'Y', 'Z', 'A', 'F1', 'F2', 'F3', 'F4')\
+                    and not (col_name.startswith('(') and col_name.endswith(')'))\
+                    and not (col_name.startswith('[') and col_name.endswith(']')):
                 self.__col_order.append('unknown')
 
         for columnName in self.columnNameSelection:
@@ -489,9 +493,11 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 chain_id = str(self.anySelection[idx])
                         elif order == 'assignment':
                             if isinstance(self.anySelection[idx], str):
+                                print(self.anySelection[idx])
                                 assignments.append(self.anySelection[idx])
                         elif order == 'value':
                             value = self.anySelection[idx]
+                            print(value)
                             if isinstance(value, float):
                                 if self.validateCsValue(self.cur_list_id, value, None) is not None:
                                     values.append(self.anySelection[idx])
@@ -547,8 +553,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 if len(assignments) == 0:
                     return
 
-                for L, value, value_uncertainty, occupancy, figure_of_merit in zip(assignments, values, value_uncertainties,
-                                                                                   occupancies, figure_of_merits):
+                for L, value, value_uncertainty, occupancy, figure_of_merit\
+                        in zip_longest(assignments, values, value_uncertainties, occupancies, figure_of_merits):
                     self.atomSelectionSets.clear()
 
                     dstFunc = self.validateCsValue(self.cur_line_num, value, value_uncertainty, occupancy, figure_of_merit)

@@ -3655,7 +3655,7 @@ class NmrDpUtility:
             for row in dat:
 
                 if row[0] in EMPTY_VALUE or row[1] in EMPTY_VALUE or row[2] in EMPTY_VALUE:
-                    return None
+                    continue
 
                 try:
                     c = str(row[2])

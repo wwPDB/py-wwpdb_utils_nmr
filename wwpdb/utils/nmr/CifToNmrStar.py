@@ -38,7 +38,8 @@ from packaging import version
 import pynmrstar
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+    from wwpdb.utils.nmr.NmrDpConstant import (DEFAULT_ENTRY_ID,
+                                               EMPTY_VALUE,
                                                TRUE_VALUE,
                                                DATABLOCK_PAT,
                                                SF_ANONYMOUS_PAT,
@@ -46,7 +47,8 @@ try:
     from wwpdb.utils.nmr.io.PdbxUtil import PdbxUtil
     from wwpdb.utils.nmr.AlignUtil import getPrettyJson
 except ImportError:
-    from nmr.NmrDpConstant import (EMPTY_VALUE,
+    from nmr.NmrDpConstant import (DEFAULT_ENTRY_ID,
+                                   EMPTY_VALUE,
                                    TRUE_VALUE,
                                    DATABLOCK_PAT,
                                    SF_ANONYMOUS_PAT,
@@ -698,6 +700,9 @@ class CifToNmrStar:
                 return False
         except (IndexError, AttributeError):
             pass
+
+        if entryId in EMPTY_VALUE:
+            entryId = DEFAULT_ENTRY_ID
 
         entryId = entryId.strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 

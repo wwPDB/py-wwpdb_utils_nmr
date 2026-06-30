@@ -1460,8 +1460,7 @@ class NmrVrptUtility:
                         os.makedirs(self.__cacheDirPath)
 
                 self.__cR = CifReader(self.__verbose, self.__log,
-                                      use_cache=self.__use_cache,
-                                      sub_dir_name_for_cache=SUB_DIR_NAME_FOR_CACHE)
+                                      use_cache=self.__use_cache)
 
                 if self.__cR.parse(fPath):
                     self.__cifPath = fPath

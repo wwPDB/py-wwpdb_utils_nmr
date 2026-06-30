@@ -1046,6 +1046,27 @@ class NmrDpUtility:
 
         self.__reg.rescue_mode = True
 
+        if has_key_value(self.__reg.inputParamDict, 'validation_server'):
+            if isinstance(self.__reg.inputParamDict['validation_server'], bool):
+                self.__reg.validation_server = self.__reg.inputParamDict['validation_server']
+            else:
+                self.__reg.validation_server = self.__reg.inputParamDict['validation_server'] in TRUE_VALUE
+
+        if has_key_value(self.__reg.inputParamDict, 'conversion_server'):
+            if isinstance(self.__reg.inputParamDict['conversion_server'], bool):
+                self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server']
+            else:
+                self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server'] in TRUE_VALUE
+
+            self.__reg.nefT.permit_missing_chem_shift(True)
+            self.__reg.bmrb_only = self.__reg.internal_mode = True
+
+        if has_key_value(self.__reg.inputParamDict, 'bmrb_only'):
+            if isinstance(self.__reg.inputParamDict['bmrb_only'], bool):
+                self.__reg.bmrb_only = self.__reg.inputParamDict['bmrb_only']
+            else:
+                self.__reg.bmrb_only = self.__reg.inputParamDict['bmrb_only'] in TRUE_VALUE
+
         self.__reg.combined_mode = 'cs' not in op or op == 'nmr-str-replace-cs'
 
         if self.__reg.combined_mode:
@@ -1060,6 +1081,16 @@ class NmrDpUtility:
                 self.__reg.file_path_list_len += self.__reg.cs_file_path_list_len
 
         else:
+            if self.__reg.srcPath is not None and self.__reg.bmrb_only:
+                self.__reg.combined_mode = True
+
+                if CS_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
+                    self.__reg.cs_file_path_list_len = len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY])
+                    self.__reg.file_path_list_len += self.__reg.cs_file_path_list_len
+                else:
+                    self.__reg.cs_file_path_list_len = 0
+                    self.__reg.file_path_list_len = 1
+
             if CS_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
                 raise ValueError(f"+{self.__class_name__}.op() ++ Error  - No input provided for workflow operation {op}.")
 
@@ -1196,27 +1227,6 @@ class NmrDpUtility:
         if has_key_value(self.__reg.outputParamDict, 'entry_id'):
             # DAOTHER-9511: replace white space in a datablock name to underscore
             self.__reg.entry_id = self.__reg.outputParamDict['entry_id'].strip().replace(' ', '_')
-
-        if has_key_value(self.__reg.inputParamDict, 'validation_server'):
-            if isinstance(self.__reg.inputParamDict['validation_server'], bool):
-                self.__reg.validation_server = self.__reg.inputParamDict['validation_server']
-            else:
-                self.__reg.validation_server = self.__reg.inputParamDict['validation_server'] in TRUE_VALUE
-
-        if has_key_value(self.__reg.inputParamDict, 'conversion_server'):
-            if isinstance(self.__reg.inputParamDict['conversion_server'], bool):
-                self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server']
-            else:
-                self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server'] in TRUE_VALUE
-
-            self.__reg.nefT.permit_missing_chem_shift(True)
-            self.__reg.bmrb_only = self.__reg.internal_mode = True
-
-        if has_key_value(self.__reg.inputParamDict, 'bmrb_only'):
-            if isinstance(self.__reg.inputParamDict['bmrb_only'], bool):
-                self.__reg.bmrb_only = self.__reg.inputParamDict['bmrb_only']
-            else:
-                self.__reg.bmrb_only = self.__reg.inputParamDict['bmrb_only'] in TRUE_VALUE
 
         if self.__reg.bmrb_only:
             self.__reg.cs_anomalous_error_scaled_by_sigma = 4.0
@@ -1594,125 +1604,9 @@ class NmrDpUtility:
                         if not self.__reg.op.endswith('consistency-check'):
                             self.__reg.dpV.calculateOutputStats()
 
-        input_source = None
+        def proc_cs_file_path_list(offset):
 
-        if self.__reg.combined_mode:
-
-            # set primary input source as NMR unified data
-            input_source = self.__reg.report.input_sources[0]
-
-            file_type = 'nef' if 'nef' in self.__reg.op and 'str2nef' not in self.__reg.op else 'nmr-star'
-            content_type = CONTENT_TYPE[file_type]
-
-            input_source.setItemValue('file_name', os.path.basename(srcPath))
-            input_source.setItemValue('file_type', file_type)
-            input_source.setItemValue('content_type', content_type)
-            if srcName is not None:
-                input_source.setItemValue('original_file_name', srcName)
-            input_source.setItemValue('ignore_error', False)
-
-            if self.__reg.op == 'nmr-str-replace-cs':
-
-                for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY], start=1):
-
-                    self.__reg.report.appendInputSource()
-
-                    input_source = self.__reg.report.input_sources[csListId]
-
-                    file_type = 'nmr-star'  # 'nef' in self.__reg.op else 'nmr-star' # DAOTHER-5673
-
-                    if isinstance(cs, str):
-
-                        if cs.endswith('.gz'):
-
-                            _cs = os.path.splitext(cs)[0]
-
-                            if not os.path.exists(_cs):
-
-                                try:
-
-                                    uncompress_gzip_file(cs, _cs)
-
-                                except Exception as e:  # pylint: disable=broad-exception-caught
-
-                                    self.__reg.report.error.appendDescription('internal_error',
-                                                                              f"+{self.__class_name__}.__initializeDpReport() "
-                                                                              "++ Error  - " + str(e))
-
-                                    if self.__reg.verbose:
-                                        self.__reg.log.write(f"+{self.__class_name__}.__initializeDpReport() "
-                                                             f"++ Error  - {str(e)}\n")
-
-                                    return False
-
-                            cs = _cs
-
-                        if not os.path.basename(cs).startswith('bmr')\
-                           and (get_type_of_star_file(cs) == 'cif'
-                                or self.__reg.nefT.read_input_file(cs)[1] == 'Saveframe'):
-
-                            input_source.setItemValue('original_file_name', os.path.basename(cs))
-
-                            _cs = self.getNextPath(cs, '.cif2str')
-                            if not self.__reg.c2S.convert(cs, _cs):
-                                _cs = cs
-
-                            cs = _cs
-
-                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(cs)))
-                        input_source.setItemValue('file_type', file_type)
-                        input_source.setItemValue('content_type', 'nmr-chemical-shifts')
-                        input_source.setItemValue('ignore_error', False)
-
-                    else:
-
-                        if cs['file_name'].endswith('.gz'):
-
-                            _cs = os.path.splitext(cs['file_name'])[0]
-
-                            if not os.path.exists(_cs):
-
-                                try:
-
-                                    uncompress_gzip_file(cs['file_name'], _cs)
-
-                                except Exception as e:  # pylint: disable=broad-exception-caught
-
-                                    self.__reg.report.error.appendDescription('internal_error',
-                                                                              f"+{self.__class_name__}.__initializeDpReport() "
-                                                                              "++ Error  - " + str(e))
-
-                                    if self.__reg.verbose:
-                                        self.__reg.log.write(f"+{self.__class_name__}.__initializeDpReport() "
-                                                             f"++ Error  - {str(e)}\n")
-
-                                    return False
-
-                            cs['file_name'] = _cs
-
-                        if not os.path.basename(cs['file_name']).startswith('bmr')\
-                           and (get_type_of_star_file(cs['file_name']) == 'cif'
-                                or self.__reg.nefT.read_input_file(cs['file_name'])[1] == 'Saveframe'):
-
-                            if 'original_file_name' not in cs:
-                                input_source.setItemValue('original_file_name', os.path.basename(cs['file_name']))
-
-                            _cs = self.getNextPath(cs['file_name'], '.cif2str')
-                            if not self.__reg.c2S.convert(cs['file_name'], _cs, originalFileName=cs.get('original_file_name')):
-                                _cs = cs['file_name']
-
-                            cs['file_name'] = _cs
-
-                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(cs['file_name'])))
-                        input_source.setItemValue('file_type', file_type)
-                        input_source.setItemValue('content_type', 'nmr-chemical-shifts')
-                        if 'original_file_name' in cs:
-                            input_source.setItemValue('original_file_name', cs['original_file_name'])
-                        input_source.setItemValue('ignore_error', False)
-
-        else:
-
-            for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]):
+            for csListId, cs in enumerate(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY], start=offset):
 
                 if csListId > 0:
                     self.__reg.report.appendInputSource()
@@ -1812,6 +1706,10 @@ class NmrDpUtility:
                         input_source.setItemValue('original_file_name', cs['original_file_name'])
                     input_source.setItemValue('ignore_error', False)
 
+            return True
+
+        def proc_mr_file_path_list():
+
             if MR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
                 for mr in self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY]:
@@ -1860,6 +1758,8 @@ class NmrDpUtility:
                         if 'original_file_name' in mr:
                             input_source.setItemValue('original_file_name', mr['original_file_name'])
                         input_source.setItemValue('ignore_error', False)
+
+        def proc_ar_file_path_list():
 
             if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
 
@@ -2026,6 +1926,10 @@ class NmrDpUtility:
                         input_source.setItemValue('original_file_name', ar['original_file_name'])
                     input_source.setItemValue('ignore_error', False if 'ignore_error' not in ar else ar['ignore_error'])
 
+            return True
+
+        def proc_ac_file_path_list():
+
             if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.bmrb_only and self.__reg.conversion_server:
 
                 for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
@@ -2051,6 +1955,49 @@ class NmrDpUtility:
                 if self.__reg.c2S.convert(nmr_cif, _nmr_cif):
                     self.__reg.srcNmrCifPath = _nmr_cif
                     self.__reg.native_combined = True  # DAOTHER-8855
+
+        input_source = None
+
+        if self.__reg.combined_mode:
+
+            # set primary input source as NMR unified data
+            input_source = self.__reg.report.input_sources[0]
+
+            file_type = 'nef' if 'nef' in self.__reg.op and 'str2nef' not in self.__reg.op else 'nmr-star'
+            content_type = CONTENT_TYPE[file_type]
+
+            input_source.setItemValue('file_name', os.path.basename(srcPath))
+            input_source.setItemValue('file_type', file_type)
+            input_source.setItemValue('content_type', content_type)
+            if srcName is not None:
+                input_source.setItemValue('original_file_name', srcName)
+            input_source.setItemValue('ignore_error', False)
+
+            if self.__reg.op == 'nmr-str-replace-cs'\
+               or (self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode):  # DAOTHER-9785
+                if not proc_cs_file_path_list(1):
+                    return False
+
+            # DAOTHER-9785
+            if self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode:
+                proc_mr_file_path_list()
+
+                if not proc_ar_file_path_list():
+                    return False
+
+                proc_ac_file_path_list()
+
+        else:
+
+            if not proc_cs_file_path_list(0):
+                return False
+
+            proc_mr_file_path_list()
+
+            if not proc_ar_file_path_list():
+                return False
+
+            proc_ac_file_path_list()
 
         self.__reg.star_data_type.clear()
         self.__reg.star_data.clear()
@@ -3191,6 +3138,9 @@ class NmrDpUtility:
                 continue
 
             if self.__extractPolymerSequenceInEntityAssembly__(fileListId):
+                continue
+
+            if not has_poly_seq_in_lp:
                 continue
 
             poly_seq_in_lp = input_source_dic['polymer_sequence_in_loop']
@@ -15660,7 +15610,8 @@ class NmrDpUtility:
                                               'metal coordination',
                                               'diselenide bond',
                                               'disulfide bond',
-                                              'hydrogen bond')
+                                              'hydrogen bond',
+                                              'covalent bond')
 
             if len(dist_rows) == 0\
                or any(True for row in dist_rows
@@ -15767,6 +15718,37 @@ class NmrDpUtility:
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.__detectSimpleDistanceRestraint() ++ Warning  - {warn}\n")
+
+            has_upper_bound = False
+            lower_bound_sf_names = []
+            for block_id in block_ids:
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+                    if block_id == get_first_sf_tag(sf, 'Block_ID'):
+                        potential_type = get_first_sf_tag(sf, 'Potential_type')
+                        if potential_type not in EMPTY_VALUE:
+                            if 'upper-bound' in potential_type\
+                               or 'square-well' in potential_type\
+                               or 'log-harmonic' in potential_type\
+                               or potential_type == 'parabolic':
+                                has_upper_bound = True
+                            if 'lower-bound' in potential_type:
+                                lower_bound_sf_names.append(f'{sf.name!r}')
+
+            if not has_upper_bound and len(lower_bound_sf_names) > 0:
+                if len(lower_bound_sf_names) == 0:
+                    lower_bound_sf_names = lower_bound_sf_names[0]
+
+                err = "There is no attractive distance restraints expressed by upper limit potential, "\
+                      f"except for repulsive distance restraints, {lower_bound_sf_names}. "\
+                      "It means that your restraints does not have sufficient power to determine the structure. "\
+                      "Please re-upload all restraints used for the structure detemination."
+
+                self.__reg.report.error.appendDescription('missing_mandatory_content',
+                                                          {'file_name': data_file_name, 'category': lp_category,
+                                                           'description': err})
+
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.__detectSimpleDistanceRestraint() ++ Error  - {err}\n")
 
             return False
 
@@ -16412,8 +16394,10 @@ class NmrDpUtility:
         sf_category = SF_CATEGORIES[file_type][content_subtype]
         lp_category = LP_CATEGORIES[file_type][content_subtype]
 
+        removed_sf = []
         removed_sf_framecode = []
         for sf in master_entry.get_saveframes_by_category(sf_category):
+            removed_sf.append(sf)
             removed_sf_framecode.append(sf.name)
             master_entry.remove_saveframe(sf.name)
 
@@ -16445,10 +16429,16 @@ class NmrDpUtility:
             _list_id = list_id
 
             if isinstance(self.__reg.star_data[fileListId], pynmrstar.Saveframe):
-                self.__reg.c2S.set_local_sf_id(self.__reg.star_data[fileListId], list_id)
+                sf = self.__reg.star_data[fileListId]
+                self.__reg.c2S.set_local_sf_id(sf, list_id)
 
-                added_sf_framecode.append(self.__reg.star_data[fileListId].name)
-                master_entry.add_saveframe(self.__reg.star_data[fileListId])
+                if list_id - 1 < len(removed_sf):
+                    for src_cs_lp in removed_sf[list_id - 1]:
+                        if not any(True for lp in sf if lp.category == src_cs_lp.category):
+                            sf.add_loop(src_cs_lp)
+
+                added_sf_framecode.append(sf.name)
+                master_entry.add_saveframe(sf)
 
                 list_id += 1
 
@@ -16456,6 +16446,11 @@ class NmrDpUtility:
 
                 for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
                     self.__reg.c2S.set_local_sf_id(sf, list_id)
+
+                    if list_id - 1 < len(removed_sf):
+                        for src_cs_lp in removed_sf[list_id - 1]:
+                            if not any(True for lp in sf if lp.category == src_cs_lp.category):
+                                sf.add_loop(src_cs_lp)
 
                     added_sf_framecode.append(sf.name)
                     master_entry.add_saveframe(sf)

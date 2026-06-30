@@ -5138,12 +5138,13 @@ class NmrDpRemediation:
                         missing_ch3 = self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                         valid = self.__reg.sail_flag
                         row_src = src_lp.data[src_idx]
+                        seq_id_src = row_src[seq_id_col]
                         if 0 <= src_idx < len(src_lp):
                             for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                 if src_idx + offset < len(src_lp):
                                     row = src_lp.data[src_idx + offset]
                                     if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
                                         valid = True
@@ -5153,7 +5154,7 @@ class NmrDpRemediation:
                                 if src_idx - offset >= 0:
                                     row = src_lp.data[src_idx - offset]
                                     if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
                                         valid = True
@@ -5336,9 +5337,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5352,9 +5353,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5371,9 +5372,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         break
                                                     _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int)\
                                                         else int(row[seq_id_col])
@@ -5387,9 +5388,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         break
                                                     _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int)\
                                                         else int(row[seq_id_col])
@@ -5405,9 +5406,9 @@ class NmrDpRemediation:
                                                     if row[comp_id_col] == comp_id\
                                                        and row[atom_id_col][0] == atom_type\
                                                        and row[ambig_code_col] == str(_row[12])\
-                                                       or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                         if not (row[chain_id_col] == str(_row[1])
-                                                                or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                             _row[12] = ambig_code = 6
                                                             break
                                                 if src_idx - offset >= 0:
@@ -5415,9 +5416,9 @@ class NmrDpRemediation:
                                                     if row[comp_id_col] == comp_id\
                                                        and row[atom_id_col][0] == atom_type\
                                                        and row[ambig_code_col] == str(_row[12])\
-                                                       or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                         if not (row[chain_id_col] == str(_row[1])
-                                                                or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                             _row[12] = ambig_code = 6
                                                             break
                                             if ambig_code == 4:
@@ -5438,9 +5439,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5454,9 +5455,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5472,9 +5473,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         _row[12] = ambig_code = 6
                                                         break
                                             if src_idx - offset >= 0:
@@ -5482,9 +5483,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         _row[12] = ambig_code = 6
                                                         break
 
@@ -5551,11 +5552,12 @@ class NmrDpRemediation:
                         valid = self.__reg.sail_flag
                         if 0 <= src_idx < len(src_lp):
                             row_src = src_lp.data[src_idx]
+                            seq_id_src = row_src[seq_id_col]
                             for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                 if src_idx + offset < len(src_lp):
                                     row = src_lp.data[src_idx + offset]
                                     if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src)
                                         or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
@@ -5566,7 +5568,7 @@ class NmrDpRemediation:
                                 if src_idx - offset >= 0:
                                     row = src_lp.data[src_idx - offset]
                                     if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src)
                                         or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
@@ -5687,9 +5689,9 @@ class NmrDpRemediation:
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id in (_row[3], _row[17]):
@@ -5702,9 +5704,9 @@ class NmrDpRemediation:
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id in (_row[3], _row[17]):
@@ -5720,9 +5722,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5736,9 +5738,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5754,9 +5756,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         _row[12] = ambig_code = 6
                                                         break
                                             if src_idx - offset >= 0:
@@ -5764,9 +5766,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         _row[12] = ambig_code = 6
                                                         break
                                         if ambig_code == 4:
@@ -5787,9 +5789,9 @@ class NmrDpRemediation:
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id in (_row[3], _row[17]):
@@ -5802,9 +5804,9 @@ class NmrDpRemediation:
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id =\
                                                 row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5820,9 +5822,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     _row[12] = ambig_code = 6
                                                     break
                                         if src_idx - offset >= 0:
@@ -5830,9 +5832,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     _row[12] = ambig_code = 6
                                                     break
 

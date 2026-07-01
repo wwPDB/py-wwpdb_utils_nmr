@@ -770,6 +770,209 @@ class BmrbAnnTasks:
                 except KeyError:
                     has_cs_lp = False
 
+        sf_category = 'chem_shift_perturbation'
+
+        if sf_category in self.__reg.sf_category_list:
+            for list_id, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
+                self.__reg.c2S.set_local_sf_id(sf, list_id)
+                cs_ref_id = get_first_sf_tag(sf, 'Chem_shift_ref_set_ID')
+                if not isinstance(cs_ref_id, int):
+                    if len(cs_ref_id) == 0 or cs_ref_id in EMPTY_VALUE or not cs_ref_id.isdigit():
+                        cs_ref_id = 1
+                        set_sf_tag(sf, 'Chem_shift_ref_set_ID', cs_ref_id)
+                    else:
+                        cs_ref_id = int(cs_ref_id)
+                if cs_ref_id in cs_ref_sf_framecode:
+                    set_sf_tag(sf, 'Chem_shift_ref_set_label', f'${cs_ref_sf_framecode[cs_ref_id]}')
+                else:
+                    isotope_nums[cs_ref_id] = set()
+                    if len(cs_ref_sf_framecode) > 0:
+                        cs_ref_id = min(list(cs_ref_sf_framecode.keys()))
+                        set_sf_tag(sf, 'Chem_shift_ref_set_ID', cs_ref_id)
+                        set_sf_tag(sf, 'Chem_shift_ref_set_label', f'${cs_ref_sf_framecode[cs_ref_id]}')
+                    else:
+                        cs_ref_id = 1
+                        set_sf_tag(sf, 'Chem_shift_ref_set_ID', cs_ref_id)
+
+                smpl_cond_list_id = get_first_sf_tag(sf, 'Sample_condition_list_ID')
+                if not isinstance(smpl_cond_list_id, int):
+                    if len(smpl_cond_list_id) == 0 or smpl_cond_list_id in EMPTY_VALUE or not smpl_cond_list_id.isdigit():
+                        smpl_cond_list_id = 1
+                        set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
+                    else:
+                        smpl_cond_list_id = int(smpl_cond_list_id)
+                if smpl_cond_list_id in smpl_cond_sf_framecode:
+                    set_sf_tag(sf, 'Sample_condition_list_label', f'${smpl_cond_sf_framecode[smpl_cond_list_id]}')
+                else:
+                    if len(smpl_cond_sf_framecode) > 0:
+                        smpl_cond_list_id = min(list(smpl_cond_sf_framecode.keys()))
+                        set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
+                        set_sf_tag(sf, 'Sample_condition_list_label', f'${smpl_cond_sf_framecode[smpl_cond_list_id]}')
+                    else:
+                        smpl_cond_list_id = 1
+                        set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
+
+                exp_list_sf_category = 'experiment_list'
+
+                if exp_list_sf_category in self.__reg.sf_category_list:
+                    exp_list_sf = master_entry.get_saveframes_by_category(exp_list_sf_category)[0]
+
+                    exp_lp_category = '_Experiment'
+
+                    try:
+
+                        exp_lp = exp_list_sf.get_loop(exp_lp_category)
+                        exp_lp.sort_rows('ID')
+
+                    except KeyError:
+                        exp_lp = None
+
+                    if exp_lp is not None:
+
+                        exp_tags = ['ID', 'Name', 'Sample_ID', 'Sample_label', 'Sample_state']
+
+                        if set(exp_tags) & set(exp_lp.tags) == set(exp_tags):
+                            exp_list = exp_lp.get_tag(exp_tags)
+
+                            if len(exp_list) > 0:
+
+                                lp_category = '_Chem_shift_perturbation_experiment'
+                                lp = None
+
+                                try:
+
+                                    lp = sf.get_loop(lp_category)
+                                    lp.sort_rows('Experiment_ID')
+
+                                    tags = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state']
+
+                                    if set(tags) & set(lp.tags) == set(tags):
+                                        exp_id_col = lp.tags.index('Experiment_ID')
+                                        exp_name_col = lp.tags.index('Experiment_name')
+                                        sample_id_col = lp.tags.index('Sample_ID')
+                                        sample_label_col = lp.tags.index('Sample_label')
+                                        sample_state_col = lp.tags.index('Sample_state')
+
+                                        cs_exp_list = lp.get_tag(tags)
+                                        reserved_ids, duplicated_idxs, reserved_names = [], [], []
+
+                                        for idx, cs_exp in enumerate(cs_exp_list):
+                                            if cs_exp[0] not in EMPTY_VALUE:
+                                                if cs_exp[0] not in reserved_ids:
+                                                    reserved_ids.append(cs_exp[0])
+                                                else:
+                                                    duplicated_idxs.append(idx)
+                                                exp = next((exp for exp in exp_list if exp[0] == cs_exp[0]), None)
+                                                if exp is not None:
+                                                    if cs_exp[2:5] != exp[2:5]:
+                                                        lp.data[idx][exp_name_col] = exp[1]
+                                                        lp.data[idx][sample_id_col] = exp[2]
+                                                        lp.data[idx][sample_label_col] = exp[3]
+                                                        lp.data[idx][sample_state_col] = exp[4]
+                                                    reserved_names.append(exp[1])
+                                            else:
+                                                exp = next((exp for exp in exp_list if exp[1] not in reserved_names), None)
+                                                if exp is not None:
+                                                    lp.data[idx][exp_id_col] = exp_list.index(exp) + 1
+                                                    lp.data[idx][exp_name_col] = exp[1]
+                                                    lp.data[idx][sample_id_col] = exp[2]
+                                                    lp.data[idx][sample_label_col] = exp[3]
+                                                    lp.data[idx][sample_state_col] = exp[4]
+                                                    reserved_names.append(exp[1])
+
+                                        if len(duplicated_idxs) > 0:
+                                            for idx in reversed(duplicated_idxs):
+                                                del lp.data[idx]
+
+                                except (KeyError, TypeError, ValueError):
+
+                                    if lp is not None:
+                                        del sf[lp]
+
+                                    items = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state',
+                                             'Entry_ID', 'Chem_shift_perturbation_list_ID']
+
+                                    cs_list_id = get_first_sf_tag(sf, 'ID')
+
+                                    lp = pynmrstar.Loop.from_scratch(lp_category)
+
+                                    tags = [f'{lp_category}.{item}' for item in items]
+
+                                    lp.add_tag(tags)
+
+                                    for exp in exp_list:
+                                        row = exp
+                                        row.extend([self.__reg.entry_id, cs_list_id])
+                                        lp.add_data(row)
+
+                                    lp.sort_rows('Experiment_ID')
+
+                                    sf.add_loop(lp)
+
+                try:
+
+                    lp_category = '_Atom_chem_shift'
+
+                    lp = sf.get_loop(lp_category)
+
+                    tags = ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Auth_seq_ID']
+
+                    if set(tags) & set(lp.tags) == set(tags):
+
+                        dat = lp.get_tag(tags)
+
+                        for row in dat:
+                            if isinstance(row[0], str) and row[0] not in EMPTY_VALUE and row[0].isdigit():
+                                ent_asym_id_with_exptl_data.add(int(row[0]))
+                            if row[1] not in EMPTY_VALUE and row[2] not in EMPTY_VALUE and row[3] not in EMPTY_VALUE:
+                                try:
+                                    seq_key = (int(row[1]), int(row[2]))
+                                    if seq_key not in label_to_auth_seq:
+                                        label_to_auth_seq[seq_key] = int(row[3])
+                                except ValueError:
+                                    continue
+
+                    tags = ['Chem_shift_val_err', 'Difference_chem_shift_val_err']
+
+                    if set(tags) & set(lp.tags) == set(tags):
+
+                        dat = lp.get_tag(tags)
+
+                        val_err_col = lp.tags.index('Chem_shift_val_err')
+                        diff_val_err_col = lp.tags.index('Difference_chem_shift_val_err')
+
+                        for idx, row in enumerate(dat):
+                            try:
+                                if row[0] not in EMPTY_VALUE:
+                                    try:
+                                        val_err = float(row[0])
+                                        if val_err > 0.0:
+                                            pass
+                                        elif val_err == 0.0:
+                                            if row[0][0] == '-':
+                                                lp.data[idx][val_err_col] = row[0][1:]
+                                        else:
+                                            lp.data[idx][val_err_col] = abs(val_err)
+                                    except ValueError:
+                                        pass
+                                if row[1] not in EMPTY_VALUE:
+                                    try:
+                                        diff_val_err = float(row[1])
+                                        if diff_val_err > 0.0:
+                                            pass
+                                        elif diff_val_err == 0.0:
+                                            if row[1][0] == '-':
+                                                lp.data[idx][diff_val_err_col] = row[1][1:]
+                                        else:
+                                            lp.data[idx][diff_val_err_col] = abs(diff_val_err)
+                                    except ValueError:
+                                        pass
+                            except (ValueError, TypeError):
+                                continue
+
+                except KeyError:
+                    pass
+
         # section 12: anomalous chemical shift assignments
 
         sf_category = 'assembly'

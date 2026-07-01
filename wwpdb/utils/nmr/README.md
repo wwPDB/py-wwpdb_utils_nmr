@@ -381,3 +381,13 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-shi-ppm`|**internal use**|`nmr-chemical-shifts` / `any`|PPM chemical shift file (NMRVIEW, CAMRA)
 `nm-shi-st2`|**internal use**|`nmr-chemical-shifts` / `any`|NMR-STAR V2 chemical shift file (loop only)
 `nm-shi-xea`|**internal use**|`nmr-chemical-shifts` / `any`|XEASY chemical shift file same as `nm-aux-xea`
+`nm-csp-ari`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|ARIA chemical shift file
+`nm-csp-bar`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|Bare WSV/TSV/CSV chemical shift file (residue per line, atom per line, or SPARKY's resonance list)
+`nm-csp-gar`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|GARRET chemical shift file (CAMRA)
+`nm-csp-npi`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|NMRPIPE chemical shift file
+`nm-csp-oli`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|OLIVIA chemical shift file
+`nm-csp-pip`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|PIPP chemical shift file
+`nm-csp-ppm`|**internal use**|`nmr-chemical-cspfts-perturbation` / `any`|PPM chemical shift file (NMRVIEW, CAMRA)
+`nm-csp-st2`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|NMR-STAR V2 chemical shift file (loop only)
+`nm-csp-xea`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|XEASY chemical shift file same as `nm-aux-xea`
+

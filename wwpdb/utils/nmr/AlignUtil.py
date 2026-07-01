@@ -615,7 +615,7 @@ def getRestraintFormatName(fileType: str, ambig: bool = False) -> str:
     if fileType == 'nm-res-xpl':
         return 'XPLOR-NIH/CNS restraint' if ambig else 'XPLOR-NIH restraint'
 
-    if fileType in ('nm-aux-xea', 'nm-shi-xea'):
+    if fileType in ('nm-aux-xea', 'nm-shi-xea', 'nm-csp-xea'):
         return 'XEASY PROT assignment'
 
     if fileType == 'nm-pea-ari':
@@ -671,31 +671,31 @@ def getChemShiftFormatName(fileType: str) -> str:
     if fileType == 'nef':
         return 'NEF data'
 
-    if fileType in ('nm-aux-xea', 'nm-shi-xea'):
+    if fileType in ('nm-aux-xea', 'nm-shi-xea', 'nm-csp-xea'):
         return 'XEASY PROT assignment'
 
-    if fileType == 'nm-shi-ari':
+    if fileType in ('nm-shi-ari', 'nm-csp-ari'):
         return 'ARIA chemical shift assignment'
 
-    if fileType == 'nm-shi-bar':
+    if fileType in ('nm-shi-bar', 'nm-csp-bar'):
         return 'Bare CSV/TSV chemical shift assignment'
 
-    if fileType == 'nm-shi-gar':
+    if fileType in ('nm-shi-gar', 'nm-csp-gar'):
         return 'GARRET chemical shift assignment'
 
-    if fileType == 'nm-shi-npi':
+    if fileType in ('nm-shi-npi', 'nm-csp-npi'):
         return 'NMRPIPE chemical shift assignment'
 
-    if fileType == 'nm-shi-oli':
+    if fileType in ('nm-shi-oli', 'nm-csp-oli'):
         return 'OLIVIA chemical shift assignment'
 
-    if fileType == 'nm-shi-pip':
+    if fileType in ('nm-shi-pip', 'nm-csp-pip'):
         return 'PIPP chemical shift assignment'
 
-    if fileType == 'nm-shi-ppm':
+    if fileType in ('nm-shi-ppm', 'nm-csp-ppm'):
         return 'PPM chemical shift assignment'
 
-    if fileType == 'nm-shi-st2':
+    if fileType in ('nm-shi-st2', 'nm-csp-st2'):
         return 'NMR-STAR V2.1 chemical shift assignment'
 
     return 'other chemical shift assignment'

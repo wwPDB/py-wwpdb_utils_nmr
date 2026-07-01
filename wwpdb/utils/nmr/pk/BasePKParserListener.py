@@ -5704,7 +5704,8 @@ class BasePKParserListener():
                             self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
 
                     if len(chainAssign1) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign1, a1.get('auth_chain_id'),
+                                              a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
 
             except (KeyError, TypeError):
                 pass
@@ -5785,8 +5786,10 @@ class BasePKParserListener():
                         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign1, a1.get('auth_chain_id'),
+                                              a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign2, a2.get('auth_chain_id'),
+                                              a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
@@ -5947,9 +5950,12 @@ class BasePKParserListener():
                         chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign3, a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign1, a1.get('auth_chain_id'),
+                                              a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign2, a2.get('auth_chain_id'),
+                                              a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign3, a3.get('auth_chain_id'),
+                                              a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
@@ -6122,9 +6128,12 @@ class BasePKParserListener():
                         chainAssign4 = self.assignCoordPolymerSequenceWithoutCompId(a4['seq_id'], a4['atom_id'], index)
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0 and len(chainAssign4) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign3, a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign1, a1.get('auth_chain_id'),
+                                              a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign2, a2.get('auth_chain_id'),
+                                              a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign3, a3.get('auth_chain_id'),
+                                              a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
                         self.selectCoordAtoms(chainAssign4, a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
@@ -8423,11 +8432,13 @@ class BasePKParserListener():
 
         ret = []
 
-        segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
+        segId = _segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
         dimId = 1
         for idx, term in enumerate(_str):
             if segIdLike[idx]:
-                segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+                segId = _segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+                if _segId.isdigit():
+                    _segId = None
                 if _segId_ is not None and segId != _segId_:
                     resId = resName = None
                 _segId_ = segId
@@ -8540,7 +8551,7 @@ class BasePKParserListener():
                            if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(True for item in ret
@@ -8549,6 +8560,8 @@ class BasePKParserListener():
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -8653,7 +8666,7 @@ class BasePKParserListener():
                            if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(True for item in ret
@@ -8662,6 +8675,8 @@ class BasePKParserListener():
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -8766,7 +8781,7 @@ class BasePKParserListener():
                            if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(True for item in ret
@@ -8775,6 +8790,8 @@ class BasePKParserListener():
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -8881,7 +8898,7 @@ class BasePKParserListener():
                            if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(True for item in ret
@@ -8890,6 +8907,8 @@ class BasePKParserListener():
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -8995,8 +9014,8 @@ class BasePKParserListener():
                                if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                             if self.__ignore_diagonal:
                                 continue
-                        ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId,
-                                    'comp_id': resName, 'atom_id': atomName})
+                        ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
+                                    'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                     else:
                         if any(True for item in ret
                                if (segId is None or item['chain_id'] == segId)
@@ -9004,6 +9023,8 @@ class BasePKParserListener():
                             if self.__ignore_diagonal:
                                 continue
                         ass = {'dim': dimId, 'atom_id': atomName}
+                        if _segId is not None:
+                            ass['auth_chain_id'] = _segId
                         if segId is not None:
                             ass['chain_id'] = segId
                         if resId is not None:
@@ -10919,7 +10940,8 @@ class BasePKParserListener():
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], authChainId: Optional[str],
+                         seqId: int, compId: str, atomId: str,
                          index: int, allowAmbig: bool = True, offset: int = 0) -> None:
         """ Select atoms of the coordinates.
         """
@@ -11083,7 +11105,7 @@ class BasePKParserListener():
                 if compId != cifCompId and any(True for item in chainAssign if item[2] == compId):
                     continue
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                    self.selectCoordAtoms(chainAssign, seqId, compId, atomId, index, allowAmbig, offset=1)
+                    self.selectCoordAtoms(chainAssign, authChainId, seqId, compId, atomId, index, allowAmbig, offset=1)
                     return
                 self.f.append(f"[Invalid atom nomenclature] {self.getCurrentSpectralPeak(n=index)}"
                               f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
@@ -11122,8 +11144,9 @@ class BasePKParserListener():
                     if cifAtomId == 'HN1' and 'H' in coordAtomSite['atom_id']:
                         cifAtomId = 'H'
 
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
-                                      'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId,
+                                      'auth_chain_id': authChainId, 'auth_seq_id': seqId,
+                                      'auth_comp_id': compId, 'auth_atom_id': authAtomId})
 
                 self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, index)
 

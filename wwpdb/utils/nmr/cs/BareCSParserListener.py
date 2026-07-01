@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import re
 import sys
@@ -148,6 +148,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
         for columnName in self.columnNameSelection:
             register_column_info(columnName.upper())
 
+        self.columnNameSelection.clear()
+
         sparky_resonance_columns = ('GROUP', 'ATOM', 'NUC', 'SHIFT', 'SDEV')
         if all(col_name in self.__col_name for col_name in sparky_resonance_columns):
             self.software_name = 'SPARKY'
@@ -157,7 +159,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_line_num = 0
 
-        self.cur_subtype = 'chem_shift'
+        self.cur_subtype = 'csp' if self.csp else 'chem_shift'
 
         self.chemShifts = 0
         self.offset = {}
@@ -493,11 +495,9 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                                 chain_id = str(self.anySelection[idx])
                         elif order == 'assignment':
                             if isinstance(self.anySelection[idx], str):
-                                print(self.anySelection[idx])
                                 assignments.append(self.anySelection[idx])
                         elif order == 'value':
                             value = self.anySelection[idx]
-                            print(value)
                             if isinstance(value, float):
                                 if self.validateCsValue(self.cur_list_id, value, None) is not None:
                                     values.append(self.anySelection[idx])

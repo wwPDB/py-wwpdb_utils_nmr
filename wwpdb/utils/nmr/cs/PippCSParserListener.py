@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import sys
 from typing import IO, List, Optional
@@ -65,7 +65,7 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
         self.chemShifts = 0
         self.offset = {}
 
-        self.cur_subtype = 'chem_shift'
+        self.cur_subtype = 'csp' if self.csp else 'chem_shift'
 
         self.predictSequenceNumberOffsetByFirstResidue(None, int(str(ctx.Integer())), None)
 

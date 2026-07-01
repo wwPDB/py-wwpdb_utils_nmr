@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.1.0"
+__version__ = "5.2.0"
 
 import collections
 import copy
@@ -1057,6 +1057,7 @@ class NmrDpValidation:
                 return
 
             if self.__reg.combined_mode and self.__reg.op == 'nmr-cs-mr-merge'\
+               and CS_FILE_PATH_LIST_KEY in self.__reg.inputParamDict\
                and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 0:
                 src_cs_sfs = []
                 cs_list_id = 0
@@ -1082,7 +1083,8 @@ class NmrDpValidation:
                                 self.__reg.star_data[_csListId].remove_saveframe(sf.name)
                                 cs_list_id += 1
 
-            elif len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1:
+            elif CS_FILE_PATH_LIST_KEY in self.__reg.inputParamDict\
+                    and len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY]) > 1:
                 for csListId in range(len(self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY])):
                     if csListId == 0:
                         dst_sf_category_list, _ = self.__reg.nefT.get_inventory_list(self.__reg.star_data[0])
@@ -1275,7 +1277,10 @@ class NmrDpValidation:
 
             if self.__reg.op == 'nmr-str-replace-cs'\
                or (self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode):  # DAOTHER-9785:
-                if not proc_cs_path_path_list(1):
+                if self.__reg.conversion_server and self.__reg.combined_mode\
+                   and CS_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+                    pass
+                elif not proc_cs_path_path_list(1):
                     return False
 
             # DAOTHER-9785

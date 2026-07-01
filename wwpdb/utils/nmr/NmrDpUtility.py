@@ -278,6 +278,7 @@
 # 27-Jan-2026  M. Yokochi - raise error when entity exists and sequence inconsistency between the entity and loops,
 #                           instead of warning, do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
 # 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and chache file directory (DAOTHER-9785)
+# 30-Jun-2026  M. Yokochi - add support for chemical shift perturbation experiment by adding 'nm-csp-*' file types (DAOTHER-9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -286,7 +287,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.1.0"
+__version__ = "5.2.0"
 
 import collections
 import copy
@@ -704,6 +705,7 @@ class NmrDpUtility:
                              self.__validateLegacyMr,
                              self.__validateLegacyPk,
                              self.__validateLegacyCs,
+                             self.__validateLegacyCsp,
                              self.__validateSaxsMr,
                              self.__validateStrPk,
                              self.__updateConstraintStats,
@@ -1067,7 +1069,8 @@ class NmrDpUtility:
             else:
                 self.__reg.bmrb_only = self.__reg.inputParamDict['bmrb_only'] in TRUE_VALUE
 
-        self.__reg.combined_mode = 'cs' not in op or op == 'nmr-str-replace-cs'
+        self.__reg.combined_mode = 'cs' not in op or op == 'nmr-str-replace-cs'\
+            or self.__reg.conversion_server and self.__reg.srcPath is not None
 
         if self.__reg.combined_mode:
             if self.__reg.srcPath is None:
@@ -1975,7 +1978,10 @@ class NmrDpUtility:
 
             if self.__reg.op == 'nmr-str-replace-cs'\
                or (self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode):  # DAOTHER-9785
-                if not proc_cs_file_path_list(1):
+                if self.__reg.conversion_server and self.__reg.combined_mode\
+                   and CS_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+                    pass
+                elif not proc_cs_file_path_list(1):
                     return False
 
             # DAOTHER-9785
@@ -8640,6 +8646,12 @@ class NmrDpUtility:
         """
 
         return self.__reg.dpR.validateLegacyCs()
+
+    def __validateLegacyCsp(self) -> bool:
+        """ Validate data content of legacy NMR chemical shift perturbation files and merge them if possible.
+        """
+
+        return self.__reg.dpR.validateLegacyCsp()
 
     def __validateSaxsMr(self) -> bool:
         """ Validate SAXS restraint files.
@@ -16215,7 +16227,8 @@ class NmrDpUtility:
 
                             sf.add_loop(lp)
 
-        if self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only:
+        if self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only\
+                and CS_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
             cs = self.__reg.inputParamDict[CS_FILE_PATH_LIST_KEY][0]
 
             if isinstance(cs, str):

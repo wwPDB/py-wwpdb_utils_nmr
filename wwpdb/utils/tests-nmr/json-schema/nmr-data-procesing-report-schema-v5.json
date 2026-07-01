@@ -65,7 +65,16 @@
             "nm-shi-pip",
             "nm-shi-ppm",
             "nm-shi-st2",
-            "nm-shi-xea"
+            "nm-shi-xea",
+            "nm-csp-ari",
+            "nm-csp-bar",
+            "nm-csp-gar",
+            "nm-csp-npi",
+            "nm-csp-oli",
+            "nm-csp-pip",
+            "nm-csp-ppm",
+            "nm-csp-st2",
+            "nm-csp-xea"
           ]
         },
         "original_file_name": {

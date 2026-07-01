@@ -9,7 +9,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import os
 import sys
@@ -47,6 +47,8 @@ class PippCSReader:
                  '__verbose',
                  '__log',
                  '__debug',
+                 '__csp',
+                 '__csLoops',
                  '__maxLexerErrorReport',
                  '__maxParserErrorReport',
                  '__polySeq',
@@ -68,6 +70,9 @@ class PippCSReader:
         self.__verbose = verbose
         self.__log = log
         self.__debug = False
+
+        self.__csp = False
+        self.__csLoops = None
 
         self.__maxLexerErrorReport = MAX_ERROR_REPORT
         self.__maxParserErrorReport = MAX_ERROR_REPORT
@@ -95,6 +100,18 @@ class PippCSReader:
         """
 
         self.__debug = debug
+
+    def setCspMode(self, csp: bool) -> None:
+        """ Set chemical shift perturbation mode.
+        """
+
+        self.__csp = csp
+
+    def setCsloops(self, csLoops: Optional[List[dict]]) -> None:
+        """ Set reference assigned chemical shifts for chemical shift perturbation mode.
+        """
+
+        self.__csLoops = csLoops
 
     def setLexerMaxErrorReport(self, maxErrReport: int) -> None:
         """ Set the maximum number of lexer error messages to save.
@@ -173,6 +190,8 @@ class PippCSReader:
                                             self.__nefT,
                                             self.__reasons)
             listener.debug = self.__debug
+            listener.csp = self.__csp
+            listener.csLoops = self.__csLoops
             listener.createSfDict = createSfDict
             if createSfDict:
                 if originalFileName is not None:

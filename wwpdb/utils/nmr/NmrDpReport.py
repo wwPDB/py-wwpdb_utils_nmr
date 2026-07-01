@@ -137,6 +137,7 @@
 #                           (DAOTHER-7829, 9785, NMR data remediation)
 # 07-Jan-2026  M. Yokochi - update status code when adding error/warning description
 # 27-Jan-2026  M. Yokochi - add hasSequenceMismatchErrorInCsLoop() (DAOTHER-10487)
+# 30-Jun-2026  M. Yokochi - add 'nm-csp-*' file type to support chemical shift perturbation (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -145,7 +146,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.1.0"
+__version__ = "5.2.0"
 
 import copy
 import json
@@ -1996,7 +1997,9 @@ class NmrDpReportInputSource:
                            'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top',
                            'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',
                            'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-oli',
-                           'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', 'nm-shi-xea')
+                           'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', 'nm-shi-xea',
+                           'nm-csp-ari', 'nm-csp-bar', 'nm-csp-gar', 'nm-csp-npi', 'nm-csp-oli',
+                           'nm-csp-pip', 'nm-csp-ppm', 'nm-csp-st2', 'nm-csp-xea')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')

@@ -11,6 +11,7 @@
 # 10-Sep-2024  M. Yokochi - ignore identical polymer sequence extensions within polynucleotide multiplexes (DAOTHER-9674)
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR restraint remediation Phase 2)
+# 30-Jun-2026  M. Yokochi - add getCspRow() to support chemical shift perturbation (v1.1.0)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -18,7 +19,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 import collections
 import copy
@@ -6201,8 +6202,10 @@ def getRestraintName(mrSubtype: str, title: bool = False) -> str:
         return "Angle databse restraints" if title else "angle database restraints"
     if mrSubtype.startswith('pre') or mrSubtype.startswith('auto_relax'):
         return "Paramagnetic relaxation enhancement restraints" if title else "paramagnetic relaxation enhancement restraints"
-    if mrSubtype.startswith('csp') or mrSubtype.startswith('pcs'):
+    if mrSubtype.startswith('pcs'):
         return "Pseudocontact shift restraints" if title else "pseudocontact shift restraints"
+    if mrSubtype.startswith('csp'):
+        return "Chemical shift perturbation" if title else "chemical shift perturbation"
     if mrSubtype.startswith('prdc'):
         return "Paramagnetic RDC restraints" if title else "paramagnetic RDC restraints"
     if mrSubtype.startswith('pang'):
@@ -6263,7 +6266,7 @@ def contentSubtypeOf(mrSubtype: str) -> str:
     if mrSubtype == 'prdc':
         return 'rdc_restraint'
 
-    if mrSubtype == 'pcs':
+    if mrSubtype in ('csp', 'pcs'):
         return 'csp_restraint'
 
     if mrSubtype == 'pre':
@@ -6468,8 +6471,8 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
             sf.add_tag(tag_item_name, 'ppm')
         elif tag_item_name == 'Units' and (mrSubtype.startswith('hvycs') or mrSubtype.startswith('procs')):
             sf.add_tag(tag_item_name, 'ppm')
-        elif tag_item_name == 'Type' and mrSubtype in ('pcs', 'csp_restraint'):
-            sf.add_tag(tag_item_name, 'paramagnetic ligand binding')
+        elif tag_item_name == 'Type' and contentSubtype == 'csp_restraint':
+            sf.add_tag(tag_item_name, 'paramagnetic ligand binding' if mrSubtype.startswith('pcs') else 'ligand binding')
         elif tag_item_name == 'Common_relaxation_type_name' and mrSubtype in ('pre', 'auto_relax_restraint'):
             sf.add_tag(tag_item_name, 'paramagnetic relaxation enhancement')
         elif tag_item_name == 'Relaxation_coherence_type' and mrSubtype in ('pre', 'auto_relax_restraint'):
@@ -6514,7 +6517,7 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
         elif tag_item_name == 'Details' and mrSubtype is not None and mrSubtype.startswith('rdc')\
                 and mrSubtype != 'rdc_raw_data' and rdcCode is not None:
             sf.add_tag(tag_item_name, rdcCode)
-        elif tag_item_name == 'Details' and mrSubtype in ('pcs', 'csp_restraint') and cyanaParameter is not None:
+        elif tag_item_name == 'Details' and contentSubtype == 'csp_restraint' and cyanaParameter is not None:
             sf.add_tag(tag_item_name, f"Tensor_magnitude {cyanaParameter['magnitude']}, "
                        f"Tensor_rhombicity {cyanaParameter['rhombicity']}, "
                        f"Paramagnetic_center_seq_ID {cyanaParameter['orientation_center_seq_id']}")
@@ -7671,7 +7674,7 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
         # row[14]: Ambiguity_set_ID
 
         row[15], row[16], row[17], row[18] =\
-            atom['chain_id'], atom['seq_id'], atom['comp_id'], atom['auth_atom_id']
+            atom.get('auth_chain_id'), atom['auth_seq_id'], atom['auth_comp_id'], atom['auth_atom_id']
 
     row[19] = details
 
@@ -7774,6 +7777,7 @@ def getCsRow(csSubtype: str, indexId: int,
     row[key_size + 4] = ambig_code
     # row[key_size + 5]: Ambiguity_set_ID
     row[key_size + 6] = atom['seq_id']
+    row[key_size + 7] = atom.get('auth_chain_id')
     if entityAssembly is not None and atom['chain_id'] in entityAssembly:
         authAsymId = entityAssembly[atom['chain_id']]['auth_asym_id']
         if authAsymId not in EMPTY_VALUE:
@@ -7785,6 +7789,65 @@ def getCsRow(csSubtype: str, indexId: int,
 
     if details is not None:
         row[-3] = details
+    row[-2] = listId
+    row[-1] = entryId
+
+    return row
+
+
+def getCspRow(csSubtype: str, indexId: int,
+              listId: int, entryId: str, dstFunc: dict,
+              entityAssembly: Optional[dict],
+              atom: dict,
+              ref_cs_val: Optional[float],
+              ref_cs_val_err: Optional[float]
+              ) -> Optional[List[Any]]:
+    """ Return row data for _Chem_shift_perturbation loop.
+        @return: data array
+    """
+
+    contentSubtype = contentSubtypeOf(csSubtype)
+
+    if contentSubtype is None:
+        return None
+
+    key_size = len(NMR_STAR_LP_KEY_ITEMS[contentSubtype])
+    data_size = len(NMR_STAR_LP_DATA_ITEMS[contentSubtype])
+
+    row = [None] * (key_size + data_size)
+    row[0] = indexId
+    row[1] = atom['chain_id']
+    if entityAssembly is not None and atom['chain_id'] in entityAssembly:
+        row[2] = entityAssembly[atom['chain_id']]['entity_id']
+    row[3], row[4], row[5] = atom['seq_id'], atom['comp_id'], atom['atom_id']
+
+    row[key_size] = atomType = atom['atom_id'][0]
+    row[key_size + 1] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atomType][0]
+    row[key_size + 2] = dstFunc['position']
+    if has_key_value(dstFunc, 'position_uncertainty'):
+        row[key_size + 3] = dstFunc['position_uncertainty']
+
+    if ref_cs_val is not None:
+        test_row = [row[key_size + 2], str(ref_cs_val)]
+        max_eff_digits = getMaxEffDigits(test_row)
+        row[key_size + 4] = roundString(str(float(row[key_size + 2]) - ref_cs_val), max_eff_digits)
+        if row[key_size + 3] is not None and ref_cs_val_err is not None:
+            row[key_size + 5] = row[key_size + 3] if float(row[key_size + 3]) > ref_cs_val_err else str(ref_cs_val_err)
+        elif row[key_size + 3] is not None:
+            row[key_size + 5] = row[key_size + 3]
+        elif ref_cs_val_err is not None:
+            row[key_size + 5] = str(ref_cs_val_err)
+
+    row[key_size + 6] = atom.get('auth_chain_id')
+    if entityAssembly is not None and atom['chain_id'] in entityAssembly:
+        authAsymId = entityAssembly[atom['chain_id']]['auth_asym_id']
+        if authAsymId not in EMPTY_VALUE:
+            row[key_size + 6] = authAsymId
+    row[key_size + 7], row[key_size + 8], row[key_size + 9] =\
+        atom['auth_seq_id' if 'auth_seq_id' in atom else 'seq_id'], \
+        atom['auth_comp_id' if 'auth_comp_id' in atom else 'comp_id'], \
+        atom['auth_atom_id' if 'auth_atom_id' in atom else 'atom_id']
+
     row[-2] = listId
     row[-1] = entryId
 

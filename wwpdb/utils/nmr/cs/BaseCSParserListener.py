@@ -10,11 +10,12 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import collections
 import copy
 import functools
+import itertools
 import sys
 from typing import IO, List, Optional, Tuple, Union
 
@@ -74,7 +75,8 @@ try:
                                                        decListIdCounter,
                                                        getSaveframe,
                                                        getLoop,
-                                                       getCsRow)
+                                                       getCsRow,
+                                                       getCspRow)
 except ImportError:
     from nmr.NmrDpConstant import (LARGE_ASYM_ID,
                                    EMPTY_VALUE,
@@ -130,7 +132,8 @@ except ImportError:
                                            decListIdCounter,
                                            getSaveframe,
                                            getLoop,
-                                           getCsRow)
+                                           getCsRow,
+                                           getCspRow)
 
 
 class BaseCSParserListener():
@@ -171,6 +174,9 @@ class BaseCSParserListener():
 
     __debug = False
     __verbose_debug = False
+
+    # whether to output contest as csp (chemical shift perturbation)
+    __csp = False
 
     __createSfDict = False
 
@@ -223,6 +229,9 @@ class BaseCSParserListener():
 
     # default saveframe name for error handling
     __def_err_sf_framecode = None
+
+    # list of reference assigned chemical shift loops for chemical shift perturbation
+    __csLoops = None
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,  # pylint: disable=unused-argument
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
@@ -332,6 +341,17 @@ class BaseCSParserListener():
         self.__verbose_debug = verbose_debug
 
     @property
+    def csp(self) -> bool:
+        """ Retrieve chemical shift perturbation mode.
+        """
+
+        return self.__csp
+
+    @csp.setter
+    def csp(self, csp: bool) -> None:
+        self.__csp = csp
+
+    @property
     def createSfDict(self) -> bool:
         """ Whether to create saveframe dictionary.
         """
@@ -385,6 +405,37 @@ class BaseCSParserListener():
     @entryId.setter
     def entryId(self, entryId: str) -> None:
         self.__entryId = entryId
+
+    @property
+    def csLoops(self) -> List[dict]:
+        """ Retrieve CS loops as reference for chemical shift perturbation.
+        """
+
+        return self.__csLoops
+
+    @csLoops.setter
+    def csLoops(self, csLoops: List[dict]) -> None:
+        self.__csLoops = csLoops
+
+        if self.__csLoops is None or len(self.__csLoops) == 0:
+            return
+
+        segIds = set()
+        for lp in self.__csLoops:
+            for row in lp['data']:
+                if 'Auth_asym_ID' in row:
+                    seg_id = row['Auth_asym_ID']
+                    if seg_id in EMPTY_VALUE:
+                        continue
+                    segIds.add(seg_id)
+        if len(segIds) > 0:
+            if len(self.polySeq) > 1:
+                for ps1, ps2 in itertools.combinations(self.polySeq, 2):
+                    if 'identical_auth_chain_id' in ps1 and ps2['auth_chain_id'] in ps1['identical_auth_chain_id']:
+                        continue
+                    if len(set(ps1['auth_seq_id']) & set(ps2['auth_seq_id'])) != len(ps1['auth_seq_id']) + len(ps2['auth_seq_id']):
+                        return
+            self.__defaultSegId__ = collections.Counter(segIds).most_common()[0][0]
 
     def exit(self) -> None:
         """ Common function to exit a parse tree.
@@ -677,6 +728,28 @@ class BaseCSParserListener():
             translateToStdAtomNameNoRef.cache_clear()
             translateToStdAtomNameWithRef.cache_clear()
 
+    def __getCsValue(self, atom: dict) -> Tuple[Optional[float], Optional[float]]:
+        """ Retrieve CS value for a given atom as reference for chemical shift perturbation.
+        """
+
+        if self.__csLoops is None or len(self.__csLoops) == 0:
+            return None, None
+
+        chain_id, seq_id, comp_id, atom_id = atom['chain_id'], atom['seq_id'], atom['comp_id'], atom['atom_id']
+
+        _atom_ids = self.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
+
+        lp = self.__csLoops[0]
+
+        row = next((row for row in lp['data']
+                    if row['Entity_assembly_ID'] == chain_id and row['Comp_index_ID'] == seq_id
+                    and row['Comp_ID'] == comp_id and row['Atom_ID'] in _atom_ids), None)
+
+        if row is not None:
+            return row['Val'], row['Val_err']
+
+        return None, None
+
     def validateCsValue(self, index: int, pos: float, pos_unc: Optional[float],
                         occupancy: Optional[float] = None,
                         figure_of_merit: Optional[Union[float, int]] = None
@@ -841,7 +914,7 @@ class BaseCSParserListener():
                             self.assignCoordPolymerSequenceWithoutCompId(a['seq_id'], a['atom_id'], index)
 
                     if len(chainAssign) > 0:
-                        self.selectCoordAtoms(chainAssign, a['seq_id'], a['comp_id'], a['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign, a.get('auth_chain_id'), a['seq_id'], a['comp_id'], a['atom_id'], index)
 
                         if len(self.atomSelectionSet) == 1:
                             has_assignments = True
@@ -892,9 +965,15 @@ class BaseCSParserListener():
                 if len(auth_seq_id_map) > 0 and atom['seq_id'] in auth_seq_id_map:
                     atom['auth_seq_id'] = auth_seq_id_map[atom['seq_id']]
 
-                row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
-                               dstFunc, self.entityAssembly,
-                               atom, ambig_code=ambig_code, details=details)
+                if self.__csp:
+                    val, val_err = self.__getCsValue(atom)
+                    row = getCspRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
+                                    dstFunc, self.entityAssembly,
+                                    atom, val, val_err)
+                else:
+                    row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
+                                   dstFunc, self.entityAssembly,
+                                   atom, ambig_code=ambig_code, details=details)
                 sf['loop'].add_data(row)
 
     def extractAssignment(self, numOfDim: int, string: str, src_index: int,
@@ -1212,6 +1291,16 @@ class BaseCSParserListener():
                                     atomNameSpan[idx] = (index, len(term))
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
+                                    break
+                            # 'THR' should not be split 'T' and 'HR' (bmr26379)
+                            if compId.endswith(atomId) and len(compId) > 2 and compId != atomId:
+                                atomNameLike[idx] = False
+                                break
+                            # need to check the next token in case of 'MET' (bmr26379)
+                            if compId == atomId == 'MET' and idx < len(_str) - 1:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _str[idx + 1], leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = False
                                     break
                         for compId in self.compIdSet:
                             _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
@@ -1910,11 +1999,13 @@ class BaseCSParserListener():
 
         ret = []
 
-        segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
+        segId = _segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
         dimId = 1
         for idx, term in enumerate(_str):
             if segIdLike[idx]:
-                segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+                segId = _segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+                if _segId.isdigit():
+                    _segId = None
                 if _segId_ is not None and segId != _segId_:
                     resId = resName = None
                 _segId_ = segId
@@ -2021,10 +2112,12 @@ class BaseCSParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -2123,10 +2216,12 @@ class BaseCSParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -2225,10 +2320,12 @@ class BaseCSParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -2329,10 +2426,12 @@ class BaseCSParserListener():
                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                     if details is not None:
                         atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -2432,10 +2531,12 @@ class BaseCSParserListener():
                         _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
                         if details is not None:
                             atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
-                        ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId,
-                                    'comp_id': resName, 'atom_id': atomName})
+                        ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
+                                    'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                     else:
                         ass = {'dim': dimId, 'atom_id': atomName}
+                        if _segId is not None:
+                            ass['auth_chain_id'] = _segId
                         if segId is not None:
                             ass['chain_id'] = segId
                         if resId is not None:
@@ -2502,7 +2603,8 @@ class BaseCSParserListener():
                 or not ('seq_id_remap' in self.reasons or 'chain_seq_id_remap' in self.reasons
                         or 'ext_chain_seq_id_remap' in self.reasons)):
             try:
-                if not any(_ps['auth_seq_id'][0] - len(_ps['seq_id']) <= seqId <= _ps['auth_seq_id'][-1] + len(_ps['seq_id'])
+                if not any(_ps['auth_seq_id' if 'auth_seq_id' in _ps else 'seq_id'][0] - len(_ps['seq_id']) <= seqId
+                           <= _ps['auth_seq_id' if 'auth_seq_id' in _ps else 'seq_id'][-1] + len(_ps['seq_id'])
                            for _ps in self.polySeq):
                     self.__preferAuthSeq = not self.__preferAuthSeq
                     trial = self.getRealChainSeqId(ps, seqId, compId, isPolySeq, False)
@@ -2823,7 +2925,7 @@ class BaseCSParserListener():
                                     self.chainNumberDict[refChainId] = chainId
 
         if len(chainAssign) == 0:
-            auth_seq_id_list = list(filter(None, self.polySeq[0]['auth_seq_id']))
+            auth_seq_id_list = list(filter(None, self.polySeq[0]['auth_seq_id' if 'auth_seq_id' in self.polySeq[0] else 'seq_id']))
             min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
             if len(auth_seq_id_list) > 0:
                 min_auth_seq_id = min(auth_seq_id_list)
@@ -3192,7 +3294,7 @@ class BaseCSParserListener():
                                     self.chainNumberDict[refChainId] = chainId
 
         if len(chainAssign) == 0:
-            auth_seq_id_list = list(filter(None, self.polySeq[0]['auth_seq_id']))
+            auth_seq_id_list = list(filter(None, self.polySeq[0]['auth_seq_id' if 'auth_seq_id' in self.polySeq[0] else 'seq_id']))
             min_auth_seq_id = max_auth_seq_id = UNREAL_AUTH_SEQ_NUM
             if len(auth_seq_id_list) > 0:
                 min_auth_seq_id = min(auth_seq_id_list)
@@ -3597,7 +3699,8 @@ class BaseCSParserListener():
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], authChainId: Optional[str],
+                         seqId: int, compId: str, atomId: str,
                          index: int, allowAmbig: bool = True, offset: int = 0) -> None:
         """ Select atoms of the coordinates.
         """
@@ -3715,7 +3818,7 @@ class BaseCSParserListener():
                 if compId != cifCompId and any(True for item in chainAssign if item[2] == compId):
                     continue
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                    self.selectCoordAtoms(chainAssign, seqId, compId, atomId, index, allowAmbig, offset=1)
+                    self.selectCoordAtoms(chainAssign, authChainId, seqId, compId, atomId, index, allowAmbig, offset=1)
                     return
                 self.f.append(f"[Invalid atom nomenclature] {self.getCurrentAssignment(n=index)}"
                               f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
@@ -3739,8 +3842,8 @@ class BaseCSParserListener():
                     if cifAtomId == 'HN1' and 'H' in coordAtomSite['atom_id']:
                         cifAtomId = 'H'
 
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
-                                      'atom_id': cifAtomId, 'auth_seq_id': seqId, 'auth_atom_id': authAtomId})
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId,
+                                      'auth_chain_id': authChainId, 'auth_seq_id': seqId, 'auth_atom_id': authAtomId})
 
                 self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, coordAtomSite, index)
 
@@ -4037,7 +4140,7 @@ class BaseCSParserListener():
         """ Retrieve indicator of the current chemical shift.
         """
 
-        if self.cur_subtype == 'chem_shift':
+        if self.cur_subtype in ('chem_shift', 'csp'):
             return f"[Check the {self.chemShifts + 1}th row of assigned chemical shifts "\
                 f"(list_id={self.cur_list_id}, index={n}), {self.__def_err_sf_framecode}] "
         return ''
@@ -4057,7 +4160,7 @@ class BaseCSParserListener():
 
         r = self.__getNamedReasonsForReparsing('local_seq_scheme')
         preferAuthSeq = self.__authSeqId == 'auth_seq_id'
-        if self.cur_subtype == 'chem_shift':
+        if self.cur_subtype in ('chem_shift', 'csp'):
             r[(self.cur_subtype, self.cur_list_id, self.chemShifts)] = preferAuthSeq
         if not preferAuthSeq:
             self.__preferLabelSeqCount += 1
@@ -4080,7 +4183,7 @@ class BaseCSParserListener():
             self.__preferAuthSeq = False
             # self.__authSeqId = 'label_seq_id'
             return
-        if self.cur_subtype == 'chem_shift':
+        if self.cur_subtype in ('chem_shift', 'csp'):
             key = (self.cur_subtype, self.cur_list_id, self.chemShifts)
         else:
             return
@@ -4146,7 +4249,7 @@ class BaseCSParserListener():
 
         n = self.cur_list_id
 
-        return {'chem_shift': n} if n > 0 else {}
+        return {'csp' if self.__csp else 'chem_shift': n} if n > 0 else {}
 
     def getPolymerSequence(self) -> Optional[List[dict]]:
         """ Return polymer sequence of CS file.

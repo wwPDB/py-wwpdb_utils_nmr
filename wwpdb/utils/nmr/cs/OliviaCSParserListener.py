@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import sys
 from typing import IO, List, Optional
@@ -134,7 +134,7 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.chemShifts = 0
 
-        self.cur_subtype = 'chem_shift'
+        self.cur_subtype = 'csp' if self.csp else 'chem_shift'
 
     def exitChemical_shifts(self, ctx: OliviaCSParser.Chemical_shiftsContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by OliviaCSParser#chemical_shifts.

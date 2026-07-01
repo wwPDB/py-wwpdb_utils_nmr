@@ -7675,6 +7675,8 @@ def getPkChemShiftRow(pkSubtype: str, indexId: int, listId: int, entryId: str, d
 
         row[15], row[16], row[17], row[18] =\
             atom.get('auth_chain_id'), atom['auth_seq_id'], atom['auth_comp_id'], atom['auth_atom_id']
+        if row[15] is None:
+            row[15] = atom['chain_id']
 
     row[19] = details
 

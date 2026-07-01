@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import collections
 import copy
@@ -6134,7 +6134,8 @@ class BasePKParserListener():
                                               a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
                         self.selectCoordAtoms(chainAssign3, a3.get('auth_chain_id'),
                                               a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign4, a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign4, a4.get('auth_chain_id'),
+                                              a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True

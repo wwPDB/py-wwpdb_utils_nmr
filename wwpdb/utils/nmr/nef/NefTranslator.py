@@ -4912,6 +4912,7 @@ class NefTranslator:
         is_cs_lp = lp_category in ('_nef_chemical_shift', '_Atom_chem_shift')
         is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
         is_bond_lp = lp_category in ('_nef_covalent_links', '_Bond')
+        is_comb_id_as_temp_key = False
 
         def skip_empty_value_error(lp, idx):
             if not is_target_lp:
@@ -4951,12 +4952,14 @@ class NefTranslator:
                         comb_item = next(item for item in data_items if item['name'] == 'restraint_combination_id')
                         key_items.insert(1, comb_item)
                         data_items.remove(comb_item)
+                        is_comb_id_as_temp_key = True
                     elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
                         key_items = deepcopy(key_items)
                         data_items = deepcopy(data_items)
                         comb_item = next(item for item in data_items if item['name'] == 'Combination_ID')
                         key_items.insert(1, comb_item)
                         data_items.remove(comb_item)
+                        is_comb_id_as_temp_key = True
 
                 key_names = [k['name'] for k in key_items]
                 data_names = [d['name'] for d in data_items]
@@ -5678,6 +5681,8 @@ class NefTranslator:
                                         clear_bad_pattern = True
                                         continue
                                     elif excl_missing_data:
+                                        if is_comb_id_as_temp_key and 'ombination_' in name:
+                                            continue
                                         missing_mandatory_data = True
                                         continue
                                     elif skip_empty_value_error(loop, idx):

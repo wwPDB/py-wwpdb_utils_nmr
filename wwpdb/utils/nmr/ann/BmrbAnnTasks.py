@@ -1966,6 +1966,10 @@ class BmrbAnnTasks:
                                 elif mol_common_name == 'glycerol':
                                     lp.data[idx][type_col] = 'solvent'
                                     solvent_in_sample_loop.append('Glycerol')
+                                elif mol_common_name == 'glycerol-d8':
+                                    lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('Glycerol')
+                                    lp.data[idx][isotopic_labeling_col] = '[U-2H]'
                                 elif mol_common_name in ('tfe', 'trifluoroethanol'):
                                     lp.data[idx][type_col] = 'solvent'
                                     solvent_in_sample_loop.append('TFE')

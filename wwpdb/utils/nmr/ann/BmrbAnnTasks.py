@@ -1940,7 +1940,7 @@ class BmrbAnnTasks:
                                         or 'lysophosph' in mol_common_name\
                                         or 'micelle' in mol_common_name:
                                     lp.data[idx][type_col] = 'micelles'
-                                elif mol_common_name in ('chaps', 'chapso', 'dhpc', 'popc')\
+                                elif mol_common_name in ('chaps', 'chapso', 'dhpc', 'popc', 'np-40')\
                                         or ('deuterate' in mol_common_name
                                             and ('dhpc' in mol_common_name) or 'popc' in mol_common_name)\
                                         or mol_common_name.startswith('zwittergent'):

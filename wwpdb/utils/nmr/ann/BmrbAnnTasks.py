@@ -911,27 +911,6 @@ class BmrbAnnTasks:
 
                 try:
 
-                    lp_category = '_Atom_chem_shift'
-
-                    lp = sf.get_loop(lp_category)
-
-                    tags = ['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Auth_seq_ID']
-
-                    if set(tags) & set(lp.tags) == set(tags):
-
-                        dat = lp.get_tag(tags)
-
-                        for row in dat:
-                            if isinstance(row[0], str) and row[0] not in EMPTY_VALUE and row[0].isdigit():
-                                ent_asym_id_with_exptl_data.add(int(row[0]))
-                            if row[1] not in EMPTY_VALUE and row[2] not in EMPTY_VALUE and row[3] not in EMPTY_VALUE:
-                                try:
-                                    seq_key = (int(row[1]), int(row[2]))
-                                    if seq_key not in label_to_auth_seq:
-                                        label_to_auth_seq[seq_key] = int(row[3])
-                                except ValueError:
-                                    continue
-
                     tags = ['Chem_shift_val_err', 'Difference_chem_shift_val_err']
 
                     if set(tags) & set(lp.tags) == set(tags):

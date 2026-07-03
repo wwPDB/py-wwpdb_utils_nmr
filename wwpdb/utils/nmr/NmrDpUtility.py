@@ -11040,7 +11040,7 @@ class NmrDpUtility:
 
                 # from model to nmr (first trial, never raise a warning or an error)
 
-                mat, indices = [], []
+                mat, indices, lig_chain_ids, lig_chain_ids2 = [], [], [], []
 
                 valid_ent_asm_id_map = fileListId == 0 and len(ent_asm_id_map) > 0\
                     and all('auth_chain_id' in ps1 and ps1['auth_chain_id'] in ent_asm_id_map.values() for ps1 in cif_poly_seq)\
@@ -11230,6 +11230,12 @@ class NmrDpUtility:
                             nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, seq_id2, 'coordinate')
                             cif_input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, 'coordinate')
 
+                    if length == _matched == 1:  # to avoid redundant ligand mapping
+                        if chain_id in lig_chain_ids or chain_id2 in lig_chain_ids2:
+                            continue
+                        lig_chain_ids.append(chain_id)
+                        lig_chain_ids2.append(chain_id2)
+
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
                         aligned = [True] * length
@@ -11332,7 +11338,7 @@ class NmrDpUtility:
 
                 ca_idx = 0
 
-                mat, indices = [], []
+                mat, indices, lig_chain_ids, lig_chain_ids2 = [], [], [], []
 
                 for ps1 in nmr_poly_seq:
                     chain_id = ps1['chain_id']
@@ -11511,6 +11517,12 @@ class NmrDpUtility:
                             if _conflict == 0:
                                 result['conflict'] = 0
                                 ps1 = __ps1
+
+                    if length == _matched == 1:  # to avoid redundant ligand mapping
+                        if chain_id in lig_chain_ids or chain_id2 in lig_chain_ids2:
+                            continue
+                        lig_chain_ids.append(chain_id)
+                        lig_chain_ids2.append(chain_id2)
 
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
@@ -11777,6 +11789,9 @@ class NmrDpUtility:
                                 _chain_id = ca['test_chain_id']
                                 _auth_chain_id = ca.get('test_auth_chain_id')
 
+                                if _chain_id in lig_chain_ids2:
+                                    continue
+
                                 try:
                                     identity = next(ps['identical_chain_id'] for ps in cif_poly_seq
                                                     if ps['chain_id'] == _chain_id and 'identical_chain_id' in ps)
@@ -11788,6 +11803,10 @@ class NmrDpUtility:
                                             _ca['test_chain_id'] = _chain_id
                                             if _auth_chain_id is not None:
                                                 _ca['test_auth_chain_id'] = _auth_chain_id
+
+                                            if _ca['ref_chain_id'] in lig_chain_ids:
+                                                continue
+
                                             chain_assign.append(_ca)
 
                                 except StopIteration:
@@ -12071,6 +12090,12 @@ class NmrDpUtility:
                             nmr_input_source.updateNonStandardResidueByExptlData(chain_id2, seq_id2, 'coordinate')
                             cif_input_source.updateNonStandardResidueByExptlData(chain_id, seq_id, 'coordinate')
 
+                    if length == _matched == 1:  # to avoid redundant ligand mapping
+                        if chain_id in lig_chain_ids or chain_id2 in lig_chain_ids2:
+                            continue
+                        lig_chain_ids.append(chain_id)
+                        lig_chain_ids2.append(chain_id2)
+
                     if result['unmapped'] > 0 or result['conflict'] > 0:
 
                         aligned = [True] * length
@@ -12322,6 +12347,9 @@ class NmrDpUtility:
                                 chain_id = ca['ref_chain_id']
                                 auth_chain_id = ca.get('ref_auth_chain_id')
 
+                                if chain_id in lig_chain_ids:
+                                    continue
+
                                 try:
                                     identity = next(ps['identical_chain_id'] for ps in cif_poly_seq
                                                     if ps['chain_id'] == chain_id and 'identical_chain_id' in ps)
@@ -12333,6 +12361,10 @@ class NmrDpUtility:
                                             _ca['ref_chain_id'] = chain_id
                                             if auth_chain_id is not None:
                                                 _ca['ref_auth_chain_id'] = auth_chain_id
+
+                                            if _ca['test_chain_id'] in lig_chain_ids2:
+                                                continue
+
                                             chain_assign.append(_ca)
 
                                 except StopIteration:

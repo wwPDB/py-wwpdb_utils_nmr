@@ -50,6 +50,10 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                PROTON_BEGIN_CODE,
                                                PSE_PRO_BEGIN_CODE,
+                                               PEPTIDE_BB_ATOM_CODE,
+                                               AMINO_PROTON_CODE,
+                                               CARBOXYL_CODE,
+                                               CARBOHYDRATE_BB_ATOM_CODE,
                                                CS_STAT_IGNORED_LIG_CODE,
                                                CS_STAT_AA_THRESHOLD,
                                                CS_STAT_NA_THRESHOLD,
@@ -61,6 +65,10 @@ except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    PROTON_BEGIN_CODE,
                                    PSE_PRO_BEGIN_CODE,
+                                   PEPTIDE_BB_ATOM_CODE,
+                                   AMINO_PROTON_CODE,
+                                   CARBOXYL_CODE,
+                                   CARBOHYDRATE_BB_ATOM_CODE,
                                    CS_STAT_IGNORED_LIG_CODE,
                                    CS_STAT_AA_THRESHOLD,
                                    CS_STAT_NA_THRESHOLD,
@@ -584,8 +592,8 @@ class BmrbChemShiftStat:
                 if (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
     @functools.lru_cache(maxsize=128)
-    def getBackBoneAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
-                         polynucleotide_like: bool = False, carbohydrates_like: bool = False
+    def getBackBoneAtoms(self, comp_id: str, excl_minor_atom: bool = False, incl_nstd_bb_atom: bool = False,
+                         polypeptide_like: bool = False, polynucleotide_like: bool = False, carbohydrates_like: bool = False
                          ) -> List[str]:
         """ Return backbone atoms of a given comp_id.
         """
@@ -605,10 +613,14 @@ class BmrbChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__aa_comp_ids:
-            return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
-                    and (comp_id != 'PRO' or item['atom_id'] != 'H')  # DAOTHER-9317: PRO:H is in BMRB CS statistics
-                    and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            bb_atoms = [item['atom_id'] for item in cs_stat
+                        if item['atom_id'] in PEPTIDE_BB_ATOM_CODE
+                        and (comp_id != 'PRO' or item['atom_id'] != 'H')  # DAOTHER-9317: PRO:H is in BMRB CS statistics
+                        and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            if incl_nstd_bb_atom:
+                bb_atoms.extend(AMINO_PROTON_CODE)
+                bb_atoms.extend(CARBOXYL_CODE)
+            return bb_atoms
 
         if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
             return [item['atom_id'] for item in cs_stat
@@ -617,9 +629,13 @@ class BmrbChemShiftStat:
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if polypeptide_like:
-            return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
-                    and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            bb_atoms = [item['atom_id'] for item in cs_stat
+                        if item['atom_id'] in PEPTIDE_BB_ATOM_CODE
+                        and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            if incl_nstd_bb_atom:
+                bb_atoms.extend(AMINO_PROTON_CODE)
+                bb_atoms.extend(CARBOXYL_CODE)
+            return bb_atoms
 
         if polynucleotide_like:
             return [item['atom_id'] for item in cs_stat
@@ -629,9 +645,7 @@ class BmrbChemShiftStat:
 
         if carbohydrates_like:
             return [item['atom_id'] for item in cs_stat
-                    if item["atom_id"] in ("C1", "C2", "C3", "C4", "C5", "C6",
-                                           "H1", "H2", "H3", "H4", "H5", "H61", "H62",
-                                           "O1", "O4", "O6")
+                    if item["atom_id"] in CARBOHYDRATE_BB_ATOM_CODE
                     and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
         return []
@@ -748,8 +762,8 @@ class BmrbChemShiftStat:
         return deepcopy(result)
 
     @functools.lru_cache(maxsize=128)
-    def getSideChainAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
-                          polynucleotide_like: bool = False, carbohydrates_like: bool = False
+    def getSideChainAtoms(self, comp_id: str, excl_minor_atom: bool = False, incl_nstd_bb_atom: bool = False,
+                          polypeptide_like: bool = False, polynucleotide_like: bool = False, carbohydrates_like: bool = False
                           ) -> List[str]:
         """ Return sidechain atoms of a given comp_id.
         """
@@ -766,7 +780,8 @@ class BmrbChemShiftStat:
         if polypeptide_like is False and polynucleotide_like is False and carbohydrates_like is False:
             polypeptide_like, polynucleotide_like, carbohydrates_like = self.getTypeOfCompId(comp_id)
 
-        bb_atoms = self.getBackBoneAtoms(comp_id, excl_minor_atom, polypeptide_like, polynucleotide_like, carbohydrates_like)
+        bb_atoms = self.getBackBoneAtoms(comp_id, excl_minor_atom, incl_nstd_bb_atom,
+                                         polypeptide_like, polynucleotide_like, carbohydrates_like)
         # """
         # try:
         #     if polypeptide_like:
@@ -857,8 +872,8 @@ class BmrbChemShiftStat:
             return None
 
         if comp_id in self.__aa_comp_ids:
-            backbone = self.getBackBoneAtoms(comp_id, polypeptide_like=True)
-            sidechain = self.getSideChainAtoms(comp_id, polypeptide_like=True)
+            backbone = self.getBackBoneAtoms(comp_id, incl_nstd_bb_atom=True, polypeptide_like=True)
+            sidechain = self.getSideChainAtoms(comp_id, incl_nstd_bb_atom=True, polypeptide_like=True)
             aromatic = self.getAromaticAtoms(comp_id)
             if len(aromatic) > 0:
                 sidechain = [a for a in sidechain if a not in aromatic]
@@ -884,8 +899,8 @@ class BmrbChemShiftStat:
         try:
 
             if polypeptide_like:
-                backbone = self.getBackBoneAtoms(comp_id, polypeptide_like=True)
-                sidechain = self.getSideChainAtoms(comp_id, polypeptide_like=True)
+                backbone = self.getBackBoneAtoms(comp_id, incl_nstd_bb_atom=True, polypeptide_like=True)
+                sidechain = self.getSideChainAtoms(comp_id, incl_nstd_bb_atom=True, polypeptide_like=True)
                 aromatic = self.getAromaticAtoms(comp_id)
                 if len(aromatic) > 0:
                     sidechain = [a for a in sidechain if a not in aromatic]

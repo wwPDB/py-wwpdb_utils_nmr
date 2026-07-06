@@ -527,6 +527,10 @@ RDC_BB_PAIR_CODE = ('N', 'H', 'CA')
 ZINC_ION_CODE = ('ZN', 'ME', 'Z1', 'Z2')
 CALCIUM_ION_CODE = ('CA2', 'CA2+', 'CA+2', 'ME')
 UNKNOWN_RESIDUE = ('UNK', 'DN', 'N')
+PEPTIDE_BB_ATOM_CODE = ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
+CARBOHYDRATE_BB_ATOM_CODE = ("C1", "C2", "C3", "C4", "C5", "C6",
+                             "H1", "H2", "H3", "H4", "H5", "H61", "H62",
+                             "O1", "O4", "O6")
 
 RESERVED_LIG_CODE = ('LIG', 'DRG', 'INH')
 DNR_PARENT_CODE = ('DC', 'CYT', 'DC5', 'DC3')

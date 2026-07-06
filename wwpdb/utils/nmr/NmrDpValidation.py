@@ -16822,35 +16822,35 @@ class NmrDpValidation:
                 _atom_id_2 = self.getAtomIdList(comp_id_2, atom_id_2)
 
                 if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
-                    is_sc_atom_1 = _atom_id_1[0] in self.__reg.csStat.getSideChainAtoms(comp_id_1)
-                    is_sc_atom_2 = _atom_id_2[0] in self.__reg.csStat.getSideChainAtoms(comp_id_2)
+                    is_sc_atom_1 = _atom_id_1[0] in self.__reg.csStat.getSideChainAtoms(comp_id_1, incl_nstd_bb_atom=True)
+                    is_sc_atom_2 = _atom_id_2[0] in self.__reg.csStat.getSideChainAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
                     if is_sc_atom_1:
                         is_bb_atom_1 = False
                     else:
-                        is_bb_atom_1 = _atom_id_1[0] in self.__reg.csStat.getBackBoneAtoms(comp_id_1)
+                        is_bb_atom_1 = _atom_id_1[0] in self.__reg.csStat.getBackBoneAtoms(comp_id_1, incl_nstd_bb_atom=True)
 
                     if is_sc_atom_2:
                         is_bb_atom_2 = False
                     else:
-                        is_bb_atom_2 = _atom_id_2[0] in self.__reg.csStat.getBackBoneAtoms(comp_id_2)
+                        is_bb_atom_2 = _atom_id_2[0] in self.__reg.csStat.getBackBoneAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
                 else:
                     is_bb_atom_1 = is_bb_atom_2 = is_sc_atom_1 = is_sc_atom_2 = False
 
             else:
-                is_sc_atom_1 = atom_id_1 in self.__reg.csStat.getSideChainAtoms(comp_id_1)
-                is_sc_atom_2 = atom_id_2 in self.__reg.csStat.getSideChainAtoms(comp_id_2)
+                is_sc_atom_1 = atom_id_1 in self.__reg.csStat.getSideChainAtoms(comp_id_1, incl_nstd_bb_atom=True)
+                is_sc_atom_2 = atom_id_2 in self.__reg.csStat.getSideChainAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
                 if is_sc_atom_1:
                     is_bb_atom_1 = False
                 else:
-                    is_bb_atom_1 = atom_id_1 in self.__reg.csStat.getBackBoneAtoms(comp_id_1)
+                    is_bb_atom_1 = atom_id_1 in self.__reg.csStat.getBackBoneAtoms(comp_id_1, incl_nstd_bb_atom=True)
 
                 if is_sc_atom_2:
                     is_bb_atom_2 = False
                 else:
-                    is_bb_atom_2 = atom_id_2 in self.__reg.csStat.getBackBoneAtoms(comp_id_2)
+                    is_bb_atom_2 = atom_id_2 in self.__reg.csStat.getBackBoneAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
             is_bb_bb = is_bb_atom_1 and is_bb_atom_2
             is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)
@@ -17158,35 +17158,35 @@ class NmrDpValidation:
                 _atom_id_2 = self.getAtomIdList(comp_id_2, atom_id_2)
 
                 if len(_atom_id_1) > 0 and len(_atom_id_2) > 0:
-                    is_sc_atom_1 = _atom_id_1[0] in self.__reg.csStat.getSideChainAtoms(comp_id_1)
-                    is_sc_atom_2 = _atom_id_2[0] in self.__reg.csStat.getSideChainAtoms(comp_id_2)
+                    is_sc_atom_1 = _atom_id_1[0] in self.__reg.csStat.getSideChainAtoms(comp_id_1, incl_nstd_bb_atom=True)
+                    is_sc_atom_2 = _atom_id_2[0] in self.__reg.csStat.getSideChainAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
                     if is_sc_atom_1:
                         is_bb_atom_1 = False
                     else:
-                        is_bb_atom_1 = _atom_id_1[0] in self.__reg.csStat.getBackBoneAtoms(comp_id_1)
+                        is_bb_atom_1 = _atom_id_1[0] in self.__reg.csStat.getBackBoneAtoms(comp_id_1, incl_nstd_bb_atom=True)
 
                     if is_sc_atom_2:
                         is_bb_atom_2 = False
                     else:
-                        is_bb_atom_2 = _atom_id_2[0] in self.__reg.csStat.getBackBoneAtoms(comp_id_2)
+                        is_bb_atom_2 = _atom_id_2[0] in self.__reg.csStat.getBackBoneAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
                 else:
                     is_bb_atom_1 = is_bb_atom_2 = is_sc_atom_1 = is_sc_atom_2 = False
 
             else:
-                is_sc_atom_1 = atom_id_1 in self.__reg.csStat.getSideChainAtoms(comp_id_1)
-                is_sc_atom_2 = atom_id_2 in self.__reg.csStat.getSideChainAtoms(comp_id_2)
+                is_sc_atom_1 = atom_id_1 in self.__reg.csStat.getSideChainAtoms(comp_id_1, incl_nstd_bb_atom=True)
+                is_sc_atom_2 = atom_id_2 in self.__reg.csStat.getSideChainAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
                 if is_sc_atom_1:
                     is_bb_atom_1 = False
                 else:
-                    is_bb_atom_1 = atom_id_1 in self.__reg.csStat.getBackBoneAtoms(comp_id_1)
+                    is_bb_atom_1 = atom_id_1 in self.__reg.csStat.getBackBoneAtoms(comp_id_1, incl_nstd_bb_atom=True)
 
                 if is_sc_atom_2:
                     is_bb_atom_2 = False
                 else:
-                    is_bb_atom_2 = atom_id_2 in self.__reg.csStat.getBackBoneAtoms(comp_id_2)
+                    is_bb_atom_2 = atom_id_2 in self.__reg.csStat.getBackBoneAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
             is_bb_bb = is_bb_atom_1 and is_bb_atom_2
             is_bb_sc = (is_bb_atom_1 and is_sc_atom_2) or (is_sc_atom_1 and is_bb_atom_2)

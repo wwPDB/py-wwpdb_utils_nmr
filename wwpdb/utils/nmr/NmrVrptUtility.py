@@ -2347,8 +2347,8 @@ class NmrVrptUtility:
                     else:
                         distance_type = 'long'
 
-                    bb_atoms_1 = self.__csStat.getBackBoneAtoms(comp_id_1)
-                    bb_atoms_2 = self.__csStat.getBackBoneAtoms(comp_id_2)
+                    bb_atoms_1 = self.__csStat.getBackBoneAtoms(comp_id_1, incl_nstd_bb_atom=True)
+                    bb_atoms_2 = self.__csStat.getBackBoneAtoms(comp_id_2, incl_nstd_bb_atom=True)
 
                     if atom_id_1 in bb_atoms_1 and atom_id_2 in bb_atoms_2:
                         distance_sub_type = 'backbone-backbone'

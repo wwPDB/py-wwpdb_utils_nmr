@@ -19241,6 +19241,7 @@ class NmrDpRemediation:
 
         update_data_file_name = False
         data_file_name_map = {}
+        resolved_sf_framecode_prefixes = []
 
         for content_subtype in self.__reg.mr_content_subtypes:
             if self.__reg.mr_sf_dict_holder is not None and content_subtype in self.__reg.mr_sf_dict_holder:
@@ -19261,6 +19262,15 @@ class NmrDpRemediation:
 
                         else:
                             alt_sf_framecode = sf_framecode
+
+                        if self.__reg.internal_mode or self.__reg.bmrb_only:
+                            sf_framecode_prefix = '_'.join(sf_framecode.split('_')[:-1])
+                            if sf_framecode_prefix not in resolved_sf_framecode_prefixes\
+                               and any(True for _sf in master_entry.frame_list if _sf.name.startswith(sf_framecode_prefix)):
+                                for _sf in master_entry.frame_list:
+                                    if _sf.name.startswith(sf_framecode_prefix):
+                                        master_entry.remove_saveframe(_sf.name)
+                                resolved_sf_framecode_prefixes.append(sf_framecode_prefix)
 
                         if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 

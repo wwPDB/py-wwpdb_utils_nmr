@@ -68,7 +68,8 @@ try:
                                                RDC_RANGE_MAX,
                                                RDC_ERROR_MIN,
                                                RDC_ERROR_MAX,
-                                               CARTN_DATA_ITEMS)
+                                               CARTN_DATA_ITEMS,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -127,7 +128,9 @@ try:
                                                        resetMemberId,
                                                        getDistConstraintType,
                                                        getPotentialType,
-                                                       getDstFuncForSsBond)
+                                                       getDstFuncForSsBond,
+                                                       getMaxEffDigits,
+                                                       roundString)
 except ImportError:
     from nmr.NmrDpConstant import (LARGE_ASYM_ID,
                                    EMPTY_VALUE,
@@ -172,7 +175,8 @@ except ImportError:
                                    RDC_RANGE_MAX,
                                    RDC_ERROR_MIN,
                                    RDC_ERROR_MAX,
-                                   CARTN_DATA_ITEMS)
+                                   CARTN_DATA_ITEMS,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (deepcopy,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
@@ -231,7 +235,9 @@ except ImportError:
                                            resetMemberId,
                                            getDistConstraintType,
                                            getPotentialType,
-                                           getDstFuncForSsBond)
+                                           getDstFuncForSsBond,
+                                           getMaxEffDigits,
+                                           roundString)
 
 
 class RosettaMRParserListener(ParseTreeListener):
@@ -295,7 +301,8 @@ class RosettaMRParserListener(ParseTreeListener):
                  '__polySeqRst',
                  '__polySeqRstFailed',
                  '__polySeqRstFailedAmbig',
-                 '__f')
+                 '__f',
+                 '__is_rad')
 
     __file_type = 'nm-res-ros'
 
@@ -513,6 +520,8 @@ class RosettaMRParserListener(ParseTreeListener):
         self.__polySeqRstFailedAmbig = []
 
         self.__f = []
+
+        self.__is_rad = reasons is not None and 'radian_unit' in reasons
 
     @property
     def debug(self) -> bool:
@@ -1942,8 +1951,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                                    f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     ext_seq = False
                     if self.__reasons is None\
@@ -1978,8 +1986,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if not self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{_seqId}' is not present in polymer sequence "
-                                            f"of chain {refChainId} of the coordinates. "
-                                            "Please update the sequence in the Macromolecules page.")
+                                            f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     else:
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{_seqId}:{atomId} is not present in the coordinates.")
@@ -1999,8 +2006,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                                    f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in the coordinates.")
@@ -2218,8 +2224,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                         f"The residue number '{_seqId}' is not present in polymer sequence "
-                                        f"of chain {refChainId} of the coordinates. "
-                                        "Please update the sequence in the Macromolecules page.")
+                                        f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     else:
                         self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                         f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
@@ -2235,8 +2240,7 @@ class RosettaMRParserListener(ParseTreeListener):
                     refChainId = self.__polySeq[0]['auth_chain_id']
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in polymer sequence "
-                                    f"of chain {refChainId} of the coordinates. "
-                                    "Please update the sequence in the Macromolecules page.")
+                                    f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     self.__f.append(f"[Atom not found] {self.__getCurrentRestraint()}"
                                     f"The residue number '{_seqId}' is not present in the coordinates.")
@@ -2783,8 +2787,7 @@ class RosettaMRParserListener(ParseTreeListener):
                         if self.__allow_ext_seq:
                             self.__f.append(f"[Sequence mismatch warning] {self.__getCurrentRestraint()}"
                                             f"The residue '{seqId}:{compId}' is not present in polymer sequence "
-                                            f"of chain {chainId} of the coordinates. "
-                                            "Please update the sequence in the Macromolecules page.")
+                                            f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                             asis = True
                         else:
                             if seqKey in self.__coordUnobsAtom\
@@ -3170,6 +3173,27 @@ class RosettaMRParserListener(ParseTreeListener):
             if not self.areUniqueCoordAtoms('an angle'):
                 return
 
+            if self.__is_rad:
+                target_value = dstFunc.get('target_value')
+                upper_limit = dstFunc.get('upper_limit')
+                lower_limit = dstFunc.get('lower_limit')
+                if None not in (target_value, upper_limit, lower_limit):
+                    max_eff_digits = getMaxEffDigits([target_value])
+                    try:
+                        target_value = numpy.degrees(float(target_value))
+                        upper_limit = numpy.degrees(float(upper_limit))
+                        lower_limit = numpy.degrees(float(lower_limit))
+                        target_value, upper_limit, lower_limit =\
+                            str(target_value), str(upper_limit), str(lower_limit)
+                        target_value = str(float(roundString(target_value, max_eff_digits)))
+                        upper_limit = str(float(roundString(upper_limit, max_eff_digits)))
+                        lower_limit = str(float(roundString(lower_limit, max_eff_digits)))
+                        dstFunc['target_value'] = target_value
+                        dstFunc['upper_limit'] = upper_limit
+                        dstFunc['lower_limit'] = lower_limit
+                    except ValueError:
+                        pass
+
             isNested = len(self.stackNest) > 0
 
             if self.__createSfDict:
@@ -3485,6 +3509,7 @@ class RosettaMRParserListener(ParseTreeListener):
             combinationId = '.' if len_f == len(self.__f) else 0
 
             atomSelTotal = sum(len(s) for s in self.atomSelectionSet)
+            angleName = None
 
             if isinstance(combinationId, int):
                 fixedAngleName = '.'
@@ -3512,6 +3537,59 @@ class RosettaMRParserListener(ParseTreeListener):
 
                     fixedAngleName = angleName
                     break
+
+            # check radian unit in case (8vrc)
+            if peptide or self.__is_rad:
+
+                _angleName = None
+                if not self.__is_rad:
+                    for atom1, atom2, atom3, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                                        self.atomSelectionSet[1],
+                                                                        self.atomSelectionSet[2],
+                                                                        self.atomSelectionSet[3]):
+                        atoms = [atom1, atom2, atom3, atom4]
+                        _angleName = getTypeOfDihedralRestraint(peptide, nucleotide, carbohydrate,
+                                                                atoms,
+                                                                False,
+                                                                self.__cR, self.__ccU,
+                                                                self.__representativeModelId,
+                                                                self.__representativeAltId,
+                                                                self.__modelNumName)
+                        break
+
+                if _angleName in ('PHI', 'PSI') or self.__is_rad:
+                    target_value = dstFunc.get('target_value')
+                    upper_limit = dstFunc.get('upper_limit')
+                    lower_limit = dstFunc.get('lower_limit')
+                    if None not in (target_value, upper_limit, lower_limit):
+                        max_eff_digits = getMaxEffDigits([target_value])
+                        try:
+                            target_value = float(target_value)
+                            upper_limit = float(upper_limit)
+                            lower_limit = float(lower_limit)
+                            if self.__is_rad\
+                               or (-3.12 < target_value < 3.12
+                                   and 0.0 <= target_value - lower_limit < 1.0
+                                   and 0.0 <= upper_limit - target_value < 1.0):
+                                target_value = numpy.degrees(target_value)
+                                upper_limit = numpy.degrees(upper_limit)
+                                lower_limit = numpy.degrees(lower_limit)
+                                target_value, upper_limit, lower_limit =\
+                                    str(target_value), str(upper_limit), str(lower_limit)
+                                target_value = str(float(roundString(target_value, max_eff_digits)))
+                                upper_limit = str(float(roundString(upper_limit, max_eff_digits)))
+                                lower_limit = str(float(roundString(lower_limit, max_eff_digits)))
+                                dstFunc['target_value'] = target_value
+                                dstFunc['upper_limit'] = upper_limit
+                                dstFunc['lower_limit'] = lower_limit
+                                if 'plane_like' in dstFunc:
+                                    del dstFunc['plane_like']
+                                if not self.__is_rad and self.dihedRestraints > 1:
+                                    if 'radian_unit' not in self.reasonsForReParsing:
+                                        self.reasonsForReParsing['radian_unit'] = True
+                                self.__is_rad = True
+                        except ValueError:
+                            pass
 
             sf = None
             if self.__createSfDict:
@@ -3657,6 +3735,27 @@ class RosettaMRParserListener(ParseTreeListener):
 
             if not self.areUniqueCoordAtoms('a dihedral angle pair'):
                 return
+
+            if self.__is_rad:
+                target_value = dstFunc.get('target_value')
+                upper_limit = dstFunc.get('upper_limit')
+                lower_limit = dstFunc.get('lower_limit')
+                if None not in (target_value, upper_limit, lower_limit):
+                    max_eff_digits = getMaxEffDigits([target_value])
+                    try:
+                        target_value = numpy.degrees(float(target_value))
+                        upper_limit = numpy.degrees(float(upper_limit))
+                        lower_limit = numpy.degrees(float(lower_limit))
+                        target_value, upper_limit, lower_limit =\
+                            str(target_value), str(upper_limit), str(lower_limit)
+                        target_value = str(float(roundString(target_value, max_eff_digits)))
+                        upper_limit = str(float(roundString(upper_limit, max_eff_digits)))
+                        lower_limit = str(float(roundString(lower_limit, max_eff_digits)))
+                        dstFunc['target_value'] = target_value
+                        dstFunc['upper_limit'] = upper_limit
+                        dstFunc['lower_limit'] = lower_limit
+                    except ValueError:
+                        pass
 
             sf = None
             if self.__createSfDict:

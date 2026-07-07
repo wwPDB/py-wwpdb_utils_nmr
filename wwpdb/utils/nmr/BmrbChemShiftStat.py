@@ -22,6 +22,8 @@
 # 25-Mar-2026  M. Yokochi - rename class from BMRBChemShiftStat to BmrbChemShiftStat
 # 22-May-2026  M. Yokochi - add getCategorizedAtomIds() (DAOTHER-9785)
 # 01-Jun-2026  M. Yokochi - add getQuaternaryNitrogensIfNoProtonIsBonded() (DAOTHER-9785)
+# 25-Jun-2026  M. Yokochi - check _chem_comp_atom.pdbx_component_atom_id to support PTM remediation
+#                         - fix getBackBoneAtoms(), 5MC:HO3' should be in backbone/sugar group
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -48,6 +50,10 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                PROTON_BEGIN_CODE,
                                                PSE_PRO_BEGIN_CODE,
+                                               PEPTIDE_BB_ATOM_CODE,
+                                               AMINO_PROTON_CODE,
+                                               CARBOXYL_CODE,
+                                               CARBOHYDRATE_BB_ATOM_CODE,
                                                CS_STAT_IGNORED_LIG_CODE,
                                                CS_STAT_AA_THRESHOLD,
                                                CS_STAT_NA_THRESHOLD,
@@ -59,6 +65,10 @@ except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    PROTON_BEGIN_CODE,
                                    PSE_PRO_BEGIN_CODE,
+                                   PEPTIDE_BB_ATOM_CODE,
+                                   AMINO_PROTON_CODE,
+                                   CARBOXYL_CODE,
+                                   CARBOHYDRATE_BB_ATOM_CODE,
                                    CS_STAT_IGNORED_LIG_CODE,
                                    CS_STAT_AA_THRESHOLD,
                                    CS_STAT_NA_THRESHOLD,
@@ -582,8 +592,8 @@ class BmrbChemShiftStat:
                 if (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
     @functools.lru_cache(maxsize=128)
-    def getBackBoneAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
-                         polynucleotide_like: bool = False, carbohydrates_like: bool = False
+    def getBackBoneAtoms(self, comp_id: str, excl_minor_atom: bool = False, incl_nstd_bb_atom: bool = False,
+                         polypeptide_like: bool = False, polynucleotide_like: bool = False, carbohydrates_like: bool = False
                          ) -> List[str]:
         """ Return backbone atoms of a given comp_id.
         """
@@ -603,42 +613,39 @@ class BmrbChemShiftStat:
         cs_stat = self.__get(comp_id)
 
         if comp_id in self.__aa_comp_ids:
-            return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
-                    and (comp_id != 'PRO' or item['atom_id'] != 'H')  # DAOTHER-9317: PRO:H is in BMRB CS statistics
-                    and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            bb_atoms = [item['atom_id'] for item in cs_stat
+                        if item['atom_id'] in PEPTIDE_BB_ATOM_CODE
+                        and (comp_id != 'PRO' or item['atom_id'] != 'H')  # DAOTHER-9317: PRO:H is in BMRB CS statistics
+                        and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            if incl_nstd_bb_atom:
+                bb_atoms.extend(AMINO_PROTON_CODE)
+                bb_atoms.extend(CARBOXYL_CODE)
+            return bb_atoms
 
-        if comp_id in self.__dna_comp_ids:
+        if comp_id in self.__dna_comp_ids or comp_id in self.__rna_comp_ids:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'",
-                                           "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''",
-                                           "P", "OP1", "OP2", "O5'", "O3'")
-                    and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
-
-        if comp_id in self.__rna_comp_ids:
-            return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'",
-                                           "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'",
-                                           "P", "OP1", "OP2", "O5'", "O3'")
+                    if ("'" in item['atom_id']
+                        or item['atom_id'] in ("P", "OP1", "OP2", "OP3", "HOP2", "HOP3"))
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         if polypeptide_like:
-            return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
-                    and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            bb_atoms = [item['atom_id'] for item in cs_stat
+                        if item['atom_id'] in PEPTIDE_BB_ATOM_CODE
+                        and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
+            if incl_nstd_bb_atom:
+                bb_atoms.extend(AMINO_PROTON_CODE)
+                bb_atoms.extend(CARBOXYL_CODE)
+            return bb_atoms
 
         if polynucleotide_like:
             return [item['atom_id'] for item in cs_stat
-                    if item['atom_id'] in ("C1'", "C2'", "C3'", "C4'", "C5'",
-                                           "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", "HO2'",
-                                           "P", "OP1", "OP2", "O5'", "O3'")
+                    if ("'" in item['atom_id']
+                        or item['atom_id'] in ("P", "OP1", "OP2", "OP3", "HOP2", "HOP3"))
                     and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
         if carbohydrates_like:
             return [item['atom_id'] for item in cs_stat
-                    if item["atom_id"] in ("C1", "C2", "C3", "C4", "C5", "C6",
-                                           "H1", "H2", "H3", "H4", "H5", "H61", "H62",
-                                           "O1", "O4", "O6")
+                    if item["atom_id"] in CARBOHYDRATE_BB_ATOM_CODE
                     and (not excl_minor_atom or 'secondary' not in item or (excl_minor_atom and item['secondary']))]
 
         return []
@@ -755,8 +762,8 @@ class BmrbChemShiftStat:
         return deepcopy(result)
 
     @functools.lru_cache(maxsize=128)
-    def getSideChainAtoms(self, comp_id: str, excl_minor_atom: bool = False, polypeptide_like: bool = False,
-                          polynucleotide_like: bool = False, carbohydrates_like: bool = False
+    def getSideChainAtoms(self, comp_id: str, excl_minor_atom: bool = False, incl_nstd_bb_atom: bool = False,
+                          polypeptide_like: bool = False, polynucleotide_like: bool = False, carbohydrates_like: bool = False
                           ) -> List[str]:
         """ Return sidechain atoms of a given comp_id.
         """
@@ -773,7 +780,8 @@ class BmrbChemShiftStat:
         if polypeptide_like is False and polynucleotide_like is False and carbohydrates_like is False:
             polypeptide_like, polynucleotide_like, carbohydrates_like = self.getTypeOfCompId(comp_id)
 
-        bb_atoms = self.getBackBoneAtoms(comp_id, excl_minor_atom, polypeptide_like, polynucleotide_like, carbohydrates_like)
+        bb_atoms = self.getBackBoneAtoms(comp_id, excl_minor_atom, incl_nstd_bb_atom,
+                                         polypeptide_like, polynucleotide_like, carbohydrates_like)
         # """
         # try:
         #     if polypeptide_like:
@@ -864,8 +872,8 @@ class BmrbChemShiftStat:
             return None
 
         if comp_id in self.__aa_comp_ids:
-            backbone = self.getBackBoneAtoms(comp_id, polypeptide_like=True)
-            sidechain = self.getSideChainAtoms(comp_id, polypeptide_like=True)
+            backbone = self.getBackBoneAtoms(comp_id, incl_nstd_bb_atom=True, polypeptide_like=True)
+            sidechain = self.getSideChainAtoms(comp_id, incl_nstd_bb_atom=True, polypeptide_like=True)
             aromatic = self.getAromaticAtoms(comp_id)
             if len(aromatic) > 0:
                 sidechain = [a for a in sidechain if a not in aromatic]
@@ -891,8 +899,8 @@ class BmrbChemShiftStat:
         try:
 
             if polypeptide_like:
-                backbone = self.getBackBoneAtoms(comp_id, polypeptide_like=True)
-                sidechain = self.getSideChainAtoms(comp_id, polypeptide_like=True)
+                backbone = self.getBackBoneAtoms(comp_id, incl_nstd_bb_atom=True, polypeptide_like=True)
+                sidechain = self.getSideChainAtoms(comp_id, incl_nstd_bb_atom=True, polypeptide_like=True)
                 aromatic = self.getAromaticAtoms(comp_id)
                 if len(aromatic) > 0:
                     sidechain = [a for a in sidechain if a not in aromatic]
@@ -1952,6 +1960,23 @@ class BmrbChemShiftStat:
 
             return True, comp_id, atom_id
 
+        ref_sub_atom_ids = [a['pdbx_component_atom_id'] for a in self.__ccU.lastAtomDictList
+                            if 'pdbx_component_atom_id' in a]
+
+        if atom_id in ref_atom_ids and atom_id in ref_sub_atom_ids:
+            _ref_atom_id = next(a['atom_id'] for a in self.__ccU.lastAtomDictList
+                                if a['pdbx_component_atom_id'] == atom_id)
+
+            if atom_id == _ref_atom_id:
+                return True, comp_id, atom_id
+
+            if verbose:
+                self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() "
+                                 f"++ Warning  - {comp_id}:{atom_id} is valid, "
+                                 f"but _chem_comp.pdbx_component_atom_id matched with different atom_id {_ref_atom_id}\n")
+
+            return True, comp_id, atom_id
+
         if atom_id in ref_atom_ids and atom_id not in ref_alt_atom_ids:
             return True, comp_id, atom_id
 
@@ -1962,6 +1987,18 @@ class BmrbChemShiftStat:
             if verbose:
                 self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() "
                                  f"++ Warning  - {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. "
+                                 f"It should be {_ref_atom_id}\n")
+
+            # print(f'case 1. {_comp_id}:{atom_id} -> {comp_id}:{_ref_atom_id}')
+            return True, comp_id, _ref_atom_id
+
+        if atom_id not in ref_atom_ids and atom_id in ref_sub_atom_ids:
+            _ref_atom_id = next(a['atom_id'] for a in self.__ccU.lastAtomDictList
+                                if a['pdbx_component_atom_id'] == atom_id)
+
+            if verbose:
+                self.__log.write(f"+{self.__class_name__}.checkAtomNomenclature() "
+                                 f"++ Warning  - {comp_id}:{atom_id} matched with _chem_comp.pdbx_component_atom_id only. "
                                  f"It should be {_ref_atom_id}\n")
 
             # print(f'case 1. {_comp_id}:{atom_id} -> {comp_id}:{_ref_atom_id}')
@@ -2642,7 +2679,7 @@ class BmrbChemShiftStat:
                     f_out.write(r.text)
                 if csv_file in ('rna_filt.csv', 'rna_full.csv'):
                     src_csv_file = os.path.join(self.__work_dir, csv_file)
-                    dst_csv_file = src_csv_file + '~'
+                    dst_csv_file = f'{src_csv_file}~'
                     shutil.copyfile(src_csv_file, dst_csv_file)
                     with open(dst_csv_file, 'r', encoding='utf-8') as f_in, \
                             open(src_csv_file, 'w', encoding='utf-8') as f_out:
@@ -2656,7 +2693,7 @@ class BmrbChemShiftStat:
             except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__log.write(f"+{self.__class_name__}.updateStatCsvFiles() ++ Error  - {e}\n")
 
-        for csv_file in self.csv_files:
+        for idx, csv_file in enumerate(self.csv_files):
 
             try:
                 r = requests.head(self.url_for_bmrb_cs_stat_dir + csv_file, timeout=5.0)
@@ -2669,6 +2706,10 @@ class BmrbChemShiftStat:
                 return False
 
             url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
+
+            if idx == 0:
+                with open(os.path.join(self.__work_dir, '.cs_stat_rel_date'), 'w', encoding='utf-8') as f:
+                    f.write(url_last_modified.strftime('%Y-%m-%d'))
 
             if not os.path.exists(os.path.join(self.__work_dir, csv_file)):
                 update_csv_file(csv_file)
@@ -2726,6 +2767,8 @@ class BmrbChemShiftStat:
                     continue
 
                 ref_alt_atom_ids = [a['alt_atom_id'] for a in self.__ccU.lastAtomDictList]
+                ref_sub_atom_ids = [a['pdbx_component_atom_id'] for a in self.__ccU.lastAtomDictList
+                                    if 'pdbx_component_atom_id' in a]
 
                 peptide_like = self.__ccU.peptideLike()
 
@@ -2751,13 +2794,33 @@ class BmrbChemShiftStat:
                               f'but _chem_comp.alt_atom_id matched with different atom_id {_ref_atom_id}.')
                         ret['warning'] += 1
 
+                    elif atom_id in ref_atom_ids and atom_id in ref_sub_atom_ids:
+                        _ref_atom_id = next(a['atom_id'] for a in self.__ccU.lastAtomDictList
+                                            if a['pdbx_component_atom_id'] == atom_id)
+                        if atom_id == _ref_atom_id:
+                            continue
+                        print(f'[Warning] {comp_id}:{atom_id} is valid, '
+                              f'but _chem_comp.pdbx_component_atom_id matched with different atom_id {_ref_atom_id}.')
+                        ret['warning'] += 1
+
                     elif atom_id in ref_atom_ids and atom_id not in ref_alt_atom_ids:
+                        continue
+
+                    elif atom_id in ref_atom_ids and atom_id not in ref_sub_atom_ids:
                         continue
 
                     elif atom_id not in ref_alt_atom_ids and atom_id in ref_alt_atom_ids:
                         _ref_atom_id = next(a['atom_id'] for a in self.__ccU.lastAtomDictList
                                             if a['alt_atom_id'] == atom_id)
-                        print(f'[Error] {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. It should be {_ref_atom_id}.')
+                        print(f'[Error] {comp_id}:{atom_id} matched with _chem_comp.alt_atom_id only. '
+                              f'It should be {_ref_atom_id}.')
+                        ret['error'] += 1
+
+                    elif atom_id not in ref_sub_atom_ids and atom_id in ref_sub_atom_ids:
+                        _ref_atom_id = next(a['atom_id'] for a in self.__ccU.lastAtomDictList
+                                            if a['pdbx_component_atom_id'] == atom_id)
+                        print(f'[Error] {comp_id}:{atom_id} matched with _chem_comp.pdbx_component_atom_id only. '
+                              f'It should be {_ref_atom_id}.')
                         ret['error'] += 1
 
                     else:

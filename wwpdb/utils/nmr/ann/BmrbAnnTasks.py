@@ -393,6 +393,7 @@ class BmrbAnnTasks:
         zero_shift_val_err = ''
         label_to_auth_seq = {}
         ent_asym_id_with_exptl_data = set()
+        has_cs_lp = True
 
         sf_category = 'assigned_chemical_shifts'
 
@@ -765,6 +766,188 @@ class BmrbAnnTasks:
 
                                     if not checked:
                                         lp.data[idx][ambig_code_col] = _ambig_code
+
+                except KeyError:
+                    has_cs_lp = False
+
+        sf_category = 'chem_shift_perturbation'
+
+        if sf_category in self.__reg.sf_category_list:
+            for list_id, sf in enumerate(master_entry.get_saveframes_by_category(sf_category), start=1):
+                self.__reg.c2S.set_local_sf_id(sf, list_id)
+                cs_ref_id = get_first_sf_tag(sf, 'Chem_shift_ref_set_ID')
+                if not isinstance(cs_ref_id, int):
+                    if len(cs_ref_id) == 0 or cs_ref_id in EMPTY_VALUE or not cs_ref_id.isdigit():
+                        cs_ref_id = 1
+                        set_sf_tag(sf, 'Chem_shift_ref_set_ID', cs_ref_id)
+                    else:
+                        cs_ref_id = int(cs_ref_id)
+                if cs_ref_id in cs_ref_sf_framecode:
+                    set_sf_tag(sf, 'Chem_shift_ref_set_label', f'${cs_ref_sf_framecode[cs_ref_id]}')
+                else:
+                    isotope_nums[cs_ref_id] = set()
+                    if len(cs_ref_sf_framecode) > 0:
+                        cs_ref_id = min(list(cs_ref_sf_framecode.keys()))
+                        set_sf_tag(sf, 'Chem_shift_ref_set_ID', cs_ref_id)
+                        set_sf_tag(sf, 'Chem_shift_ref_set_label', f'${cs_ref_sf_framecode[cs_ref_id]}')
+                    else:
+                        cs_ref_id = 1
+                        set_sf_tag(sf, 'Chem_shift_ref_set_ID', cs_ref_id)
+
+                smpl_cond_list_id = get_first_sf_tag(sf, 'Sample_condition_list_ID')
+                if not isinstance(smpl_cond_list_id, int):
+                    if len(smpl_cond_list_id) == 0 or smpl_cond_list_id in EMPTY_VALUE or not smpl_cond_list_id.isdigit():
+                        smpl_cond_list_id = 1
+                        set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
+                    else:
+                        smpl_cond_list_id = int(smpl_cond_list_id)
+                if smpl_cond_list_id in smpl_cond_sf_framecode:
+                    set_sf_tag(sf, 'Sample_condition_list_label', f'${smpl_cond_sf_framecode[smpl_cond_list_id]}')
+                else:
+                    if len(smpl_cond_sf_framecode) > 0:
+                        smpl_cond_list_id = min(list(smpl_cond_sf_framecode.keys()))
+                        set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
+                        set_sf_tag(sf, 'Sample_condition_list_label', f'${smpl_cond_sf_framecode[smpl_cond_list_id]}')
+                    else:
+                        smpl_cond_list_id = 1
+                        set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
+
+                exp_list_sf_category = 'experiment_list'
+
+                if exp_list_sf_category in self.__reg.sf_category_list:
+                    exp_list_sf = master_entry.get_saveframes_by_category(exp_list_sf_category)[0]
+
+                    exp_lp_category = '_Experiment'
+
+                    try:
+
+                        exp_lp = exp_list_sf.get_loop(exp_lp_category)
+                        exp_lp.sort_rows('ID')
+
+                    except KeyError:
+                        exp_lp = None
+
+                    if exp_lp is not None:
+
+                        exp_tags = ['ID', 'Name', 'Sample_ID', 'Sample_label', 'Sample_state']
+
+                        if set(exp_tags) & set(exp_lp.tags) == set(exp_tags):
+                            exp_list = exp_lp.get_tag(exp_tags)
+
+                            if len(exp_list) > 0:
+
+                                lp_category = '_Chem_shift_perturbation_experiment'
+                                lp = None
+
+                                try:
+
+                                    lp = sf.get_loop(lp_category)
+                                    lp.sort_rows('Experiment_ID')
+
+                                    tags = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state']
+
+                                    if set(tags) & set(lp.tags) == set(tags):
+                                        exp_id_col = lp.tags.index('Experiment_ID')
+                                        exp_name_col = lp.tags.index('Experiment_name')
+                                        sample_id_col = lp.tags.index('Sample_ID')
+                                        sample_label_col = lp.tags.index('Sample_label')
+                                        sample_state_col = lp.tags.index('Sample_state')
+
+                                        cs_exp_list = lp.get_tag(tags)
+                                        reserved_ids, duplicated_idxs, reserved_names = [], [], []
+
+                                        for idx, cs_exp in enumerate(cs_exp_list):
+                                            if cs_exp[0] not in EMPTY_VALUE:
+                                                if cs_exp[0] not in reserved_ids:
+                                                    reserved_ids.append(cs_exp[0])
+                                                else:
+                                                    duplicated_idxs.append(idx)
+                                                exp = next((exp for exp in exp_list if exp[0] == cs_exp[0]), None)
+                                                if exp is not None:
+                                                    if cs_exp[2:5] != exp[2:5]:
+                                                        lp.data[idx][exp_name_col] = exp[1]
+                                                        lp.data[idx][sample_id_col] = exp[2]
+                                                        lp.data[idx][sample_label_col] = exp[3]
+                                                        lp.data[idx][sample_state_col] = exp[4]
+                                                    reserved_names.append(exp[1])
+                                            else:
+                                                exp = next((exp for exp in exp_list if exp[1] not in reserved_names), None)
+                                                if exp is not None:
+                                                    lp.data[idx][exp_id_col] = exp_list.index(exp) + 1
+                                                    lp.data[idx][exp_name_col] = exp[1]
+                                                    lp.data[idx][sample_id_col] = exp[2]
+                                                    lp.data[idx][sample_label_col] = exp[3]
+                                                    lp.data[idx][sample_state_col] = exp[4]
+                                                    reserved_names.append(exp[1])
+
+                                        if len(duplicated_idxs) > 0:
+                                            for idx in reversed(duplicated_idxs):
+                                                del lp.data[idx]
+
+                                except (KeyError, TypeError, ValueError):
+
+                                    if lp is not None:
+                                        del sf[lp]
+
+                                    items = ['Experiment_ID', 'Experiment_name', 'Sample_ID', 'Sample_label', 'Sample_state',
+                                             'Entry_ID', 'Chem_shift_perturbation_list_ID']
+
+                                    cs_list_id = get_first_sf_tag(sf, 'ID')
+
+                                    lp = pynmrstar.Loop.from_scratch(lp_category)
+
+                                    tags = [f'{lp_category}.{item}' for item in items]
+
+                                    lp.add_tag(tags)
+
+                                    for exp in exp_list:
+                                        row = exp
+                                        row.extend([self.__reg.entry_id, cs_list_id])
+                                        lp.add_data(row)
+
+                                    lp.sort_rows('Experiment_ID')
+
+                                    sf.add_loop(lp)
+
+                try:
+
+                    tags = ['Chem_shift_val_err', 'Difference_chem_shift_val_err']
+
+                    if set(tags) & set(lp.tags) == set(tags):
+
+                        dat = lp.get_tag(tags)
+
+                        val_err_col = lp.tags.index('Chem_shift_val_err')
+                        diff_val_err_col = lp.tags.index('Difference_chem_shift_val_err')
+
+                        for idx, row in enumerate(dat):
+                            try:
+                                if row[0] not in EMPTY_VALUE:
+                                    try:
+                                        val_err = float(row[0])
+                                        if val_err > 0.0:
+                                            pass
+                                        elif val_err == 0.0:
+                                            if row[0][0] == '-':
+                                                lp.data[idx][val_err_col] = row[0][1:]
+                                        else:
+                                            lp.data[idx][val_err_col] = abs(val_err)
+                                    except ValueError:
+                                        pass
+                                if row[1] not in EMPTY_VALUE:
+                                    try:
+                                        diff_val_err = float(row[1])
+                                        if diff_val_err > 0.0:
+                                            pass
+                                        elif diff_val_err == 0.0:
+                                            if row[1][0] == '-':
+                                                lp.data[idx][diff_val_err_col] = row[1][1:]
+                                        else:
+                                            lp.data[idx][diff_val_err_col] = abs(diff_val_err)
+                                    except ValueError:
+                                        pass
+                            except (ValueError, TypeError):
+                                continue
 
                 except KeyError:
                     pass
@@ -1757,7 +1940,7 @@ class BmrbAnnTasks:
                                         or 'lysophosph' in mol_common_name\
                                         or 'micelle' in mol_common_name:
                                     lp.data[idx][type_col] = 'micelles'
-                                elif mol_common_name in ('chaps', 'chapso', 'dhpc', 'popc')\
+                                elif mol_common_name in ('chaps', 'chapso', 'dhpc', 'popc', 'np-40')\
                                         or ('deuterate' in mol_common_name
                                             and ('dhpc' in mol_common_name) or 'popc' in mol_common_name)\
                                         or mol_common_name.startswith('zwittergent'):
@@ -1783,6 +1966,10 @@ class BmrbAnnTasks:
                                 elif mol_common_name == 'glycerol':
                                     lp.data[idx][type_col] = 'solvent'
                                     solvent_in_sample_loop.append('Glycerol')
+                                elif mol_common_name == 'glycerol-d8':
+                                    lp.data[idx][type_col] = 'solvent'
+                                    solvent_in_sample_loop.append('Glycerol')
+                                    lp.data[idx][isotopic_labeling_col] = '[U-2H]'
                                 elif mol_common_name in ('tfe', 'trifluoroethanol'):
                                     lp.data[idx][type_col] = 'solvent'
                                     solvent_in_sample_loop.append('TFE')
@@ -2825,48 +3012,63 @@ class BmrbAnnTasks:
 
         sf_category = 'chem_shift_reference'
 
-        if sf_category in self.__reg.sf_category_list:
-            for sf in master_entry.get_saveframes_by_category(sf_category):
-                try:
-                    cs_ref_id = int(get_first_sf_tag(sf, 'ID'))
-                    isotope_numbers = isotope_nums[cs_ref_id]
-
-                    set_sf_tag(sf, 'Proton_shifts_flag',
-                               'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
-                    set_sf_tag(sf, 'Carbon_shifts_flag',
-                               'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C']) else 'no')
-                    set_sf_tag(sf, 'Nitrogen_shifts_flag',
-                               'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N']) else 'no')
-                    set_sf_tag(sf, 'Phosphorus_shifts_flag',
-                               'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P']) else 'no')
-                    set_sf_tag(sf, 'Other_shifts_flag',
-                               'yes' if any(n not in WELL_KNOWN_ISOTOPE_NUMBERS for n in isotope_numbers) else 'no')
-
-                    lp_category = '_Chem_shift_ref'
-
+        if has_cs_lp:
+            if sf_category in self.__reg.sf_category_list:
+                for sf in master_entry.get_saveframes_by_category(sf_category):
                     try:
+                        cs_ref_id = int(get_first_sf_tag(sf, 'ID'))
+                        isotope_numbers = isotope_nums[cs_ref_id]
 
-                        lp = sf.get_loop(lp_category)
+                        set_sf_tag(sf, 'Proton_shifts_flag',
+                                   'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
+                        set_sf_tag(sf, 'Carbon_shifts_flag',
+                                   'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C']) else 'no')
+                        set_sf_tag(sf, 'Nitrogen_shifts_flag',
+                                   'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N']) else 'no')
+                        set_sf_tag(sf, 'Phosphorus_shifts_flag',
+                                   'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P']) else 'no')
+                        set_sf_tag(sf, 'Other_shifts_flag',
+                                   'yes' if any(n not in WELL_KNOWN_ISOTOPE_NUMBERS for n in isotope_numbers) else 'no')
 
-                        dat = lp.get_tag(['Atom_isotope_number', 'Indirect_shift_ratio'])
+                        lp_category = '_Chem_shift_ref'
 
-                        tags = lp.tags
-                        ind_shift_ratio_col = tags.index('Indirect_shift_ratio')
+                        try:
 
-                        _isotope_numbers = set()
+                            lp = sf.get_loop(lp_category)
 
-                        for idx, row in enumerate(dat):
-                            if isinstance(row[0], int):
-                                _isotope_numbers.add(row[0])
-                            else:
-                                if row[0] in EMPTY_VALUE or not row[0].isdigit():
-                                    continue
-                                _isotope_numbers.add(int(row[0]))
-                            if row[1] not in EMPTY_VALUE:
-                                try:
-                                    n = int(row[0]) if isinstance(row[0], str) else row[0]
-                                    ratio = float(row[1])
-                                    if ratio <= 0.0 or ratio >= 1.0:
+                            dat = lp.get_tag(['Atom_isotope_number', 'Indirect_shift_ratio'])
+
+                            tags = lp.tags
+                            ind_shift_ratio_col = tags.index('Indirect_shift_ratio')
+
+                            _isotope_numbers = set()
+
+                            for idx, row in enumerate(dat):
+                                if isinstance(row[0], int):
+                                    _isotope_numbers.add(row[0])
+                                else:
+                                    if row[0] in EMPTY_VALUE or not row[0].isdigit():
+                                        continue
+                                    _isotope_numbers.add(int(row[0]))
+                                if row[1] not in EMPTY_VALUE:
+                                    try:
+                                        n = int(row[0]) if isinstance(row[0], str) else row[0]
+                                        ratio = float(row[1])
+                                        if ratio <= 0.0 or ratio >= 1.0:
+                                            if n in (1, 19, 31):
+                                                lp.data[idx][ind_shift_ratio_col] = '1.0'
+                                            elif n == 2:
+                                                lp.data[idx][ind_shift_ratio_col] = '0.153506088'
+                                            elif n == 13:
+                                                lp.data[idx][ind_shift_ratio_col] = '0.251449530'
+                                            elif n == 15:
+                                                lp.data[idx][ind_shift_ratio_col] = '0.101329118'
+                                            else:
+                                                lp.data[idx][ind_shift_ratio_col] = '?'
+                                        elif ratio < 0.5:
+                                            if n in (1, 19, 31):
+                                                lp.data[idx][ind_shift_ratio_col] = '1.0'
+                                    except ValueError:
                                         if n in (1, 19, 31):
                                             lp.data[idx][ind_shift_ratio_col] = '1.0'
                                         elif n == 2:
@@ -2877,252 +3079,239 @@ class BmrbAnnTasks:
                                             lp.data[idx][ind_shift_ratio_col] = '0.101329118'
                                         else:
                                             lp.data[idx][ind_shift_ratio_col] = '?'
-                                    elif ratio < 0.5:
-                                        if n in (1, 19, 31):
-                                            lp.data[idx][ind_shift_ratio_col] = '1.0'
-                                except ValueError:
-                                    if n in (1, 19, 31):
-                                        lp.data[idx][ind_shift_ratio_col] = '1.0'
-                                    elif n == 2:
-                                        lp.data[idx][ind_shift_ratio_col] = '0.153506088'
-                                    elif n == 13:
-                                        lp.data[idx][ind_shift_ratio_col] = '0.251449530'
-                                    elif n == 15:
-                                        lp.data[idx][ind_shift_ratio_col] = '0.101329118'
-                                    else:
-                                        lp.data[idx][ind_shift_ratio_col] = '?'
 
-                        if isotope_numbers == _isotope_numbers:
-                            continue
+                            if isotope_numbers == _isotope_numbers:
+                                continue
 
-                        isotope_number_not_in_lp = isotope_numbers - _isotope_numbers
+                            isotope_number_not_in_lp = isotope_numbers - _isotope_numbers
 
-                        if len(isotope_number_not_in_lp) > 0:
-                            atom_type_col = tags.index('Atom_type') if 'Atom_type' in tags else -1
-                            atom_iso_num_col = tags.index('Atom_isotope_number') if 'Atom_isotope_number' in tags else -1
-                            ref_type_col = tags.index('Ref_type') if 'Ref_type' in tags else -1
-                            mol_com_name_col = tags.index('Mol_common_name') if 'Mol_common_name' in tags else -1
-                            atom_grp_col = tags.index('Atom_group') if 'Atom_group' in tags else -1
+                            if len(isotope_number_not_in_lp) > 0:
+                                atom_type_col = tags.index('Atom_type') if 'Atom_type' in tags else -1
+                                atom_iso_num_col = tags.index('Atom_isotope_number') if 'Atom_isotope_number' in tags else -1
+                                ref_type_col = tags.index('Ref_type') if 'Ref_type' in tags else -1
+                                mol_com_name_col = tags.index('Mol_common_name') if 'Mol_common_name' in tags else -1
+                                atom_grp_col = tags.index('Atom_group') if 'Atom_group' in tags else -1
 
-                            for n in isotope_number_not_in_lp:
+                                for n in isotope_number_not_in_lp:
+                                    if n in ALLOWED_ISOTOPE_NUMBERS:
+                                        row = copy.copy(lp.data[0])
+
+                                        if atom_type_col != -1:
+                                            row[atom_type_col] = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items()
+                                                                      if n in v)
+                                        if atom_iso_num_col != -1:
+                                            row[atom_iso_num_col] = n
+                                        if ref_type_col != -1:
+                                            row[ref_type_col] = 'direct' if n in (1, 19, 31) else 'indirect'
+                                        if ind_shift_ratio_col != -1:
+                                            if n in (1, 19, 31):
+                                                row[ind_shift_ratio_col] = '1.0'
+                                            elif n == 2:
+                                                row[ind_shift_ratio_col] = '0.153506088'
+                                            elif n == 13:
+                                                row[ind_shift_ratio_col] = '0.251449530'
+                                            elif n == 15:
+                                                row[ind_shift_ratio_col] = '0.101329118'
+                                            else:
+                                                row[ind_shift_ratio_col] = '?'
+                                        if n in (19, 31):
+                                            if mol_com_name_col != -1:
+                                                row[mol_com_name_col] = 'CCl3F' if n == 19 else '(MeO)3PO'
+                                            if atom_grp_col != -1:
+                                                row[atom_grp_col] = 'fluorine' if n == 19 else 'phosphorus'
+
+                                        lp.add_data(row)
+
+                            isotope_number_exe_in_lp = _isotope_numbers - isotope_numbers
+
+                            if len(isotope_number_exe_in_lp) > 0:
+
+                                del_row_idx = []
+
+                                for n in isotope_number_exe_in_lp:
+
+                                    try:
+                                        del_row_idx.append(next(idx for idx, row in enumerate(dat)
+                                                                if isinstance(row[0], str) and row[0] not in EMPTY_VALUE
+                                                                and row[0].isdigit() and int(row[0]) == n))
+                                    except StopIteration:
+                                        continue
+
+                                if len(del_row_idx) > 0:
+                                    for idx in reversed(del_row_idx):
+                                        try:
+                                            del lp.data[idx]
+                                        except IndexError:
+                                            pass
+
+                        except KeyError:
+
+                            items = ['Atom_type',
+                                     'Atom_isotope_number',
+                                     'Mol_common_name',
+                                     'Atom_group',
+                                     'Concentration_val',
+                                     'Concentration_units',
+                                     'Solvent',
+                                     'Rank',
+                                     'Chem_shift_units',
+                                     'Chem_shift_val',
+                                     'Ref_method',
+                                     'Ref_type',
+                                     'Indirect_shift_ratio',
+                                     'External_ref_loc',
+                                     'External_ref_sample_geometry',
+                                     'External_ref_axis',
+                                     'Indirect_shift_ratio_cit_ID',
+                                     'Indirect_shift_ratio_cit_label',
+                                     'Ref_correction_type',
+                                     'Correction_val',
+                                     'Correction_val_cit_ID',
+                                     'Correction_val_cit_label',
+                                     'Entry_ID',
+                                     'Chem_shift_reference_ID']
+
+                            lp = pynmrstar.Loop.from_scratch(lp_category)
+
+                            tags = [f'{lp_category}.{item}' for item in items]
+
+                            lp.add_tag(tags)
+
+                            for n in isotope_numbers:
                                 if n in ALLOWED_ISOTOPE_NUMBERS:
-                                    row = copy.copy(lp.data[0])
-
-                                    if atom_type_col != -1:
-                                        row[atom_type_col] = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if n in v)
-                                    if atom_iso_num_col != -1:
-                                        row[atom_iso_num_col] = n
-                                    if ref_type_col != -1:
-                                        row[ref_type_col] = 'direct' if n in (1, 19, 31) else 'indirect'
-                                    if ind_shift_ratio_col != -1:
-                                        if n in (1, 19, 31):
-                                            row[ind_shift_ratio_col] = '1.0'
+                                    row = ['.'] * len(items)
+                                    row[0] = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if n in v)
+                                    row[1] = n
+                                    row[8], row[9], row[10] = 'ppm', '0.000', 'internal'
+                                    if n in (1, 2, 13, 15, 19, 31):
+                                        if n == 1:
+                                            row[2], row[3], row[11], row[12] =\
+                                                default_internal_reference, 'methyl protons', 'direct', '1.0'
                                         elif n == 2:
-                                            row[ind_shift_ratio_col] = '0.153506088'
+                                            row[2], row[3], row[11], row[12] =\
+                                                default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
                                         elif n == 13:
-                                            row[ind_shift_ratio_col] = '0.251449530'
+                                            row[2], row[3], row[11], row[12] =\
+                                                default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
                                         elif n == 15:
-                                            row[ind_shift_ratio_col] = '0.101329118'
+                                            row[2], row[3], row[11], row[12] =\
+                                                default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
+                                        elif n == 19:
+                                            row[2], row[3], row[11], row[12] = 'CCl3F', 'fluorine', 'direct', '1.0'
                                         else:
-                                            row[ind_shift_ratio_col] = '?'
-                                    if n in (19, 31):
-                                        if mol_com_name_col != -1:
-                                            row[mol_com_name_col] = 'CCl3F' if n == 19 else '(MeO)3PO'
-                                        if atom_grp_col != -1:
-                                            row[atom_grp_col] = 'fluorine' if n == 19 else 'phosphorus'
+                                            row[2], row[3], row[11], row[12] = '(MeO)3PO', 'phosphorus', 'direct', '1.0'
+                                    else:
+                                        row[2], row[3], row[11], row[12] = '?', '?', '?', '?'
+
+                                    row[-2], row[-1] = self.__reg.entry_id, cs_ref_id
 
                                     lp.add_data(row)
 
-                        isotope_number_exe_in_lp = _isotope_numbers - isotope_numbers
+                            sf.add_loop(lp)
 
-                        if len(isotope_number_exe_in_lp) > 0:
+                    except ValueError:
+                        continue
 
-                            del_row_idx = []
+            elif len(cs_ref_sf_framecode) > 0:
+                for cs_ref_id, sf_framecode in cs_ref_sf_framecode.items():
+                    isotope_numbers = isotope_nums[cs_ref_id]
 
-                            for n in isotope_number_exe_in_lp:
+                    _sf = pynmrstar.Saveframe.from_scratch(sf_framecode, '_Chem_shift_reference')
+                    _sf.add_tag('Sf_category', 'chem_shift_reference')
+                    _sf.add_tag('Sf_framecode', sf_framecode)
+                    _sf.add_tag('Entry_ID', self.__reg.entry_id)
+                    _sf.add_tag('ID', cs_ref_id)
+                    _sf.add_tag('Name', '.')
+                    _sf.add_tag('Proton_shifts_flag',
+                                'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
+                    _sf.add_tag('Carbon_shifts_flag',
+                                'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C']) else 'no')
+                    _sf.add_tag('Nitrogen_shifts_flag',
+                                'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N']) else 'no')
+                    _sf.add_tag('Phosphorus_shifts_flag',
+                                'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P']) else 'no')
+                    _sf.add_tag('Other_shifts_flag',
+                                'yes' if any(n not in WELL_KNOWN_ISOTOPE_NUMBERS for n in isotope_numbers) else 'no')
+                    _sf.add_tag('Details', '.')
 
-                                try:
-                                    del_row_idx.append(next(idx for idx, row in enumerate(dat)
-                                                            if isinstance(row[0], str) and row[0] not in EMPTY_VALUE
-                                                            and row[0].isdigit() and int(row[0]) == n))
-                                except StopIteration:
-                                    continue
+                    lp_category = '_Chem_shift_ref'
 
-                            if len(del_row_idx) > 0:
-                                for idx in reversed(del_row_idx):
-                                    try:
-                                        del lp.data[idx]
-                                    except IndexError:
-                                        pass
+                    items = ['Atom_type',
+                             'Atom_isotope_number',
+                             'Mol_common_name',
+                             'Atom_group',
+                             'Concentration_val',
+                             'Concentration_units',
+                             'Solvent',
+                             'Rank',
+                             'Chem_shift_units',
+                             'Chem_shift_val',
+                             'Ref_method',
+                             'Ref_type',
+                             'Indirect_shift_ratio',
+                             'External_ref_loc',
+                             'External_ref_sample_geometry',
+                             'External_ref_axis',
+                             'Indirect_shift_ratio_cit_ID',
+                             'Indirect_shift_ratio_cit_label',
+                             'Ref_correction_type',
+                             'Correction_val',
+                             'Correction_val_cit_ID',
+                             'Correction_val_cit_label',
+                             'Entry_ID',
+                             'Chem_shift_reference_ID']
 
-                    except KeyError:
+                    lp = pynmrstar.Loop.from_scratch(lp_category)
 
-                        items = ['Atom_type',
-                                 'Atom_isotope_number',
-                                 'Mol_common_name',
-                                 'Atom_group',
-                                 'Concentration_val',
-                                 'Concentration_units',
-                                 'Solvent',
-                                 'Rank',
-                                 'Chem_shift_units',
-                                 'Chem_shift_val',
-                                 'Ref_method',
-                                 'Ref_type',
-                                 'Indirect_shift_ratio',
-                                 'External_ref_loc',
-                                 'External_ref_sample_geometry',
-                                 'External_ref_axis',
-                                 'Indirect_shift_ratio_cit_ID',
-                                 'Indirect_shift_ratio_cit_label',
-                                 'Ref_correction_type',
-                                 'Correction_val',
-                                 'Correction_val_cit_ID',
-                                 'Correction_val_cit_label',
-                                 'Entry_ID',
-                                 'Chem_shift_reference_ID']
+                    tags = [f'{lp_category}.{item}' for item in items]
 
-                        lp = pynmrstar.Loop.from_scratch(lp_category)
+                    lp.add_tag(tags)
 
-                        tags = [f'{lp_category}.{item}' for item in items]
-
-                        lp.add_tag(tags)
-
-                        for n in isotope_numbers:
-                            if n in ALLOWED_ISOTOPE_NUMBERS:
-                                row = ['.'] * len(items)
-                                row[0] = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if n in v)
-                                row[1] = n
-                                row[8], row[9], row[10] = 'ppm', '0.000', 'internal'
-                                if n in (1, 2, 13, 15, 19, 31):
-                                    if n == 1:
-                                        row[2], row[3], row[11], row[12] =\
-                                            default_internal_reference, 'methyl protons', 'direct', '1.0'
-                                    elif n == 2:
-                                        row[2], row[3], row[11], row[12] =\
-                                            default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
-                                    elif n == 13:
-                                        row[2], row[3], row[11], row[12] =\
-                                            default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
-                                    elif n == 15:
-                                        row[2], row[3], row[11], row[12] =\
-                                            default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
-                                    elif n == 19:
-                                        row[2], row[3], row[11], row[12] = 'CCl3F', 'fluorine', 'direct', '1.0'
-                                    else:
-                                        row[2], row[3], row[11], row[12] = '(MeO)3PO', 'phosphorus', 'direct', '1.0'
+                    for n in isotope_numbers:
+                        if n in ALLOWED_ISOTOPE_NUMBERS:
+                            row = ['.'] * len(items)
+                            row[0] = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if n in v)
+                            row[1] = n
+                            row[8], row[9], row[10] = 'ppm', '0.000', 'internal'
+                            if n in (1, 2, 13, 15, 19, 31):
+                                if n == 1:
+                                    row[2], row[3], row[11], row[12] =\
+                                        default_internal_reference, 'methyl protons', 'direct', '1.0'
+                                elif n == 2:
+                                    row[2], row[3], row[11], row[12] =\
+                                        default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
+                                elif n == 13:
+                                    row[2], row[3], row[11], row[12] =\
+                                        default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
+                                elif n == 15:
+                                    row[2], row[3], row[11], row[12] =\
+                                        default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
+                                elif n == 19:
+                                    row[2], row[3], row[11], row[12] = 'CCl3F', 'fluorine', 'direct', '1.0'
                                 else:
-                                    row[2], row[3], row[11], row[12] = '?', '?', '?', '?'
-
-                                row[-2], row[-1] = self.__reg.entry_id, cs_ref_id
-
-                                lp.add_data(row)
-
-                        sf.add_loop(lp)
-
-                except ValueError:
-                    continue
-
-        elif len(cs_ref_sf_framecode) > 0:
-            for cs_ref_id, sf_framecode in cs_ref_sf_framecode.items():
-                isotope_numbers = isotope_nums[cs_ref_id]
-
-                _sf = pynmrstar.Saveframe.from_scratch(sf_framecode, '_Chem_shift_reference')
-                _sf.add_tag('Sf_category', 'chem_shift_reference')
-                _sf.add_tag('Sf_framecode', sf_framecode)
-                _sf.add_tag('Entry_ID', self.__reg.entry_id)
-                _sf.add_tag('ID', cs_ref_id)
-                _sf.add_tag('Name', '.')
-                _sf.add_tag('Proton_shifts_flag',
-                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['H']) else 'no')
-                _sf.add_tag('Carbon_shifts_flag',
-                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['C']) else 'no')
-                _sf.add_tag('Nitrogen_shifts_flag',
-                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['N']) else 'no')
-                _sf.add_tag('Phosphorus_shifts_flag',
-                            'yes' if any(n in isotope_numbers for n in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P']) else 'no')
-                _sf.add_tag('Other_shifts_flag',
-                            'yes' if any(n not in WELL_KNOWN_ISOTOPE_NUMBERS for n in isotope_numbers) else 'no')
-                _sf.add_tag('Details', '.')
-
-                lp_category = '_Chem_shift_ref'
-
-                items = ['Atom_type',
-                         'Atom_isotope_number',
-                         'Mol_common_name',
-                         'Atom_group',
-                         'Concentration_val',
-                         'Concentration_units',
-                         'Solvent',
-                         'Rank',
-                         'Chem_shift_units',
-                         'Chem_shift_val',
-                         'Ref_method',
-                         'Ref_type',
-                         'Indirect_shift_ratio',
-                         'External_ref_loc',
-                         'External_ref_sample_geometry',
-                         'External_ref_axis',
-                         'Indirect_shift_ratio_cit_ID',
-                         'Indirect_shift_ratio_cit_label',
-                         'Ref_correction_type',
-                         'Correction_val',
-                         'Correction_val_cit_ID',
-                         'Correction_val_cit_label',
-                         'Entry_ID',
-                         'Chem_shift_reference_ID']
-
-                lp = pynmrstar.Loop.from_scratch(lp_category)
-
-                tags = [f'{lp_category}.{item}' for item in items]
-
-                lp.add_tag(tags)
-
-                for n in isotope_numbers:
-                    if n in ALLOWED_ISOTOPE_NUMBERS:
-                        row = ['.'] * len(items)
-                        row[0] = next(k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if n in v)
-                        row[1] = n
-                        row[8], row[9], row[10] = 'ppm', '0.000', 'internal'
-                        if n in (1, 2, 13, 15, 19, 31):
-                            if n == 1:
-                                row[2], row[3], row[11], row[12] =\
-                                    default_internal_reference, 'methyl protons', 'direct', '1.0'
-                            elif n == 2:
-                                row[2], row[3], row[11], row[12] =\
-                                    default_internal_reference, 'methyl protons', 'indirect', '0.153506088'
-                            elif n == 13:
-                                row[2], row[3], row[11], row[12] =\
-                                    default_internal_reference, 'methyl protons', 'indirect', '0.251449530'
-                            elif n == 15:
-                                row[2], row[3], row[11], row[12] =\
-                                    default_internal_reference, 'methyl protons', 'indirect', '0.101329118'
-                            elif n == 19:
-                                row[2], row[3], row[11], row[12] = 'CCl3F', 'fluorine', 'direct', '1.0'
+                                    row[2], row[3], row[11], row[12] = '(MeO)3PO', 'phosphorus', 'direct', '1.0'
                             else:
-                                row[2], row[3], row[11], row[12] = '(MeO)3PO', 'phosphorus', 'direct', '1.0'
-                        else:
-                            row[2], row[3], row[11], row[12] = '?', '?', '?', '?'
+                                row[2], row[3], row[11], row[12] = '?', '?', '?', '?'
 
-                        row[-2], row[-1] = self.__reg.entry_id, cs_ref_id
+                            row[-2], row[-1] = self.__reg.entry_id, cs_ref_id
 
-                        lp.add_data(row)
+                            lp.add_data(row)
 
-                _sf.add_loop(lp)
+                    _sf.add_loop(lp)
 
-        sf_wo_lp = []
+            sf_wo_lp = []
 
-        for sf in master_entry.get_saveframes_by_category(sf_category):
-            try:
-                lp = sf.get_loop('_Chem_shift_ref')
-                if len(lp) == 0:
+            for sf in master_entry.get_saveframes_by_category(sf_category):
+                try:
+                    lp = sf.get_loop('_Chem_shift_ref')
+                    if len(lp) == 0:
+                        sf_wo_lp.append(sf.name)
+                except KeyError:
                     sf_wo_lp.append(sf.name)
-            except KeyError:
-                sf_wo_lp.append(sf.name)
 
-        if len(sf_wo_lp) > 0:
-            for sf_framecode in sf_wo_lp:
-                master_entry.remove_saveframe(sf_framecode)
+            if len(sf_wo_lp) > 0:
+                for sf_framecode in sf_wo_lp:
+                    master_entry.remove_saveframe(sf_framecode)
 
         # check order of experiment id and synchronize them in the entry
 

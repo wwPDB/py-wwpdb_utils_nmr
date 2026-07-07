@@ -38,6 +38,7 @@
 # 18-Sep-2024 - my  - add 'starts-with-alnum' item type (DAOTHER-9694)
 # 20-May-2026 - my  - add 'enum-int' as filter item type (DAOTHER-9785)
 # 28-May-2026 - my  - avoid mosaic-like domain recognition (v1.0.7)
+# 16-Jun-2025 - my  - set cache directory path (DAOTHER-9785)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -74,7 +75,8 @@ from rmsd.calculate_rmsd import (centroid, check_reflections,  # noqa: F401,E501
 from sklearn.cluster import DBSCAN
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+    from wwpdb.utils.nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
+                                               EMPTY_VALUE,
                                                TRUE_VALUE,
                                                ELEMENT_SYMBOLS,
                                                LEN_MAJOR_ASYM_ID,
@@ -83,7 +85,8 @@ try:
                                                CARTN_DATA_ITEMS)
     from wwpdb.utils.nmr.AlignUtil import deepcopy
 except ImportError:
-    from nmr.NmrDpConstant import (EMPTY_VALUE,
+    from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
+                                   EMPTY_VALUE,
                                    TRUE_VALUE,
                                    ELEMENT_SYMBOLS,
                                    LEN_MAJOR_ASYM_ID,
@@ -248,9 +251,9 @@ class CifReader:
                  '__log',
                  '__debug',
                  '__use_cache',
-                 '__sub_dir_name_for_cache',
                  '__filePath',
                  '__dirPath',
+                 '__cacheDirPath',
                  '__dBlockList',
                  '__dBlockNameList',
                  '__dBlock',
@@ -266,8 +269,7 @@ class CifReader:
                  '__min_monomers_for_domain')
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
-                 use_cache: bool = True,
-                 sub_dir_name_for_cache: str = '.') -> None:
+                 use_cache: bool = True) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
@@ -278,14 +280,14 @@ class CifReader:
         # whether to use cache file
         self.__use_cache = use_cache
 
-        # sub directory name for cache file
-        self.__sub_dir_name_for_cache = sub_dir_name_for_cache
-
         # the current file path
         self.__filePath = None
 
-        # the current working directory path
+        # the current working directory
         self.__dirPath = None
+
+        # directory for cache files
+        self.__cacheDirPath = None
 
         # the datablock list
         self.__dBlockList = None
@@ -333,14 +335,28 @@ class CifReader:
 
         return __version__
 
-    def parse(self, filePath: str, dirPath: Optional[str] = None) -> bool:
+    @property
+    def cacheDirPath(self) -> Optional[str]:
+        """ Retrieve cache directory path.
+        """
+
+        return self.__cacheDirPath
+
+    @cacheDirPath.setter
+    def cacheDirPath(self, cacheDirPath: Optional[str]) -> None:
+        """ Set cache directory path.
+        """
+
+        self.__cacheDirPath = cacheDirPath
+
+        if self.__use_cache and cacheDirPath is not None:
+            if not os.path.isdir(cacheDirPath):
+                os.makedirs(cacheDirPath)
+
+    def parse(self, filePath: str) -> bool:
         """ Parse CIF file, and set internal active datablock if possible.
             @return: True for success or False otherwise
         """
-
-        if dirPath is not None:
-            if os.path.isdir(dirPath):
-                self.__dirPath = dirPath
 
         if self.__dBlock is not None and self.__filePath == filePath:
             return True
@@ -379,17 +395,18 @@ class CifReader:
             @return: target datablock
         """
 
+        self.__dirPath = os.path.dirname(self.__filePath)
+
         if self.__use_cache:
 
-            if self.__dirPath is None:
-                self.__dirPath = os.path.dirname(self.__filePath)
+            if self.__cacheDirPath is None:
+                self.__cacheDirPath = os.path.join(self.__dirPath, SUB_DIR_NAME_FOR_CACHE)
 
-            cache_dir = os.path.join(self.__dirPath, self.__sub_dir_name_for_cache)
+            if not os.path.isdir(self.__cacheDirPath):
+                os.makedirs(self.__cacheDirPath)
 
-            if not os.path.isdir(cache_dir):
-                os.makedirs(cache_dir)
-
-            self.__cachePath = os.path.join(cache_dir, f"{self.__hashCode}{'' if blockName is None else '_' + blockName}.pkl")
+            self.__cachePath = os.path.join(self.__cacheDirPath,
+                                            f"{self.__hashCode}{'' if blockName is None else '_' + blockName}.pkl")
 
             if os.path.exists(self.__cachePath):
 

@@ -44,7 +44,7 @@ class ChemCompUpdater:
 
     def __init__(self, force: bool = False) -> None:
         self.__components_cif = 'components.cif'
-        self.__components_cif_gz = self.__components_cif + '.gz'
+        self.__components_cif_gz = f'{self.__components_cif}.gz'
         self.__components_cif_path = os.path.join(os.path.dirname(__file__), self.__components_cif)
         self.__components_cif_gz_path = os.path.join(os.path.dirname(__file__), self.__components_cif_gz)
         self.__url_for_components = 'https://files.wwpdb.org/pub/pdb/data/monomers/' + self.__components_cif_gz
@@ -98,7 +98,7 @@ class ChemCompUpdater:
 
                 os.makedirs(subDir, exist_ok=True)
 
-                outPath = os.path.join(subDir, compId + '.cif')
+                outPath = os.path.join(subDir, f'{compId}.cif')
 
                 with open(outPath, 'w', encoding='utf-8') as ofh:
                     pdbxW = PdbxWriter(ofh)
@@ -146,21 +146,28 @@ class ChemCompUpdater:
 
         url_last_modified = parsedate(r.headers['Last-Modified']).astimezone()
 
-        if os.path.exists(self.__components_cif_gz_path):
-            file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__components_cif_gz_path)).astimezone()
-            if url_last_modified > file_last_modified:
+        try:
+
+            if os.path.exists(self.__components_cif_gz_path):
+                file_last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(self.__components_cif_gz_path)).astimezone()
+                if url_last_modified > file_last_modified:
+                    self.download()
+                    self.deploy()
+
+                elif not os.path.isdir(self.__work_dir) or self.__force:
+                    self.deploy()
+
+                else:
+                    print(f"{self.__components_cif_gz!r} is up-to-date. (use '--force' argument)")
+
+            else:
                 self.download()
                 self.deploy()
 
-            elif not os.path.isdir(self.__work_dir) or self.__force:
-                self.deploy()
+        finally:
 
-            else:
-                print(f"{self.__components_cif_gz!r} is up-to-date. (use '--force' argument)")
-
-        else:
-            self.download()
-            self.deploy()
+            with open(os.path.join(self.__work_dir, '.ccd_rel_date'), 'w', encoding='utf-8') as f:
+                f.write(url_last_modified.strftime('%Y-%m-%d'))
 
 
 if __name__ == '__main__':

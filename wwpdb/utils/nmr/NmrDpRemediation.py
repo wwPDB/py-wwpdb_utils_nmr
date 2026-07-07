@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.1.0"
+__version__ = "5.2.0"
 
 import collections
 import copy
@@ -350,6 +350,28 @@ class NmrDpRemediation:
         self.__reg = registry
 
         self.__paramag = False
+
+    def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
+        """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
+        """
+        assert len(suffix) > 0
+
+        test_path = src_path + suffix
+
+        if os.path.exists(test_path):
+            return test_path
+
+        if None in (self.__reg.dirPath, self.__reg.spareDirPath) or self.__reg.dirPath == self.__reg.spareDirPath:
+            return test_path if defer_check else src_path
+
+        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
+
+        if not os.path.exists(chk_path):
+            return test_path if defer_check else src_path
+
+        os.symlink(chk_path, test_path)
+
+        return test_path
 
     def cleanUpSf(self) -> bool:
         """ Clean-up third-party saveframes.
@@ -5116,12 +5138,13 @@ class NmrDpRemediation:
                         missing_ch3 = self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
                         valid = self.__reg.sail_flag
                         row_src = src_lp.data[src_idx]
+                        seq_id_src = row_src[seq_id_col]
                         if 0 <= src_idx < len(src_lp):
                             for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                 if src_idx + offset < len(src_lp):
                                     row = src_lp.data[src_idx + offset]
                                     if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
                                         valid = True
@@ -5131,7 +5154,7 @@ class NmrDpRemediation:
                                 if src_idx - offset >= 0:
                                     row = src_lp.data[src_idx - offset]
                                     if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col]))\
+                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
                                         valid = True
@@ -5314,9 +5337,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5330,9 +5353,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5349,9 +5372,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         break
                                                     _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int)\
                                                         else int(row[seq_id_col])
@@ -5365,9 +5388,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         break
                                                     _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int)\
                                                         else int(row[seq_id_col])
@@ -5383,9 +5406,9 @@ class NmrDpRemediation:
                                                     if row[comp_id_col] == comp_id\
                                                        and row[atom_id_col][0] == atom_type\
                                                        and row[ambig_code_col] == str(_row[12])\
-                                                       or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                         if not (row[chain_id_col] == str(_row[1])
-                                                                or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                             _row[12] = ambig_code = 6
                                                             break
                                                 if src_idx - offset >= 0:
@@ -5393,9 +5416,9 @@ class NmrDpRemediation:
                                                     if row[comp_id_col] == comp_id\
                                                        and row[atom_id_col][0] == atom_type\
                                                        and row[ambig_code_col] == str(_row[12])\
-                                                       or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                         if not (row[chain_id_col] == str(_row[1])
-                                                                or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                             _row[12] = ambig_code = 6
                                                             break
                                             if ambig_code == 4:
@@ -5416,9 +5439,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5432,9 +5455,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5450,9 +5473,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         _row[12] = ambig_code = 6
                                                         break
                                             if src_idx - offset >= 0:
@@ -5460,9 +5483,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         _row[12] = ambig_code = 6
                                                         break
 
@@ -5529,11 +5552,12 @@ class NmrDpRemediation:
                         valid = self.__reg.sail_flag
                         if 0 <= src_idx < len(src_lp):
                             row_src = src_lp.data[src_idx]
+                            seq_id_src = row_src[seq_id_col]
                             for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                 if src_idx + offset < len(src_lp):
                                     row = src_lp.data[src_idx + offset]
                                     if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src)
                                         or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
@@ -5544,7 +5568,7 @@ class NmrDpRemediation:
                                 if src_idx - offset >= 0:
                                     row = src_lp.data[src_idx - offset]
                                     if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != row_src[3] and row[seq_id_col] == row_src[seq_id_col])
+                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src)
                                         or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
                                        and row[comp_id_col].upper() == comp_id\
                                        and row[atom_id_col] in missing_ch3:
@@ -5665,9 +5689,9 @@ class NmrDpRemediation:
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id in (_row[3], _row[17]):
@@ -5680,9 +5704,9 @@ class NmrDpRemediation:
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id in (_row[3], _row[17]):
@@ -5698,9 +5722,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5714,9 +5738,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id =\
                                                     row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5732,9 +5756,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         _row[12] = ambig_code = 6
                                                         break
                                             if src_idx - offset >= 0:
@@ -5742,9 +5766,9 @@ class NmrDpRemediation:
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                     if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                         _row[12] = ambig_code = 6
                                                         break
                                         if ambig_code == 4:
@@ -5765,9 +5789,9 @@ class NmrDpRemediation:
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
                                             if _seq_id in (_row[3], _row[17]):
@@ -5780,9 +5804,9 @@ class NmrDpRemediation:
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                             if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id =\
                                                 row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
@@ -5798,9 +5822,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     _row[12] = ambig_code = 6
                                                     break
                                         if src_idx - offset >= 0:
@@ -5808,9 +5832,9 @@ class NmrDpRemediation:
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
                                                and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != row_src[12] and row[ambig_code_col] == ambig_code_src):
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
                                                 if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != row_src[1] and row[chain_id_col] == chain_id_src)):
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     _row[12] = ambig_code = 6
                                                     break
 
@@ -10168,11 +10192,10 @@ class NmrDpRemediation:
             if file_type is None or (not file_type.startswith('nm-shi-') and file_type != 'nm-aux-xea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
-            if os.path.exists(file_path + '-corrected'):
-                file_path = file_path + '-corrected'
+            file_path = self.testPathWithSuffix(file_path, '-corrected')
 
             file_name = input_source_dic['file_name']
 
@@ -10787,6 +10810,952 @@ class NmrDpRemediation:
 
         return not self.__reg.report.isError()
 
+    def validateLegacyCsp(self) -> bool:
+        """ Validate data content of legacy NMR chemical shift perturbation files and merge them if possible.
+        """
+
+        if not self.__reg.combined_mode or not self.__reg.conversion_server:
+            return True
+
+        if AC_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+            return True
+
+        input_source = self.__reg.report.input_sources[0]
+        input_source_dic = input_source.get()
+
+        has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
+
+        if not has_poly_seq:
+            return False
+
+        nmr_poly_seq = input_source_dic['polymer_sequence']
+        entity_assembly = None
+
+        file_type = 'nmr-star'
+        content_subtype = 'csp_restraint'
+
+        sf_category = SF_CATEGORIES[file_type][content_subtype]
+
+        _rlist_ids = []
+        if len(self.__reg.star_data) > 0 and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
+            for idx, sf in enumerate(self.__reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
+                list_id = get_first_sf_tag(sf, 'ID')
+                _rlist_ids.append({'list_id': int(list_id) if list_id not in EMPTY_VALUE else idx,
+                                   'data_file_name': get_first_sf_tag(sf, 'Data_file_name')})
+            for sf in self.__reg.star_data[0].get_saveframes_by_category('assembly'):
+                try:
+                    lp = sf.get_loop('_Entity_assembly')
+                    has_pdb_chain_id = 'PDB_chain_ID' in lp.tags
+                    if has_pdb_chain_id:
+                        tags = ['ID', 'Entity_ID', 'PDB_chain_ID']
+                        data = lp.get_tag(tags)
+                        for row in data:
+                            entity_assembly_id = row[0] if isinstance(row[0], str) else str(row[0])
+                            entity_id = row[1] if isinstance(row[1], int) else int(row[1]) if row[1].isdigit() else None
+                            pdb_chain_id = row[2].split(',')[0]
+                            if entity_assembly is None:
+                                entity_assembly = {}
+                            entity_assembly[entity_assembly_id] = {'entity_id': entity_id, 'auth_asym_id': pdb_chain_id}
+                    else:
+                        tags = ['ID', 'Entity_ID']
+                        data = lp.get_tag(tags)
+                        for row in data:
+                            entity_assembly_id = row[0] if isinstance(row[0], str) else str(row[0])
+                            entity_id = row[1] if isinstance(row[1], int) else int(row[1]) if row[1].isdigit() else None
+                            if entity_assembly is None:
+                                entity_assembly = {}
+                            entity_assembly[entity_assembly_id] = {'entity_id': entity_id, 'auth_asym_id': None}
+                except KeyError:
+                    pass
+
+        if self.__reg.caC is not None:
+            nmr_poly_seq = deepcopy(self.__reg.caC['polymer_sequence'])
+            if self.__reg.caC['branched'] is not None:
+                nmr_poly_seq.extend(self.__reg.caC['branched'])
+            if self.__reg.caC['non_polymer'] is not None:
+                nmr_poly_seq.extend(self.__reg.caC['non_polymer'])
+            entity_assembly = {}
+            for item in self.__reg.caC['entity_assembly']:
+                _auth_asym_id = 'auth_asym_id' if 'fixed_auth_asym_id' not in item else 'fixed_auth_asym_id'
+                entity_assembly[str(item['entity_assembly_id'])] =\
+                    {'entity_id': item['entity_id'],
+                     'auth_asym_id': item[_auth_asym_id].split(',')[0]}
+
+        create_sf_dict = True
+
+        if self.__reg.list_id_counter is None:
+            self.__reg.list_id_counter = {}
+
+        cs_sf_dict_holder = {}
+
+        suspended_errors_for_lazy_eval = []
+
+        def deal_lexer_or_parser_error(a_cs_format_name, file_name, lexer_err_listener, parser_err_listener):
+            _err = ''
+            if lexer_err_listener is not None:
+                messageList = lexer_err_listener.getMessageList()
+
+                if messageList is not None:
+                    for description in messageList:
+                        _err = f"[Syntax error as {a_cs_format_name} file] "\
+                               f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            is_not_ascii = False
+                            if enc is not None and enc != 'ascii':
+                                _err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                is_not_ascii = True
+                            else:
+                                _err += f"{description['input']}\n"
+                            _err += f"{description['marker']}\n"
+                            if is_not_ascii:
+                                _err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} "\
+                                    "and must be 'ascii'.\n"
+
+            if parser_err_listener is not None and len(_err) == 0:
+                messageList = parser_err_listener.getMessageList()
+
+                if messageList is not None:
+                    for description in messageList:
+                        _err += f"[Syntax error as {a_cs_format_name} file] "\
+                                f"line {description['line_number']}:{description['column_position']} {description['message']}\n"
+                        if 'input' in description:
+                            _err += f"{description['input']}\n"
+                            _err += f"{description['marker']}\n"
+
+            if len(_err) == 0:
+                return False
+
+            err = f"The assigned chemical shift file {file_name!r} looks like {a_cs_format_name} file. "\
+                "Please re-upload the assigned chemical shift file.\n"\
+                "The following issues need to be fixed before re-upload.\n" + _err[:-1]
+
+            self.__reg.report.error.appendDescription('format_issue',
+                                                      {'file_name': file_name, 'description': err})
+
+            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {file_name} {err}\n")
+
+            return True
+
+        def consume_suspended_message():
+
+            if len(suspended_errors_for_lazy_eval) > 0:
+                for msg in suspended_errors_for_lazy_eval:
+                    for k, v in msg.items():
+                        self.__reg.report.error.appendDescription(k, v)
+                suspended_errors_for_lazy_eval.clear()
+
+        def deal_shi_warn_message(file_name, listener, ignore_error):
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
+                        if g not in EMPTY_VALUE:
+                            msg_dict['sf_framecode'] = g[1]
+                            msg_dict['description'] = warn.replace(f', {g[1]}', '')
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        self.__reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        # consume_suspended_message()
+
+                        self.__reg.report.error.appendDescription('sequence_mismatch', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Atom not found]'):
+                        self.__reg.report.error.appendDescription('atom_not_found', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom nomenclature]'):
+                        consume_suspended_message()
+
+                        self.__reg.report.error.appendDescription('invalid_atom_nomenclature', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        consume_suspended_message()
+
+                        self.__reg.report.error.appendDescription('invalid_data', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ ValueError  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch warning]'):
+                        self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+
+                        if SEQ_MISMATCH_WARNING_PAT.match(warn):
+                            g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
+                            d = {'auth_chain_id': g[2],
+                                 'auth_seq_id': int(g[0]),
+                                 'auth_comp_id': g[1]}
+                            if d not in self.__reg.nmr_ext_poly_seq:
+                                self.__reg.nmr_ext_poly_seq.append(d)
+
+                    elif warn.startswith('[Missing data]'):
+                        self.__reg.report.warning.appendDescription('missing_data', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                        # consume_suspended_message()
+
+                        self.__reg.report.warning.appendDescription('anomalous_chemical_shift', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Range value warning]')\
+                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
+                        self.__reg.report.warning.appendDescription('unusual_chemical_shift', msg_dict)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+
+                    elif not ignore_error:
+                        self.__reg.report.error.appendDescription('internal_error',
+                                                                  f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                  "++ KeyError  - " + warn)
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ KeyError  - {warn}\n")
+
+        def deal_shi_warn_message_for_lazy_eval(file_name, listener):
+
+            if listener.warningMessage is not None:
+
+                def_sf_framecode = ''
+                for warn in listener.warningMessage:
+
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
+                        if g[1] not in EMPTY_VALUE:
+                            def_sf_framecode = g[1]
+                            break
+
+                for warn in listener.warningMessage:
+
+                    msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
+                    if INCONSISTENT_RESTRAINT_WARNING_PAT.match(warn):
+                        g = INCONSISTENT_RESTRAINT_WARNING_PAT.search(warn).groups()
+                        msg_dict['sf_framecode'] = g[1] if g[1] not in EMPTY_VALUE else def_sf_framecode
+                        msg_dict['description'] = warn.replace(f', {g[1]}', '')
+
+                    if warn.startswith('[Sequence mismatch]'):
+                        suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
+
+                    elif warn.startswith('[Atom not found]'):
+                        if not self.__reg.remediation_mode or 'Macromolecules page' not in warn:
+                            suspended_errors_for_lazy_eval.append({'atom_not_found': msg_dict})
+
+                    # elif warn.startswith('[Hydrogen not instantiated]'):
+                    #     if self.__reg.remediation_mode:
+                    #         pass
+                    #     else:
+                    #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated': msg_dict})
+
+                    # elif warn.startswith('[Coordinate issue]'):
+                    #     suspended_errors_for_lazy_eval.append({'coordinate_issue': msg_dict})
+
+                    # elif warn.startswith('[Invalid atom nomenclature]'):
+                    #     suspended_errors_for_lazy_eval.append({'invalid_atom_nomenclature': msg_dict})
+
+                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                        suspended_errors_for_lazy_eval.append({'invalid_data': msg_dict})
+
+                    # elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    #     suspended_errors_for_lazy_eval.append({'anomalous_data': msg_dict})
+
+        csLoops = self.__reg.lp_data['chem_shift']
+
+        fileListId = self.__reg.file_path_list_len
+
+        for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
+            file_path = acs['file_name']
+
+            input_source = self.__reg.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+
+            ignore_error = False if 'ignore_error' not in input_source_dic else input_source_dic['ignore_error']
+
+            fileListId += 1
+
+            if file_type is None or not file_type.startswith('nm-csp-'):
+                continue
+
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
+                continue
+
+            file_path = self.testPathWithSuffix(file_path, '-corrected')
+
+            file_name = input_source_dic['file_name']
+
+            original_file_name = None
+            if 'original_file_name' in input_source_dic:
+                if input_source_dic['original_file_name'] is not None:
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+            if original_file_name in EMPTY_VALUE:
+                original_file_name = file_name
+
+            reserved_list_ids = None
+            if len(_rlist_ids) > 0:
+                rlist_ids = [item['list_id'] for item in _rlist_ids if item['data_file_name'] != original_file_name]
+                if len(rlist_ids) > 0:
+                    reserved_list_ids = {content_subtype: rlist_ids}
+
+            _cs_format_name = getChemShiftFormatName(file_type)
+            cs_format_name = _cs_format_name.split()[0]
+            a_cs_format_name = ('an ' if cs_format_name[0] in ('AINMX') else 'a ') + _cs_format_name
+
+            suspended_errors_for_lazy_eval.clear()
+
+            if file_type == 'nm-csp-ari':
+                reader = AriaCSReader(self.__reg.verbose, self.__reg.log,
+                                      nmr_poly_seq, entity_assembly,
+                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = AriaCSReader(self.__reg.verbose, self.__reg.log,
+                                              nmr_poly_seq, entity_assembly,
+                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (ARIA) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-csp-bar':
+                reader = BareCSReader(self.__reg.verbose, self.__reg.log,
+                                      nmr_poly_seq, entity_assembly,
+                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = BareCSReader(self.__reg.verbose, self.__reg.log,
+                                              nmr_poly_seq, entity_assembly,
+                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file "\
+                                f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-csp-gar':
+                reader = GarretCSReader(self.__reg.verbose, self.__reg.log,
+                                        nmr_poly_seq, entity_assembly,
+                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = GarretCSReader(self.__reg.verbose, self.__reg.log,
+                                                nmr_poly_seq, entity_assembly,
+                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (GARRET) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-csp-npi':
+                reader = NmrPipeCSReader(self.__reg.verbose, self.__reg.log,
+                                         nmr_poly_seq, entity_assembly,
+                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = NmrPipeCSReader(self.__reg.verbose, self.__reg.log,
+                                                 nmr_poly_seq, entity_assembly,
+                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                 reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-csp-oli':
+                reader = OliviaCSReader(self.__reg.verbose, self.__reg.log,
+                                        nmr_poly_seq, entity_assembly,
+                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = OliviaCSReader(self.__reg.verbose, self.__reg.log,
+                                                nmr_poly_seq, entity_assembly,
+                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-csp-pip':
+                reader = PippCSReader(self.__reg.verbose, self.__reg.log,
+                                      nmr_poly_seq, entity_assembly,
+                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = PippCSReader(self.__reg.verbose, self.__reg.log,
+                                              nmr_poly_seq, entity_assembly,
+                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (PIPP) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-csp-ppm':
+                reader = PpmCSReader(self.__reg.verbose, self.__reg.log,
+                                     nmr_poly_seq, entity_assembly,
+                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = PpmCSReader(self.__reg.verbose, self.__reg.log,
+                                             nmr_poly_seq, entity_assembly,
+                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                             reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-csp-st2':
+                reader = NmrStar2CSReader(self.__reg.verbose, self.__reg.log,
+                                          nmr_poly_seq, entity_assembly,
+                                          self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = NmrStar2CSReader(self.__reg.verbose, self.__reg.log,
+                                                  nmr_poly_seq, entity_assembly,
+                                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                  reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+            elif file_type == 'nm-csp-xea':
+                reader = XeasyCSReader(self.__reg.verbose, self.__reg.log,
+                                       nmr_poly_seq, entity_assembly,
+                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader.setCspMode(True)
+                reader.setCsloops(csLoops)
+
+                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+
+                # ignore lexer error because of incomplete XML file format
+                listener, parser_err_listener, _ =\
+                    reader.parse(file_path,
+                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self.__reg.entry_id)
+
+                if None not in (parser_err_listener, listener)\
+                   and parser_err_listener.getMessageList() is None:
+                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                        continue
+
+                if listener is not None:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
+
+                        reader = XeasyCSReader(self.__reg.verbose, self.__reg.log,
+                                               nmr_poly_seq, entity_assembly,
+                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                               reasons)
+                        reader.setCspMode(True)
+                        reader.setCsloops(csLoops)
+
+                        listener, _, _ = reader.parse(file_path,
+                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
+                                                      entryId=self.__reg.entry_id)
+
+                    deal_shi_warn_message(file_name, listener, ignore_error)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+
+                    if create_sf_dict:
+                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
+                            err = f"Failed to validate assigned chemical shift file (XEASY) {file_name!r}."
+
+                            self.__reg.report.error.appendDescription('internal_error',
+                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                      "++ Error  - " + err)
+
+                            if self.__reg.verbose:
+                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+
+                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        if sf_dict is not None:
+                            for k, v in sf_dict.items():
+                                content_subtype = contentSubtypeOf(k[0])
+                                if content_subtype not in cs_sf_dict_holder:
+                                    cs_sf_dict_holder[content_subtype] = []
+                                for sf in v:
+                                    if sf not in cs_sf_dict_holder[content_subtype]:
+                                        cs_sf_dict_holder[content_subtype].append(sf)
+
+        if content_subtype in cs_sf_dict_holder and len(self.__reg.star_data) > 0\
+           and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
+            master_entry = self.__reg.star_data[0]
+
+            for sf in cs_sf_dict_holder[content_subtype]:
+
+                data_file_name = get_first_sf_tag(sf['saveframe'], 'Data_file_name')
+
+                if data_file_name not in EMPTY_VALUE:
+
+                    _sf_list = master_entry.get_saveframes_by_tag_and_value('Data_file_name', data_file_name)
+
+                    if len(_sf_list) == 1:
+
+                        _sf = _sf_list[0]
+
+                        try:
+
+                            _lp = _sf.get_loop('_Chem_shift_perturbation')
+
+                            del _sf[_lp]
+
+                        except KeyError:
+                            pass
+
+                        _sf.add_loop(sf['loop'])
+
+                    continue
+
+                master_entry.add_saveframe(sf['saveframe'])
+
+        return not self.__reg.report.isError()
+
     def validateLegacyMr(self) -> bool:
         """ Validate data content of legacy restraint files.
         """
@@ -11074,8 +12043,7 @@ class NmrDpRemediation:
                                                self.__reg.cR, self.__reg.caC,
                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
 
-                        if os.path.exists(file_path + '-corrected'):
-                            file_path = file_path + '-corrected'
+                        file_path = self.testPathWithSuffix(file_path, '-corrected')
 
                         listener, _, _ = reader.parse(file_path, self.__reg.cifPath)
 
@@ -11226,7 +12194,7 @@ class NmrDpRemediation:
                or file_type.startswith('nm-pea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             content_subtype = input_source_dic['content_subtype']
@@ -11636,7 +12604,7 @@ class NmrDpRemediation:
                or file_type.startswith('nm-pea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             file_name = input_source_dic['file_name']
@@ -13364,10 +14332,7 @@ class NmrDpRemediation:
             fileListId = self.__reg.file_path_list_len
 
             for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
-                file_path = ar['file_name']
-
-                if os.path.exists(file_path + '-corrected'):
-                    file_path = file_path + '-corrected'
+                file_path = self.testPathWithSuffix(ar['file_name'], '-corrected')
 
                 input_source = self.__reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
@@ -13724,11 +14689,10 @@ class NmrDpRemediation:
             if file_type.startswith('nm-res') or file_type.startswith('nm-aux'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
-            if os.path.exists(file_path + '-corrected'):
-                file_path = file_path + '-corrected'
+            file_path = self.testPathWithSuffix(file_path, '-corrected')
 
             file_name = input_source_dic['file_name']
 
@@ -18124,8 +19088,8 @@ class NmrDpRemediation:
                             data_format
                         software_dict[data_format] = (software_id, _code)
 
-                sel_res_cif_file = os.path.join(dir_path, file_path + '-selected-as-res-cif')
-                sel_res_oth_file = os.path.join(dir_path, file_path + '-selected-as-res-oth')
+                sel_res_cif_file = self.testPathWithSuffix(os.path.join(dir_path, file_path), '-selected-as-res-cif', True)
+                sel_res_oth_file = self.testPathWithSuffix(os.path.join(dir_path, file_path), '-selected-as-res-oth', True)
 
                 if os.path.exists(sel_res_cif_file):
                     data_format = 'mmCIF'
@@ -18163,7 +19127,8 @@ class NmrDpRemediation:
                         warn = f"We could not identify restraint file format of {file_name!r}. "\
                                "In order to add file format support in the future, "\
                                "the contents is temporarily stored as-is in the _Other_data_type_list.Text_data tag "\
-                               "and will be converted during future data remediation if the data matches a known restraint format."
+                               "and will be converted during future data remediation "\
+                               "if the data matches a known restraint format."
 
                         self.__reg.report.warning.appendDescription('unsupported_mr_data',
                                                                     {'file_name': file_name, 'description': warn,
@@ -18277,6 +19242,8 @@ class NmrDpRemediation:
 
         update_data_file_name = False
         data_file_name_map = {}
+        removed_sf_names = []
+        resolved_sf_name_prefixes = []
 
         for content_subtype in self.__reg.mr_content_subtypes:
             if self.__reg.mr_sf_dict_holder is not None and content_subtype in self.__reg.mr_sf_dict_holder:
@@ -18307,6 +19274,7 @@ class NmrDpRemediation:
                                 if len(_data_file_name) > 0 and _data_file_name != data_file_name and self.__reg.internal_mode:
                                     data_file_name_map[data_file_name] = _data_file_name
                                     set_sf_tag(sf, 'Data_file_name', _data_file_name)
+                                    update_data_file_name = True
 
                                     fileListId = self.__reg.file_path_list_len
 
@@ -18328,15 +19296,17 @@ class NmrDpRemediation:
                                                 update_data_file_name = True
                                                 break
 
-                                        elif getRestraintFormatName(ar_file_type).split()[0] in sf_framecode:
+                                        elif os.path.basename(ar['file_name']) == data_file_name:
                                             ar['original_file_name'] = _data_file_name
                                             update_data_file_name = True
                                             break
 
                                 if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
                                     master_entry.remove_saveframe(sf_framecode)
+                                    removed_sf_names.append(sf_framecode)
                                 else:
                                     master_entry.remove_saveframe(alt_sf_framecode)
+                                    removed_sf_names.append(alt_sf_framecode)
 
                             else:
 
@@ -18352,7 +19322,96 @@ class NmrDpRemediation:
                                                      f"{_data_file_name} {err}\n")
                                 continue
 
+                        elif self.__reg.internal_mode or self.__reg.bmrb_only:
+
+                            try:
+
+                                data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                                sf_framecode_prefix = '_'.join(sf_framecode.split('_')[:-1])
+                                sf_framecode_suffix = int(sf_framecode[len(sf_framecode_prefix) + 1:])
+
+                                if sf_framecode_prefix not in resolved_sf_name_prefixes\
+                                   and any(True for _sf in master_entry.frame_list if _sf.name.startswith(sf_framecode_prefix)):
+                                    resolved_sf_name_prefixes.append(sf_framecode_prefix)
+
+                                    for sf_item_ in self.__reg.mr_sf_dict_holder[content_subtype]:
+                                        sf_ = sf_item_['saveframe']
+                                        sf_framecode_ = get_first_sf_tag(sf_, 'Sf_framecode')
+
+                                        if not sf_framecode_.startswith(sf_framecode_prefix):
+                                            continue
+
+                                        sf_framecode_suffix_ = int(sf_framecode_[len(sf_framecode_prefix) + 1:])
+
+                                        if sf_framecode_suffix_ > sf_framecode_suffix:
+                                            continue
+
+                                        if 'XPLOR-NIH_' in sf_framecode_ or sf_framecode_.startswith('CNS'):
+                                            if 'XPLOR-NIH' in sf_framecode_:
+                                                alt_sf_framecode_ = f'XPLOR-NIH/CNS{sf_framecode_[9:]}'
+                                            else:
+                                                alt_sf_framecode_ = f'XPLOR-NIH/{sf_framecode_}'
+
+                                        else:
+                                            alt_sf_framecode_ = sf_framecode_
+
+                                        if any(True for _sf in master_entry.frame_list
+                                               if _sf.name in (sf_framecode_, alt_sf_framecode_)):
+                                            continue
+
+                                        for _sf in master_entry.frame_list:
+                                            _sf_framecode_ = get_first_sf_tag(_sf, 'Sf_framecode')
+
+                                            if _sf_framecode_ == sf_framecode_\
+                                               or not _sf_framecode_.startswith(sf_framecode_prefix)\
+                                               or _sf_framecode_ in removed_sf_names:
+                                                continue
+
+                                            _sf_framecode_suffix_ = int(_sf_framecode_[len(sf_framecode_prefix) + 1:])
+
+                                            if _sf_framecode_suffix_ <= sf_framecode_suffix\
+                                               and constraint_subtype == 'dist_restraint':
+                                                continue
+
+                                            _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
+                                            if len(_data_file_name) > 0 and _data_file_name != data_file_name\
+                                               and self.__reg.internal_mode:
+                                                data_file_name_map[data_file_name] = _data_file_name
+                                                set_sf_tag(sf, 'Data_file_name', _data_file_name)
+                                                update_data_file_name = True
+
+                                                fileListId = self.__reg.file_path_list_len
+
+                                                for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+
+                                                    input_source = self.__reg.report.input_sources[fileListId]
+                                                    input_source_dic = input_source.get()
+
+                                                    fileListId += 1
+
+                                                    ar_file_type = input_source_dic['file_type']
+
+                                                    if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                                                        continue
+
+                                                    if 'original_file_name' in ar and ar['original_file_name'] not in EMPTY_VALUE:
+                                                        if ar['original_file_name'] == data_file_name:
+                                                            ar['original_file_name'] = _data_file_name
+                                                            update_data_file_name = True
+                                                            break
+
+                                                    elif os.path.basename(ar['file_name']) == data_file_name:
+                                                        ar['original_file_name'] = _data_file_name
+                                                        update_data_file_name = True
+                                                        break
+
+                                            master_entry.remove_saveframe(_sf.name)
+
+                            except ValueError:
+                                pass
+
                         master_entry.add_saveframe(sf)
+                        removed_sf_names.append(sf_framecode)
 
                         _lp = next((lp for lp in self.__reg.lp_data[content_subtype] if lp['sf_framecode'] == sf_framecode), None)
                         if _lp is not None:
@@ -18405,6 +19464,7 @@ class NmrDpRemediation:
                                 if len(_data_file_name) > 0 and _data_file_name != data_file_name and self.__reg.bmrb_only:
                                     data_file_name_map[data_file_name] = _data_file_name
                                     set_sf_tag(sf, 'Data_file_name', _data_file_name)
+                                    update_data_file_name = True
 
                                     fileListId = self.__reg.file_path_list_len
 
@@ -18426,7 +19486,7 @@ class NmrDpRemediation:
                                                 update_data_file_name = True
                                                 break
 
-                                        else:
+                                        elif os.path.basename(ar['file_name']) == data_file_name:
                                             ar['original_file_name'] = _data_file_name
                                             update_data_file_name = True
                                             break
@@ -18488,8 +19548,33 @@ class NmrDpRemediation:
 
                 file_names.append(retrieveOriginalFileName(file_name))
 
+            for content_subtype in self.__reg.mr_sf_dict_holder:
+                if content_subtype != 'other_restraint':
+                    sf_category = SF_CATEGORIES[file_type][content_subtype]
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                        if data_file_name in EMPTY_VALUE:
+                            continue
+                        block_id = get_first_sf_tag(sf, "Block_ID")
+                        data_file_name = retrieveOriginalFileName(data_file_name)
+                        if data_file_name not in file_names:
+                            file_names.append(data_file_name)
+                        if block_id not in EMPTY_VALUE:
+                            if isinstance(block_id, str) and block_id.isdigit():
+                                pass
+                            elif isinstance(block_id, int):
+                                block_id = str(block_id)
+                            else:
+                                continue
+                            dat = cf_loop.get_tag(['Constraint_filename', 'Software_name', 'Block_ID'])
+                            for idx, row in enumerate(dat):
+                                if row[2] != block_id or row[1] not in sf.name:
+                                    continue
+                                if row[0] != data_file_name:
+                                    cf_loop.data[idx][cf_loop.tags.index('Constraint_filename')] = data_file_name
+
             if len(file_names) > 0:
-                set_sf_tag(cst_sf, 'Data_file_name', ','.join(file_names))
+                set_sf_tag(cst_sf, 'Data_file_name', ','.join(sorted(file_names)))
 
         self.__mergeStrPk()
 

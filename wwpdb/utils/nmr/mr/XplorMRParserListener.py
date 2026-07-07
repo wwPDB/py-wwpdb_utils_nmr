@@ -55,7 +55,8 @@ try:
                                                PTNR2_AUTH_ATOM_DATA_ITEMS,
                                                PARAMAGNETIC_ELEMENTS,
                                                FERROMAGNETIC_ELEMENTS,
-                                               LANTHANOID_ELEMENTS)
+                                               LANTHANOID_ELEMENTS,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import deepcopy
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance)
@@ -116,7 +117,8 @@ except ImportError:
                                    PTNR2_AUTH_ATOM_DATA_ITEMS,
                                    PARAMAGNETIC_ELEMENTS,
                                    FERROMAGNETIC_ELEMENTS,
-                                   LANTHANOID_ELEMENTS)
+                                   LANTHANOID_ELEMENTS,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import deepcopy
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance)
@@ -3516,8 +3518,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             hint += f" (or '{ps['seq_id'][0] - 1}' in label sequence scheme)"
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                       f"The residue number {hint} is not present in polymer sequence "
-                                      f"of chain {chain_id_3} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {chain_id_3} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         return
 
                     if ps['auth_seq_id'][-1] == seq_id_3 and atom_ids[-1] == 'N':
@@ -3526,8 +3527,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             hint += f" (or '{ps['seq_id'][-1] + 1}' in label sequence scheme)"
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                       f"The residue number {hint} is not present in polymer sequence "
-                                      f"of chain {chain_id_3} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {chain_id_3} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         return
 
                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"

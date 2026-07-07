@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.1.0"
+__version__ = "5.2.0"
 
 import copy
 import re
@@ -527,6 +527,10 @@ RDC_BB_PAIR_CODE = ('N', 'H', 'CA')
 ZINC_ION_CODE = ('ZN', 'ME', 'Z1', 'Z2')
 CALCIUM_ION_CODE = ('CA2', 'CA2+', 'CA+2', 'ME')
 UNKNOWN_RESIDUE = ('UNK', 'DN', 'N')
+PEPTIDE_BB_ATOM_CODE = ("C", "CA", "H", "HA", "HA2", "HA3", "N", "O")
+CARBOHYDRATE_BB_ATOM_CODE = ("C1", "C2", "C3", "C4", "C5", "C6",
+                             "H1", "H2", "H3", "H4", "H5", "H61", "H62",
+                             "O1", "O4", "O6")
 
 RESERVED_LIG_CODE = ('LIG', 'DRG', 'INH')
 DNR_PARENT_CODE = ('DC', 'CYT', 'DC5', 'DC3')
@@ -538,6 +542,8 @@ LEGACY_PDB_ID_PAT = re.compile(r'^[1-9]\w{3}$')
 BMRB_ID_PAT = re.compile(r'^(bmr)?([1-9]\d{0,4})$')
 
 DEP_ID_PAT = re.compile(r'^D_[1-9]\d{5,9}$')
+
+CNV_ID_PAT = re.compile(r'^C_[1-9]\d{6}$')
 
 CCD_ID_PAT = re.compile(r'^(\w{1,3}|\w{5})$')
 
@@ -577,7 +583,12 @@ SF_FRAMECODE_PAT = re.compile(r'\s*_\S*\.Sf_framecode\s*\s+\s*')
 
 SEQ_MISMATCH_WARNING_PAT = re.compile(r"\[Sequence mismatch warning\] \[.*\] The residue '(\d+):([0-9A-Z]+)' is not present "
                                       r"in polymer sequence of chain (\S+) of the coordinates. "
-                                      r"Please update the sequence in the Macromolecules page.")
+                                      r"Please update the sequence in the OneDep's Macromolecules page or "
+                                      r"embed the sample sequence into the NMR data file.")
+
+INSTRUCTION_FOR_FULL_SEQUENCE = "Please update the sequence in the OneDep's Macromolecules page or "\
+                                "embed the sample sequence into the NMR data file."
+
 INCONSISTENT_RESTRAINT_WARNING_PAT = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of [^,]+s ?.*, (\S+)\] .*$")
 INCONSISTENT_RESTRAINT_WARNING_WO_SF_PAT = re.compile(r"^\[[^\]]+\] \[Check the (\d+)th row of ([^,]+)s.*\] .*$")
 
@@ -6055,7 +6066,8 @@ AUX_DATA_ITEMS = {'nef': {'entry_info': None,
                                              {'name': 'Auth_asym_ID_2', 'type': 'str', 'mandatory': False},
                                              {'name': 'Auth_seq_ID_2', 'type': 'int', 'mandatory': False},
                                              {'name': 'Auth_comp_ID_2', 'type': 'str', 'mandatory': False},
-                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False}
+                                             {'name': 'Auth_atom_ID_2', 'type': 'str', 'mandatory': False},
+                                             {'name': 'Type', 'type': 'str', 'mandatory': False}
                                              ],
                                    '_Entity_deleted_atom': [{'name': 'Auth_entity_assembly_ID', 'type': 'str', 'mandatory': False},
                                                             {'name': 'Auth_seq_ID', 'type': 'int', 'mandatory': False},

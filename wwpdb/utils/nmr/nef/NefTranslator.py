@@ -139,7 +139,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "5.1.0"
+__version__ = "5.2.0"
 
 import collections
 import copy
@@ -4912,6 +4912,7 @@ class NefTranslator:
         is_cs_lp = lp_category in ('_nef_chemical_shift', '_Atom_chem_shift')
         is_target_lp = is_nef_dist_lp or is_nef_dihed_lp or is_star_dist_lp or is_star_dihed_lp
         is_bond_lp = lp_category in ('_nef_covalent_links', '_Bond')
+        is_comb_id_as_temp_key = False
 
         def skip_empty_value_error(lp, idx):
             if not is_target_lp:
@@ -4951,12 +4952,14 @@ class NefTranslator:
                         comb_item = next(item for item in data_items if item['name'] == 'restraint_combination_id')
                         key_items.insert(1, comb_item)
                         data_items.remove(comb_item)
+                        is_comb_id_as_temp_key = True
                     elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
                         key_items = deepcopy(key_items)
                         data_items = deepcopy(data_items)
                         comb_item = next(item for item in data_items if item['name'] == 'Combination_ID')
                         key_items.insert(1, comb_item)
                         data_items.remove(comb_item)
+                        is_comb_id_as_temp_key = True
 
                 key_names = [k['name'] for k in key_items]
                 data_names = [d['name'] for d in data_items]
@@ -5678,6 +5681,8 @@ class NefTranslator:
                                         clear_bad_pattern = True
                                         continue
                                     elif excl_missing_data:
+                                        if is_comb_id_as_temp_key and 'ombination_' in name:
+                                            continue
                                         missing_mandatory_data = True
                                         continue
                                     elif skip_empty_value_error(loop, idx):
@@ -12036,7 +12041,7 @@ class NefTranslator:
         info, error = [], []
 
         if star_file is None:
-            star_file = file_path + '/' + file_name.split('.')[0] + '.str'
+            star_file = os.path.join(file_path, f"{file_name.split('.')[0]}.str")
 
         is_ok, data_type, nef_data = self.read_input_file(nef_file)
 
@@ -12054,11 +12059,16 @@ class NefTranslator:
             error.append('Input file not readable.')
             return False, {'info': info, 'error': error}
 
+        has_nef_seq = False
         if data_type == 'Entry':
-            if len(nef_data.get_loops_by_category('nef_sequence')) == 0:  # DAOTHER-6694
-                error.append("Missing mandatory '_nef_sequence' category.")
-                return False, {'info': info, 'error': error}
-            self.authChainId = sorted(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code')))
+            if len(nef_data.get_loops_by_category('nef_sequence')) == 0:
+                if not self.__internal_mode:  # DAOTHER-6694
+                    error.append("Missing mandatory '_nef_sequence' category.")
+                    return False, {'info': info, 'error': error}
+                self.authChainId = ('A', )
+            else:
+                self.authChainId = sorted(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code')))
+                has_nef_seq = True
 
         elif data_type == 'Saveframe':
             self.authChainId = sorted(set(nef_data[0].get_tag('chain_code')))
@@ -12068,6 +12078,14 @@ class NefTranslator:
 
         self.authSeqMap = None
         self.selfSeqMap = None
+
+        # generate default sequence mapping on a best-effort basis
+        # when nef sequence is not provided and internal mode is on (DAOTHER-9705)
+        if not has_nef_seq:
+            self.authSeqMap = {}
+            for dummy_seq_id in range(1, 1000):
+                self.authSeqMap[('A', dummy_seq_id)] = ('1', dummy_seq_id)
+            self.selfSeqMap = self.authSeqMap
 
         asm_id = cs_list_id = dist_list_id = dihed_list_id = rdc_list_id = peak_list_id = 0
 
@@ -12572,7 +12590,7 @@ class NefTranslator:
         info, error = [], []
 
         if nef_file is None:
-            nef_file = file_path + '/' + file_name.split('.')[0] + '.nef'
+            nef_file = os.path.join(file_path, f"{file_name.split('.')[0]}.nef")
 
         is_ok, data_type, star_data = self.read_input_file(star_file)
 

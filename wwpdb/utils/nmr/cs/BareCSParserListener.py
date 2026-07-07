@@ -10,10 +10,11 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import re
 import sys
+from itertools import zip_longest
 from typing import IO, List, Optional
 
 from antlr4 import ParseTreeListener
@@ -119,7 +120,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 self.__col_order.append('assignment')
             elif 'ID' in col_name or 'NUM' in col_name or 'INDEX' in col_name:
                 self.__col_order.append('index')
-            elif ('SHIFT' in col_name or 'VAL' in col_name) and 'ERR' not in col_name and 'UNCERT' not in col_name:
+            elif ('SHIFT' in col_name or 'VAL' in col_name or 'POS' in col_name)\
+                    and 'ERR' not in col_name and 'UNCERT' not in col_name:
                 self.__col_order.append('value')
             elif 'ERR' in col_name or 'UNCERT' in col_name or 'DEV' in col_name:
                 self.__col_order.append('value_uncertainty')
@@ -138,11 +140,15 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                     self.__col_order.append('ambiguity_code')
                 else:
                     self.__col_order.append('ambiguity_set_id')
-            else:
+            elif col_name not in ('X', 'Y', 'Z', 'A', 'F1', 'F2', 'F3', 'F4')\
+                    and not (col_name.startswith('(') and col_name.endswith(')'))\
+                    and not (col_name.startswith('[') and col_name.endswith(']')):
                 self.__col_order.append('unknown')
 
         for columnName in self.columnNameSelection:
             register_column_info(columnName.upper())
+
+        self.columnNameSelection.clear()
 
         sparky_resonance_columns = ('GROUP', 'ATOM', 'NUC', 'SHIFT', 'SDEV')
         if all(col_name in self.__col_name for col_name in sparky_resonance_columns):
@@ -153,7 +159,7 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_line_num = 0
 
-        self.cur_subtype = 'chem_shift'
+        self.cur_subtype = 'csp' if self.csp else 'chem_shift'
 
         self.chemShifts = 0
         self.offset = {}
@@ -547,8 +553,8 @@ class BareCSParserListener(ParseTreeListener, BaseCSParserListener):
                 if len(assignments) == 0:
                     return
 
-                for L, value, value_uncertainty, occupancy, figure_of_merit in zip(assignments, values, value_uncertainties,
-                                                                                   occupancies, figure_of_merits):
+                for L, value, value_uncertainty, occupancy, figure_of_merit\
+                        in zip_longest(assignments, values, value_uncertainties, occupancies, figure_of_merits):
                     self.atomSelectionSets.clear()
 
                     dstFunc = self.validateCsValue(self.cur_line_num, value, value_uncertainty, occupancy, figure_of_merit)

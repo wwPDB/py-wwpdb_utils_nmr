@@ -38,7 +38,8 @@ from packaging import version
 import pynmrstar
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+    from wwpdb.utils.nmr.NmrDpConstant import (DEFAULT_ENTRY_ID,
+                                               EMPTY_VALUE,
                                                TRUE_VALUE,
                                                DATABLOCK_PAT,
                                                SF_ANONYMOUS_PAT,
@@ -46,7 +47,8 @@ try:
     from wwpdb.utils.nmr.io.PdbxUtil import PdbxUtil
     from wwpdb.utils.nmr.AlignUtil import getPrettyJson
 except ImportError:
-    from nmr.NmrDpConstant import (EMPTY_VALUE,
+    from nmr.NmrDpConstant import (DEFAULT_ENTRY_ID,
+                                   EMPTY_VALUE,
                                    TRUE_VALUE,
                                    DATABLOCK_PAT,
                                    SF_ANONYMOUS_PAT,
@@ -222,7 +224,8 @@ class CifToNmrStar:
     __slots__ = ('__class_name__',
                  '__version__',
                  '__log',
-                 'schema_dir',
+                 '__dirPath',
+                 '__schemaDirPath',
                  'pynmrstar_schema',
                  'schema',
                  'category_order',
@@ -234,10 +237,13 @@ class CifToNmrStar:
 
         self.__log = log
 
-        # directory
-        self.schema_dir = os.path.join(os.path.dirname(__file__), 'nmr-star_schema')
+        # the current working directory
+        self.__dirPath = None
 
-        self.pynmrstar_schema = pynmrstar.Schema(os.path.join(self.schema_dir, 'xlschem_ann.csv'))
+        # directory contains schema
+        self.__schemaDirPath = os.path.join(os.path.dirname(__file__), 'nmr-star_schema')
+
+        self.pynmrstar_schema = pynmrstar.Schema(os.path.join(self.__schemaDirPath, 'xlschem_ann.csv'))
 
         self.schema = self.pynmrstar_schema.schema
         self.category_order = self.pynmrstar_schema.category_order
@@ -251,6 +257,32 @@ class CifToNmrStar:
                                    '_nef_rdc_restraint_list',
                                    '_nef_nmr_spectrum',
                                    '_nef_peak_restraint_links')
+
+    @property
+    def dirPath(self) -> Optional[str]:
+        """ Retrieve current working directory.
+        """
+
+        return self.__dirPath
+
+    @dirPath.setter
+    def dirPath(self, dirPath: Optional[str]) -> None:
+        """ Set current working directory.
+        """
+
+        self.__dirPath = dirPath
+
+    def getNextPath(self, src_path: str, suffix: str = '~') -> str:
+        """ Return candidate next file path.
+        """
+        assert len(suffix) > 0
+
+        src_path_next = src_path + suffix
+
+        if self.__dirPath is not None:
+            src_path_next = os.path.join(self.__dirPath, os.path.basename(src_path_next))
+
+        return src_path_next
 
     def convert(self, cifPath: Optional[str] = None, strPath: Optional[str] = None,
                 datablockName: Optional[str] = None, originalFileName: Optional[str] = None, maxRepeat: int = 1) -> bool:
@@ -287,8 +319,10 @@ class CifToNmrStar:
                 elif has_datablock or not has_anonymous_saveframe:
                     return False
 
+                _cifPath = self.getNextPath(cifPath)
+
                 with open(cifPath, 'r', encoding='utf-8') as ifh, \
-                        open(cifPath + '~', 'w', encoding='utf-8') as ofh:
+                        open(_cifPath, 'w', encoding='utf-8') as ofh:
                     name = datablockName
                     if datablockName is None:
                         name = originalFileName
@@ -298,7 +332,7 @@ class CifToNmrStar:
                     for line in ifh:
                         ofh.write(line)
 
-                    os.replace(cifPath + '~', cifPath)
+                    os.replace(_cifPath, cifPath)
 
                 return self.convert(cifPath, strPath, datablockName, originalFileName, maxRepeat - 1)
 
@@ -617,6 +651,8 @@ class CifToNmrStar:
 
             split_ext = os.path.splitext(cifPath)
             _cifPath = split_ext[0] + '-corrected' + ('' if len(split_ext) == 1 else split_ext[1])
+            if self.__dirPath is not None:
+                _cifPath = os.path.join(self.__dirPath, os.path.basename(_cifPath))
 
             changed = False
 
@@ -664,6 +700,9 @@ class CifToNmrStar:
                 return False
         except (IndexError, AttributeError):
             pass
+
+        if entryId in EMPTY_VALUE:
+            entryId = DEFAULT_ENTRY_ID
 
         entryId = entryId.strip().replace(' ', '_')  # DAOTHER-9511: replace white space in a datablock name to underscore
 

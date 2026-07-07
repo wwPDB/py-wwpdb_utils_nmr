@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.1.0"
+__version__ = "5.2.0"
 
 import codecs
 import hashlib
@@ -68,7 +68,8 @@ try:
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.AlignUtil import (getRestraintFormatName,
                                            getRestraintFormatNames)
-    from wwpdb.utils.nmr.NmrVrptUtility import uncompress_gzip_file
+    from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,
+                                                get_temp_path)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        startsWithPdbRecord,
                                                        getRestraintName)
@@ -149,7 +150,8 @@ except ImportError:
     from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.AlignUtil import (getRestraintFormatName,
                                getRestraintFormatNames)
-    from nmr.NmrVrptUtility import uncompress_gzip_file
+    from nmr.NmrVrptUtility import (uncompress_gzip_file,
+                                    get_temp_path)
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            startsWithPdbRecord,
                                            getRestraintName)
@@ -451,12 +453,12 @@ def get_type_of_star_file(fPath: str) -> str:
     _fPath = __fPath = None
 
     if codec != 'utf-8':
-        _fPath = fPath + '~'
+        _fPath = get_temp_path(fPath)
         convert_codec(fPath, _fPath, codec, 'utf-8')
         fPath = _fPath
 
     if is_rtf_file(fPath):
-        __fPath = fPath + '.rtf2txt'
+        __fPath = get_temp_path(fPath, '.rtf2txt')
         convert_rtf_to_ascii(fPath, __fPath)
         fPath = __fPath
 
@@ -590,15 +592,17 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                         try:
 
+                            fPath_next = get_temp_path(fPath)
+
                             with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                    open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                    open(fPath_next, 'w', encoding='utf-8') as ofh:
                                 ofh.write(header)
                                 for _line in ifh:
                                     if 'peaks' in _line or 'Shift (ppm)' in _line:
                                         continue
                                     ofh.write(_line)
 
-                            os.replace(fPath + '~', fPath)
+                            os.replace(fPath_next, fPath)
 
                         except OSError:
                             pass
@@ -611,8 +615,10 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
+                        fPath_next = get_temp_path(fPath)
+
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                open(fPath_next, 'w', encoding='utf-8') as ofh:
                             ofh.write(header)
                             for _line in ifh:
 
@@ -625,7 +631,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
                                 if not _line.startswith('#'):
                                     ofh.write(_line)
 
-                        os.replace(fPath + '~', fPath)
+                        os.replace(fPath_next, fPath)
 
                     except OSError:
                         pass
@@ -636,12 +642,14 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
+                        fPath_next = get_temp_path(fPath)
+
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                open(fPath_next, 'w', encoding='utf-8') as ofh:
                             for _line in ifh:
                                 ofh.write(_line.replace(',', ' '))
 
-                        os.replace(fPath + '~', fPath.replace('~', ''))
+                        os.replace(fPath_next, fPath.replace('~', ''))
 
                     except OSError:
                         pass
@@ -658,8 +666,10 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                         i = 0
 
+                        fPath_next = get_temp_path(fPath)
+
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                open(fPath_next, 'w', encoding='utf-8') as ofh:
                             for _line in ifh:
                                 if i == idx - 1:
                                     ofh.write('label dataset sw sf\n')
@@ -669,7 +679,7 @@ def get_peak_list_format(fPath: str, asCode: bool = False
                                     ofh.write(_line)
                                 i += 1
 
-                        os.replace(fPath + '~', fPath)
+                        os.replace(fPath_next, fPath)
 
                     except OSError:
                         pass
@@ -711,13 +721,15 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
+                        fPath_next = get_temp_path(fPath)
+
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
-                                open(fPath + '~', 'w', encoding='utf-8') as ofh:
+                                open(fPath_next, 'w', encoding='utf-8') as ofh:
                             ofh.write(header)
                             for _line in ifh:
                                 ofh.write(_line)
 
-                        os.replace(fPath + '~', fPath)
+                        os.replace(fPath_next, fPath)
 
                     except OSError:
                         pass
@@ -1193,6 +1205,50 @@ class NmrDpMrSplitter:
         self.__reg = registry
 
         self.__cur_original_ar_file_name: str = None
+
+    def getNextPath(self, src_path: str, suffix: str = '~') -> str:
+        """ Return candidate next file path.
+        """
+        assert len(suffix) > 0
+
+        src_path_next = src_path + suffix
+
+        if self.__reg.dirPath is not None:
+            src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
+
+        return src_path_next
+
+    def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
+        """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
+        """
+        assert len(suffix) > 0
+
+        test_path = src_path + suffix
+
+        if os.path.exists(test_path):
+            return test_path
+
+        if None in (self.__reg.dirPath, self.__reg.spareDirPath) or self.__reg.dirPath == self.__reg.spareDirPath:
+            return test_path if defer_check else src_path
+
+        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
+
+        if not os.path.exists(chk_path):
+            return test_path if defer_check else src_path
+
+        os.symlink(chk_path, test_path)
+
+        return test_path
+
+    def testPath(self, src_path: str, defer_check: bool = False) -> str:
+        """ Return basename(src_path) file in either current workspace or default workspace if possible.
+        """
+        if self.__reg.dirPath == self.__reg.spareDirPath or os.path.exists(src_path):
+            return src_path
+
+        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(src_path))
+
+        return chk_path if defer_check or os.path.exists(chk_path) else src_path
 
     def detectContentSubTypeOfLegacyMr(self, remediation_loop_count: int) -> bool:
         """ Detect content subtype of legacy restraint files.
@@ -2190,8 +2246,7 @@ class NmrDpMrSplitter:
                     if file_path in self.__reg.sll_pred_holder and file_type in self.__reg.sll_pred_holder[file_path]:
                         sll_pred = self.__reg.sll_pred_holder[file_path][file_type]
 
-                    if os.path.exists(file_path + '-corrected'):
-                        file_path = file_path + '-corrected'
+                    file_path = self.testPathWithSuffix(file_path, '-corrected')
 
                     # use ANTLR SSL prediction mode for performance gain if restaurants have deep
                     # but simple atom selection (DAOTHER-10315)
@@ -2730,7 +2785,8 @@ class NmrDpMrSplitter:
                         file_type = 'spectral peak list/restraint'
 
                     if self.__reg.internal_mode:
-                        if os.path.exists(self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][j]['file_name'] + '-ignored'):
+                        if os.path.exists(self.testPathWithSuffix(
+                                self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][j]['file_name'], '-ignored', True)):
                             continue
                         if '-selected-as-' in file_name_1 or '-selected-as-' in file_name_2:
                             continue
@@ -2748,7 +2804,7 @@ class NmrDpMrSplitter:
 
                     if self.__reg.remediation_mode:
                         file_path_2 = self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][j]['file_name']
-                        shutil.copyfile(file_path_2, file_path_2 + '-ignored')
+                        os.symlink(file_path_2, self.testPath(file_path_2 + '-ignored', True))
 
         return corrected
 
@@ -2779,7 +2835,7 @@ class NmrDpMrSplitter:
                 continue
 
             # DAOTHER-8905: ignore the file in NMR data remediation (Phase 2)
-            if self.__reg.internal_mode and os.path.exists(file_path + '-ignored'):
+            if self.__reg.internal_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             original_file_name = None
@@ -2800,14 +2856,14 @@ class NmrDpMrSplitter:
                     self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyPk() ++ Error  - {err}\n")
 
                 if self.__reg.internal_mode:
-                    shutil.copyfile(file_path, file_path + '-ignored')
+                    os.symlink(file_path, self.testPath(file_path + '-ignored', True))
 
                 continue
 
             codec = detect_bom(file_path, 'utf-8')
 
             if codec != 'utf-8':
-                _file_path = file_path + '~'
+                _file_path = self.getNextPath(file_path)
                 convert_codec(file_path, _file_path, codec, 'utf-8')
                 file_path = _file_path
 
@@ -2953,7 +3009,7 @@ class NmrDpMrSplitter:
 
                 elif has_cif_format:
 
-                    _file_path = file_path + '.cif2str'
+                    _file_path = self.getNextPath(file_path, '.cif2str')
                     if not self.__reg.c2S.convert(file_path, _file_path):
                         _file_path = file_path
 
@@ -3167,7 +3223,7 @@ class NmrDpMrSplitter:
 
                     return False
 
-                dst_file = os.path.splitext(src_file)[0]
+                dst_file = self.testPath(os.path.splitext(src_file)[0])
 
                 if not os.path.exists(dst_file):
 
@@ -3189,7 +3245,7 @@ class NmrDpMrSplitter:
 
                 src_file = dst_file
 
-            dir_path = os.path.dirname(src_file)
+            dir_path = os.path.dirname(src_file) if self.__reg.dirPath is None else self.__reg.dirPath
 
             _div_file_names = {div_file_name: len(div_file_name) + (0 if div_file_name.endswith('-div_src.mr')
                                                                     else (1 if div_file_name.endswith('-div_ext.mr') else 2))
@@ -3202,19 +3258,23 @@ class NmrDpMrSplitter:
             div_file_names = [k for k, v in sorted(_div_file_names.items(), key=itemgetter(1))]
 
             src_basename = os.path.splitext(src_file)[0]
-            ar['original_file_name'] = src_basename + '.mr'
+
+            if self.__reg.dirPath is not None:
+                src_basename = os.path.join(self.__reg.dirPath, os.path.basename(src_basename))
+
+            ar['original_file_name'] = f'{src_basename}.mr'
 
             dst_file = src_basename + '-trimmed.mr'
             header_file = src_basename + '-header.mr'
             footer_file = src_basename + '-footer.mr'
-            cor_dst_file = src_basename + '-corrected.mr'
-            cor_str_file = src_basename + '-corrected.str'
-            ign_dst_file = src_basename + '-ignored.mr'
+            cor_dst_file = self.testPathWithSuffix(src_basename, '-corrected.mr')
+            cor_str_file = self.testPathWithSuffix(src_basename, '-corrected.str')
+            ign_dst_file = self.testPathWithSuffix(src_basename, '-ignored.mr', True)
 
             if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
                 continue
 
-            ign_pk_file = src_basename + '-ignored-as-pea-any.mr'
+            ign_pk_file = self.testPathWithSuffix(src_basename, '-ignored-as-pea-any.mr', True)
 
             if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
@@ -3223,7 +3283,7 @@ class NmrDpMrSplitter:
                 _ar = ar.copy()
 
                 if settled_file_type is not None:
-                    sel_pk_file = src_basename + f'-selected-as-{settled_file_type[-7:]}.mr'
+                    sel_pk_file = self.testPath(src_basename + f'-selected-as-{settled_file_type[-7:]}.mr', True)
                     os.rename(ign_pk_file, sel_pk_file)
 
                     _ar['file_name'] = sel_pk_file
@@ -3236,10 +3296,10 @@ class NmrDpMrSplitter:
 
                 peak_file_list.append(_ar)
 
-                pk_list_paths.append({'nmr-peaks': src_basename + '.mr'})
+                pk_list_paths.append({'nmr-peaks': f'{src_basename}.mr'})
 
                 touch_file = os.path.join(dir_path, '.entry_with_pk')
-                if not os.path.exists(touch_file):
+                if not os.path.exists(self.testPath(touch_file)):
                     with open(touch_file, 'w', encoding='utf-8') as ofh:
                         ofh.write('')
 
@@ -3249,7 +3309,7 @@ class NmrDpMrSplitter:
 
             for _file_type in settled_file_types:
 
-                sel_file = src_basename + f'-selected-as-{_file_type[-7:]}.mr'
+                sel_file = self.testPath(src_basename + f'-selected-as-{_file_type[-7:]}.mr', True)
 
                 if os.path.exists(sel_file):
                     _ar = ar.copy()
@@ -3278,7 +3338,7 @@ class NmrDpMrSplitter:
                     pass
 
                 mr_file_path = src_basename + '-remediated.mr'
-                mr_file_link = os.path.join(rem_dir, os.path.basename(src_basename) + '.mr')
+                mr_file_link = os.path.join(rem_dir, f'{os.path.basename(src_basename)}.mr')
 
                 mr_part_paths.append({'header': header_file})
                 mr_part_paths.append({'footer': footer_file})
@@ -3451,7 +3511,7 @@ class NmrDpMrSplitter:
 
                     remediated = True
 
-                    mrPath = os.path.splitext(src_file)[0] + '-ignored.str'
+                    mrPath = self.testPathWithSuffix(os.path.splitext(src_file)[0], '-ignored.str', True)
 
                     if not os.path.exists(mrPath):
                         mrPath = os.path.splitext(src_file)[0] + '-trimmed.str'
@@ -3501,7 +3561,7 @@ class NmrDpMrSplitter:
 
                                 ofh.write(line)
 
-                        _mrPath = os.path.splitext(src_file)[0] + '-corrected.str'
+                        _mrPath = self.testPathWithSuffix(os.path.splitext(src_file)[0], '-corrected.str')
 
                         if os.path.exists(_mrPath):  # in case manually corrected NMR-STAR file exists
                             mrPath = _mrPath
@@ -3535,12 +3595,12 @@ class NmrDpMrSplitter:
                         _mrPath = None
 
                         if codec != 'utf-8':
-                            _mrPath = mrPath + '~'
+                            _mrPath = self.getNextPath(mrPath)
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
                             mrPath = _mrPath
 
                         if is_rtf_file(mrPath):
-                            _mrPath = mrPath + '.rtf2txt'
+                            _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                             convert_rtf_to_ascii(mrPath, _mrPath)
                             mrPath = _mrPath
 
@@ -3633,7 +3693,7 @@ class NmrDpMrSplitter:
 
                     remediated = True
 
-                    mrPath = os.path.splitext(src_file)[0] + '-ignored.cif'
+                    mrPath = self.testPathWithSuffix(os.path.splitext(src_file)[0], '-ignored.cif', True)
 
                     if not os.path.exists(mrPath):
                         mrPath = os.path.splitext(src_file)[0] + '-trimmed.cif'
@@ -3688,7 +3748,7 @@ class NmrDpMrSplitter:
 
                                 ofh.write(line)
 
-                        _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
+                        _mrPath = self.getNextPath(os.path.splitext(mrPath)[0], '.cif2str')
                         if not self.__reg.c2S.convert(mrPath, _mrPath):
                             _mrPath = mrPath
 
@@ -3723,12 +3783,12 @@ class NmrDpMrSplitter:
                         _mrPath = None
 
                         if codec != 'utf-8':
-                            _mrPath = mrPath + '~'
+                            _mrPath = self.getNextPath(mrPath)
                             convert_codec(mrPath, _mrPath, codec, 'utf-8')
                             mrPath = _mrPath
 
                         if is_rtf_file(mrPath):
-                            _mrPath = mrPath + '.rtf2txt'
+                            _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                             convert_rtf_to_ascii(mrPath, _mrPath)
                             mrPath = _mrPath
 
@@ -3851,7 +3911,7 @@ class NmrDpMrSplitter:
 
                 item = {'file_name': mrPath,
                         'file_type': 'nmr-star',
-                        'original_file_name': os.path.basename(src_basename) + '.mr'}
+                        'original_file_name': f'{os.path.basename(src_basename)}.mr'}
 
                 if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
                     self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY] = [item]
@@ -3876,19 +3936,19 @@ class NmrDpMrSplitter:
                 input_source.setItemValue('file_name', file_name)
                 input_source.setItemValue('file_type', file_type)
                 input_source.setItemValue('content_type', 'nmr-restraints')
-                input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
+                input_source.setItemValue('original_file_name', f'{os.path.basename(src_basename)}.mr')
 
                 codec = detect_bom(mrPath, 'utf-8')
 
                 _mrPath = None
 
                 if codec != 'utf-8':
-                    _mrPath = mrPath + '~'
+                    _mrPath = self.getNextPath(mrPath)
                     convert_codec(mrPath, _mrPath, codec, 'utf-8')
                     mrPath = _mrPath
 
                 if is_rtf_file(mrPath):
-                    _mrPath = mrPath + '.rtf2txt'
+                    _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                     convert_rtf_to_ascii(mrPath, _mrPath)
                     mrPath = _mrPath
 
@@ -4008,13 +4068,13 @@ class NmrDpMrSplitter:
 
                     if dst_file.endswith('-div_ext.mr'):
 
-                        ign_dst_file = dst_file + '-ignored'
+                        ign_dst_file = self.testPathWithSuffix(dst_file, '-ignored', True)
 
                         if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
                             remediated = True
                             continue
 
-                        ign_pk_file = dst_file + '-ignored-as-pea-any'
+                        ign_pk_file = self.testPathWithSuffix(dst_file, '-ignored-as-pea-any', True)
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
@@ -4023,7 +4083,7 @@ class NmrDpMrSplitter:
                             _ar = ar.copy()
 
                             if settled_file_type is not None:
-                                sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                                sel_pk_file = self.testPath(dst_file + f'-selected-as-{settled_file_type[-7:]}', True)
                                 os.rename(ign_pk_file, sel_pk_file)
 
                                 _ar['file_name'] = dst_file
@@ -4046,7 +4106,7 @@ class NmrDpMrSplitter:
 
                         for _file_type in settled_file_types:
 
-                            sel_file = dst_file + f'-selected-as-{_file_type[-7:]}'
+                            sel_file = self.testPathWithSuffix(dst_file, f'-selected-as-{_file_type[-7:]}', True)
 
                             if os.path.exists(sel_file):
                                 _ar = ar.copy()
@@ -4076,13 +4136,13 @@ class NmrDpMrSplitter:
 
                     if dst_file.endswith('-div_dst.mr'):
 
-                        ign_dst_file = dst_file + '-ignored'
+                        ign_dst_file = self.testPathWithSuffix(dst_file, '-ignored', True)
 
                         if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
                             remediated = True
                             continue
 
-                        ign_pk_file = dst_file + '-ignored-as-pea-any'
+                        ign_pk_file = self.testPathWithSuffix(dst_file, '-ignored-as-pea-any', True)
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
@@ -4091,7 +4151,7 @@ class NmrDpMrSplitter:
                             _ar = ar.copy()
 
                             if settled_file_type is not None:
-                                sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                                sel_pk_file = self.testPath(dst_file + f'-selected-as-{settled_file_type[-7:]}', True)
                                 os.rename(ign_pk_file, sel_pk_file)
 
                                 _ar['file_name'] = dst_file
@@ -4116,11 +4176,11 @@ class NmrDpMrSplitter:
 
                         for settled_file_type in PARSABLE_PK_FILE_TYPES:
 
-                            sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                            sel_pk_file = self.testPathWithSuffix(dst_file, f'-selected-as-{settled_file_type[-7:]}', True)
 
                             if os.path.exists(sel_pk_file):
 
-                                ign_dst_file = sel_pk_file + '-ignored'
+                                ign_dst_file = self.testPathWithSuffix(sel_pk_file, '-ignored', True)
 
                                 if os.path.exists(ign_dst_file):
                                     continue
@@ -4344,7 +4404,7 @@ class NmrDpMrSplitter:
                             _dst_file = os.path.join(dir_path, g[1])
                             original_file_path_list.append(_dst_file)
                             ofh = open(_dst_file, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
-                            _dst_file_w_sel = _dst_file + f'-selected-as-{g[0][-7:]}'
+                            _dst_file_w_sel = self.testPath(_dst_file + f'-selected-as-{g[0][-7:]}', True)
                             ofh_w_sel = open(_dst_file_w_sel, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             distinct = True
 
@@ -4363,7 +4423,7 @@ class NmrDpMrSplitter:
                             _dst_file = os.path.join(dir_path, g[1])
                             original_file_path_list.append(_dst_file)
                             ofh = open(_dst_file, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
-                            _dst_file_w_sel = _dst_file + '-ignored'
+                            _dst_file_w_sel = self.testPath(_dst_file + '-ignored', True)
                             ofh_w_sel = open(_dst_file_w_sel, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             distinct = True
 
@@ -4394,7 +4454,7 @@ class NmrDpMrSplitter:
                     original_file_path_list.append(dst_file)
 
                 for dst_file in original_file_path_list:
-                    ign_dst_file = dst_file + '-ignored'
+                    ign_dst_file = self.testPathWithSuffix(dst_file, '-ignored', True)
 
                     if os.path.exists(ign_dst_file):  # in case the MR file can be ignored
                         remediated = True
@@ -4510,7 +4570,7 @@ class NmrDpMrSplitter:
                             remediated = True
                             continue
 
-                    ign_pk_file = dst_file + '-ignored-as-pea-any'
+                    ign_pk_file = self.testPathWithSuffix(dst_file, '-ignored-as-pea-any', True)
 
                     if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
@@ -4519,7 +4579,7 @@ class NmrDpMrSplitter:
                         _ar = ar.copy()
 
                         if settled_file_type is not None:
-                            sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                            sel_pk_file = self.testPath(dst_file + f'-selected-as-{settled_file_type[-7:]}', True)
                             os.rename(ign_pk_file, sel_pk_file)
 
                             _ar['file_name'] = dst_file
@@ -4549,11 +4609,11 @@ class NmrDpMrSplitter:
 
                     for settled_file_type in PARSABLE_PK_FILE_TYPES:
 
-                        sel_pk_file = dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                        sel_pk_file = self.testPathWithSuffix(dst_file, f'-selected-as-{settled_file_type[-7:]}', True)
 
                         if os.path.exists(sel_pk_file):
 
-                            ign_dst_file = sel_pk_file + '-ignored'
+                            ign_dst_file = self.testPathWithSuffix(sel_pk_file, '-ignored', True)
 
                             if os.path.exists(ign_dst_file):
                                 continue
@@ -4575,7 +4635,7 @@ class NmrDpMrSplitter:
                     if settled_pk_file:
                         continue
 
-                    ign_ext_file = dst_file + '-ignored-as-res-oth'
+                    ign_ext_file = self.testPathWithSuffix(dst_file, '-ignored-as-res-oth', True)
 
                     if os.path.exists(ign_ext_file):  # in case the MR files can not be parsed
                         _ar = ar.copy()
@@ -4598,7 +4658,7 @@ class NmrDpMrSplitter:
 
                     for _file_type in settled_file_types:
 
-                        sel_file = dst_file + f'-selected-as-{_file_type[-7:]}'
+                        sel_file = self.testPathWithSuffix(dst_file, f'-selected-as-{_file_type[-7:]}', True)
 
                         if os.path.exists(sel_file):
                             _ar = ar.copy()
@@ -4622,7 +4682,7 @@ class NmrDpMrSplitter:
                     if designated:
                         continue
 
-                    cor_dst_file = dst_file + '-corrected'
+                    cor_dst_file = self.testPathWithSuffix(dst_file, '-corrected')
 
                     if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                         dst_file = cor_dst_file
@@ -4633,7 +4693,7 @@ class NmrDpMrSplitter:
 
                     if settled_file_type is not None:
 
-                        shutil.copyfile(dst_file, dst_file + f'-selected-as-{settled_file_type[-7:]}')
+                        os.symlink(dst_file, self.testPath(dst_file + f'-selected-as-{settled_file_type[-7:]}', True))
 
                         _ar = ar.copy()
 
@@ -4663,7 +4723,7 @@ class NmrDpMrSplitter:
 
                             item = {'file_name': mrPath,
                                     'file_type': 'nmr-star',
-                                    'original_file_name': os.path.basename(src_basename) + '.mr'}
+                                    'original_file_name': f'{os.path.basename(src_basename)}.mr'}
 
                             if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
                                 self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY] = [item]
@@ -4688,19 +4748,19 @@ class NmrDpMrSplitter:
                             input_source.setItemValue('file_name', file_name)
                             input_source.setItemValue('file_type', file_type)
                             input_source.setItemValue('content_type', 'nmr-restraints')
-                            input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
+                            input_source.setItemValue('original_file_name', f'{os.path.basename(src_basename)}.mr')
 
                             codec = detect_bom(mrPath, 'utf-8')
 
                             _mrPath = None
 
                             if codec != 'utf-8':
-                                _mrPath = mrPath + '~'
+                                _mrPath = self.getNextPath(mrPath)
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
                                 mrPath = _mrPath
 
                             if is_rtf_file(mrPath):
-                                _mrPath = mrPath + '.rtf2txt'
+                                _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                                 convert_rtf_to_ascii(mrPath, _mrPath)
                                 mrPath = _mrPath
 
@@ -4797,7 +4857,7 @@ class NmrDpMrSplitter:
 
                             mrPath = dst_file
 
-                            _mrPath = os.path.splitext(mrPath)[0] + '.cif2str'
+                            _mrPath = self.getNextPath(os.path.splitext(mrPath)[0], '.cif2str')
                             if not self.__reg.c2S.convert(mrPath, _mrPath):
                                 _mrPath = mrPath
 
@@ -4805,7 +4865,7 @@ class NmrDpMrSplitter:
 
                             item = {'file_name': mrPath,
                                     'file_type': 'nmr-star',
-                                    'original_file_name': os.path.basename(src_basename) + '.mr'}
+                                    'original_file_name': f'{os.path.basename(src_basename)}.mr'}
 
                             if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
                                 self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY] = [item]
@@ -4830,19 +4890,19 @@ class NmrDpMrSplitter:
                             input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', file_name))
                             input_source.setItemValue('file_type', file_type)
                             input_source.setItemValue('content_type', 'nmr-restraints')
-                            input_source.setItemValue('original_file_name', os.path.basename(src_basename) + '.mr')
+                            input_source.setItemValue('original_file_name', f'{os.path.basename(src_basename)}.mr')
 
                             codec = detect_bom(mrPath, 'utf-8')
 
                             _mrPath = None
 
                             if codec != 'utf-8':
-                                _mrPath = mrPath + '~'
+                                _mrPath = self.getNextPath(mrPath)
                                 convert_codec(mrPath, _mrPath, codec, 'utf-8')
                                 mrPath = _mrPath
 
                             if is_rtf_file(mrPath):
-                                _mrPath = mrPath + '.rtf2txt'
+                                _mrPath = self.getNextPath(mrPath, '.rtf2txt')
                                 convert_rtf_to_ascii(mrPath, _mrPath)
                                 mrPath = _mrPath
 
@@ -4945,7 +5005,7 @@ class NmrDpMrSplitter:
 
                     for _dst_file in dst_file_list:
 
-                        ign_pk_file = _dst_file + '-ignored-as-pea-any'
+                        ign_pk_file = self.testPathWithSuffix(_dst_file, '-ignored-as-pea-any', True)
 
                         if os.path.exists(ign_pk_file):  # in case the MR file can be ignored as peak list file
 
@@ -4954,7 +5014,7 @@ class NmrDpMrSplitter:
                             _ar = ar.copy()
 
                             if settled_file_type is not None:
-                                sel_pk_file = _dst_file + f'-selected-as-{settled_file_type[-7:]}'
+                                sel_pk_file = self.testPath(_dst_file + f'-selected-as-{settled_file_type[-7:]}', True)
                                 os.rename(ign_pk_file, sel_pk_file)
 
                                 _ar['file_name'] = _dst_file
@@ -4982,7 +5042,7 @@ class NmrDpMrSplitter:
 
                         for _file_type in settled_file_types:
 
-                            sel_file = _dst_file + f'-selected-as-{_file_type[-7:]}'
+                            sel_file = self.testPathWithSuffix(_dst_file, f'-selected-as-{_file_type[-7:]}', True)
 
                             if os.path.exists(sel_file):
                                 _ar = ar.copy()
@@ -5286,7 +5346,7 @@ class NmrDpMrSplitter:
                 elif not self.__reg.mr_has_valid_star_restraint:
 
                     touch_file = os.path.join(dir_path, '.entry_without_mr')
-                    if not os.path.exists(touch_file):
+                    if not os.path.exists(self.testPath(touch_file)):
                         with open(touch_file, 'w', encoding='utf-8') as ofh:
                             ofh.write('')
 
@@ -5328,7 +5388,7 @@ class NmrDpMrSplitter:
                         input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
 
             touch_file = os.path.join(dir_path, '.entry_with_pk')
-            if not os.path.exists(touch_file):
+            if not os.path.exists(self.testPath(touch_file)):
                 with open(touch_file, 'w', encoding='utf-8') as ofh:
                     ofh.write('')
 
@@ -5381,7 +5441,7 @@ class NmrDpMrSplitter:
 
             try:
 
-                if os.path.exists(mr_file_link):
+                if os.path.exists(self.testPath(mr_file_link)):
                     os.remove(mr_file_link)
 
                 os.symlink(mr_file_path, mr_file_link)
@@ -5406,7 +5466,7 @@ class NmrDpMrSplitter:
 
                         rem_pk_file_path = os.path.join(pk_dir, original_file_name)
 
-                        if os.path.exists(rem_pk_file_path):
+                        if os.path.exists(self.testPath(rem_pk_file_path)):
                             os.remove(rem_pk_file_path)
 
                         os.symlink(pk_file_path, rem_pk_file_path)
@@ -5455,7 +5515,7 @@ class NmrDpMrSplitter:
         """ Return corrected MR file path.
         """
 
-        dir_path = os.path.dirname(src_path)
+        dir_path = os.path.dirname(src_path) if self.__reg.dirPath is None else self.__reg.dirPath
 
         for div_file_name in os.listdir(dir_path):
             if os.path.isfile(os.path.join(dir_path, div_file_name))\
@@ -5468,7 +5528,7 @@ class NmrDpMrSplitter:
             src_file_name = os.path.basename(src_path)
             cor_test = '-corrected' in src_file_name
             if cor_test:
-                cor_src_path = src_path + '~'
+                cor_src_path = f'{src_path}~'
             else:
                 if src_path.endswith('.mr'):
                     cor_src_path = re.sub(r'\-trimmed$', '', os.path.splitext(src_path)[0]) + '-corrected.mr'
@@ -5650,6 +5710,10 @@ class NmrDpMrSplitter:
         """
 
         src_basename = os.path.splitext(file_path)[0]
+
+        if self.__reg.dirPath is not None:
+            src_basename = os.path.join(self.__reg.dirPath, os.path.basename(src_basename))
+
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
         div_ext_file = src_basename + '-div_ext.mr'
@@ -6587,6 +6651,10 @@ class NmrDpMrSplitter:
         """
 
         src_basename = os.path.splitext(file_path)[0]
+
+        if self.__reg.dirPath is not None:
+            src_basename = os.path.join(self.__reg.dirPath, os.path.basename(src_basename))
+
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
         div_ext_file = src_basename + '-div_ext.mr'
@@ -6906,7 +6974,7 @@ class NmrDpMrSplitter:
                     _file_type = get_peak_list_format_from_string(err_input, asCode=True)
 
                     if j3 == 0 and _file_type is not None:
-                        shutil.copyfile(div_ext_file, div_ext_file + f'-selected-as-{_file_type[-7:]}')
+                        shutil.copyfile(div_ext_file, self.testPath(div_ext_file + f'-selected-as-{_file_type[-7:]}', True))
                         os.remove(div_try_file)
                         os.remove(file_path)
 
@@ -6999,6 +7067,10 @@ class NmrDpMrSplitter:
         """
 
         src_basename = os.path.splitext(file_path)[0]
+
+        if self.__reg.dirPath is not None:
+            src_basename = os.path.join(self.__reg.dirPath, os.path.basename(src_basename))
+
         div_src = 'div_dst' in src_basename
         div_src_file = src_basename + '-div_src.mr'
         div_ext_file = src_basename + '-div_ext.mr'

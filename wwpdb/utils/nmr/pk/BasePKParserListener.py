@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import collections
 import copy
@@ -80,7 +80,8 @@ try:
                                                H_ALIPHATIC_CENTER_MIN,
                                                H_METHYL_CENTER_MAX,
                                                H_METHYL_CENTER_MIN,
-                                               MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER)
+                                               MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.AlignUtil import (deepcopy,
                                            getOneLetterCode,
                                            updatePolySeqRst,
@@ -194,7 +195,8 @@ except ImportError:
                                    H_ALIPHATIC_CENTER_MIN,
                                    H_METHYL_CENTER_MAX,
                                    H_METHYL_CENTER_MIN,
-                                   MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER)
+                                   MIN_CORRCOEF_FOR_ONE_BOND_TRANSFER,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (deepcopy,
                                getOneLetterCode,
                                updatePolySeqRst,
@@ -5702,7 +5704,8 @@ class BasePKParserListener():
                             self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
 
                     if len(chainAssign1) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign1, a1.get('auth_chain_id'),
+                                              a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
 
             except (KeyError, TypeError):
                 pass
@@ -5783,8 +5786,10 @@ class BasePKParserListener():
                         chainAssign2 = self.assignCoordPolymerSequenceWithoutCompId(a2['seq_id'], a2['atom_id'], index)
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign1, a1.get('auth_chain_id'),
+                                              a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign2, a2.get('auth_chain_id'),
+                                              a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
@@ -5945,9 +5950,12 @@ class BasePKParserListener():
                         chainAssign3 = self.assignCoordPolymerSequenceWithoutCompId(a3['seq_id'], a3['atom_id'], index)
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign3, a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign1, a1.get('auth_chain_id'),
+                                              a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign2, a2.get('auth_chain_id'),
+                                              a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign3, a3.get('auth_chain_id'),
+                                              a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
@@ -6120,10 +6128,14 @@ class BasePKParserListener():
                         chainAssign4 = self.assignCoordPolymerSequenceWithoutCompId(a4['seq_id'], a4['atom_id'], index)
 
                     if len(chainAssign1) > 0 and len(chainAssign2) > 0 and len(chainAssign3) > 0 and len(chainAssign4) > 0:
-                        self.selectCoordAtoms(chainAssign1, a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign2, a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign3, a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
-                        self.selectCoordAtoms(chainAssign4, a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign1, a1.get('auth_chain_id'),
+                                              a1['seq_id'], a1['comp_id'], a1['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign2, a2.get('auth_chain_id'),
+                                              a2['seq_id'], a2['comp_id'], a2['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign3, a3.get('auth_chain_id'),
+                                              a3['seq_id'], a3['comp_id'], a3['atom_id'], index)
+                        self.selectCoordAtoms(chainAssign4, a4.get('auth_chain_id'),
+                                              a4['seq_id'], a4['comp_id'], a4['atom_id'], index)
 
                         if len(self.atomSelectionSet) == self.num_of_dim:
                             has_assignments = True
@@ -7647,6 +7659,16 @@ class BasePKParserListener():
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
+                            # 'THR' should not be split 'T' and 'HR' (bmr26379)
+                            if compId.endswith(atomId) and len(compId) > 2 and compId != atomId:
+                                atomNameLike[idx] = False
+                                break
+                            # need to check the next token in case of 'MET' (bmr26379)
+                            if compId == atomId == 'MET' and idx < len(_str) - 1:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _str[idx + 1], leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = False
+                                    break
 
                         if not atomNameLike[idx] and hint is not None and 'comp_id' in hint[0] and self.cur_list_id != -1:
                             _compId = hint[0]['comp_id']
@@ -8411,11 +8433,13 @@ class BasePKParserListener():
 
         ret = []
 
-        segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
+        segId = _segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
         dimId = 1
         for idx, term in enumerate(_str):
             if segIdLike[idx]:
-                segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+                segId = _segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+                if _segId.isdigit():
+                    _segId = None
                 if _segId_ is not None and segId != _segId_:
                     resId = resName = None
                 _segId_ = segId
@@ -8528,7 +8552,7 @@ class BasePKParserListener():
                            if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(True for item in ret
@@ -8537,6 +8561,8 @@ class BasePKParserListener():
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -8641,7 +8667,7 @@ class BasePKParserListener():
                            if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(True for item in ret
@@ -8650,6 +8676,8 @@ class BasePKParserListener():
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -8754,7 +8782,7 @@ class BasePKParserListener():
                            if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(True for item in ret
@@ -8763,6 +8791,8 @@ class BasePKParserListener():
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -8869,7 +8899,7 @@ class BasePKParserListener():
                            if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                         if self.__ignore_diagonal:
                             continue
-                    ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId,
+                    ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                                 'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                 else:
                     if any(True for item in ret
@@ -8878,6 +8908,8 @@ class BasePKParserListener():
                         if self.__ignore_diagonal:
                             continue
                     ass = {'dim': dimId, 'atom_id': atomName}
+                    if _segId is not None:
+                        ass['auth_chain_id'] = _segId
                     if segId is not None:
                         ass['chain_id'] = segId
                     if resId is not None:
@@ -8983,8 +9015,8 @@ class BasePKParserListener():
                                if item['chain_id'] == segId and item['seq_id'] == resId and item['atom_id'] == atomName):
                             if self.__ignore_diagonal:
                                 continue
-                        ret.append({'dim_id': dimId, 'chain_id': segId, 'seq_id': resId, 'auth_seq_id': authResId,
-                                    'comp_id': resName, 'atom_id': atomName})
+                        ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
+                                    'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
                     else:
                         if any(True for item in ret
                                if (segId is None or item['chain_id'] == segId)
@@ -8992,6 +9024,8 @@ class BasePKParserListener():
                             if self.__ignore_diagonal:
                                 continue
                         ass = {'dim': dimId, 'atom_id': atomName}
+                        if _segId is not None:
+                            ass['auth_chain_id'] = _segId
                         if segId is not None:
                             ass['chain_id'] = segId
                         if resId is not None:
@@ -9712,8 +9746,7 @@ class BasePKParserListener():
                             or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     resKey = (_seqId, _compId)
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
@@ -9723,8 +9756,7 @@ class BasePKParserListener():
                         and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     resKey = (_seqId, _compId)
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
@@ -9732,8 +9764,7 @@ class BasePKParserListener():
                     self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                   f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                   f"The residue number '{_seqId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
             else:
                 ext_seq = False
                 if (compId in STD_MON_DICT or compId in ('ACE', 'NH2'))\
@@ -9762,8 +9793,7 @@ class BasePKParserListener():
                     refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                   f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. "
-                                  "Please update the sequence in the Macromolecules page.")
+                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                     resKey = (_seqId, _compId)
                     if resKey not in self.extResKey:
                         self.extResKey.append(resKey)
@@ -10409,8 +10439,7 @@ class BasePKParserListener():
                                 or max_auth_seq_id < seqId <= max_auth_seq_id + MAX_ALLOWED_EXT_SEQ)):
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         resKey = (_seqId, _compId)
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
@@ -10420,8 +10449,7 @@ class BasePKParserListener():
                             and self.__preferAuthSeqCount - self.__preferLabelSeqCount >= MAX_PREF_LABEL_SCHEME_COUNT:
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         resKey = (_seqId, _compId)
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
@@ -10429,8 +10457,7 @@ class BasePKParserListener():
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:{_compId}:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     ext_seq = False
                     if (compId in STD_MON_DICT or compId in ('ACE', 'NH2'))\
@@ -10459,8 +10486,7 @@ class BasePKParserListener():
                         refChainId = refChainIds[0] if len(refChainIds) == 1 else refChainIds
                         self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                       f"The residue '{_seqId}:{_compId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                         resKey = (_seqId, _compId)
                         if resKey not in self.extResKey:
                             self.extResKey.append(resKey)
@@ -10681,8 +10707,7 @@ class BasePKParserListener():
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     if self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
@@ -10902,8 +10927,7 @@ class BasePKParserListener():
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
                                       f"{_seqId}:?:{atomId} is not present in the coordinates. "
                                       f"The residue number '{_seqId}' is not present in polymer sequence "
-                                      f"of chain {refChainId} of the coordinates. "
-                                      "Please update the sequence in the Macromolecules page.")
+                                      f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     if self.no_extra_comment:
                         self.f.append(f"[Atom not found] {self.getCurrentSpectralPeak(n=index)}"
@@ -10917,7 +10941,8 @@ class BasePKParserListener():
 
         return list(chainAssign)
 
-    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], seqId: int, compId: str, atomId: str,
+    def selectCoordAtoms(self, chainAssign: List[Tuple[str, int, str, bool]], authChainId: Optional[str],
+                         seqId: int, compId: str, atomId: str,
                          index: int, allowAmbig: bool = True, offset: int = 0) -> None:
         """ Select atoms of the coordinates.
         """
@@ -11081,7 +11106,7 @@ class BasePKParserListener():
                 if compId != cifCompId and any(True for item in chainAssign if item[2] == compId):
                     continue
                 if seqId == 1 and isPolySeq and cifCompId == 'ACE' and cifCompId != compId and offset == 0:
-                    self.selectCoordAtoms(chainAssign, seqId, compId, atomId, index, allowAmbig, offset=1)
+                    self.selectCoordAtoms(chainAssign, authChainId, seqId, compId, atomId, index, allowAmbig, offset=1)
                     return
                 self.f.append(f"[Invalid atom nomenclature] {self.getCurrentSpectralPeak(n=index)}"
                               f"{seqId}:{__compId}:{__atomId} is invalid atom nomenclature.")
@@ -11120,8 +11145,9 @@ class BasePKParserListener():
                     if cifAtomId == 'HN1' and 'H' in coordAtomSite['atom_id']:
                         cifAtomId = 'H'
 
-                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId,
-                                      'atom_id': cifAtomId, 'auth_atom_id': authAtomId})
+                atomSelection.append({'chain_id': chainId, 'seq_id': cifSeqId, 'comp_id': cifCompId, 'atom_id': cifAtomId,
+                                      'auth_chain_id': authChainId, 'auth_seq_id': seqId,
+                                      'auth_comp_id': compId, 'auth_atom_id': authAtomId})
 
                 self.testCoordAtomIdConsistency(chainId, cifSeqId, cifCompId, cifAtomId, seqKey, coordAtomSite, index)
 
@@ -11375,8 +11401,7 @@ class BasePKParserListener():
                         if self.__allow_ext_seq:
                             self.f.append(f"[Sequence mismatch warning] {self.getCurrentSpectralPeak(n=index)}"
                                           f"The residue '{chainId}:{seqId}:{compId}' is not present in polymer sequence "
-                                          f"of chain {chainId} of the coordinates. "
-                                          "Please update the sequence in the Macromolecules page.")
+                                          f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                             asis = True
                         else:
                             if seqKey in self.__coordUnobsAtom\

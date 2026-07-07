@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import sys
 from typing import IO, List, Optional
@@ -50,7 +50,7 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by XeasyPROTParser#xeasy_prot.
         """
 
-        self.cur_subtype = 'chem_shift'
+        self.cur_subtype = 'csp' if self.csp else 'chem_shift'
 
         self.cur_list_id = max(self.cur_list_id, 0)
         self.cur_list_id += 1

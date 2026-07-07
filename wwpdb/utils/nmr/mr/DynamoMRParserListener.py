@@ -29,7 +29,8 @@ try:
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP,
                                                KNOWN_ANGLE_ATOM_NAMES,
-                                               KNOWN_ANGLE_SEQ_OFFSET)
+                                               KNOWN_ANGLE_SEQ_OFFSET,
+                                               INSTRUCTION_FOR_FULL_SEQUENCE)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.DynamoMRParser import DynamoMRParser
@@ -61,7 +62,8 @@ except ImportError:
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP,
                                    KNOWN_ANGLE_ATOM_NAMES,
-                                   KNOWN_ANGLE_SEQ_OFFSET)
+                                   KNOWN_ANGLE_SEQ_OFFSET,
+                                   INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.DynamoMRParser import DynamoMRParser
@@ -154,6 +156,9 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         self.has_sequence = len(self.cur_sequence) > 0
 
+        if self.has_sequence and self.hasPolySeq:
+            self.validateOneLetterCodeSeq(self.first_resid, self.cur_sequence)
+
         self.open_sequence = False
 
     def enterDistance_restraints(self, ctx: DynamoMRParser.Distance_restraintsContext):  # pylint: disable=unused-argument
@@ -191,6 +196,16 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             seqId2 = int(str(ctx.Integer(3)))
             compId2 = str(ctx.Simple_name(2)).upper()
             atomId2 = str(ctx.Simple_name(3)).upper()
+
+            if self.has_sequence and self.hasPolySeq:
+                status, seqId1 = self.getRealSeqIdFromSeqAlign(seqId1, compId1)
+                if not status:
+                    self.distRestraints -= 1
+                    return
+                status, seqId2 = self.getRealSeqIdFromSeqAlign(seqId2, compId2)
+                if not status:
+                    self.distRestraints -= 1
+                    return
 
             target_value = None
             lower_limit = None
@@ -777,6 +792,24 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.dihedRestraints -= 1
                 return
 
+            if self.has_sequence and self.hasPolySeq:
+                status, seqId1 = self.getRealSeqIdFromSeqAlign(seqId1, compId1)
+                if not status:
+                    self.dihedRestraints -= 1
+                    return
+                status, seqId2 = self.getRealSeqIdFromSeqAlign(seqId2, compId2)
+                if not status:
+                    self.dihedRestraints -= 1
+                    return
+                status, seqId3 = self.getRealSeqIdFromSeqAlign(seqId3, compId3)
+                if not status:
+                    self.dihedRestraints -= 1
+                    return
+                status, seqId4 = self.getRealSeqIdFromSeqAlign(seqId4, compId4)
+                if not status:
+                    self.dihedRestraints -= 1
+                    return
+
             target_value = None
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
@@ -1304,6 +1337,16 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.rdcRestraints -= 1
                 return
+
+            if self.has_sequence and self.hasPolySeq:
+                status, seqId1 = self.getRealSeqIdFromSeqAlign(seqId1, compId1)
+                if not status:
+                    self.rdcRestraints -= 1
+                    return
+                status, seqId2 = self.getRealSeqIdFromSeqAlign(seqId2, compId2)
+                if not status:
+                    self.rdcRestraints -= 1
+                    return
 
             target = self.numberSelection[0]
             error = abs(self.numberSelection[1])
@@ -1911,6 +1954,16 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.rdcRestraints -= 1
                 return
 
+            if self.has_sequence and self.hasPolySeq:
+                status, seqId1 = self.getRealSeqIdFromSeqAlign(seqId1, compId1)
+                if not status:
+                    self.rdcRestraints -= 1
+                    return
+                status, seqId2 = self.getRealSeqIdFromSeqAlign(seqId2, compId2)
+                if not status:
+                    self.rdcRestraints -= 1
+                    return
+
             # di
             target = self.numberSelection[1]  # d_obs
             # d (calc)
@@ -2119,6 +2172,24 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.jcoupRestraints -= 1
                 return
+
+            if self.has_sequence and self.hasPolySeq:
+                status, seqId1 = self.getRealSeqIdFromSeqAlign(seqId1, compId1)
+                if not status:
+                    self.jcoupRestraints -= 1
+                    return
+                status, seqId2 = self.getRealSeqIdFromSeqAlign(seqId2, compId2)
+                if not status:
+                    self.jcoupRestraints -= 1
+                    return
+                status, seqId3 = self.getRealSeqIdFromSeqAlign(seqId3, compId3)
+                if not status:
+                    self.jcoupRestraints -= 1
+                    return
+                status, seqId4 = self.getRealSeqIdFromSeqAlign(seqId4, compId4)
+                if not status:
+                    self.jcoupRestraints -= 1
+                    return
 
             A = self.numberSelection[0]
             B = self.numberSelection[1]
@@ -2611,6 +2682,12 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             else:
                 compId = next(k for k, v in STD_MON_DICT.items() if v == compId and len(k) == 3)
 
+            if self.has_sequence and self.hasPolySeq:
+                status, seqId = self.getRealSeqIdFromSeqAlign(seqId)
+                if not status:
+                    self.dihedRestraints -= 1
+                    return
+
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
                 return
@@ -2699,6 +2776,15 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
                                                                     if _cifSeqId in ps['auth_seq_id'] else None)
 
+                        asis = False
+                        if _cifCompId is None:
+                            _cifCompId = self.getIntnlCompIdFromSeqAlign(_cifSeqId)
+                            asis = True
+                            if not self.allow_ext_seq:
+                                self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
+                                              f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
+
                         if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             idx = ps['auth_seq_id'].index(cifSeqId)
                             try:
@@ -2715,8 +2801,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -2742,15 +2827,18 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.")
                                 return
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
-                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomsel = {'chain_id': chainId, 'seq_id': _cifSeqId,
+                                   'comp_id': _cifCompId, 'atom_id': cifAtomId}
+                        if asis:
+                            atomsel['asis'] = True
+
+                        atomSelection.append(atomsel)
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)
@@ -2886,6 +2974,12 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             else:
                 compId = next(k for k, v in STD_MON_DICT.items() if v == compId and len(k) == 3)
 
+            if self.has_sequence and self.hasPolySeq:
+                status, seqId = self.getRealSeqIdFromSeqAlign(seqId, compId)
+                if not status:
+                    self.dihedRestraints -= 1
+                    return
+
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
                 return
@@ -2972,6 +3066,15 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         _cifCompId = cifCompId if offset == 0 else (ps['comp_id'][ps['auth_seq_id'].index(_cifSeqId)]
                                                                     if _cifSeqId in ps['auth_seq_id'] else None)
 
+                        asis = False
+                        if _cifCompId is None:
+                            _cifCompId = self.getIntnlCompIdFromSeqAlign(_cifSeqId)
+                            asis = True
+                            if not self.allow_ext_seq:
+                                self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
+                                              f"The residue number '{seqId+offset}' is not present in polymer sequence "
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
+
                         if _cifCompId is None and offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                             idx = ps['auth_seq_id'].index(cifSeqId)
                             try:
@@ -2988,8 +3091,7 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             if _cifCompId is None and not self.allow_ext_seq:
                                 self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                               f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                              f"of chain {chainId} of the coordinates. "
-                                              "Please update the sequence in the Macromolecules page.")
+                                              f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 return
                                 # _cifCompId = '.'
                             cifAtomId = atomId
@@ -3004,15 +3106,18 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                 if _cifCompId is None and not self.allow_ext_seq:
                                     self.f.append(f"[Sequence mismatch warning] {self.getCurrentRestraint()}"
                                                   f"The residue number '{seqId+offset}' is not present in polymer sequence "
-                                                  f"of chain {chainId} of the coordinates. "
-                                                  "Please update the sequence in the Macromolecules page.")
+                                                  f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                                   f"{seqId+offset}:{compId}:{atomId} is not present in the coordinates.")
                                 return
 
-                        atomSelection.append({'chain_id': chainId, 'seq_id': _cifSeqId,
-                                              'comp_id': _cifCompId, 'atom_id': cifAtomId})
+                        atomsel = {'chain_id': chainId, 'seq_id': _cifSeqId,
+                                   'comp_id': _cifCompId, 'atom_id': cifAtomId}
+                        if asis:
+                            atomsel['asis'] = True
+
+                        atomSelection.append(atomsel)
 
                         if len(atomSelection) > 0:
                             self.atomSelectionSet.append(atomSelection)

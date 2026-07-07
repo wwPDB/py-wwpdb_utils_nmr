@@ -400,6 +400,7 @@ class BaseLinearMRParserListener():
     open_sequence = False
     has_sequence = False
     has_seq_align_err = False
+    internal_seq_offset = None
 
     # collection of auxiliary atom selection (DYNAMO specific)
     auxAtomSelectionSet = []
@@ -3612,7 +3613,11 @@ class BaseLinearMRParserListener():
                     seqId = fixedSeqId
             if seqId <= 0 and self.__shiftNonPosSeq is not None and chainId in self.__shiftNonPosSeq:
                 seqId -= 1
-            if seqId in ps['auth_seq_id'] or fixedCompId is not None:
+            if seqId in ps['auth_seq_id'] or fixedCompId is not None or self.internal_seq_offset is not None:
+                if self.internal_seq_offset is not None:
+                    cifCompId = self.getIntnlCompIdFromSeqAlign(seqId)
+                    if cifCompId is None:
+                        continue
                 if fixedCompId is not None:
                     cifCompId = origCompId = fixedCompId
                 else:
@@ -6203,6 +6208,101 @@ class BaseLinearMRParserListener():
                     if atom_id not in atomSelection:
                         atomSelection.append(atom_id)
         return atomSelection
+
+    def validateOneLetterCodeSeq(self, firstResId: int, oneLetterCodes: str) -> None:
+        """ Validate one-letter code sequence as restraint's polymer sequence.
+        """
+
+        len_comp_id = 3 if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide\
+            else 2 if not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide\
+            else 1 if not self.polyPeptide and not self.polyDeoxyribonucleotide and self.polyRibonucleotide\
+            else 0
+
+        for seqId, oneLetterCode in enumerate(oneLetterCodes, start=firstResId):
+
+            try:
+
+                compId = next(k for k, v in STD_MON_DICT.items() if v == oneLetterCode and len(k) == len_comp_id)
+                updatePolySeqRst(self.__polySeqRst,
+                                 self.polySeq[0]['chain_id'], seqId, compId)
+
+            except StopIteration:
+                pass
+
+        sortPolySeqRst(self.__polySeqRst)
+
+        self.__seqAlign, _ = alignPolymerSequence(self.pA, self.polySeq, self.__polySeqRst,
+                                                  resolvedMultimer=self.reasons is not None)
+        self.__chainAssign, _ = assignPolymerSequence(self.pA, self.ccU, self.file_type,
+                                                      self.polySeq, self.__polySeqRst, self.__seqAlign)
+
+        if len(self.__chainAssign) == 1:
+
+            for ca in self.__chainAssign:
+                ref_chain_id = ca['ref_chain_id']
+                test_chain_id = ca['test_chain_id']
+
+                sa = next(sa for sa in self.__seqAlign
+                          if sa['ref_chain_id'] == ref_chain_id
+                          and sa['test_chain_id'] == test_chain_id)
+
+                for ref_seq_id, mid_code, test_seq_id in zip(sa['ref_seq_id'], sa['mid_code'], sa['test_seq_id']):
+                    if mid_code != '|':
+                        continue
+                    self.internal_seq_offset = ref_seq_id - test_seq_id
+                    break
+
+    def getRealSeqIdFromSeqAlign(self, seqId: int, compId: Optional[str] = None) -> Tuple[bool, int]:
+        """ Retrieve aligned residue number based on sequence alignment.
+        """
+
+        if self.internal_seq_offset is not None:
+            return True, seqId + self.internal_seq_offset
+
+        if self.__chainAssign is None or len(self.__chainAssign) != 1:
+            return False, seqId
+
+        for ca in self.__chainAssign:
+            ref_chain_id = ca['ref_chain_id']
+            test_chain_id = ca['test_chain_id']
+
+            sa = next(sa for sa in self.__seqAlign
+                      if sa['ref_chain_id'] == ref_chain_id
+                      and sa['test_chain_id'] == test_chain_id)
+
+            poly_seq_model = next(ps for ps in self.polySeq
+                                  if ps['chain_id'] == ref_chain_id)
+
+            for ref_seq_id, test_seq_id in zip(sa['ref_seq_id'], sa['test_seq_id']):
+                if test_seq_id is None or test_seq_id != seqId:
+                    continue
+                if compId is None or compId == poly_seq_model['comp_id'][poly_seq_model['auth_seq_id'].index(ref_seq_id)]:
+                    return True, ref_seq_id
+                break
+
+        return False, seqId
+
+    def getIntnlCompIdFromSeqAlign(self, authSeqId: int) -> Optional[str]:
+        """ Retrieve internal comp_id for a given auth_seq_id based on sequence alignment.
+        """
+
+        if self.internal_seq_offset is None:
+            return None
+
+        seqId = authSeqId - self.internal_seq_offset
+
+        for ca in self.__chainAssign:
+            test_chain_id = ca['test_chain_id']
+
+            poly_seq_rst = next(ps for ps in self.__polySeqRst
+                                if ps['chain_id'] == test_chain_id)
+
+            if seqId in poly_seq_rst['seq_id']:
+                return poly_seq_rst['comp_id'][poly_seq_rst['seq_id'].index(seqId)]
+
+            break
+
+        return None
 
     def getCurrentRestraint(self, n: Optional[int] = None, g: Optional[int] = None) -> str:
         """ Retrieve indicator of the current restraint.

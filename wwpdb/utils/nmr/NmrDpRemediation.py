@@ -19127,7 +19127,8 @@ class NmrDpRemediation:
                         warn = f"We could not identify restraint file format of {file_name!r}. "\
                                "In order to add file format support in the future, "\
                                "the contents is temporarily stored as-is in the _Other_data_type_list.Text_data tag "\
-                               "and will be converted during future data remediation if the data matches a known restraint format."
+                               "and will be converted during future data remediation "\
+                               "if the data matches a known restraint format."
 
                         self.__reg.report.warning.appendDescription('unsupported_mr_data',
                                                                     {'file_name': file_name, 'description': warn,
@@ -19241,6 +19242,8 @@ class NmrDpRemediation:
 
         update_data_file_name = False
         data_file_name_map = {}
+        removed_sf_names = []
+        resolved_sf_name_prefixes = []
 
         for content_subtype in self.__reg.mr_content_subtypes:
             if self.__reg.mr_sf_dict_holder is not None and content_subtype in self.__reg.mr_sf_dict_holder:
@@ -19271,6 +19274,7 @@ class NmrDpRemediation:
                                 if len(_data_file_name) > 0 and _data_file_name != data_file_name and self.__reg.internal_mode:
                                     data_file_name_map[data_file_name] = _data_file_name
                                     set_sf_tag(sf, 'Data_file_name', _data_file_name)
+                                    update_data_file_name = True
 
                                     fileListId = self.__reg.file_path_list_len
 
@@ -19292,15 +19296,17 @@ class NmrDpRemediation:
                                                 update_data_file_name = True
                                                 break
 
-                                        elif getRestraintFormatName(ar_file_type).split()[0] in sf_framecode:
+                                        elif os.path.basename(ar['file_name']) == data_file_name:
                                             ar['original_file_name'] = _data_file_name
                                             update_data_file_name = True
                                             break
 
                                 if any(True for _sf in master_entry.frame_list if _sf.name == sf_framecode):
                                     master_entry.remove_saveframe(sf_framecode)
+                                    removed_sf_names.append(sf_framecode)
                                 else:
                                     master_entry.remove_saveframe(alt_sf_framecode)
+                                    removed_sf_names.append(alt_sf_framecode)
 
                             else:
 
@@ -19316,7 +19322,96 @@ class NmrDpRemediation:
                                                      f"{_data_file_name} {err}\n")
                                 continue
 
+                        elif self.__reg.internal_mode or self.__reg.bmrb_only:
+
+                            try:
+
+                                data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                                sf_framecode_prefix = '_'.join(sf_framecode.split('_')[:-1])
+                                sf_framecode_suffix = int(sf_framecode[len(sf_framecode_prefix) + 1:])
+
+                                if sf_framecode_prefix not in resolved_sf_name_prefixes\
+                                   and any(True for _sf in master_entry.frame_list if _sf.name.startswith(sf_framecode_prefix)):
+                                    resolved_sf_name_prefixes.append(sf_framecode_prefix)
+
+                                    for sf_item_ in self.__reg.mr_sf_dict_holder[content_subtype]:
+                                        sf_ = sf_item_['saveframe']
+                                        sf_framecode_ = get_first_sf_tag(sf_, 'Sf_framecode')
+
+                                        if not sf_framecode_.startswith(sf_framecode_prefix):
+                                            continue
+
+                                        sf_framecode_suffix_ = int(sf_framecode_[len(sf_framecode_prefix) + 1:])
+
+                                        if sf_framecode_suffix_ > sf_framecode_suffix:
+                                            continue
+
+                                        if 'XPLOR-NIH_' in sf_framecode_ or sf_framecode_.startswith('CNS'):
+                                            if 'XPLOR-NIH' in sf_framecode_:
+                                                alt_sf_framecode_ = f'XPLOR-NIH/CNS{sf_framecode_[9:]}'
+                                            else:
+                                                alt_sf_framecode_ = f'XPLOR-NIH/{sf_framecode_}'
+
+                                        else:
+                                            alt_sf_framecode_ = sf_framecode_
+
+                                        if any(True for _sf in master_entry.frame_list
+                                               if _sf.name in (sf_framecode_, alt_sf_framecode_)):
+                                            continue
+
+                                        for _sf in master_entry.frame_list:
+                                            _sf_framecode_ = get_first_sf_tag(_sf, 'Sf_framecode')
+
+                                            if _sf_framecode_ == sf_framecode_\
+                                               or not _sf_framecode_.startswith(sf_framecode_prefix)\
+                                               or _sf_framecode_ in removed_sf_names:
+                                                continue
+
+                                            _sf_framecode_suffix_ = int(_sf_framecode_[len(sf_framecode_prefix) + 1:])
+
+                                            if _sf_framecode_suffix_ <= sf_framecode_suffix\
+                                               and constraint_subtype == 'dist_restraint':
+                                                continue
+
+                                            _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
+                                            if len(_data_file_name) > 0 and _data_file_name != data_file_name\
+                                               and self.__reg.internal_mode:
+                                                data_file_name_map[data_file_name] = _data_file_name
+                                                set_sf_tag(sf, 'Data_file_name', _data_file_name)
+                                                update_data_file_name = True
+
+                                                fileListId = self.__reg.file_path_list_len
+
+                                                for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+
+                                                    input_source = self.__reg.report.input_sources[fileListId]
+                                                    input_source_dic = input_source.get()
+
+                                                    fileListId += 1
+
+                                                    ar_file_type = input_source_dic['file_type']
+
+                                                    if not ar_file_type.startswith('nm-res') or ar_file_type == 'nm-res-mr':
+                                                        continue
+
+                                                    if 'original_file_name' in ar and ar['original_file_name'] not in EMPTY_VALUE:
+                                                        if ar['original_file_name'] == data_file_name:
+                                                            ar['original_file_name'] = _data_file_name
+                                                            update_data_file_name = True
+                                                            break
+
+                                                    elif os.path.basename(ar['file_name']) == data_file_name:
+                                                        ar['original_file_name'] = _data_file_name
+                                                        update_data_file_name = True
+                                                        break
+
+                                            master_entry.remove_saveframe(_sf.name)
+
+                            except ValueError:
+                                pass
+
                         master_entry.add_saveframe(sf)
+                        removed_sf_names.append(sf_framecode)
 
                         _lp = next((lp for lp in self.__reg.lp_data[content_subtype] if lp['sf_framecode'] == sf_framecode), None)
                         if _lp is not None:
@@ -19369,6 +19464,7 @@ class NmrDpRemediation:
                                 if len(_data_file_name) > 0 and _data_file_name != data_file_name and self.__reg.bmrb_only:
                                     data_file_name_map[data_file_name] = _data_file_name
                                     set_sf_tag(sf, 'Data_file_name', _data_file_name)
+                                    update_data_file_name = True
 
                                     fileListId = self.__reg.file_path_list_len
 
@@ -19390,7 +19486,7 @@ class NmrDpRemediation:
                                                 update_data_file_name = True
                                                 break
 
-                                        else:
+                                        elif os.path.basename(ar['file_name']) == data_file_name:
                                             ar['original_file_name'] = _data_file_name
                                             update_data_file_name = True
                                             break
@@ -19452,8 +19548,33 @@ class NmrDpRemediation:
 
                 file_names.append(retrieveOriginalFileName(file_name))
 
+            for content_subtype in self.__reg.mr_sf_dict_holder:
+                if content_subtype != 'other_restraint':
+                    sf_category = SF_CATEGORIES[file_type][content_subtype]
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        data_file_name = get_first_sf_tag(sf, 'Data_file_name')
+                        if data_file_name in EMPTY_VALUE:
+                            continue
+                        block_id = get_first_sf_tag(sf, "Block_ID")
+                        data_file_name = retrieveOriginalFileName(data_file_name)
+                        if data_file_name not in file_names:
+                            file_names.append(data_file_name)
+                        if block_id not in EMPTY_VALUE:
+                            if isinstance(block_id, str) and block_id.isdigit():
+                                pass
+                            elif isinstance(block_id, int):
+                                block_id = str(block_id)
+                            else:
+                                continue
+                            dat = cf_loop.get_tag(['Constraint_filename', 'Software_name', 'Block_ID'])
+                            for idx, row in enumerate(dat):
+                                if row[2] != block_id or row[1] not in sf.name:
+                                    continue
+                                if row[0] != data_file_name:
+                                    cf_loop.data[idx][cf_loop.tags.index('Constraint_filename')] = data_file_name
+
             if len(file_names) > 0:
-                set_sf_tag(cst_sf, 'Data_file_name', ','.join(file_names))
+                set_sf_tag(cst_sf, 'Data_file_name', ','.join(sorted(file_names)))
 
         self.__mergeStrPk()
 

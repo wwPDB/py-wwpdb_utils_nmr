@@ -18446,8 +18446,8 @@ class NmrDpValidation:
                         if under_sampling_type is not None and under_sampling_type in EMPTY_VALUE:
                             under_sampling_type = None
 
-                        if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none'):
-                            if under_sampling_type == 'circular':
+                        if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none', 'fold'):
+                            if under_sampling_type in ('circular', 'fold'):
                                 under_sampling_type = 'folded'
                             elif under_sampling_type == 'mirror':
                                 under_sampling_type = 'aliased'
@@ -18740,8 +18740,8 @@ class NmrDpValidation:
                         if under_sampling_type is not None and under_sampling_type in EMPTY_VALUE:
                             under_sampling_type = None
 
-                        if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none'):
-                            if under_sampling_type == 'circular':
+                        if under_sampling_type is not None and under_sampling_type in ('circular', 'mirror', 'none', 'fold'):
+                            if under_sampling_type in ('circular', 'fold'):
                                 under_sampling_type = 'folded'
                             elif under_sampling_type == 'mirror':
                                 under_sampling_type = 'aliased'
@@ -20675,6 +20675,15 @@ class NmrDpValidation:
                                                                    'description': err})
 
                         self.__reg.log.write(f"+{self.__class_name__}.calculateOutputStats() ++ Error  - {err}\n")
+
+                    try:
+
+                        item = next(item for item in self.__reg.report_prev.getNmrStatsOfExptlData(content_subtype)
+                                    if item['list_id'] == list_id)
+                        sf_info['atom_name_mapping'] = copy.copy(item['atom_name_mapping'])
+
+                    except (StopIteration, KeyError, TypeError):
+                        sf_info['atom_name_mapping'] = None
 
                     sf_info_list.append(sf_info)
 

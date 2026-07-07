@@ -380,7 +380,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
                 min_ppm = __v['freq_hint'].min()
                 width = max_ppm - min_ppm
                 if center < 100.0 and width < 50.0:
-                    __v['under_sampling_type'] = 'fold'
+                    __v['under_sampling_type'] = 'folded'
 
             if __v['spectrometer_frequency'] is None and 'obs_freq_hint' in __v and len(__v['obs_freq_hint']) > 0:
                 __v['spectrometer_frequency'] = collections.Counter(__v['obs_freq_hint']).most_common()[0][0]
@@ -2040,7 +2040,7 @@ class BasePKParserListener():
                                 min_ppm = __v['freq_hint'].min()
                                 width = max_ppm - min_ppm
                                 if center < 100.0 and width < 50.0:
-                                    __v['under_sampling_type'] = 'fold'
+                                    __v['under_sampling_type'] = 'folded'
 
                             if __v['spectrometer_frequency'] is None and 'obs_freq_hint' in __v and len(__v['obs_freq_hint']) > 0:
                                 __v['spectrometer_frequency'] = collections.Counter(__v['obs_freq_hint']).most_common()[0][0]

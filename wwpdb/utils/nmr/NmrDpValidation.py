@@ -19707,10 +19707,14 @@ class NmrDpValidation:
             dihed_any_type = 'Total'
             dihed_angle_type = vrpt_mr['key_lists']['angle_type'] if has_dihed else []
 
+            has_rdc = vrpt_mr is not None and 'rdc_summary' in vrpt_mr
+            rdc_any_type = 'Total'
+            # rdc_type = vrpt_mr['key_lists']['rdc_type'] if has_rdc else []
+
             total_dist_restraint_count = sum(vrpt_mr['distance_summary'][dist_any_type][dist_sub_type][None]
                                              for dist_sub_type in distance_sub_type) if has_dist else 0
-
             total_dihed_restraint_count = vrpt_mr['angle_summary'][dihed_any_type] if has_dihed else 0
+            total_rdc_restraint_count = vrpt_mr['rdc_summary'][rdc_any_type] if has_rdc else 0
 
             def get_dist_violations_per_model():
                 violations_per_model = []
@@ -20312,7 +20316,7 @@ class NmrDpValidation:
                                 if list_id == 1:
 
                                     if _content_subtype == 'dist_restraint':
-                                        if vrpt_mr is not None and 'distance_summary' in vrpt_mr:
+                                        if has_dist:
                                             dist_summary = vrpt_mr['distance_summary']
                                             rest_summary = {}
                                             rest_summary['total_distance_restraints'] =\
@@ -20374,19 +20378,19 @@ class NmrDpValidation:
                                                              and d_type in dist_summary
                                                              and any(True for s_type in distance_sub_type
                                                                      if dist_summary[d_type][s_type]['metal'] > 0))
+                                            if has_dihed:
+                                                rest_summary['total_dihedral_angle_restraints'] = total_dihed_restraint_count
+                                            if has_rdc:
+                                                rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
                                             all_unmapped = len(vrpt_mr['unmapped_dist'])
                                             if 'unmapped_angle' in vrpt_mr:
                                                 all_unmapped += len(vrpt_mr['unmapped_angle'])
                                             if 'unmapped_rdc' in vrpt_mr:
                                                 all_unmapped += len(vrpt_mr['unmapped_rdc'])
                                             rest_summary['number_of_unmapped_restraints'] = all_unmapped
-                                            all_total = rest_summary['total_distance_restraints']
-                                            if 'angle_summary' in vrpt_mr:
-                                                angle_summary = vrpt_mr['angle_summary']
-                                                all_total += angle_summary['Total']
-                                            if 'rdc_summary' in vrpt_mr:
-                                                rdc_summary = vrpt_mr['rdc_summary']
-                                                all_total += rdc_summary['Total']
+                                            all_total = total_dist_restraint_count\
+                                                + total_dihed_restraint_count\
+                                                + total_rdc_restraint_count
                                             rest_summary['number_of_restaints_per_residue'] = \
                                                 float(f"{float(all_total) / vrpt_mr['seq_length']:.1f}")
                                             rest_summary['number_of_long_range_restraints_per_residue'] =\
@@ -20446,7 +20450,7 @@ class NmrDpValidation:
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                     if _content_subtype == 'dihed_restraint':
-                                        if vrpt_mr is not None and 'angle_summary' in vrpt_mr and 'distance_summary' not in vrpt_mr:
+                                        if has_dihed and not has_dist:
                                             rest_summary = {}
                                             rest_summary['total_distance_restraints'] = 0
                                             rest_summary['intra-residue'] = 0
@@ -20457,15 +20461,14 @@ class NmrDpValidation:
                                             rest_summary['hydrogen_bond_restraints'] = 0
                                             if has_cystain:
                                                 rest_summary['disulfide_bond_restraints'] = 0
+                                            rest_summary['total_dihedral_angle_restraints'] = total_dihed_restraint_count
+                                            if has_rdc:
+                                                rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
                                             all_unmapped = len(vrpt_mr['unmapped_angle'])
                                             if 'unmapped_rdc' in vrpt_mr:
                                                 all_unmapped += len(vrpt_mr['unmapped_rdc'])
                                             rest_summary['number_of_unmapped_restraints'] = all_unmapped
-                                            angle_summary = vrpt_mr['angle_summary']
-                                            all_total = angle_summary['Total']
-                                            if 'rdc_summary' in vrpt_mr:
-                                                rdc_summary = vrpt_mr['rdc_summary']
-                                                all_total += rdc_summary['Total']
+                                            all_total = total_dihed_restraint_count + total_rdc_restraint_count
                                             rest_summary['number_of_restaints_per_residue'] = \
                                                 float(f"{float(all_total) / vrpt_mr['seq_length']:.1f}")
                                             rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
@@ -20497,8 +20500,7 @@ class NmrDpValidation:
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                     if _content_subtype == 'rdc_restraint':
-                                        if vrpt_mr is not None and 'rdc_summary' in vrpt_mr and 'distance_summary' not in vrpt_mr\
-                                           and 'angle_summary' not in vrpt_mr:
+                                        if has_rdc and not has_dist and not has_dihed:
                                             rest_summary = {}
                                             rest_summary['total_distance_restraints'] = 0
                                             rest_summary['intra-residue'] = 0
@@ -20509,10 +20511,10 @@ class NmrDpValidation:
                                             rest_summary['hydrogen_bond_restraints'] = 0
                                             if has_cystain:
                                                 rest_summary['disulfide_bond_restraints'] = 0
+                                            rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
                                             rest_summary['number_of_unmapped_restraints'] = len(vrpt_mr['unmapped_rdc'])
-                                            rdc_summary = vrpt_mr['rdc_summary']
                                             rest_summary['number_of_restaints_per_residue'] = \
-                                                float(f"{float(rdc_summary['Total']) / vrpt_mr['seq_length']:.1f}")
+                                                float(f"{float(total_rdc_restraint_count) / vrpt_mr['seq_length']:.1f}")
                                             rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
 
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)

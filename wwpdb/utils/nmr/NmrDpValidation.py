@@ -19452,7 +19452,7 @@ class NmrDpValidation:
                     if v[1] == 0:
                         continue
                     if k == 'overall':
-                        ret['completeness_of_overall_assignements'] =\
+                        ret['completeness_of_overall_assignments'] =\
                             [{'atom_group': 'overall_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
@@ -19505,7 +19505,7 @@ class NmrDpValidation:
                     if v[1] == 0:
                         continue
                     if k == 'overall':
-                        ret['completeness_of_overall_assignements'].append(
+                        ret['completeness_of_overall_assignments'].append(
                             {'atom_group': 'overall_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
@@ -19551,7 +19551,7 @@ class NmrDpValidation:
                     if v[1] == 0:
                         continue
                     if k == 'overall':
-                        ret['completeness_of_overall_assignements'].append(
+                        ret['completeness_of_overall_assignments'].append(
                             {'atom_group': 'overall_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
@@ -19597,7 +19597,7 @@ class NmrDpValidation:
                     if v[1] == 0:
                         continue
                     if k == 'overall':
-                        ret['completeness_of_overall_assignements'].append(
+                        ret['completeness_of_overall_assignments'].append(
                             {'atom_group': 'overall_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
@@ -19643,7 +19643,7 @@ class NmrDpValidation:
                     if v[1] == 0:
                         continue
                     if k == 'overall':
-                        ret['completeness_of_overall_assignements'].append(
+                        ret['completeness_of_overall_assignments'].append(
                             {'atom_group': 'overall_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],

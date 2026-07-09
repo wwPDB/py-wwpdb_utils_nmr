@@ -1061,7 +1061,7 @@ class NmrDpUtility:
                 self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server'] in TRUE_VALUE
 
             self.__reg.nefT.permit_missing_chem_shift(True)
-            self.__reg.bmrb_only = self.__reg.internal_mode = True
+            self.__reg.bmrb_only = True  # self.__reg.internal_mode = True
 
         if has_key_value(self.__reg.inputParamDict, 'bmrb_only'):
             if isinstance(self.__reg.inputParamDict['bmrb_only'], bool):
@@ -13705,7 +13705,7 @@ class NmrDpUtility:
                     err = f"{cif_seq_code} has been instantiated with different tautomeric states across models, "\
                         f"{tautomer_per_model}. Please re-upload the model file."
 
-                    if self.__reg.internal_mode and not self.__reg.conversion_server:
+                    if self.__reg.internal_mode:  # and not self.__reg.conversion_server:
 
                         self.__reg.report.warning.appendDescription('coordinate_issue',
                                                                     {'file_name': file_name, 'category': 'atom_site',
@@ -13834,7 +13834,7 @@ class NmrDpUtility:
                         err = f"{cif_seq_code} has been instantiated with different tautomeric states across models, "\
                             f"{tautomer_per_model}. Please re-upload the model file."
 
-                        if self.__reg.internal_mode and not self.__reg.conversion_server:
+                        if self.__reg.internal_mode:  # and not self.__reg.conversion_server:
 
                             self.__reg.report.warning.appendDescription('coordinate_issue',
                                                                         {'file_name': file_name, 'category': 'atom_site',

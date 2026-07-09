@@ -122,7 +122,7 @@ class BmrbAnnTasks:
         self.__secret_key = None
         self.__service_host = None
         self.__dep_sys_name = 'unknown'
-        if self.__reg.conversion_server and CNV_ID_PAT.match(self.__reg.entry_id):
+        if self.__reg.conversion_server and self.__reg.entry_id is not None and CNV_ID_PAT.match(self.__reg.entry_id):
             if has_key_value(self.__reg.inputParamDict, 'secret_key')\
                and has_key_value(self.__reg.inputParamDict, 'service_host'):
                 secret_key = self.__reg.inputParamDict['secret_key']
@@ -287,7 +287,7 @@ class BmrbAnnTasks:
                     pass
 
             # write signature for BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
-            if self.__reg.conversion_server and None in (self.__secret_key, self.__service_host):
+            if self.__reg.conversion_server and None not in (self.__secret_key, self.__service_host, self.__reg.entry_id):
 
                 try:
 
@@ -322,9 +322,8 @@ class BmrbAnnTasks:
 
                 loop.add_tag(tags)
 
-                for fileListId in range(self.__reg.file_path_list_len):
+                for fileListId, input_source in enumerate(self.__reg.report.input_sources):
 
-                    input_source = self.__reg.report.input_sources[fileListId]
                     input_source_dic = input_source.get()
 
                     file_name = input_source_dic['file_name']
@@ -340,7 +339,11 @@ class BmrbAnnTasks:
                     row[2] = content_type
                     if len(content_subtype) > 0:
                         sf_cat_list = []
-                        if not file_type.startswith('nm-csp'):
+                        if content_type == 'model':
+                            sf_cat_list.append('conformer_family_coord_set')
+                        # elif content_type == 'nmr-chemical-shifts':
+                        #     sf_cat_list.append('assigned_chemical_shifts')
+                        elif not file_type.startswith('nm-csp'):
                             for k in content_subtype:
                                 if k in SF_CATEGORIES['nmr-star']:
                                     sf_cat_list.append(SF_CATEGORIES['nmr-star'][k])
@@ -353,7 +356,7 @@ class BmrbAnnTasks:
                     elif file_type == 'nef':
                         row[4] = 'NEF'
                     elif file_type == 'pdbx':
-                        row[4] = 'mmCIF'
+                        row[4] = 'PDBx/mmCIF'
                     elif file_type.startswith('nm-res')\
                             or file_type.startswith('nm-aux')\
                             or file_type.startswith('nm-pea'):
@@ -404,9 +407,8 @@ class BmrbAnnTasks:
 
                         file_id = len(lp) + 1
 
-                        for fileListId in range(self.__reg.file_path_list_len):
+                        for fileListId, input_source in enumerate(self.__reg.report.input_sources):
 
-                            input_source = self.__reg.report.input_sources[fileListId]
                             input_source_dic = input_source.get()
 
                             file_name = input_source_dic['file_name']
@@ -431,7 +433,11 @@ class BmrbAnnTasks:
                                 row[type_col] = content_type
                             if sf_cat_col != -1 and len(content_subtype) > 0:
                                 sf_cat_list = []
-                                if not file_type.startswith('nm-csp'):
+                                if content_type == 'model':
+                                    sf_cat_list.append('conformer_family_coord_set')
+                                # elif content_type == 'nmr-chemical-shifts':
+                                #     sf_cat_list.append('assigned_chemical_shifts')
+                                elif not file_type.startswith('nm-csp'):
                                     for k in content_subtype:
                                         if k in SF_CATEGORIES['nmr-star']:
                                             sf_cat_list.append(SF_CATEGORIES['nmr-star'][k])
@@ -445,7 +451,7 @@ class BmrbAnnTasks:
                                 elif file_type == 'nef':
                                     row[syntax_col] = 'NEF'
                                 elif file_type == 'pdbx':
-                                    row[syntax_col] = 'mmCIF'
+                                    row[syntax_col] = 'PDBx/mmCIF'
                                 elif file_type.startswith('nm-res')\
                                         or file_type.startswith('nm-aux')\
                                         or file_type.startswith('nm-pea'):
@@ -485,7 +491,6 @@ class BmrbAnnTasks:
 
                 sf = pynmrstar.Saveframe.from_scratch(sf_category, '_Deposited_data_files')
 
-                sf.add_tag('Sf_category', sf_category)
                 sf.add_tag('Sf_category', sf_category)
                 sf.add_tag('Sf_framecode', sf_category)
                 sf.add_tag('Entry_ID', self.__reg.entry_id)

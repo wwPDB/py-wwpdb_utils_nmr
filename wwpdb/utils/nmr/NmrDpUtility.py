@@ -1198,7 +1198,7 @@ class NmrDpUtility:
 
         self.__reg.nefT.set_remediation_mode(self.__reg.remediation_mode)
         self.__reg.nefT.set_annotation_mode(self.__reg.annotation_mode)
-        self.__reg.nefT.set_internal_mode(self.__reg.internal_mode)
+        self.__reg.nefT.set_internal_mode(self.__reg.internal_mode or self.__reg.conversion_server)
         self.__reg.nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs')  # DAOTHER-9927
                                               or (op == 'nmr-str2cif-annotate'
                                                   and self.__reg.remediation_mode))  # DAOTHER-10616
@@ -1935,7 +1935,7 @@ class NmrDpUtility:
 
         def proc_ac_file_path_list():
 
-            if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.bmrb_only and self.__reg.conversion_server:
+            if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.conversion_server:
 
                 for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
 
@@ -1952,7 +1952,8 @@ class NmrDpUtility:
                         input_source.setItemValue('original_file_name', acs['original_file_name'])
                     input_source.setItemValue('ignore_error', False if 'ignore_error' not in acs else acs['ignore_error'])
 
-            if self.__reg.bmrb_only and self.__reg.internal_mode and NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict:
+            if self.__reg.bmrb_only and (self.__reg.internal_mode or self.__reg.conversion_server)\
+               and NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict:
 
                 nmr_cif = self.__reg.inputParamDict[NMR_CIF_FILE_PATH_KEY]
 
@@ -1987,7 +1988,7 @@ class NmrDpUtility:
                     return False
 
             # DAOTHER-9785
-            if self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode:
+            if self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.conversion_server:
                 proc_mr_file_path_list()
 
                 if not proc_ar_file_path_list():

@@ -12398,7 +12398,7 @@ class NmrDpRemediation:
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        if self.__reg.internal_mode and not self.__reg.conversion_server:
+                        if self.__reg.internal_mode:  # and not self.__reg.conversion_server:
 
                             self.__reg.report.warning.appendDescription('coordinate_issue', msg_dict)
 

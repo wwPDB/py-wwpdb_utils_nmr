@@ -129,12 +129,12 @@ class BmrbAnnTasks:
                 dep_sys_name = 'unknown'
                 if isinstance(secret_key, str) and secret_key not in EMPTY_VALUE\
                    and isinstance(service_host, str) and service_host not in EMPTY_VALUE:
-                    self.__secret_key = str(secret_key)
-                    self.__service_host = str(service_host)
+                    self.__secret_key = secret_key
+                    self.__service_host = service_host
                     if has_key_value(self.__reg.inputParamDict, 'dep_sys_name')\
                        and isinstance(dep_sys_name, str) and dep_sys_name not in EMPTY_VALUE:
                         dep_sys_name = self.__reg.inputParamDict['dep_sys_name']
-                    self.__dep_sys_name = str(dep_sys_name)
+                    self.__dep_sys_name = dep_sys_name
 
     def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]) -> None:
         """ Set provenance information.
@@ -292,6 +292,8 @@ class BmrbAnnTasks:
                 try:
 
                     from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel
+
+                    self.__reg.log.write(f"{self.__secret_key} {self.__service_host} {self.__dep_sys_name}\n")
 
                     serializer = URLSafeSerializer(self.__secret_key, self.__service_host)
 

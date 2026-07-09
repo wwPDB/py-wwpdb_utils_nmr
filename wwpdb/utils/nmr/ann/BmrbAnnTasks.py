@@ -121,20 +121,20 @@ class BmrbAnnTasks:
         # parameters for BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
         self.__secret_key = None
         self.__service_host = None
+        self.__dep_sys_name = 'unknown'
         if self.__reg.conversion_server and CNV_ID_PAT.match(self.__reg.entry_id):
             if has_key_value(self.__reg.inputParamDict, 'secret_key')\
                and has_key_value(self.__reg.inputParamDict, 'service_host'):
                 secret_key = self.__reg.inputParamDict['secret_key']
                 service_host = self.__reg.inputParamDict['service_host']
-                dep_sys_name = 'unknown'
                 if isinstance(secret_key, str) and secret_key not in EMPTY_VALUE\
                    and isinstance(service_host, str) and service_host not in EMPTY_VALUE:
                     self.__secret_key = secret_key
                     self.__service_host = service_host
-                    if has_key_value(self.__reg.inputParamDict, 'dep_sys_name')\
-                       and isinstance(dep_sys_name, str) and dep_sys_name not in EMPTY_VALUE:
+                    if has_key_value(self.__reg.inputParamDict, 'dep_sys_name'):
                         dep_sys_name = self.__reg.inputParamDict['dep_sys_name']
-                    self.__dep_sys_name = dep_sys_name
+                        if isinstance(dep_sys_name, str) and dep_sys_name not in EMPTY_VALUE:
+                            self.__dep_sys_name = dep_sys_name
 
     def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]) -> None:
         """ Set provenance information.
@@ -292,8 +292,6 @@ class BmrbAnnTasks:
                 try:
 
                     from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel
-
-                    self.__reg.log.write(f"{self.__secret_key} {self.__service_host} {self.__dep_sys_name}\n")
 
                     serializer = URLSafeSerializer(self.__secret_key, self.__service_host)
 

@@ -5518,7 +5518,7 @@
             "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
           }
         },
-        "completensss_of_favorable_assignments": {
+        "completeness_of_favorable_assignments": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
@@ -5530,7 +5530,7 @@
             "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"
           }
         },
-        "complentess_of_sidechain_assignments": {
+        "completeness_of_sidechain_assignments": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"

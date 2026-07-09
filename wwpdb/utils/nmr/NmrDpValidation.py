@@ -20181,6 +20181,8 @@ class NmrDpValidation:
                                                         }
                                                 sf_info['chemical_shift_outlier'].append(item)
 
+                                        sf_info['number_of_outliers'] = len(outlier)
+
                                     if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['CS_VALUE']:
                                         unparsed = vrpt_cs['book_keeping']['cs_error']['CS_VALUE'][list_id]
 

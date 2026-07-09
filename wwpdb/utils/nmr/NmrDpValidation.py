@@ -19036,8 +19036,12 @@ class NmrDpValidation:
         self.__reg.output_statistics.setItemValue('file_type', file_type)
         self.__reg.output_statistics.setItemValue('entry_id', self.__reg.entry_id)
         self.__reg.output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
-        self.__reg.output_statistics.setItemValue('processed_site', os.uname()[1])
-
+        service_host = os.uname()[1]
+        if has_key_value(self.__reg.inputParamDict, 'service_host'):
+            _service_host = self.__reg.inputParamDict['service_host']
+            if isinstance(_service_host, str) and _service_host not in EMPTY_VALUE:
+                service_host = _service_host
+        self.__reg.output_statistics.setItemValue('processed_site', service_host)
         self.__reg.output_statistics.setItemValue('file_size', os.path.getsize(self.__reg.dstPath))
         with open(self.__reg.dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
             self.__reg.output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())

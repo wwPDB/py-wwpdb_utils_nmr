@@ -71,6 +71,9 @@ name|type|description
 `trust_pdbx_nmr_ens`|`param`|Boolean value. True for release mode. Whether to trust pdbx_nmr_ensemble to get total number of models.
 `rmsd_not_superimposed`|`param`|Positive floating-point value. Criterion for detection of not superimposed model. (default value is 2.0 Å)
 `rmsd_overlaid_exactly`|`param`|Positive floating-potnt value. Criterion for detection of exactly overlaid models. (default value is 0.01 Å)
+`secret_key`|`param`|Token used for signing in standalone NMR data conversion service.
+`service_host`|`param`|Host name of standalone NMR data conversion service as signer.
+`dep_sys_name`|`param`|Target deposition system name of standalone NMR data conversion service.
 
 4. Add primary output file path, other output file path and parameters
 

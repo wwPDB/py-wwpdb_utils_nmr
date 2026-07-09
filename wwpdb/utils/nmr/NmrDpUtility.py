@@ -279,6 +279,7 @@
 #                           instead of warning, do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
 # 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and chache file directory (DAOTHER-9785)
 # 30-Jun-2026  M. Yokochi - add support for chemical shift perturbation experiment by adding 'nm-csp-*' file types (DAOTHER-9785)
+# 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -1060,8 +1061,9 @@ class NmrDpUtility:
             else:
                 self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server'] in TRUE_VALUE
 
-            self.__reg.nefT.permit_missing_chem_shift(True)
-            self.__reg.bmrb_only = True  # self.__reg.internal_mode = True
+            if self.__reg.conversion_server:
+                self.__reg.nefT.permit_missing_chem_shift(True)
+                self.__reg.bmrb_only = True  # self.__reg.internal_mode = True
 
         if has_key_value(self.__reg.inputParamDict, 'bmrb_only'):
             if isinstance(self.__reg.inputParamDict['bmrb_only'], bool):

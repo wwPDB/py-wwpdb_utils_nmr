@@ -2,6 +2,7 @@
 # Date: 24-Dec-2023
 #
 # Updates:
+# 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 ##
 """ Wrapper class for BMRB annotation tasks.
     @author: Masashi Yokochi
@@ -10,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import copy
 import itertools
@@ -22,6 +23,7 @@ import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               CNV_ID_PAT,
                                                STD_MON_DICT,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
@@ -45,6 +47,7 @@ try:
                                                        retrieveOriginalFileName)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   CNV_ID_PAT,
                                    STD_MON_DICT,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
@@ -86,7 +89,10 @@ class BmrbAnnTasks:
                  '__derivedEntryId',
                  '__derivedEntryTitle',
                  '__defSfLabelTag',
-                 '__update_related_entries')
+                 '__update_related_entries',
+                 '__secret_key',
+                 '__service_host',
+                 '__dep_sys_name')
 
     def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
@@ -102,6 +108,24 @@ class BmrbAnnTasks:
         if has_key_value(self.__reg.inputParamDict, 'update_related_entries'):
             if isinstance(self.__reg.inputParamDict['update_related_entries'], bool):
                 self.__update_related_entries = self.__reg.inputParamDict['update_related_entries']
+
+        # parameters for BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+        self.__secret_key = None
+        self.__service_host = None
+        if self.__reg.conversion_server and CNV_ID_PAT.match(self.__reg.entry_id):
+            if has_key_value(self.__reg.inputParamDict, 'secret_key')\
+               and has_key_value(self.__reg.inputParamDict, 'service_host'):
+                secret_key = self.__reg.inputParamDict['secret_key']
+                service_host = self.__reg.inputParamDict['service_host']
+                dep_sys_name = 'unknown'
+                if isinstance(secret_key, str) and secret_key not in EMPTY_VALUE\
+                   and isinstance(service_host, str) and service_host not in EMPTY_VALUE:
+                    self.__secret_key = secret_key
+                    self.__service_host = service_host
+                    if has_key_value(self.__reg.inputParamDict, 'dep_sys_name')\
+                       and isinstance(dep_sys_name, str) and dep_sys_name not in EMPTY_VALUE:
+                        dep_sys_name = self.__reg.inputParamDict['dep_sys_name']
+                    self.__dep_sys_name = dep_sys_name
 
     def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]) -> None:
         """ Set provenance information.
@@ -251,6 +275,23 @@ class BmrbAnnTasks:
                     # lp.add_data(['BMRB', self.__derivedEntryId, self.__derivedEntryTitle, self.__reg.entry_id])
                     #
                     # ent_sf.add_loop(lp)
+                    pass
+
+            # write signature for BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+            if self.__reg.conversion_server and None in (self.__secret_key, self.__service_host):
+
+                try:
+
+                    from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel
+
+                    serializer = URLSafeSerializer(self.__secret_key, self.__service_host)
+
+                    signature = serializer.dumps({"converion_id": self.__reg.entry_id, "dep_sys_name": self.__dep_sys_name})
+
+                    set_sf_tag(ent_sf, 'Signed_by', self.__service_host)
+                    set_sf_tag(ent_sf, 'Signature', signature)
+
+                except ImportError:
                     pass
 
         # strip citation author names

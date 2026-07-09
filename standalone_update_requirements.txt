@@ -1,6 +1,6 @@
 mmcif
 packaging
-pynmrstar>=3.2.0
+pynmrstar
 python-dateutil
 requests
 rmsd

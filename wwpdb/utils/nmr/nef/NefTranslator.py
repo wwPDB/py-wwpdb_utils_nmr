@@ -131,6 +131,7 @@
 # 28-May-2026  M. Yokochi - join methylene/aromatic opposite atoms with the identical chemical shift value and ambiguity code '1'
 #                           using the wildcard code '%' (DAOTHER-10781, v5.1.0)
 # 28-May-2026  M. Yokochi - fix conversion from NMR-STAR _Bond loop to NEF _nef_covalent_link loop (DAOTHER=10781, v5.1.0)
+# 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -909,7 +910,10 @@ class NefTranslator:
                        ('_audit.revision_id', '_Audit.Revision_ID', '_Audit.Revision_ID'),
                        ('_audit.creation_date', '_Audit.Creation_date', '_Audit.Creation_date'),
                        ('_audit.creation_method', '_Audit.Creation_method', '_Audit.Creation_method'),
-                       ('_audit.update_record', '_Audit.Update_record', '_Audit.Update_record')
+                       ('_audit.update_record', '_Audit.Update_record', '_Audit.Update_record'),
+                       # BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+                       ('_nef_nmr_meta_data.signed_by', '_Entry.Signed_by', '_Entry.Signed_by'),
+                       ('_nef_nmr_meta_data.signature', '_Entry.Signature', '_Entry.Signature')
                        ]
 
         # self.nefMandatoryTag = self.load_csv_data(os.path.join(lib_dir, 'NEF_mandatory.csv'))
@@ -1187,10 +1191,14 @@ class NefTranslator:
                                 '_nef_peak_restraint_link.peak_id': True,
                                 '_nef_peak_restraint_link.restraint_list_id': True,
                                 '_nef_peak_restraint_link.restraint_id': True,
-                                '_audit.revision_id': True,  # add support for _audit loop in NEF (DAOTHER-6327)
+                                # add support for _audit loop in NEF (DAOTHER-6327)
+                                '_audit.revision_id': True,
                                 '_audit.creation_date': False,
                                 '_audit.creation_method': False,
-                                '_audit.update_record': False
+                                '_audit.update_record': False,
+                                # BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+                                '_nef_nmr_meta_data.signed_by': False,
+                                '_nef_nmr_meta_data.signature': False
                                 }
 
         # self.starMandatoryTag = self.load_csv_data(os.path.join(lib_dir, 'NMR-STAR_mandatory.csv'))
@@ -1468,10 +1476,14 @@ class NefTranslator:
                                  '_Peak_constraint_link.Peak_ID': True,
                                  '_Peak_constraint_link.Constraint_Sf_framecode': True,
                                  '_Peak_constraint_link.Constraint_ID': True,
-                                 '_Audit.Revision_ID': True,  # add support for _audit loop in NEF (DAOTHER-6327)
+                                 # add support for _audit loop in NEF (DAOTHER-6327)
+                                 '_Audit.Revision_ID': True,
                                  '_Audit.Creation_date': False,
                                  '_Audit.Creation_method': False,
-                                 '_Audit.Update_record': False
+                                 '_Audit.Update_record': False,
+                                 # BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+                                 '_Entry.Signed_by': False,
+                                 '_Entry.Signature': False
                                  }
 
         # whether to replace zero by empty if 'void-zero' is set

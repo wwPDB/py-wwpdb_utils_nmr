@@ -39,6 +39,7 @@ DP_INPUT_PARAM_KEYS = ('remediation', 'internal', 'bmrb_only', 'bmrb_id', 'merge
                        'check_mandatory_tag', 'check_auth_seq', 'validation_server', 'conversion_server',
                        'transl_pseudo_name', 'tolerant_seq_align', 'fix_format_issue', 'excl_missing_data',
                        'cmpl_missing_data', 'trust_pdbx_nmr_ens', 'rmsd_not_superimposed', 'rmsd_overlaid_exactly',
+                       'secret_key', 'service_host',  # used only for standalone NMR data conversion service
                        'dep_sys_name', 'elec_dep_hash_code', 'update_related_entries')  # used only for BMRB internal annotation
 
 # supported input file names for NmrDpUtility class
@@ -4860,7 +4861,10 @@ SF_TAG_ITEMS = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'm
                                        {'name': 'program_version', 'type': 'str', 'mandatory': True},
                                        {'name': 'creation_date', 'type': 'str', 'mandatory': True},
                                        {'name': 'uuid', 'type': 'str', 'mandatory': True},
-                                       {'name': 'coordinate_file_name', 'type': 'str', 'mandatory': False}
+                                       {'name': 'coordinate_file_name', 'type': 'str', 'mandatory': False},
+                                       # BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+                                       {'name': 'signed_by', 'type': 'str', 'mandatory': False},
+                                       {'name': 'signature', 'type': 'str', 'mandatory': False}
                                        ],
                         'entity': None,
                         'poly_seq': [{'name': 'sf_category', 'type': 'str', 'mandatory': True},
@@ -4956,7 +4960,10 @@ SF_TAG_ITEMS = {'nef': {'entry_info': [{'name': 'sf_category', 'type': 'str', 'm
                                             {'name': 'Generated_software_version', 'type': 'str', 'mandatory': False},
                                             {'name': 'Generated_date', 'type': 'str', 'mandatory': False},
                                             {'name': 'UUID', 'type': 'str', 'mandatory': False},
-                                            {'name': 'Related_coordinate_file_name', 'type': 'str', 'mandatory': False}
+                                            {'name': 'Related_coordinate_file_name', 'type': 'str', 'mandatory': False},
+                                            # BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+                                            {'name': 'Signed_by', 'type': 'str', 'mandatory': False},
+                                            {'name': 'Signature', 'type': 'str', 'mandatory': False}
                                             ],
                              'entity': [{'name': 'Sf_category', 'type': 'str', 'mandatory': True},
                                         {'name': 'Sf_framecode', 'type': 'str', 'mandatory': True},
@@ -5303,7 +5310,9 @@ MANDATORY_SF_TAG_ITEMS = {'nef': {'entry_info': None,
 
 # allowed saveframe tags
 SF_ALLOWED_TAGS = {'nef': {'entry_info': ['sf_category', 'sf_framecode', 'format_name', 'format_version',
-                                          'program_name', 'program_version', 'creation_date', 'uuid', 'coordinate_file_name'],
+                                          'program_name', 'program_version', 'creation_date', 'uuid', 'coordinate_file_name',
+                                          # BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+                                          'signed_by', 'signature'],
                            'poly_seq': ['sf_category', 'sf_framecode'],
                            'entity': None,
                            'chem_shift': ['sf_category', 'sf_framecode'],
@@ -5367,7 +5376,9 @@ SF_ALLOWED_TAGS = {'nef': {'entry_info': ['sf_category', 'sf_framecode', 'format
                                                'BMRB_annotator', 'BMRB_internal_directory_name', 'RCSB_annotator',
                                                'Author_approval_type', 'Assigned_BMRB_ID', 'Assigned_BMRB_deposition_code',
                                                'Assigned_PDB_ID', 'Assigned_PDB_deposition_code', 'Assigned_restart_ID',
-                                               'NMR_STAR_dict_location'],
+                                               'NMR_STAR_dict_location',
+                                               # BMRB's data provenance check in standalone NMR data conversion service
+                                               'Signed_by', 'Signature'],
                                 'poly_seq': ['Sf_category', 'Sf_framecode', 'Entry_ID', 'Sf_ID', 'ID', 'Name', 'BMRB_code',
                                              'Number_of_components', 'Organic_ligands', 'Metal_ions', 'Non_standard_bonds',
                                              'Ambiguous_conformational_states', 'Ambiguous_chem_comp_sites',

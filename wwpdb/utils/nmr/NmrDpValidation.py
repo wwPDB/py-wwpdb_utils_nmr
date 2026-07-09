@@ -1032,7 +1032,7 @@ class NmrDpValidation:
 
         def proc_ac_file_path_list():
 
-            if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.bmrb_only and self.__reg.conversion_server:
+            if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.conversion_server:
 
                 for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
                     acsPath = acs['file_name']
@@ -1276,8 +1276,8 @@ class NmrDpValidation:
                     break
 
             if self.__reg.op == 'nmr-str-replace-cs'\
-               or (self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode):  # DAOTHER-9785:
-                if self.__reg.conversion_server and self.__reg.combined_mode\
+               or (self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.conversion_server):  # DAOTHER-9785:
+                if self.__reg.internal_mode and self.__reg.combined_mode\
                    and CS_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
                     pass
                 elif not proc_cs_path_path_list(1):
@@ -2780,7 +2780,7 @@ class NmrDpValidation:
                     err = f"{cif_seq_code} has been instantiated with different tautomeric states across models, "\
                         f"{tautomer_per_model}. Please re-upload the model file."
 
-                    if self.__reg.internal_mode and not self.__reg.conversion_server:
+                    if self.__reg.internal_mode:  # and not self.__reg.conversion_server:
 
                         self.__reg.report.warning.appendDescription('coordinate_issue',
                                                                     {'file_name': file_name, 'category': 'atom_site',
@@ -2911,7 +2911,7 @@ class NmrDpValidation:
                         err = f"{cif_seq_code} has been instantiated with different tautomeric states across models, "\
                             f"{tautomer_per_model}. Please re-upload the model file."
 
-                        if self.__reg.internal_mode and not self.__reg.conversion_server:
+                        if self.__reg.internal_mode:  # and not self.__reg.conversion_server:
 
                             self.__reg.report.warning.appendDescription('coordinate_issue',
                                                                         {'file_name': file_name, 'category': 'atom_site',

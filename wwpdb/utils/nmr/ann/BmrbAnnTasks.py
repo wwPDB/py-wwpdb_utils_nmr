@@ -2,6 +2,8 @@
 # Date: 24-Dec-2023
 #
 # Updates:
+# 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+# 09-Jul-2026  M. Yokochi - update/generate deposit_data_file saveframe in standalone NMR data conversion service (DAOTHER-9785)
 ##
 """ Wrapper class for BMRB annotation tasks.
     @author: Masashi Yokochi
@@ -10,7 +12,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import copy
 import itertools
@@ -22,6 +24,7 @@ import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               CNV_ID_PAT,
                                                STD_MON_DICT,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
@@ -33,18 +36,23 @@ try:
                                                PROTEIN_RELATED_WORDS,
                                                DNA_RELATED_WORDS,
                                                RNA_RELATED_WORDS,
-                                               ALLOWED_THIOL_STATES)
+                                               ALLOWED_THIOL_STATES,
+                                               SF_CATEGORIES)
     from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
     from wwpdb.utils.nmr.AlignUtil import (getOneLetterCodeCan,
-                                           getScoreOfSeqAlign)
+                                           getScoreOfSeqAlign,
+                                           getRestraintFormatName,
+                                           getChemShiftFormatName)
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag,
                                               has_key_value)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                                        roundString,
-                                                       retrieveOriginalFileName)
+                                                       retrieveOriginalFileName,
+                                                       getPdbxNmrSoftwareName)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   CNV_ID_PAT,
                                    STD_MON_DICT,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    ISOTOPE_NAMES_OF_NMR_OBS_NUCS,
@@ -56,16 +64,20 @@ except ImportError:
                                    PROTEIN_RELATED_WORDS,
                                    DNA_RELATED_WORDS,
                                    RNA_RELATED_WORDS,
-                                   ALLOWED_THIOL_STATES)
+                                   ALLOWED_THIOL_STATES,
+                                   SF_CATEGORIES)
     from nmr.NmrDpRegistry import NmrDpRegistry
     from nmr.AlignUtil import (getOneLetterCodeCan,
-                               getScoreOfSeqAlign)
+                               getScoreOfSeqAlign,
+                               getRestraintFormatName,
+                               getChemShiftFormatName)
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag,
                                   has_key_value)
     from nmr.mr.ParserListenerUtil import (getMaxEffDigits,
                                            roundString,
-                                           retrieveOriginalFileName)
+                                           retrieveOriginalFileName,
+                                           getPdbxNmrSoftwareName)
 
 
 DEFAULT_SF_LABEL_TAGS = ('_Assigned_chem_shift_list.Sample_condition_list_label',
@@ -86,7 +98,10 @@ class BmrbAnnTasks:
                  '__derivedEntryId',
                  '__derivedEntryTitle',
                  '__defSfLabelTag',
-                 '__update_related_entries')
+                 '__update_related_entries',
+                 '__secret_key',
+                 '__service_host',
+                 '__dep_sys_name')
 
     def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
@@ -102,6 +117,24 @@ class BmrbAnnTasks:
         if has_key_value(self.__reg.inputParamDict, 'update_related_entries'):
             if isinstance(self.__reg.inputParamDict['update_related_entries'], bool):
                 self.__update_related_entries = self.__reg.inputParamDict['update_related_entries']
+
+        # parameters for BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+        self.__secret_key = None
+        self.__service_host = None
+        if self.__reg.conversion_server and CNV_ID_PAT.match(self.__reg.entry_id):
+            if has_key_value(self.__reg.inputParamDict, 'secret_key')\
+               and has_key_value(self.__reg.inputParamDict, 'service_host'):
+                secret_key = self.__reg.inputParamDict['secret_key']
+                service_host = self.__reg.inputParamDict['service_host']
+                dep_sys_name = 'unknown'
+                if isinstance(secret_key, str) and secret_key not in EMPTY_VALUE\
+                   and isinstance(service_host, str) and service_host not in EMPTY_VALUE:
+                    self.__secret_key = secret_key
+                    self.__service_host = service_host
+                    if has_key_value(self.__reg.inputParamDict, 'dep_sys_name')\
+                       and isinstance(dep_sys_name, str) and dep_sys_name not in EMPTY_VALUE:
+                        dep_sys_name = self.__reg.inputParamDict['dep_sys_name']
+                    self.__dep_sys_name = dep_sys_name
 
     def setProvenanceInfo(self, derivedEntryId: Optional[str], derivedEntryTitle: Optional[str]) -> None:
         """ Set provenance information.
@@ -252,6 +285,221 @@ class BmrbAnnTasks:
                     #
                     # ent_sf.add_loop(lp)
                     pass
+
+            # write signature for BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+            if self.__reg.conversion_server and None in (self.__secret_key, self.__service_host):
+
+                try:
+
+                    from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel
+
+                    serializer = URLSafeSerializer(self.__secret_key, self.__service_host)
+
+                    signature = serializer.dumps({"converion_id": self.__reg.entry_id, "dep_sys_name": self.__dep_sys_name})
+
+                    set_sf_tag(ent_sf, 'Signed_by', self.__service_host)
+                    set_sf_tag(ent_sf, 'Signature', signature)
+
+                except ImportError:
+                    pass
+
+        # generate/upadte deposited_data_files saveframe in standalone NMR data conversion service (DAOTHER-9785)
+
+        if self.__reg.conversion_server and self.__reg.op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs',
+                                                              'nmr-nef2str-deposit', 'nmr-str2str-deposit'):
+
+            sf_category = 'deposited_data_files'
+            lp_category = '_Upload_data'
+
+            def gen_upload_data_loop(list_id):
+
+                loop = pynmrstar.Loop.from_scratch(lp_category)
+
+                items = ['Data_file_ID', 'Data_file_name', 'Data_file_content_type', 'Data_file_Sf_category',
+                         'Data_file_syntax', 'Entry_ID', 'Deposoted_data_files_ID']
+
+                tags = [f'{lp_category}.{item}' for item in items]
+
+                loop.add_tag(tags)
+
+                for fileListId in range(self.__reg.file_path_list_len):
+
+                    input_source = self.__reg.report.input_sources[fileListId]
+                    input_source_dic = input_source.get()
+
+                    file_name = input_source_dic['file_name']
+                    file_type = input_source_dic['file_type']
+                    original_file_name = input_source_dic['original_file_name']
+                    content_type = input_source_dic['content_type']
+                    content_subtype = input_source_dic['content_subtype']
+
+                    row = [None] * len(loop.tags)
+
+                    row[0] = str(fileListId + 1)
+                    row[1] = file_name if original_file_name in EMPTY_VALUE else original_file_name
+                    row[2] = content_type
+                    if len(content_subtype) > 0:
+                        sf_cat_list = []
+                        if not file_type.startswith('nm-csp'):
+                            for k in content_subtype:
+                                if k in SF_CATEGORIES['nmr-star']:
+                                    sf_cat_list.append(SF_CATEGORIES['nmr-star'][k])
+                        else:
+                            sf_cat_list.append('chem_shift_perturbation')
+                        if len(sf_cat_list) > 0:
+                            row[3] = ', '.join(sf_cat_list)
+                    if file_type in ('nmr-star', 'nm-shi'):
+                        row[4] = 'NMR-STAR V3'
+                    elif file_type == 'nef':
+                        row[4] = 'NEF'
+                    elif file_type == 'pdbx':
+                        row[4] = 'mmCIF'
+                    elif file_type.startswith('nm-res')\
+                            or file_type.startswith('nm-aux')\
+                            or file_type.startswith('nm-pea'):
+                        syntax = getRestraintFormatName(file_type)
+                        if not syntax.startswith('other'):
+                            syntax = getPdbxNmrSoftwareName(syntax.split()[0])
+                        row[4] = syntax
+                    elif file_type.startswith('nm-shi') or file_type.startswith('nm-csp'):
+                        if file_type == 'nm-shi-st2':
+                            syntax = 'NMR-STAR V2'
+                        else:
+                            syntax = getChemShiftFormatName(file_type)
+                            if not syntax.startswith('other'):
+                                syntax = getPdbxNmrSoftwareName(syntax.split()[0])
+                        row[4] = syntax
+                    row[5] = self.__reg.entry_id
+                    row[6] = list_id
+
+                    loop.add_data(row)
+
+                return loop
+
+            if sf_category in self.__reg.sf_category_list and self.__reg.op == 'nmr-str-replace-cs':
+
+                for sf in master_entry.get_saveframes_by_category(sf_category):
+
+                    list_id = get_first_sf_tag(sf, 'ID')
+
+                    try:
+
+                        lp = sf.get_loop(lp_category)
+
+                        id_col = lp.tags.index('Data_file_ID') if 'Data_file_ID' in lp.tags else -1
+                        name_col = lp.tags.index('Data_file_name') if 'Data_file_name' in lp.tags else -1
+                        type_col = lp.tags.index('Data_file_content_type') if 'Data_file_content_type' in lp.tags else -1
+                        sf_cat_col = lp.tags.index('Data_file_Sf_category') if 'Data_file_Sf_category' in lp.tags else -1
+                        syntax_col = lp.tags.index('Data_file_syntax') if 'Data_file_syntax' in lp.tags else -1
+                        entry_id_col = lp.tags.index('Entry_ID') if 'Entry_ID' in lp.tags else -1
+                        list_id_col = lp.tags.index('Deposoted_data_files_ID') if 'Deposited_data_files_ID' in lp.tags else -1
+
+                        has_model = False
+                        for row in lp:
+                            if row[syntax_col] in ('PDB', 'mmCIF', 'PDBx/mmCIF'):
+                                has_model = True
+                                break
+
+                        is_emply = len(lp) > (1 if has_model else 0)
+
+                        file_id = len(lp) + 1
+
+                        for fileListId in range(self.__reg.file_path_list_len):
+
+                            input_source = self.__reg.report.input_sources[fileListId]
+                            input_source_dic = input_source.get()
+
+                            file_name = input_source_dic['file_name']
+                            file_type = input_source_dic['file_type']
+                            original_file_name = input_source_dic['original_file_name']
+                            content_type = input_source_dic['content_type']
+                            content_subtype = input_source_dic['content_subtype']
+
+                            if not is_emply and fileListId == 0:
+                                continue
+
+                            if has_model and file_type == 'pdbx':
+                                continue
+
+                            row = [None] * len(lp.tags)
+
+                            if id_col != -1:
+                                row[id_col] = str(file_id)
+                            if name_col != -1:
+                                row[name_col] = file_name if original_file_name in EMPTY_VALUE else original_file_name
+                            if type_col != -1:
+                                row[type_col] = content_type
+                            if sf_cat_col != -1 and len(content_subtype) > 0:
+                                sf_cat_list = []
+                                if not file_type.startswith('nm-csp'):
+                                    for k in content_subtype:
+                                        if k in SF_CATEGORIES['nmr-star']:
+                                            sf_cat_list.append(SF_CATEGORIES['nmr-star'][k])
+                                else:
+                                    sf_cat_list.append('chem_shift_perturbation')
+                                if len(sf_cat_list) > 0:
+                                    row[sf_cat_col] = ', '.join(sf_cat_list)
+                            if syntax_col != -1:
+                                if file_type in ('nmr-star', 'nm-shi'):
+                                    row[syntax_col] = 'NMR-STAR V3'
+                                elif file_type == 'nef':
+                                    row[syntax_col] = 'NEF'
+                                elif file_type == 'pdbx':
+                                    row[syntax_col] = 'mmCIF'
+                                elif file_type.startswith('nm-res')\
+                                        or file_type.startswith('nm-aux')\
+                                        or file_type.startswith('nm-pea'):
+                                    syntax = getRestraintFormatName(file_type)
+                                    if not syntax.startswith('other'):
+                                        syntax = getPdbxNmrSoftwareName(syntax.split()[0])
+                                    row[syntax_col] = syntax
+                                elif file_type.startswith('nm-shi') or file_type.startswith('nm-csp'):
+                                    if file_type == 'nm-shi-st2':
+                                        syntax = 'NMR-STAR V2'
+                                    else:
+                                        syntax = getChemShiftFormatName(file_type)
+                                        if not syntax.startswith('other'):
+                                            syntax = getPdbxNmrSoftwareName(syntax.split()[0])
+                                    row[syntax_col] = syntax
+                            if entry_id_col != -1:
+                                row[entry_id_col] = self.__reg.entry_id
+                            if list_id_col != -1:
+                                row[list_id_col] = list_id
+
+                            lp.add_data(row)
+
+                            file_id += 1
+
+                    except KeyError:
+                        sf.add_loop(gen_upload_data_loop(list_id))
+
+                    break
+
+            else:
+
+                if sf_category in self.__reg.sf_category_list:
+                    for sf in master_entry.get_saveframes_by_category(sf_category):
+                        master_entry.remove_saveframe(sf.name)
+
+                list_id = '1'
+
+                sf = pynmrstar.Saveframe.from_scratch(sf_category, '_Deposited_data_files')
+
+                sf.add_tag('Sf_category', sf_category)
+                sf.add_tag('Sf_category', sf_category)
+                sf.add_tag('Sf_framecode', sf_category)
+                sf.add_tag('Entry_ID', self.__reg.entry_id)
+                sf.add_tag('ID', list_id)
+                sf.add_tag('Atomic_coordinate_file_name', '.')
+                sf.add_tag('Atomic_coordinate_file_syntax', '.')
+                sf.add_tag('Constraint_file_name', '.')
+                sf.add_tag('Constraint_file_syntax', '.')
+                sf.add_tag('Precheck_flag', '.')
+                sf.add_tag('Validate_flag', '.')
+
+                sf.add_loop(gen_upload_data_loop(list_id))
+
+                master_entry.add_saveframe(sf)
 
         # strip citation author names
 

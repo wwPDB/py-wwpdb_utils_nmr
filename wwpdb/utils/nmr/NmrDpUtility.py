@@ -279,6 +279,7 @@
 #                           instead of warning, do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
 # 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and chache file directory (DAOTHER-9785)
 # 30-Jun-2026  M. Yokochi - add support for chemical shift perturbation experiment by adding 'nm-csp-*' file types (DAOTHER-9785)
+# 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -1060,8 +1061,9 @@ class NmrDpUtility:
             else:
                 self.__reg.conversion_server = self.__reg.inputParamDict['conversion_server'] in TRUE_VALUE
 
-            self.__reg.nefT.permit_missing_chem_shift(True)
-            self.__reg.bmrb_only = self.__reg.internal_mode = True
+            if self.__reg.conversion_server:
+                self.__reg.nefT.permit_missing_chem_shift(True)
+                self.__reg.bmrb_only = True  # self.__reg.internal_mode = True
 
         if has_key_value(self.__reg.inputParamDict, 'bmrb_only'):
             if isinstance(self.__reg.inputParamDict['bmrb_only'], bool):
@@ -1196,7 +1198,7 @@ class NmrDpUtility:
 
         self.__reg.nefT.set_remediation_mode(self.__reg.remediation_mode)
         self.__reg.nefT.set_annotation_mode(self.__reg.annotation_mode)
-        self.__reg.nefT.set_internal_mode(self.__reg.internal_mode)
+        self.__reg.nefT.set_internal_mode(self.__reg.internal_mode or self.__reg.conversion_server)
         self.__reg.nefT.set_merge_rescue_mode(op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs')  # DAOTHER-9927
                                               or (op == 'nmr-str2cif-annotate'
                                                   and self.__reg.remediation_mode))  # DAOTHER-10616
@@ -1933,7 +1935,7 @@ class NmrDpUtility:
 
         def proc_ac_file_path_list():
 
-            if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.bmrb_only and self.__reg.conversion_server:
+            if AC_FILE_PATH_LIST_KEY in self.__reg.inputParamDict and self.__reg.conversion_server:
 
                 for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
 
@@ -1950,7 +1952,8 @@ class NmrDpUtility:
                         input_source.setItemValue('original_file_name', acs['original_file_name'])
                     input_source.setItemValue('ignore_error', False if 'ignore_error' not in acs else acs['ignore_error'])
 
-            if self.__reg.bmrb_only and self.__reg.internal_mode and NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict:
+            if self.__reg.bmrb_only and (self.__reg.internal_mode or self.__reg.conversion_server)\
+               and NMR_CIF_FILE_PATH_KEY in self.__reg.inputParamDict:
 
                 nmr_cif = self.__reg.inputParamDict[NMR_CIF_FILE_PATH_KEY]
 
@@ -1985,7 +1988,7 @@ class NmrDpUtility:
                     return False
 
             # DAOTHER-9785
-            if self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.bmrb_only and self.__reg.internal_mode:
+            if self.__reg.op == 'nmr-cs-mr-merge' and self.__reg.conversion_server:
                 proc_mr_file_path_list()
 
                 if not proc_ar_file_path_list():
@@ -13705,7 +13708,7 @@ class NmrDpUtility:
                     err = f"{cif_seq_code} has been instantiated with different tautomeric states across models, "\
                         f"{tautomer_per_model}. Please re-upload the model file."
 
-                    if self.__reg.internal_mode and not self.__reg.conversion_server:
+                    if self.__reg.internal_mode:  # and not self.__reg.conversion_server:
 
                         self.__reg.report.warning.appendDescription('coordinate_issue',
                                                                     {'file_name': file_name, 'category': 'atom_site',
@@ -13834,7 +13837,7 @@ class NmrDpUtility:
                         err = f"{cif_seq_code} has been instantiated with different tautomeric states across models, "\
                             f"{tautomer_per_model}. Please re-upload the model file."
 
-                        if self.__reg.internal_mode and not self.__reg.conversion_server:
+                        if self.__reg.internal_mode:  # and not self.__reg.conversion_server:
 
                             self.__reg.report.warning.appendDescription('coordinate_issue',
                                                                         {'file_name': file_name, 'category': 'atom_site',

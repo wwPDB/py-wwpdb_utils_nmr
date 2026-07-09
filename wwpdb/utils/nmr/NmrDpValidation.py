@@ -19459,42 +19459,42 @@ class NmrDpValidation:
                               'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
                              ]
                     elif k == 'favorable':
-                        ret['completensss_of_favorable_assignments'] =\
+                        ret['completeness_of_favorable_assignments'] =\
                             [{'atom_group': 'favorable_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
                               'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
                              ]
                     elif k == 'backbone':
-                        ret['completensss_of_backbone_assignments'] =\
+                        ret['completeness_of_backbone_assignments'] =\
                             [{'atom_group': 'backbone_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
                               'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
                              ]
                     elif k == 'sidechain':
-                        ret['completensss_of_sidechain_assignments'] =\
+                        ret['completeness_of_sidechain_assignments'] =\
                             [{'atom_group': 'sidechain_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
                               'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
                              ]
                     elif k == 'aromatic':
-                        ret['completensss_of_aromatic_assignments'] =\
+                        ret['completeness_of_aromatic_assignments'] =\
                             [{'atom_group': 'aromatic_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
                               'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
                              ]
                     elif k == 'sugar':
-                        ret['completensss_of_sugar_assignments'] =\
+                        ret['completeness_of_sugar_assignments'] =\
                             [{'atom_group': 'sugar_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
                               'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
                              ]
                     elif k == 'base':
-                        ret['completensss_of_base_assignments'] =\
+                        ret['completeness_of_base_assignments'] =\
                             [{'atom_group': 'base_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
@@ -19511,37 +19511,37 @@ class NmrDpValidation:
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'favorable':
-                        ret['completensss_of_favorable_assignments'].append(
+                        ret['completeness_of_favorable_assignments'].append(
                             {'atom_group': 'favorable_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'backbone':
-                        ret['completensss_of_backbone_assignments'].append(
+                        ret['completeness_of_backbone_assignments'].append(
                             {'atom_group': 'backbone_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'sidechain':
-                        ret['completensss_of_sidechain_assignments'].append(
+                        ret['completeness_of_sidechain_assignments'].append(
                             {'atom_group': 'sidechain_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'aromatic':
-                        ret['completensss_of_aromatic_assignments'].append(
+                        ret['completeness_of_aromatic_assignments'].append(
                             {'atom_group': 'aromatic_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'sugar':
-                        ret['completensss_of_sugar_assignments'].append(
+                        ret['completeness_of_sugar_assignments'].append(
                             {'atom_group': 'sugar_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'base':
-                        ret['completensss_of_base_assignments'].append(
+                        ret['completeness_of_base_assignments'].append(
                             {'atom_group': 'base_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
@@ -19557,37 +19557,37 @@ class NmrDpValidation:
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'favorable':
-                        ret['completensss_of_favorable_assignments'].append(
+                        ret['completeness_of_favorable_assignments'].append(
                             {'atom_group': 'favorable_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'backbone':
-                        ret['completensss_of_backbone_assignments'].append(
+                        ret['completeness_of_backbone_assignments'].append(
                             {'atom_group': 'backbone_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'sidechain':
-                        ret['completensss_of_sidechain_assignments'].append(
+                        ret['completeness_of_sidechain_assignments'].append(
                             {'atom_group': 'sidechain_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'aromatic':
-                        ret['completensss_of_aromatic_assignments'].append(
+                        ret['completeness_of_aromatic_assignments'].append(
                             {'atom_group': 'aromatic_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'sugar':
-                        ret['completensss_of_sugar_assignments'].append(
+                        ret['completeness_of_sugar_assignments'].append(
                             {'atom_group': 'sugar_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'base':
-                        ret['completensss_of_base_assignments'].append(
+                        ret['completeness_of_base_assignments'].append(
                             {'atom_group': 'base_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
@@ -19603,37 +19603,37 @@ class NmrDpValidation:
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'favorable':
-                        ret['completensss_of_favorable_assignments'].append(
+                        ret['completeness_of_favorable_assignments'].append(
                             {'atom_group': 'favorable_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'backbone':
-                        ret['completensss_of_backbone_assignments'].append(
+                        ret['completeness_of_backbone_assignments'].append(
                             {'atom_group': 'backbone_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'sidechain':
-                        ret['completensss_of_sidechain_assignments'].append(
+                        ret['completeness_of_sidechain_assignments'].append(
                             {'atom_group': 'sidechain_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'aromatic':
-                        ret['completensss_of_aromatic_assignments'].append(
+                        ret['completeness_of_aromatic_assignments'].append(
                             {'atom_group': 'aromatic_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'sugar':
-                        ret['completensss_of_sugar_assignments'].append(
+                        ret['completeness_of_sugar_assignments'].append(
                             {'atom_group': 'sugar_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'base':
-                        ret['completensss_of_base_assignments'].append(
+                        ret['completeness_of_base_assignments'].append(
                             {'atom_group': 'base_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
@@ -19649,37 +19649,37 @@ class NmrDpValidation:
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'favorable':
-                        ret['completensss_of_favorable_assignments'].append(
+                        ret['completeness_of_favorable_assignments'].append(
                             {'atom_group': 'favorable_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'backbone':
-                        ret['completensss_of_backbone_assignments'].append(
+                        ret['completeness_of_backbone_assignments'].append(
                             {'atom_group': 'backbone_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'sidechain':
-                        ret['completensss_of_sidechain_assignments'].append(
+                        ret['completeness_of_sidechain_assignments'].append(
                             {'atom_group': 'sidechain_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'aromatic':
-                        ret['completensss_of_aromatic_assignments'].append(
+                        ret['completeness_of_aromatic_assignments'].append(
                             {'atom_group': 'aromatic_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'sugar':
-                        ret['completensss_of_sugar_assignments'].append(
+                        ret['completeness_of_sugar_assignments'].append(
                             {'atom_group': 'sugar_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
                     elif k == 'base':
-                        ret['completensss_of_base_assignments'].append(
+                        ret['completeness_of_base_assignments'].append(
                             {'atom_group': 'base_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],

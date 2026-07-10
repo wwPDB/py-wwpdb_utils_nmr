@@ -289,19 +289,24 @@ class BmrbAnnTasks:
             # write signature for BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
             if self.__reg.conversion_server and None not in (self.__secret_key, self.__service_host, self.__reg.entry_id):
 
-                try:
+                signed_by = get_first_sf_tag(ent_sf, 'Signed_by')
+                signature = get_first_sf_tag(ent_sf, 'Signature')
 
-                    from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel
+                if signed_by in EMPTY_VALUE or signature in EMPTY_VALUE:
 
-                    serializer = URLSafeSerializer(self.__secret_key, self.__service_host)
+                    try:
 
-                    signature = serializer.dumps({'converion_id': self.__reg.entry_id, 'dep_sys_name': self.__dep_sys_name})
+                        from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel
 
-                    set_sf_tag(ent_sf, 'Signed_by', self.__service_host)
-                    set_sf_tag(ent_sf, 'Signature', signature)
+                        serializer = URLSafeSerializer(self.__secret_key, self.__service_host)
 
-                except ImportError:
-                    pass
+                        signature = serializer.dumps({'converion_id': self.__reg.entry_id, 'dep_sys_name': self.__dep_sys_name})
+
+                        set_sf_tag(ent_sf, 'Signed_by', self.__service_host)
+                        set_sf_tag(ent_sf, 'Signature', signature)
+
+                    except ImportError:
+                        pass
 
         # generate/upadte deposited_data_files saveframe in standalone NMR data conversion service (DAOTHER-9785)
 
@@ -397,6 +402,8 @@ class BmrbAnnTasks:
                         entry_id_col = lp.tags.index('Entry_ID') if 'Entry_ID' in lp.tags else -1
                         list_id_col = lp.tags.index('Deposoted_data_files_ID') if 'Deposited_data_files_ID' in lp.tags else -1
 
+                        data_file_names = lp.get_tag(['Data_file_name'])
+
                         has_model = False
                         for row in lp:
                             if row[syntax_col] in ('PDB', 'mmCIF', 'PDBx/mmCIF'):
@@ -429,6 +436,8 @@ class BmrbAnnTasks:
                                 row[id_col] = str(file_id)
                             if name_col != -1:
                                 row[name_col] = file_name if original_file_name in EMPTY_VALUE else original_file_name
+                                if row[name_col] in data_file_names:
+                                    continue
                             if type_col != -1:
                                 row[type_col] = content_type
                             if sf_cat_col != -1 and len(content_subtype) > 0:

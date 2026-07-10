@@ -4742,7 +4742,7 @@
       "description": "Template for chemical shift completenesses per atom group in output statistics.",
       "type": "object",
       "properties": {
-        "completeness_of_overall_assignements": {
+        "completeness_of_overall_assignments": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/completeness_of_chem_shift_per_atom_group"

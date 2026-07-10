@@ -20178,7 +20178,7 @@ class NmrDpValidation:
                                                         'z_score': row[6],
                                                         'expected_range': {'min_value': row[7],
                                                                            'max_value': row[8]},
-                                                        'details': row[9]
+                                                        'details': row[9] if len(row) > 9 else None
                                                         }
                                                 sf_info['chemical_shift_outlier'].append(item)
 

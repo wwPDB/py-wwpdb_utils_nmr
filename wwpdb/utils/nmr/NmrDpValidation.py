@@ -20265,6 +20265,30 @@ class NmrDpValidation:
                                                         }
                                                 sf_info['chemical_shift_unmapped'].append(item)
 
+                                    # modify existing histogram of assigned chemical shift
+
+                                    try:
+
+                                        item = next(item for item in self.__reg.report_prev.getNmrStatsOfExptlData(content_subtype)
+                                                    if item['list_id'] == list_id)
+
+                                        sf_info['histogram'] = copy.deepcopy(item['histogram'])
+                                        if len(sf_info['histogram']['annotations']) > 0 and self.__reg.caC is not None:
+                                            auth_to_star_seq = self.__reg.caC['auth_to_star_seq']
+                                            for ann in sf_info['histogram']['annotations']:
+                                                chain_id = ann['chain_id']
+                                                if isinstance(chain_id, str) and chain_id.isdigit():
+                                                    chain_id = int(chain_id)
+                                                seq_id = ann['seq_id']
+                                                seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                                if v[0] == chain_id and v[1] == seq_id), None)
+                                                if seq_key is not None:
+                                                    ann['chain_id'] = seq_key[0]
+                                                    ann['seq_id'] = seq_key[1]
+
+                                    except (StopIteration, KeyError, TypeError):
+                                        sf_info['histogram'] = None
+
                                     if 'rci' in vrpt_cs and list_id in vrpt_cs['rci']:
                                         rci = vrpt_cs['rci'][list_id]
 

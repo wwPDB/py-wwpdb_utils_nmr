@@ -309,7 +309,6 @@ class BmrbAnnTasks:
                         pass
 
         # generate/upadte deposited_data_files saveframe in standalone NMR data conversion service (DAOTHER-9785)
-
         if self.__reg.conversion_server and self.__reg.op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs',
                                                               'nmr-nef2str-deposit', 'nmr-str2str-deposit'):
 
@@ -342,7 +341,7 @@ class BmrbAnnTasks:
                     row[0] = str(fileListId + 1)
                     row[1] = file_name if original_file_name in EMPTY_VALUE else original_file_name
                     row[2] = content_type
-                    if len(content_subtype) > 0:
+                    if content_subtype is not None and len(content_subtype) > 0:
                         sf_cat_list = []
                         if content_type == 'model':
                             sf_cat_list.append('conformer_family_coord_set')
@@ -355,7 +354,7 @@ class BmrbAnnTasks:
                         else:
                             sf_cat_list.append('chem_shift_perturbation')
                         if len(sf_cat_list) > 0:
-                            row[3] = ', '.join(sf_cat_list)
+                            row[3] = ','.join(sf_cat_list)
                     if file_type in ('nmr-star', 'nm-shi'):
                         row[4] = 'NMR-STAR V3'
                     elif file_type == 'nef':
@@ -440,7 +439,7 @@ class BmrbAnnTasks:
                                     continue
                             if type_col != -1:
                                 row[type_col] = content_type
-                            if sf_cat_col != -1 and len(content_subtype) > 0:
+                            if sf_cat_col != -1 and content_subtype is not None and len(content_subtype) > 0:
                                 sf_cat_list = []
                                 if content_type == 'model':
                                     sf_cat_list.append('conformer_family_coord_set')
@@ -453,7 +452,7 @@ class BmrbAnnTasks:
                                 else:
                                     sf_cat_list.append('chem_shift_perturbation')
                                 if len(sf_cat_list) > 0:
-                                    row[sf_cat_col] = ', '.join(sf_cat_list)
+                                    row[sf_cat_col] = ','.join(sf_cat_list)
                             if syntax_col != -1:
                                 if file_type in ('nmr-star', 'nm-shi'):
                                     row[syntax_col] = 'NMR-STAR V3'

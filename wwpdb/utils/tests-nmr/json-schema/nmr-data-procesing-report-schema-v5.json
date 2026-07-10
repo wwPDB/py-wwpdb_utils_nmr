@@ -5619,6 +5619,13 @@
               "type": "number"
             }
           }
+        },
+        "details": {
+          "description": "Details regarding structural factors behind anomalous chemical shifts.",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [

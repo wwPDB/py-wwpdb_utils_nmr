@@ -24,7 +24,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.2"
+__version__ = "v1.2.1"
 
 import collections
 import copy
@@ -69,7 +69,14 @@ try:
                                                ANGLE_ERROR_MAX,
                                                RDC_ERROR_MAX,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                               ALLOWED_AMBIGUITY_CODES)
+                                               ALLOWED_AMBIGUITY_CODES,
+                                               PARAMAGNETIC_ELEMENTS,
+                                               FERROMAGNETIC_ELEMENTS,
+                                               CUTOFF_AROMATIC,
+                                               CUTOFF_PARAMAGNETIC,
+                                               VICINITY_AROMATIC,
+                                               VICINITY_PARAMAGNETIC,
+                                               MAGIC_ANGLE)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -106,7 +113,14 @@ except ImportError:
                                    ANGLE_ERROR_MAX,
                                    RDC_ERROR_MAX,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
-                                   ALLOWED_AMBIGUITY_CODES)
+                                   ALLOWED_AMBIGUITY_CODES,
+                                   PARAMAGNETIC_ELEMENTS,
+                                   FERROMAGNETIC_ELEMENTS,
+                                   CUTOFF_AROMATIC,
+                                   CUTOFF_PARAMAGNETIC,
+                                   VICINITY_AROMATIC,
+                                   VICINITY_PARAMAGNETIC,
+                                   MAGIC_ANGLE)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.NmrDpReport import NmrDpReport
@@ -932,6 +946,7 @@ class NmrVrptUtility:
                  '__rdcRestViolCombKeyDict',
                  '__results',
                  '__has_prev_results',
+                 '__is_diamagnetic',
                  '__procTasksDict')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
@@ -1074,6 +1089,9 @@ class NmrVrptUtility:
 
         # whether the previous results have been retrieved
         self.__has_prev_results = False
+
+        # whether molecular assembly is diamagnetic.
+        self.__is_diamagnetic = True
 
         __csValidTasks = [self.__parseCoordinate,
                           self.__parseNmrData,
@@ -1300,11 +1318,8 @@ class NmrVrptUtility:
 
                         try:
 
-                            model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num')\
-                                else 'ndb_model'
-
                             model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': model_num_name, 'type': 'int',
+                                                                        [{'name': 'pdbx_PDB_model_num', 'type': 'int',
                                                                           'alt_name': 'model_id'}
                                                                          ])
 
@@ -1336,11 +1351,8 @@ class NmrVrptUtility:
 
                     try:
 
-                        model_num_name = 'pdbx_PDB_model_num' if self.__cR.hasItem('atom_site', 'pdbx_PDB_model_num')\
-                            else 'ndb_model'
-
                         model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': model_num_name, 'type': 'int',
+                                                                    [{'name': 'pdbx_PDB_model_num', 'type': 'int',
                                                                       'alt_name': 'model_id'}
                                                                      ])
 
@@ -1365,6 +1377,25 @@ class NmrVrptUtility:
                             if a['label_alt_id'] not in EMPTY_VALUE:
                                 self.__representative_alt_id = a['label_alt_id']
                                 break
+
+                if self.__cR.hasCategory('chem_comp_atom'):
+
+                    try:
+
+                        type_symbols = self.__cR.getDictListWithFilter('chem_comp_atom',
+                                                                       [{'name': 'type_symbol', 'type': 'str'}
+                                                                        ])
+
+                        if len(type_symbols) > 0:
+                            for elem in type_symbols:
+                                if elem in PARAMAGNETIC_ELEMENTS or elem in FERROMAGNETIC_ELEMENTS:
+                                    self.__is_diamagnetic = False
+                                    break
+
+                    except Exception as e:  # pylint: disable=broad-exception-caught
+
+                        if self.__verbose:
+                            self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
 
             except Exception:  # pylint: disable=broad-exception-caught
                 pass
@@ -2935,10 +2966,36 @@ class NmrVrptUtility:
                         z_score = float(f"{(cs['value'] - avg_value) / std_value:.2f}")
 
                         if abs(z_score) > 5.0:
+                            na = self.__getNearestAromaticRing(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
+                            pa = self.__getNearestParaFerroMagneticAtom(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
+
+                            details = None
+                            if na is None and pa is None:
+                                pass
+                            elif pa is None:
+                                if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0 or na['ring_distance'] > VICINITY_AROMATIC:
+                                    pass
+                                else:
+                                    details = "The nearest aromatic ring "\
+                                        f"({na['auth_chain_id']}:{na['auth_seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                        f"is located at a distance of {na['ring_distance']}Å, "\
+                                        f"and has an elevation angle of {na['ring_angle']}° with the ring plane. "\
+                                        "It may explain a primary factor behind the outlier."
+                            else:
+                                if pa['distance'] > VICINITY_PARAMAGNETIC:
+                                    pass
+                                else:
+                                    details = "The nearest paramagnetic/ferromagnetic atom "\
+                                        f"({pa['auth_chain_id']}:{pa['auth_seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                        f"is located at a distance of {pa['distance']}Å. "\
+                                        "It may explain a primary factor behind the outlier."
+
                             out_cs_values = list(cs_key)
                             out_cs_values.extend([cs_value, ambig_code, z_score,
                                                   float(f"{avg_value - 5.0 * std_value:.2f}"),
-                                                  float(f"{avg_value + 5.0 * std_value:.2f}")])
+                                                  float(f"{avg_value + 5.0 * std_value:.2f}"),
+                                                  details])
+
                             self.__chemShiftOutlier[list_id].append(out_cs_values)
 
                     else:
@@ -2957,6 +3014,424 @@ class NmrVrptUtility:
                 self.__chemShiftDuplicated = self.__chemShiftUnmapped = None
 
         return False
+
+    def __getNearestAromaticRing(self, auth_chain_id: str, auth_seq_id: int, atom_id: str
+                                 ) -> Optional[dict]:
+        """ Return the nearest aromatic ring around a given atom.
+            @return: the nearest aromatic ring
+        """
+
+        try:
+
+            _origin = self.__cR.getDictListWithFilter('atom_site',
+                                                      [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                       ],
+                                                      [{'name': 'auth_asym_id', 'type': 'str', 'value': auth_chain_id},
+                                                       {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id},
+                                                       {'name': 'label_atom_id', 'type': 'str', 'value': atom_id},
+                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int',
+                                                        'value': self.__representative_model_id},
+                                                       {'name': 'label_alt_id', 'type': 'enum',
+                                                        'enum': (self.__representative_alt_id,)}
+                                                       ])
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+
+            if self.__verbose:
+                self.__log.write(f"+{self.__class_name__}.__getNearestAromaticRing() "
+                                 f"++ Error  - {str(e)}\n")
+
+            return None
+
+        if len(_origin) != 1:
+            return None
+
+        o = to_np_array(_origin[0])
+
+        try:
+
+            _neighbor = self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'starts-with-alnum',
+                                                          'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                          'alt_name': 'atom_id'},
+                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                         {'name': 'type_symbol', 'type': 'str'}
+                                                         ],
+                                                        [{'name': 'Cartn_x', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (o[0] - CUTOFF_AROMATIC),
+                                                                    'max_exclusive': (o[0] + CUTOFF_AROMATIC)}},
+                                                         {'name': 'Cartn_y', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (o[1] - CUTOFF_AROMATIC),
+                                                                    'max_exclusive': (o[1] + CUTOFF_AROMATIC)}},
+                                                         {'name': 'Cartn_z', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (o[2] - CUTOFF_AROMATIC),
+                                                                    'max_exclusive': (o[2] + CUTOFF_AROMATIC)}},
+                                                         {'name': 'pdbx_PDB_model_num', 'type': 'int',
+                                                          'value': self.__representative_model_id},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': (self.__representative_alt_id,)}
+                                                         ])
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+
+            if self.__verbose:
+                self.__log.write(f"+{self.__class_name__}.__getNearestAromaticRing() "
+                                 f"++ Error  - {str(e)}\n")
+
+            return None
+
+        if len(_neighbor) == 0:
+            return None
+
+        neighbor = [n for n in _neighbor
+                    if n['auth_seq_id'] != auth_seq_id
+                    and n['type_symbol'] not in PROTON_BEGIN_CODE
+                    and distance(to_np_array(n), o) < CUTOFF_AROMATIC
+                    and n['atom_id'] in self.__csStat.getAromaticAtoms(n['comp_id'])]
+
+        if len(neighbor) == 0:
+            return None
+
+        atom_list = []
+
+        for n in neighbor:
+            atom_list.append({'auth_chain_id': n['auth_chain_id'],
+                              'auth_seq_id': n['auth_seq_id'],
+                              'comp_id': n['comp_id'],
+                              'atom_id': n['atom_id'],
+                              'distance': distance(to_np_array(n), o)})
+
+        if len(atom_list) == 0:
+            return None
+
+        na = sorted(atom_list, key=itemgetter('distance'))[0]
+
+        na_atom_id = na['atom_id']
+
+        if not self.__ccU.updateChemCompDict(na['comp_id']):
+            return None
+
+        # matches with comp_id in CCD
+
+        half_ring_traces = []
+
+        for b1 in self.__ccU.lastBondDictList:
+
+            if b1['aromatic_flag'] != 'Y':
+                continue
+
+            if b1['atom_id_1'] == na_atom_id and b1['atom_id_2'][0] not in PROTON_BEGIN_CODE:
+                na_ = b1['atom_id_2']
+
+            elif b1['atom_id_2'] == na_atom_id and b1['atom_id_1'][0] not in PROTON_BEGIN_CODE:
+                na_ = b1['atom_id_1']
+
+            else:
+                continue
+
+            for b2 in self.__ccU.lastBondDictList:
+
+                if b2['aromatic_flag'] != 'Y':
+                    continue
+
+                if b2['atom_id_1'] == na_ and b2['atom_id_2'][0] not in PROTON_BEGIN_CODE\
+                        and b2['atom_id_2'] != na_atom_id:
+                    na__ = b2['atom_id_2']
+
+                elif b2['atom_id_2'] == na_ and b2['atom_id_1'][0] not in PROTON_BEGIN_CODE\
+                        and b2['atom_id_1'] != na_atom_id:
+                    na__ = b2['atom_id_1']
+
+                else:
+                    continue
+
+                for b3 in self.__ccU.lastBondDictList:
+
+                    if b3['aromatic_flag'] != 'Y':
+                        continue
+
+                    if b3['atom_id_1'] == na__ and b3['atom_id_2'][0] not in PROTON_BEGIN_CODE\
+                            and b3['atom_id_2'] != na_:
+                        na___ = b3['atom_id_2']
+
+                    elif b3['atom_id_2'] == na__ and b3['atom_id_1'][0] not in PROTON_BEGIN_CODE\
+                            and b3['atom_id_1'] != na_:
+                        na___ = b3['atom_id_1']
+
+                    else:
+                        continue
+
+                    half_ring_traces.append(f"{na_atom_id}:{na_}:{na__}:{na___}")
+
+        len_half_ring_traces = len(half_ring_traces)
+
+        if len_half_ring_traces < 2:
+            return None
+
+        ring_traces = []
+
+        for i in range(len_half_ring_traces - 1):
+
+            half_ring_trace_1 = half_ring_traces[i].split(':')
+
+            for j in range(i + 1, len_half_ring_traces):
+
+                half_ring_trace_2 = half_ring_traces[j].split(':')
+
+                # hexagonal ring
+                if half_ring_trace_1[3] == half_ring_trace_2[3]:
+                    ring_traces.append(f'{half_ring_traces[i]}:{half_ring_trace_2[2]}:{half_ring_trace_2[1]}')
+
+                # pentagonal ring
+                elif half_ring_trace_1[3] == half_ring_trace_2[2] and half_ring_trace_1[2] == half_ring_trace_2[3]:
+                    ring_traces.append(f'{half_ring_traces[i]}:{half_ring_trace_2[1]}')
+
+        if len(ring_traces) == 0:
+            return None
+
+        ring_atoms = None
+        ring_trace_score = 0
+
+        for ring_trace in ring_traces:
+
+            _ring_atoms = ring_trace.split(':')
+
+            score = 0
+
+            for a in atom_list:
+
+                if a['auth_chain_id'] != na['auth_chain_id'] or a['auth_seq_id'] != na['auth_seq_id']\
+                   or a['comp_id'] != na['comp_id']:
+                    continue
+
+                if a['atom_id'] in _ring_atoms:
+                    score += 1
+
+            if score > ring_trace_score:
+                ring_atoms = _ring_atoms
+                ring_trace_score = score
+
+        try:
+
+            _na = self.__cR.getDictListWithFilter('atom_site',
+                                                  [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                    'alt_name': 'atom_id'},
+                                                   {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                   {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
+                                                   ],
+                                                  [{'name': 'auth_asym_id', 'type': 'str', 'value': na['auth_chain_id']},
+                                                   {'name': 'auth_seq_id', 'type': 'int', 'value': na['auth_seq_id']},
+                                                   {'name': 'label_comp_id', 'type': 'str', 'value': na['comp_id']},
+                                                   {'name': 'label_atom_id', 'type': 'enum', 'enum': ring_atoms},
+                                                   {'name': 'label_alt_id', 'type': 'enum',
+                                                    'enum': (self.__representative_alt_id,)}
+                                                   ])
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+
+            if self.__verbose:
+                self.__log.write(f"+{self.__class_name__}.__getNearestAromaticRing() "
+                                 f"++ Error  - {str(e)}\n")
+
+            return None
+
+        if len(_na) == 0:
+            return None
+
+        model_ids = set(a['model_id'] for a in _na)
+
+        len_model_ids = 0
+
+        dist = ring_dist = ring_angle = 0.0
+
+        for model_id in model_ids:
+
+            rc = numpy.array([0.0] * 3, dtype=float)
+
+            total = 0
+
+            for a in _na:
+
+                if a['model_id'] == model_id:
+
+                    _a = to_np_array(a)
+
+                    if a['atom_id'] == na_atom_id:
+                        dist += distance(_a, o)
+
+                    rc = numpy.add(rc, _a)
+
+                    total += 1
+
+            if total == len(ring_atoms):
+
+                rc = rc / total
+
+                ring_dist += distance(rc, o)
+
+                na_ = next(to_np_array(na_) for na_ in _na if na_['atom_id'] == ring_atoms[0])
+                na__ = next(to_np_array(na__) for na__ in _na if na__['atom_id'] == ring_atoms[1])
+                na___ = next(to_np_array(na___) for na___ in _na if na___['atom_id'] == ring_atoms[-1])
+
+                ring_vector = numpy.cross(na__ - na_, na___ - na_)
+
+                ring_angle += math.acos(abs(numpy.dot(to_unit_vector(o - rc), to_unit_vector(ring_vector))))
+
+                len_model_ids += 1
+
+        if len_model_ids == 0:  # DAOTHER-8840
+            return None
+
+        na['ring_atoms'] = ring_atoms
+        na['distance'] = float(f"{dist / len_model_ids:.1f}")
+        na['ring_distance'] = float(f"{ring_dist / len_model_ids:.1f}")
+        na['ring_angle'] = float(f"{numpy.degrees(ring_angle / len_model_ids):.1f}")
+
+        return na
+
+    def __getNearestParaFerroMagneticAtom(self, auth_chain_id: str, auth_seq_id: int, atom_id: str
+                                          ) -> Optional[dict]:
+        """ Return the nearest paramagnetic/ferromagnetic atom around a given atom.
+            @return: the nearest paramagnetic/ferromagnetic atom
+        """
+
+        if self.__is_diamagnetic:
+            return None
+
+        try:
+
+            _origin = self.__cR.getDictListWithFilter('atom_site',
+                                                      [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                       ],
+                                                      [{'name': 'auth_asym_id', 'type': 'str', 'value': auth_chain_id},
+                                                       {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id},
+                                                       {'name': 'label_atom_id', 'type': 'str', 'value': atom_id},
+                                                       {'name': 'pdbx_PDB_model_num', 'type': 'int',
+                                                        'value': self.__representative_model_id},
+                                                       {'name': 'label_alt_id', 'type': 'enum',
+                                                        'enum': (self.__representative_alt_id,)}
+                                                       ])
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+
+            if self.__verbose:
+                self.__log.write(f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() "
+                                 f"++ Error  - {str(e)}\n")
+
+            return None
+
+        if len(_origin) != 1:
+            return None
+
+        o = to_np_array(_origin[0])
+
+        try:
+
+            _neighbor = self.__cR.getDictListWithFilter('atom_site',
+                                                        [{'name': 'auth_asym_id', 'type': 'str',
+                                                          'alt_name': 'auth_chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                                         {'name': 'label_comp_id', 'type': 'starts-with-alnum',
+                                                          'alt_name': 'comp_id'},
+                                                         {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                          'alt_name': 'atom_id'},
+                                                         {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                         {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                         {'name': 'type_symbol', 'type': 'str'}
+                                                         ],
+                                                        [{'name': 'Cartn_x', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (o[0] - CUTOFF_PARAMAGNETIC),
+                                                                    'max_exclusive': (o[0] + CUTOFF_PARAMAGNETIC)}},
+                                                         {'name': 'Cartn_y', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (o[1] - CUTOFF_PARAMAGNETIC),
+                                                                    'max_exclusive': (o[1] + CUTOFF_PARAMAGNETIC)}},
+                                                         {'name': 'Cartn_z', 'type': 'range-float',
+                                                          'range': {'min_exclusive': (o[2] - CUTOFF_PARAMAGNETIC),
+                                                                    'max_exclusive': (o[2] + CUTOFF_PARAMAGNETIC)}},
+                                                         {'name': 'pdbx_PDB_model_num', 'type': 'int',
+                                                          'value': self.__representative_model_id},
+                                                         {'name': 'label_alt_id', 'type': 'enum',
+                                                          'enum': (self.__representative_alt_id,)}
+                                                         ])
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+
+            if self.__verbose:
+                self.__log.write(f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() "
+                                 f"++ Error  - {str(e)}\n")
+
+            return None
+
+        if len(_neighbor) == 0:
+            return None
+
+        neighbor = [n for n in _neighbor
+                    if n['auth_seq_id'] != auth_seq_id
+                    and distance(to_np_array(n), o) < CUTOFF_PARAMAGNETIC
+                    and (n['type_symbol'] in PARAMAGNETIC_ELEMENTS
+                         or n['type_symbol'] in FERROMAGNETIC_ELEMENTS)]
+
+        if len(neighbor) == 0:
+            return None
+
+        atom_list = []
+
+        for n in neighbor:
+            atom_list.append({'auth_chain_id': n['auth_chain_id'], 'auth_seq_id': n['auth_seq_id'],
+                              'comp_id': n['comp_id'], 'atom_id': n['atom_id'],
+                              'distance': distance(to_np_array(n), o)})
+
+        if len(atom_list) == 0:
+            return None
+
+        p = sorted(atom_list, key=itemgetter('distance'))[0]
+
+        try:
+
+            _p = self.__cR.getDictListWithFilter('atom_site',
+                                                 [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                  {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                  {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
+                                                  ],
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'value': p['auth_chain_id']},
+                                                  {'name': 'auth_seq_id', 'type': 'int', 'value': p['auth_seq_id']},
+                                                  {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
+                                                  {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},
+                                                  {'name': 'label_alt_id', 'type': 'enum',
+                                                   'enum': (self.__representative_alt_id,)}
+                                                  ])
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+
+            if self.__verbose:
+                self.__log.write(f"+{self.__class_name__}.__getNearestParaFerroMagneticAtom() "
+                                 f"++ Error  - {str(e)}\n")
+
+            return None
+
+        if len(_p) == 0:
+            return None
+
+        dist = 0.0
+
+        for __p in _p:
+            dist += distance(to_np_array(__p), o)
+
+        p['distance'] = float(f"{dist / len(_p):.1f}")
+
+        return p
 
     def __validateDistanceRestraints(self) -> bool:
         """ Validate distance restraints.

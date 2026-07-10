@@ -20177,7 +20177,8 @@ class NmrDpValidation:
                                                         'ambig_code': row[5],
                                                         'z_score': row[6],
                                                         'expected_range': {'min_value': row[7],
-                                                                           'max_value': row[8]}
+                                                                           'max_value': row[8]},
+                                                        'details': row[9]
                                                         }
                                                 sf_info['chemical_shift_outlier'].append(item)
 

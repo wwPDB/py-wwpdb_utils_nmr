@@ -39,6 +39,7 @@
 # 20-May-2026 - my  - add 'enum-int' as filter item type (DAOTHER-9785)
 # 28-May-2026 - my  - avoid mosaic-like domain recognition (v1.0.7)
 # 16-Jun-2025 - my  - set cache directory path (DAOTHER-9785)
+# 10-Jul-2026 - my  - fill single gap in a domain (v1.0.8, 8vrc)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -1725,8 +1726,24 @@ class CifReader:
                                         if chain_id not in seq_ids_set_of:
                                             seq_ids_set_of[chain_id] = []
                                         seq_ids_set_of[chain_id].append(seq_ids)
-                                        if gaps > monomers * 2:
+                                        if gaps > monomers * 2:  # avoid mosaic-like domain recognition (v1.0.7)
                                             mosaic = True
+                                        if gaps == 1:  # fill single gap in a domain (v1.0.8)
+                                            prev_seq_id = None
+                                            for seq_id in seq_ids:
+                                                if prev_seq_id is not None and seq_id - 2 == prev_seq_id:
+                                                    break
+                                                prev_seq_id = seq_id
+                                            if prev_seq_id is not None:
+                                                gap_idx = None
+                                                for idx, a in enumerate(_atom_site_ref):
+                                                    if a['chain_id'] == chain_id and a['seq_id'] == prev_seq_id + 1:
+                                                        gap_idx = idx
+                                                        break
+                                                if gap_idx is not None and list_labels[gap_idx] == -1:
+                                                    list_labels[gap_idx] = label
+                                                    n_noise -= 1
+                                                    result['noise'] = n_noise
 
                         if mosaic:
 
@@ -1834,6 +1851,42 @@ class CifReader:
 
         if domains[0][0] == -1:
             return None, None
+
+        fill_single_gap = False
+
+        for label in set_labels:
+            monomers = list_labels.count(label)
+
+            if monomers < self.__min_monomers_for_domain:
+                continue
+
+            _atom_site_ref = _atom_site_dict[1]
+            _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
+
+            if label != -1:
+                for chain_id in chain_ids:
+                    seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p if a['chain_id'] == chain_id))
+                    if len(seq_ids) > 0:
+                        gaps = seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids)
+                        if gaps == 1:  # fill single gap in a domain (v1.0.8)
+                            prev_seq_id = None
+                            for seq_id in seq_ids:
+                                if prev_seq_id is not None and seq_id - 2 == prev_seq_id:
+                                    break
+                                prev_seq_id = seq_id
+                            if prev_seq_id is not None:
+                                gap_idx = None
+                                for idx, a in enumerate(_atom_site_ref):
+                                    if a['chain_id'] == chain_id and a['seq_id'] == prev_seq_id + 1:
+                                        gap_idx = idx
+                                        break
+                                if gap_idx is not None and list_labels[gap_idx] == -1:
+                                    labels[gap_idx] = label
+                                    fill_single_gap = True
+
+        if fill_single_gap:
+            list_labels = list(labels)
+            domains = collections.Counter(list_labels).most_common()
 
         eff_labels = [label for label, count in domains if label != -1 and count >= self.__min_monomers_for_domain]
         eff_domain_id = {}

@@ -280,6 +280,7 @@
 # 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and chache file directory (DAOTHER-9785)
 # 30-Jun-2026  M. Yokochi - add support for chemical shift perturbation experiment by adding 'nm-csp-*' file types (DAOTHER-9785)
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+# 13-Jul-2026  M. Yokochi - implement ensemble composition analysis including cluster analysis (DAOTHER-9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -602,6 +603,7 @@ class NmrDpUtility:
                  '__alt_chain',
                  '__valid_seq',
                  '__remediation_loop_count',
+                 '__ensemble_composition',
                  '__dstPath__',
                  '__logPath',
                  '__tmpPath',
@@ -852,6 +854,9 @@ class NmrDpUtility:
 
         # loop count of remediation
         self.__remediation_loop_count: int = 0
+
+        # ensemble composition
+        self.__ensemble_composition: dict = None
 
         # copy of dstPath
         self.__dstPath__: str = None
@@ -9265,11 +9270,11 @@ class NmrDpUtility:
                             self.__reg.representative_alt_id = a['label_alt_id']
                             break
 
-            self.__reg.ensemble_composition = {'total_models': self.__reg.total_models,
-                                               'eff_model_ids': self.__reg.eff_model_ids,
-                                               'representative_model_id': self.__reg.representative_model_id,
-                                               'selection_criteria': 'unknown'
-                                               }
+            self.__ensemble_composition = {'total_models': self.__reg.total_models,
+                                           'eff_model_ids': self.__reg.eff_model_ids,
+                                           'representative_model_id': self.__reg.representative_model_id,
+                                           'selection_criteria': 'unknown'
+                                           }
 
             nmr_representative = self.__reg.cR.getDictList('pdbx_nmr_representative')
 
@@ -9277,10 +9282,10 @@ class NmrDpUtility:
 
                 try:
                     self.__reg.representative_model_id = int(nmr_representative[0]['conformer_id'])
-                    self.__reg.ensemble_composition['representative_model_id'] = self.__reg.representative_model_id
+                    self.__ensemble_composition['representative_model_id'] = self.__reg.representative_model_id
                     if 'selection_criteria' in nmr_representative[0]\
                        and nmr_representative[0]['selection_criteria'] not in EMPTY_VALUE:
-                        self.__reg.ensemble_composition['selection_criteria'] = nmr_representative[0]['selection_criteria']
+                        self.__ensemble_composition['selection_criteria'] = nmr_representative[0]['selection_criteria']
                 except ValueError:
                     pass
 
@@ -9992,7 +9997,7 @@ class NmrDpUtility:
 
         try:
 
-            poly_seq = poly_seq_cache_path = None
+            poly_seq = poly_seq_cache_path = cluster = None
 
             if self.__cifHashCode is not None:
                 poly_seq_cache_path = os.path.join(self.__reg.cacheDirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
@@ -10001,19 +10006,19 @@ class NmrDpUtility:
             if poly_seq is None:
 
                 try:
-                    poly_seq = self.__reg.cR.getPolymerSequence(lp_category, key_items,
-                                                                withStructConf=True, withRmsd=True, alias=alias,
-                                                                totalModels=self.__reg.total_models,
-                                                                effModelIds=self.__reg.eff_model_ids,
-                                                                repAltId=self.__reg.representative_alt_id)
+                    poly_seq, cluster = self.__reg.cR.getPolymerSequence(lp_category, key_items,
+                                                                         withStructConf=True, withRmsd=True, alias=alias,
+                                                                         totalModels=self.__reg.total_models,
+                                                                         effModelIds=self.__reg.eff_model_ids,
+                                                                         repAltId=self.__reg.representative_alt_id)
                 except KeyError:  # pdbx_PDB_ins_code throws KeyError
                     if content_subtype + ('_ins_alias' if alias else '_ins') in self.__reg.key_items[file_type]:
                         key_items = self.__reg.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
-                        poly_seq = self.__reg.cR.getPolymerSequence(lp_category, key_items,
-                                                                    withStructConf=True, withRmsd=True, alias=alias,
-                                                                    totalModels=self.__reg.total_models,
-                                                                    effModelIds=self.__reg.eff_model_ids,
-                                                                    repAltId=self.__reg.representative_alt_id)
+                        poly_seq, cluster = self.__reg.cR.getPolymerSequence(lp_category, key_items,
+                                                                             withStructConf=True, withRmsd=True, alias=alias,
+                                                                             totalModels=self.__reg.total_models,
+                                                                             effModelIds=self.__reg.eff_model_ids,
+                                                                             repAltId=self.__reg.representative_alt_id)
                     else:
                         poly_seq = []
 
@@ -10042,11 +10047,11 @@ class NmrDpUtility:
 
                     try:
 
-                        branched_seq = self.__reg.cR.getPolymerSequence(lp_category, key_items,
-                                                                        withStructConf=False, withRmsd=False, alias=False,
-                                                                        totalModels=self.__reg.total_models,
-                                                                        effModelIds=self.__reg.eff_model_ids,
-                                                                        repAltId=self.__reg.representative_alt_id)
+                        branched_seq, _ = self.__reg.cR.getPolymerSequence(lp_category, key_items,
+                                                                           withStructConf=False, withRmsd=False, alias=False,
+                                                                           totalModels=self.__reg.total_models,
+                                                                           effModelIds=self.__reg.eff_model_ids,
+                                                                           repAltId=self.__reg.representative_alt_id)
                         if len(branched_seq) > 0:
                             poly_seq.extend(branched_seq)
 
@@ -10075,11 +10080,11 @@ class NmrDpUtility:
 
                     try:
 
-                        non_poly = self.__reg.cR.getPolymerSequence(lp_category, key_items,
-                                                                    withStructConf=False, withRmsd=False, alias=False,
-                                                                    totalModels=self.__reg.total_models,
-                                                                    effModelIds=self.__reg.eff_model_ids,
-                                                                    repAltId=self.__reg.representative_alt_id)
+                        non_poly, _ = self.__reg.cR.getPolymerSequence(lp_category, key_items,
+                                                                       withStructConf=False, withRmsd=False, alias=False,
+                                                                       totalModels=self.__reg.total_models,
+                                                                       effModelIds=self.__reg.eff_model_ids,
+                                                                       repAltId=self.__reg.representative_alt_id)
 
                         if len(non_poly) > 0:
                             poly_seq.extend(non_poly)
@@ -10286,9 +10291,11 @@ class NmrDpUtility:
                                                 'range_of_seq_id': f"{', '.join(_range_of_seq_id)}"})
 
                 if len(well_defined_region) > 0:
-                    self.__reg.ensemble_composition['well_defined_region'] = well_defined_region
+                    self.__ensemble_composition['well_defined_region'] = well_defined_region
+                    if cluster is not None:
+                        self.__ensemble_composition['cluster_anlysys'] = cluster
 
-            cif_input_source.setItemValue('ensemble_composition', self.__reg.ensemble_composition)
+            cif_input_source.setItemValue('ensemble_composition', self.__ensemble_composition)
 
             if len(not_superimposed_ensemble) > 0:
 
@@ -10451,11 +10458,11 @@ class NmrDpUtility:
                 if poly_seq is None:
 
                     try:
-                        poly_seq = self.__reg.cR.getPolymerSequence(lp_category, key_items)
+                        poly_seq, _ = self.__reg.cR.getPolymerSequence(lp_category, key_items)
                     except KeyError:  # pdbx_PDB_ins_code throws KeyError
                         if content_subtype + ('_ins_alias' if alias else '_ins') in self.__reg.key_items[file_type]:
                             key_items = self.__reg.key_items[file_type][content_subtype + ('_ins_alias' if alias else '_ins')]
-                            poly_seq = self.__reg.cR.getPolymerSequence(lp_category, key_items)
+                            poly_seq, _ = self.__reg.cR.getPolymerSequence(lp_category, key_items)
                         else:
                             poly_seq = []
 

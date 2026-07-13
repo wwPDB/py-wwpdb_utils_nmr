@@ -4232,11 +4232,11 @@ class NmrVrptUtility:
                     keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
 
                 try:
-                    polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                           withRmsd=True,
-                                                           totalModels=self.__total_models,
-                                                           effModelIds=self.__eff_model_ids,
-                                                           repAltId=self.__representative_alt_id)
+                    polySeq, _ = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                              withRmsd=True,
+                                                              totalModels=self.__total_models,
+                                                              effModelIds=self.__eff_model_ids,
+                                                              repAltId=self.__representative_alt_id)
                 except KeyError:  # pdbx_PDB_ins_code throws KeyError
                     pass
 
@@ -4256,11 +4256,11 @@ class NmrVrptUtility:
                         keyItems.append({'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
 
                     try:
-                        polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                               withRmsd=True,
-                                                               totalModels=self.__total_models,
-                                                               effModelIds=self.__eff_model_ids,
-                                                               repAltId=self.__representative_alt_id)
+                        polySeq, _ = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                                  withRmsd=True,
+                                                                  totalModels=self.__total_models,
+                                                                  effModelIds=self.__eff_model_ids,
+                                                                  repAltId=self.__representative_alt_id)
                     except (KeyError, ValueError):
                         pass
 

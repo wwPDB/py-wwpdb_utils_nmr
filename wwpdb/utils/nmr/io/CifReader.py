@@ -40,6 +40,7 @@
 # 28-May-2026 - my  - avoid mosaic-like domain recognition (v1.0.7)
 # 16-Jun-2025 - my  - set cache directory path (DAOTHER-9785)
 # 10-Jul-2026 - my  - fill single gap in a domain (v1.0.8, 8vrc)
+# 13-Jul-2026 - my  - implement ensemble composition analysis including cluster analysis (v1.0.9)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -47,7 +48,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.8"
+__version__ = "1.0.9"
 
 import collections
 import copy
@@ -825,7 +826,7 @@ class CifReader:
     def getPolymerSequence(self, catName: str, keyItems: List[dict],
                            withStructConf: bool = False, withRmsd: bool = False, alias: bool = False,
                            totalModels: int = 1, effModelIds: Optional[List[int]] = None, repAltId: str = 'A'
-                           ) -> List[dict]:
+                           ) -> Tuple[List[dict], Optional[List[dict]]]:
         """ Extract sequence from a given loop in a CIF file.
         """
 
@@ -834,7 +835,7 @@ class CifReader:
         lenKeyItems = len(keyItems)
 
         if self.__dBlock is None:
-            return []
+            return [], None
 
         repModelId = effModelIds[0] if effModelIds is not None else 1
 
@@ -863,7 +864,7 @@ class CifReader:
         catObj = self.__dBlock.getObj(catName)
 
         if catObj is None:
-            return []
+            return [], None
 
         # get column name index
         itDict, altDict = {}, {}
@@ -1073,6 +1074,8 @@ class CifReader:
         _seqDict = deepcopy(seqDict)
 
         asm = []  # assembly of a loop
+        cluster = None  # cluster analysis
+
         for i, c in enumerate(chainIds):
             ent = {}  # entity
 
@@ -1420,9 +1423,12 @@ class CifReader:
                             bb_atom_sites.extend(ca_atom_sites)
                             bb_atom_sites.extend(co_atom_sites)
 
-                            caRmsd, caWellDefinedRegion = self.__calculateRmsd(polyPeptideChains, polyPeptideLengths,
-                                                                               totalModels, effModelIds,
-                                                                               ca_atom_sites, bb_atom_sites, randomM)
+                            caRmsd, caWellDefinedRegion, _cluster =\
+                                self.__calculateRmsd(polyPeptideChains, polyPeptideLengths,
+                                                     totalModels, effModelIds,
+                                                     ca_atom_sites, bb_atom_sites, randomM)
+                            if cluster is None:
+                                cluster = _cluster
 
                         if caRmsd is not None:
                             ent['ca_rmsd'] = caRmsd[polyPeptideChains.index(c)]
@@ -1469,9 +1475,13 @@ class CifReader:
 
                         bb_atom_sites.extend(p_atom_sites)
 
-                        pRmsd, pWellDefinedRegion = self.__calculateRmsd([c], [len(_seqDict[c])],
-                                                                         totalModels, effModelIds,
-                                                                         p_atom_sites, bb_atom_sites, randomM)
+                        pRmsd, pWellDefinedRegion, _cluster =\
+                            self.__calculateRmsd([c], [len(_seqDict[c])],
+                                                 totalModels, effModelIds,
+                                                 p_atom_sites, bb_atom_sites, randomM)
+
+                        if cluster is None:
+                            cluster = _cluster
 
                         if pRmsd is not None:
                             ent['p_rmsd'] = pRmsd[0]
@@ -1496,7 +1506,7 @@ class CifReader:
 
             asm.append(ent)
 
-        return asm
+        return asm, cluster
 
     def __extractStructConf(self, chain_id: str, seq_ids: List[int], label_scheme: bool = True
                             ) -> List[Optional[str]]:
@@ -1551,12 +1561,12 @@ class CifReader:
                         eff_model_ids: Optional[List[str]] = None,
                         atom_sites: Optional[List[dict]] = None, bb_atom_sites: Optional[List[dict]] = None,
                         randomM: Optional[List[list]] = None
-                        ) -> Tuple[Optional[List[dict]], Optional[List[dict]]]:
+                        ) -> Tuple[Optional[List[dict]], Optional[List[dict]], Optional[List[dict]]]:
         """ Calculate RMSD of alpha carbons/phosphates in the ensemble.
         """
 
         if None in (atom_sites, bb_atom_sites):
-            return None, None
+            return None, None, None
 
         _atom_site_dict = {}
         for model_id in eff_model_ids:
@@ -1569,7 +1579,7 @@ class CifReader:
         size = len(_atom_site_dict[1])
 
         if size == 0:
-            return None, None
+            return None, None, None
 
         matrix_size = (size, size)
 
@@ -1599,7 +1609,7 @@ class CifReader:
                     d_avr[j, i] += d
 
         if _total_models <= 1:
-            return None, None
+            return None, None, None
 
         factor = 1.0 / _total_models
 
@@ -1835,7 +1845,7 @@ class CifReader:
                             abort = True
 
         if min_result is None:
-            return None, None
+            return None, None, None
 
         x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
 
@@ -1850,7 +1860,7 @@ class CifReader:
         domains = collections.Counter(list_labels).most_common()
 
         if domains[0][0] == -1:
-            return None, None
+            return None, None, None
 
         fill_single_gap = False
 
@@ -2005,6 +2015,8 @@ class CifReader:
                 for chain_id in dst_chain_ids:
                     rlist[chain_ids.index(chain_id)].append(item)
 
+        # well-defined regions
+
         dlist = []
         for chain_id in chain_ids:
             dlist.append([])
@@ -2139,4 +2151,214 @@ class CifReader:
         if self.__verbose and self.__debug:
             self.__log.write(f"{dlist}\n")
 
-        return rlist, dlist
+        # cluster analysis
+
+        clist = []
+
+        matrix_size = (_total_models, _total_models)
+
+        d_avr = numpy.zeros(matrix_size, dtype=float)
+
+        for ref_model_id in range(1, total_models):
+
+            if ref_model_id not in eff_model_ids:
+                continue
+
+            ref_idx = eff_model_ids.index(ref_model_id)
+
+            _atom_site_ref = _atom_site_dict[ref_model_id]
+            _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l in eff_labels]
+
+            _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
+            _seq_keys = sorted(set((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p),
+                               key=itemgetter(0, 1))
+
+            _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+
+            if len(_bb_atom_site_p) == 0:
+                continue
+
+            for test_model_id in range(2, total_models + 1):
+
+                if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
+                    continue
+
+                test_idx = eff_model_ids.index(test_model_id)
+
+                _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
+                _bb_atom_site_q = [_a for _a in _bb_atom_site_test if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+
+                if len(_bb_atom_site_p) != len(_bb_atom_site_q):
+                    continue
+
+                _rmsd_ = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q)
+
+                d_avr[ref_idx, test_idx] = d_avr[test_idx, ref_idx] = _rmsd_
+
+        max_d_avr = min(numpy.max(d_avr), RMSD_CUTOFF_FOR_DOMAIN)
+
+        d_ord = numpy.ones(matrix_size, dtype=float)
+
+        if max_d_avr > 0.0:
+
+            for i, j in itertools.combinations(range(_total_models), 2):
+
+                if i < j:
+                    q = max(1.0 - d_avr[i, j] / max_d_avr, 0.0)
+                else:
+                    q = max(1.0 - d_avr[j, i] / max_d_avr, 0.0)
+
+                d_ord[i, j] = d_ord[j, i] = q
+
+        _, v = numpy.linalg.eig(d_ord)
+
+        md5_set = set()
+
+        min_score = 1000000.0
+        min_result = None
+
+        stop_min_samples = -1
+
+        for min_samples in reversed(range(self.__min_samples_for_clustering, self.__max_samples_for_clustering + 1)):
+
+            if min_samples == stop_min_samples:
+                break
+
+            for features in range(self.__min_features_for_clustering, self.__max_features_for_clustering + 1):
+
+                x = numpy.delete(v, numpy.s_[features:], 1)
+
+                if min_samples >= features:
+                    continue
+
+                for _epsilon in range(2, 11):
+
+                    epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
+
+                    try:
+                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
+                    except ValueError:
+                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+
+                    labels = db.labels_
+
+                    list_labels = list(labels)
+                    set_labels = set(labels)
+
+                    n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
+                    n_noise = list_labels.count(-1)
+
+                    if n_clusters == 0:  # or n_clusters >= features - 2:
+                        continue
+
+                    md5 = hashlib.md5(str(list_labels).encode('utf-8'))
+
+                    if md5 in md5_set:
+                        continue
+
+                    md5_set.add(md5)
+
+                    result = {'features': features, 'min_samples': min_samples, 'epsilon': epsilon,
+                              'clusters': n_clusters, 'noise': n_noise}
+
+                    score = 0.0
+
+                    for label in set_labels:
+
+                        fraction = float(list_labels.count(label)) / _total_models
+
+                        if label == -1:
+                            score += RMSD_CUTOFF_FOR_DOMAIN * fraction
+                            continue
+
+                        _rmsd = []
+
+                        label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
+
+                        for i, j in itertools.combinations(label_idx, 2):
+                            if i == j or i > j:
+                                continue
+                            _rmsd.append(d_avr[i, j])
+
+                        mean_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
+
+                        score += mean_rmsd * fraction
+
+                    if score == 0.0:
+                        continue
+
+                    result['score'] = score
+
+                    if n_clusters > 0 and stop_min_samples == -1:
+                        stop_min_samples = min_samples - 2
+
+                    if self.__verbose and self.__debug:
+                        self.__log.write(f'{result}\n')
+
+                    if score < min_score or (n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY):
+                        min_score = score
+                        min_result = result
+
+        if min_result is not None:
+            x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
+
+            try:
+                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
+            except ValueError:
+                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+
+            labels = db.labels_
+
+            list_labels = list(labels)
+            set_labels = set(labels)
+
+            n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
+
+            if self.__verbose and self.__debug:
+                self.__log.write(f"feature: {min_result['features']}, "
+                                 f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
+                                 f"clusters: {n_clusters}, score: {min_score}\n")
+
+            for label, count in collections.Counter(list_labels).most_common():
+
+                item = {'cluster_id': int(label) + 1 if label != -1 else -1,
+                        'total_models': count if label != -1 else 1,
+                        'model_ids': [eff_model_ids[idx] for idx, _label in enumerate(list_labels)
+                                      if _label == label]}
+
+                if label != -1:
+                    label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
+
+                    min_rmsd = 1000000.0
+                    min_idx = -1
+
+                    for i in label_idx:
+                        _rmsd = []
+                        for j in label_idx:
+                            if i == j:
+                                continue
+                            _rmsd.append(d_avr[i, j])
+
+                        avr_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
+                        if avr_rmsd < min_rmsd:
+                            min_idx = i
+                            min_rmsd = avr_rmsd
+
+                    if min_idx != -1:
+                        item['medoid_model_id'] = eff_model_ids[min_idx]
+                        item['medoid_rmsd'] = float(f"{min_rmsd:.4f}")
+
+                        _rmsd = []
+                        for i, j in itertools.combinations(label_idx, 2):
+                            if i == j or i > j:
+                                continue
+                            _rmsd.append(d_avr[i, j])
+
+                        item['mean_rmsd'] = float(f"{numpy.mean(numpy.array(_rmsd, dtype=float)):.4f}")
+
+                clist.append(item)
+
+                if self.__verbose and self.__debug:
+                    self.__log.write(clist)
+
+        return rlist, dlist, clist

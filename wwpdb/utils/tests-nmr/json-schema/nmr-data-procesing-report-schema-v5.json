@@ -775,7 +775,7 @@
                     "type": "integer",
                     "minimum": 1
                   },
-                  "number_of_monomers": {        
+                  "number_of_monomers": {
                     "type": "integer",
                     "minimum": 4
                   },
@@ -795,6 +795,45 @@
                   "range_of_seq_id": {
                     "type": "string",
                     "minLength": 1
+                  }
+                }
+              }
+            },
+            "cluster_analysis": {
+              "description": "The summary of clustering analysis on detected well-defined regions of the ensemble.",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties":  {
+                  "cluster_id": {
+                    "description": "The cluster id where -1 indicate single-model clusters.",
+                    "type": "integer"
+                  },
+                  "total_models": {
+                    "description": "The total number of models in a cluster. In case of the single-model clusters, this value should be 1.",
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "model_ids": {
+                    "description": "The list of models in a cluster.",
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "medoid_model_id": {
+                    "description": "The medoid model in a cluster.",
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "mean_rmsd": {
+                    "type": "number",
+                    "minimum": 0.0
+                  },
+                  "medoid_rmsd": {
+                    "type": "number",
+                    "minimum": 0.0
                   }
                 }
               }

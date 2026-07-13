@@ -9265,6 +9265,25 @@ class NmrDpUtility:
                             self.__reg.representative_alt_id = a['label_alt_id']
                             break
 
+            self.__reg.ensemble_composition = {'total_models': self.__reg.total_models,
+                                               'eff_model_ids': self.__reg.eff_model_ids,
+                                               'representative_model_id': self.__reg.representative_model_id,
+                                               'selection_criteria': 'unknown'
+                                               }
+
+            nmr_representative = self.__reg.cR.getDictList('pdbx_nmr_representative')
+
+            if len(nmr_representative) > 0:
+
+                try:
+                    self.__reg.representative_model_id = int(nmr_representative[0]['conformer_id'])
+                    self.__reg.ensemble_composition['representative_model_id'] = self.__reg.representative_model_id
+                    if 'selection_criteria' in nmr_representative[0]\
+                       and nmr_representative[0]['selection_criteria'] not in EMPTY_VALUE:
+                        self.__reg.ensemble_composition['selection_criteria'] = nmr_representative[0]['selection_criteria']
+                except ValueError:
+                    pass
+
             self.__reg.recvd_nmr_constraints = False
             if self.__reg.cR.hasItem('pdbx_database_status', 'recvd_nmr_constraints'):
                 pdbx_database_status = self.__reg.cR.getDictList('pdbx_database_status')
@@ -10101,6 +10120,8 @@ class NmrDpUtility:
                             self.__reg.report.warning.appendDescription(k, v)
                     self.__reg.suspended_warnings_for_lazy_eval.clear()
 
+            domain_ids = set()
+
             for ps in poly_seq:
 
                 if 'type' in ps:
@@ -10134,6 +10155,9 @@ class NmrDpUtility:
                     if rmsd_label in ps and 'well_defined_region' in ps:
                         rmsd = ps[rmsd_label]
                         region = ps['well_defined_region']
+
+                        for r in region:
+                            domain_ids.add(r['domain_id'])
 
                         for r in rmsd:
                             model_id = r['model_id']
@@ -10182,6 +10206,89 @@ class NmrDpUtility:
                                             if chain_id not in exactly_overlaid_models:
                                                 exactly_overlaid_models[chain_id] = []
                                             exactly_overlaid_models[chain_id].append(rmsd_item)
+
+            if len(domain_ids) > 0:
+                single_seq_id_pat = re.compile(r'(-?\d+)')
+                range_seq_id_pat = re.compile(r'(-?\d+)-(-?\d+)')
+                domain_ids = sorted(list(domain_ids))
+
+                well_defined_region = []
+
+                for domain_id in domain_ids:
+                    _medoid_model_id = -1
+                    _mean_rmsd = _medoid_rmsd = -1.0
+                    _monomers = _total_seq = 0
+                    _range_of_seq_id = []
+
+                    for ps in poly_seq:
+
+                        if 'type' in ps:
+
+                            poly_type = ps['type']
+
+                            if 'polypeptide' in poly_type:
+                                rmsd_label = 'ca_rmsd'
+
+                                if not self.__reg.combined_mode:
+
+                                    if len(self.__reg.suspended_errors_for_lazy_eval) > 0:
+                                        for msg in self.__reg.suspended_errors_for_lazy_eval:
+                                            for k, v in msg.items():
+                                                self.__reg.report.error.appendDescription(k, v)
+                                        self.__reg.suspended_errors_for_lazy_eval.clear()
+
+                                    if len(self.__reg.suspended_warnings_for_lazy_eval) > 0:
+                                        for msg in self.__reg.suspended_warnings_for_lazy_eval:
+                                            for k, v in msg.items():
+                                                self.__reg.report.warning.appendDescription(k, v)
+                                        self.__reg.suspended_warnings_for_lazy_eval.clear()
+
+                            elif 'ribonucleotide' in poly_type:
+                                rmsd_label = 'p_rmsd'
+                            else:
+                                continue
+
+                            auth_chain_id = ps['auth_chain_id']
+                            _total_seq += len(ps['seq_id'])
+
+                            if rmsd_label in ps and 'well_defined_region' in ps:
+                                region = next((region for region in ps['well_defined_region']
+                                               if region['domain_id'] == domain_id), None)
+
+                                if region is None:
+                                    continue
+
+                                if _medoid_model_id < 0:
+                                    _medoid_model_id = region['medoid_model_id']
+                                    _mean_rmsd = region['mean_rmsd']
+                                    _medoid_rmsd = region['medoid_rmsd']
+
+                                _monomers += region['number_of_monomers']
+
+                                ranges = re.sub(r'\]', '', re.sub(r'\[', '', region['range_of_seq_id'])).split(',')
+                                _ranges = []
+                                for r in ranges:
+                                    if range_seq_id_pat.match(r):
+                                        g = range_seq_id_pat.search(r).groups()
+                                        _ranges.append(f'{auth_chain_id}:{g[0]}-{auth_chain_id}:{g[1]}')
+                                    elif single_seq_id_pat.match(r):
+                                        g = single_seq_id_pat.search(r).groups()
+                                        _ranges.append(f'{auth_chain_id}:{g[0]}')
+
+                                _range_of_seq_id.append(f"{','.join(_ranges)}")
+
+                    well_defined_region.append({'domain_id': domain_id,
+                                                'medoid_model_id': _medoid_model_id,
+                                                'number_of_monomers': _monomers,
+                                                'percent_of_core': float(f"{float(_monomers) / _total_seq * 100.0:.1f}"),
+                                                'mean_rmsd': _mean_rmsd,
+                                                'medoid_rmsd': _medoid_rmsd,
+                                                'range_of_seq_id': f"{', '.join(_range_of_seq_id)}"})
+
+                if len(well_defined_region) > 0:
+                    self.__reg.ensemble_composition['well_defined_region'] = well_defined_region
+
+            cif_input_source.setItemValue('ensemble_composition', self.__reg.ensemble_composition)
 
             if len(not_superimposed_ensemble) > 0:
 

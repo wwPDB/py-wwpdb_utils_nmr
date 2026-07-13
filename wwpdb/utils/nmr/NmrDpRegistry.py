@@ -330,6 +330,8 @@ class NmrDpRegistry:
     eff_model_ids: List[int] = field(default_factory=list)
     # item tag names of 'atom_site' category of the coordinates
     coord_atom_site_tags: List[str] = None
+    # ensemble composition
+    ensemble_conposition: dict = None
 
     # ParserListerUtil.coordAssemblyChecker
     caC: dict = None

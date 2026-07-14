@@ -9997,11 +9997,13 @@ class NmrDpUtility:
 
         try:
 
-            poly_seq = poly_seq_cache_path = cluster = None
+            poly_seq = cluster = poly_seq_cache_path = cluster_cache_path = None
 
             if self.__cifHashCode is not None:
                 poly_seq_cache_path = os.path.join(self.__reg.cacheDirPath, f"{self.__cifHashCode}_poly_seq_full.pkl")
                 poly_seq = load_from_pickle(poly_seq_cache_path)
+                cluster_cache_path = os.path.join(self.__reg.cacheDirPath, f"{self.__cifHashCode}_cluster.pkl")
+                cluster = load_from_pickle(cluster_cache_path)
 
             if poly_seq is None:
 
@@ -10094,6 +10096,9 @@ class NmrDpUtility:
 
                 if len(poly_seq) > 0 and poly_seq_cache_path is not None:
                     write_as_pickle(poly_seq, poly_seq_cache_path)
+
+                if cluster is not None and len(cluster) > 0 and cluster_cache_path is not None:
+                    write_as_pickle(cluster, cluster_cache_path)
 
             cif_input_source.setItemValue('polymer_sequence', poly_seq)
 

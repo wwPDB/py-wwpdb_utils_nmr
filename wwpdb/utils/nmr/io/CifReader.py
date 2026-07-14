@@ -61,6 +61,7 @@ import pickle
 import random
 import re
 import sys
+import warnings
 from operator import itemgetter
 from typing import IO, List, Optional, Tuple
 
@@ -74,7 +75,7 @@ from rmsd.calculate_rmsd import (centroid, check_reflections,  # noqa: F401,E501
                                  reorder_brute, reorder_distance, reorder_hungarian,
                                  rmsd)
 
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import (DBSCAN, KMeans)
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
@@ -115,6 +116,9 @@ CIF_ITEM_TYPES = ('str', 'bool',
                   'int', 'range-int', 'abs-int', 'range-abs-int',
                   'float', 'range-float', 'abs-float', 'range-abs-float',
                   'enum', 'enum-int', 'starts-with-alnum')
+
+# whether to apply DBSCAN method for clustering analysis of the ensemble, otherwise KMeans method is applied (default)
+MODEL_CLUSTERING_WITH_DBSCAN = False
 
 
 def M(axis: list, theta: float) -> list:
@@ -887,6 +891,8 @@ class CifReader:
 
         entityPoly = self.getDictList('entity_poly')
 
+        etypes = set(e['type'] for e in entityPoly if 'pdbx_strand_id' in e)
+
         # DAOTHER-9674
         for row in rowList:
             for j in range(lenKeyItems):
@@ -1069,7 +1075,9 @@ class CifReader:
         largeAssembly = catName == 'pdbx_poly_seq_scheme' and len(chainIds) > LEN_MAJOR_ASYM_ID
 
         caRmsd = caWellDefinedRegion = None
+        pRmsd = pWellDefinedRegion = None
         polyPeptideChains, polyPeptideLengths = [], []
+        polyNucleotideChains, polyNucleotideLengths = [], []
 
         _seqDict = deepcopy(seqDict)
 
@@ -1378,27 +1386,6 @@ class CifReader:
                                                                          'enum': (repAltId,)},
                                                                         {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
 
-                            co_atom_sites = self.getDictListWithFilter('atom_site',
-                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                        {'name': 'label_asym_id', 'type': 'str',
-                                                                         'alt_name': 'chain_id'},
-                                                                        {'name': 'auth_seq_id', 'type': 'int',
-                                                                         'alt_name': 'seq_id'},
-                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
-                                                                         'type': 'int', 'alt_name': 'model_id'},
-                                                                        {'name': 'type_symbol', 'type': 'str',
-                                                                         'alt_name': 'element'}
-                                                                        ],
-                                                                       [{'name': 'label_asym_id', 'type': 'enum',
-                                                                         'enum': polyPeptideChains},
-                                                                        {'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                                         'value': 'C'},
-                                                                        {'name': 'label_alt_id', 'type': 'enum',
-                                                                         'enum': (repAltId,)},
-                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
-
                             bb_atom_sites = self.getDictListWithFilter('atom_site',
                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                                                                         {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
@@ -1414,21 +1401,18 @@ class CifReader:
                                                                         ],
                                                                        [{'name': 'label_asym_id', 'type': 'enum',
                                                                          'enum': polyPeptideChains},
-                                                                        {'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                                         'value': 'N'},
+                                                                        {'name': 'label_atom_id', 'type': 'enum',
+                                                                         'enum': ['C', 'N']},
                                                                         {'name': 'label_alt_id', 'type': 'enum',
                                                                          'enum': (repAltId,)},
-                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'N'}])
+                                                                        {'name': 'type_symbol', 'type': 'enum',
+                                                                         'enum': ['C', 'N']}])
 
                             bb_atom_sites.extend(ca_atom_sites)
-                            bb_atom_sites.extend(co_atom_sites)
-
-                            caRmsd, caWellDefinedRegion, _cluster =\
+                            caRmsd, caWellDefinedRegion, cluster =\
                                 self.__calculateRmsd(polyPeptideChains, polyPeptideLengths,
                                                      totalModels, effModelIds,
                                                      ca_atom_sites, bb_atom_sites, randomM)
-                            if cluster is None:
-                                cluster = _cluster
 
                         if caRmsd is not None:
                             ent['ca_rmsd'] = caRmsd[polyPeptideChains.index(c)]
@@ -1437,56 +1421,76 @@ class CifReader:
 
                     elif 'ribonucleotide' in etype:
 
-                        p_atom_sites = self.getDictListWithFilter('atom_site',
-                                                                  [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                   {'name': 'label_asym_id', 'type': 'str',
-                                                                    'alt_name': 'chain_id'},
-                                                                   {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                   {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
-                                                                    'type': 'int', 'alt_name': 'model_id'},
-                                                                   {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
-                                                                   ],
-                                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                   {'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                                    'value': 'P'},
-                                                                   {'name': 'label_alt_id', 'type': 'enum',
-                                                                    'enum': (repAltId,)},
-                                                                   {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
+                        if pRmsd is None:
 
-                        bb_atom_sites = self.getDictListWithFilter('atom_site',
-                                                                   [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                                    {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                                    {'name': 'label_asym_id', 'type': 'str',
-                                                                     'alt_name': 'chain_id'},
-                                                                    {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
-                                                                    {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
-                                                                     'type': 'int', 'alt_name': 'model_id'},
-                                                                    {'name': 'type_symbol', 'type': 'str', 'alt_name': 'element'}
-                                                                    ],
-                                                                   [{'name': 'label_asym_id', 'type': 'str', 'value': c},
-                                                                    {'name': 'label_atom_id', 'type': 'enum',
-                                                                     'enum': ("C5'", "C4'", "C3'")},
-                                                                    {'name': 'label_alt_id', 'type': 'enum',
-                                                                     'enum': (repAltId,)},
-                                                                    {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
+                            polyNucleotideChains = [c]
+                            polyNucleotideLengths = [len(_seqDict[c])]
 
-                        bb_atom_sites.extend(p_atom_sites)
+                            for c2 in chainIds:
 
-                        pRmsd, pWellDefinedRegion, _cluster =\
-                            self.__calculateRmsd([c], [len(_seqDict[c])],
-                                                 totalModels, effModelIds,
-                                                 p_atom_sites, bb_atom_sites, randomM)
+                                if c2 == c:
+                                    continue
 
-                        if cluster is None:
-                            cluster = _cluster
+                                etype2 = next((e['type'] for e in entityPoly
+                                               if 'pdbx_strand_id' in e and c2 in e['pdbx_strand_id'].split(',')), None)
+
+                                if etype2 is not None and 'ribonucleotide' in etype2:
+                                    polyNucleotideChains.append(c2)
+                                    polyNucleotideLengths.append(len(_seqDict[c2]))
+
+                            p_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                      [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                       {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                       {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                       {'name': 'label_asym_id', 'type': 'str',
+                                                                        'alt_name': 'chain_id'},
+                                                                       {'name': 'auth_seq_id', 'type': 'int',
+                                                                        'alt_name': 'seq_id'},
+                                                                       {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                                        'type': 'int', 'alt_name': 'model_id'},
+                                                                       {'name': 'type_symbol', 'type': 'str',
+                                                                        'alt_name': 'element'}
+                                                                       ],
+                                                                      [{'name': 'label_asym_id', 'type': 'enum',
+                                                                        'enum': polyNucleotideChains},
+                                                                       {'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                                        'value': 'P'},
+                                                                       {'name': 'label_alt_id', 'type': 'enum',
+                                                                        'enum': (repAltId,)},
+                                                                       {'name': 'type_symbol', 'type': 'str', 'value': 'P'}])
+
+                            bb_atom_sites = self.getDictListWithFilter('atom_site',
+                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                                        {'name': 'label_asym_id', 'type': 'str',
+                                                                         'alt_name': 'chain_id'},
+                                                                        {'name': 'auth_seq_id', 'type': 'int',
+                                                                         'alt_name': 'seq_id'},
+                                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                                         'type': 'int', 'alt_name': 'model_id'},
+                                                                        {'name': 'type_symbol', 'type': 'str',
+                                                                         'alt_name': 'element'}
+                                                                        ],
+                                                                       [{'name': 'label_asym_id', 'type': 'enum',
+                                                                         'enum': polyNucleotideChains},
+                                                                        {'name': 'label_atom_id', 'type': 'enum',
+                                                                         'enum': ("C5'", "C4'", "C3'")},
+                                                                        {'name': 'label_alt_id', 'type': 'enum',
+                                                                         'enum': (repAltId,)},
+                                                                        {'name': 'type_symbol', 'type': 'str', 'value': 'C'}])
+
+                            bb_atom_sites.extend(p_atom_sites)
+
+                            pRmsd, pWellDefinedRegion, cluster =\
+                                self.__calculateRmsd(polyNucleotideChains, polyNucleotideLengths,
+                                                     totalModels, effModelIds,
+                                                     p_atom_sites, bb_atom_sites, randomM)
 
                         if pRmsd is not None:
-                            ent['p_rmsd'] = pRmsd[0]
+                            ent['p_rmsd'] = pRmsd[polyNucleotideChains.index(c)]
                         if pWellDefinedRegion is not None:
-                            ent['well_defined_region'] = pWellDefinedRegion[0]
+                            ent['well_defined_region'] = pWellDefinedRegion[polyNucleotideChains.index(c)]
 
             if len(chainIds) > 1:
                 identity = []
@@ -1505,6 +1509,60 @@ class CifReader:
                     ent['unmapped_auth_seq_id'] = [int(s) for s in unmapAuthSeqIds[c]]
 
             asm.append(ent)
+
+        if withRmsd and 'polypeptide' in etypes and 'ribonucleotide' in etypes and totalModels > 1 and i < LEN_MAJOR_ASYM_ID / 2:
+            allChains = polyPeptideChains
+            allChains.extend(polyNucleotideChains)
+
+            ca_p_atom_sites = self.getDictListWithFilter('atom_site',
+                                                         [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                          {'name': 'label_asym_id', 'type': 'str',
+                                                           'alt_name': 'chain_id'},
+                                                          {'name': 'auth_seq_id', 'type': 'int',
+                                                           'alt_name': 'seq_id'},
+                                                          {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                           'type': 'int', 'alt_name': 'model_id'},
+                                                          {'name': 'type_symbol', 'type': 'str',
+                                                           'alt_name': 'element'}
+                                                          ],
+                                                         [{'name': 'label_asym_id', 'type': 'enum',
+                                                           'enum': allChains},
+                                                          {'name': 'label_atom_id', 'type': 'enum',
+                                                           'enum': ['CA', 'P']},
+                                                          {'name': 'label_alt_id', 'type': 'enum',
+                                                           'enum': (repAltId,)},
+                                                          {'name': 'type_symbol', 'type': 'enum',
+                                                           'enum': ['C', 'P']}])
+
+            bb_atom_sites = self.getDictListWithFilter('atom_site',
+                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                        {'name': 'label_asym_id', 'type': 'str',
+                                                         'alt_name': 'chain_id'},
+                                                        {'name': 'auth_seq_id', 'type': 'int',
+                                                         'alt_name': 'seq_id'},
+                                                        {'name': 'ndb_model' if alias else 'pdbx_PDB_model_num',
+                                                         'type': 'int', 'alt_name': 'model_id'},
+                                                        {'name': 'type_symbol', 'type': 'str',
+                                                         'alt_name': 'element'}
+                                                        ],
+                                                       [{'name': 'label_asym_id', 'type': 'enum',
+                                                         'enum': allChains},
+                                                        {'name': 'label_atom_id', 'type': 'enum',
+                                                         'enum': ['C', "C5'", "C4'", "C3'", 'N']},
+                                                        {'name': 'label_alt_id', 'type': 'enum',
+                                                         'enum': (repAltId,)},
+                                                        {'name': 'type_symbol', 'type': 'enum',
+                                                         'enum': ['C', 'N']}])
+
+            bb_atom_sites.extend(ca_p_atom_sites)
+
+            _, _, cluster = self.__calculateRmsd(allChains, polyPeptideLengths + polyNucleotideLengths,
+                                                 totalModels, effModelIds,
+                                                 ca_p_atom_sites, bb_atom_sites, randomM)
 
         return asm, cluster
 
@@ -2195,22 +2253,7 @@ class CifReader:
 
                 d_avr[ref_idx, test_idx] = d_avr[test_idx, ref_idx] = _rmsd_
 
-        max_d_avr = min(numpy.max(d_avr), RMSD_CUTOFF_FOR_DOMAIN)
-
-        d_ord = numpy.ones(matrix_size, dtype=float)
-
-        if max_d_avr > 0.0:
-
-            for i, j in itertools.combinations(range(_total_models), 2):
-
-                if i < j:
-                    q = max(1.0 - d_avr[i, j] / max_d_avr, 0.0)
-                else:
-                    q = max(1.0 - d_avr[j, i] / max_d_avr, 0.0)
-
-                d_ord[i, j] = d_ord[j, i] = q
-
-        _, v = numpy.linalg.eig(d_ord)
+        t, v = numpy.linalg.eig(d_avr)
 
         md5_set = set()
 
@@ -2231,86 +2274,181 @@ class CifReader:
                 if min_samples >= features:
                     continue
 
-                for _epsilon in range(2, 11):
+                if MODEL_CLUSTERING_WITH_DBSCAN:
 
-                    epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
+                    for _epsilon in range(2, 11):
 
-                    try:
-                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
-                    except ValueError:
-                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+                        epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
-                    labels = db.labels_
+                        try:
+                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
+                        except ValueError:
+                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
 
-                    list_labels = list(labels)
-                    set_labels = set(labels)
+                        labels = db.labels_
 
-                    n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
-                    n_noise = list_labels.count(-1)
+                        list_labels = list(labels)
+                        set_labels = set(labels)
 
-                    if n_clusters == 0:  # or n_clusters >= features - 2:
-                        continue
+                        n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
+                        n_noise = list_labels.count(-1)
 
-                    md5 = hashlib.md5(str(list_labels).encode('utf-8'))
-
-                    if md5 in md5_set:
-                        continue
-
-                    md5_set.add(md5)
-
-                    result = {'features': features, 'min_samples': min_samples, 'epsilon': epsilon,
-                              'clusters': n_clusters, 'noise': n_noise}
-
-                    score = 0.0
-
-                    for label in set_labels:
-
-                        fraction = float(list_labels.count(label)) / _total_models
-
-                        if label == -1:
-                            score += RMSD_CUTOFF_FOR_DOMAIN * fraction
+                        if n_clusters == 0:  # or n_clusters >= features - 2:
                             continue
 
-                        _rmsd = []
+                        md5 = hashlib.md5(str(list_labels).encode('utf-8'))
 
-                        label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
+                        if md5 in md5_set:
+                            continue
 
-                        for i, j in itertools.combinations(label_idx, 2):
-                            if i == j or i > j:
+                        md5_set.add(md5)
+
+                        result = {'features': features, 'min_samples': min_samples, 'epsilon': epsilon,
+                                  'clusters': n_clusters, 'noise': n_noise}
+
+                        score = 0.0
+
+                        for label in set_labels:
+
+                            fraction = float(list_labels.count(label)) / _total_models
+
+                            if label == -1:
+                                score += RMSD_CUTOFF_FOR_DOMAIN * fraction
                                 continue
-                            _rmsd.append(d_avr[i, j])
 
-                        mean_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
+                            _rmsd = []
 
-                        score += mean_rmsd * fraction
+                            label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
 
-                    if score == 0.0:
-                        continue
+                            for i, j in itertools.combinations(label_idx, 2):
+                                if i == j or i > j:
+                                    continue
+                                _rmsd.append(d_avr[i, j])
 
-                    result['score'] = score
+                            if len(_rmsd) == 0:
+                                score = -1.0
+                                break
 
-                    if n_clusters > 0 and stop_min_samples == -1:
-                        stop_min_samples = min_samples - 2
+                            mean_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
 
-                    if self.__verbose and self.__debug:
-                        self.__log.write(f'{result}\n')
+                            score += mean_rmsd * fraction
 
-                    if score < min_score or (n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY):
-                        min_score = score
-                        min_result = result
+                        if score <= 0.0:
+                            continue
+
+                        result['score'] = score
+
+                        if n_clusters > 0 and stop_min_samples == -1:
+                            stop_min_samples = min_samples - 2
+
+                        if self.__verbose and self.__debug:
+                            self.__log.write(f'{result}\n')
+
+                        if score < min_score or (n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY):
+                            min_score = score
+                            min_result = result
+
+                else:
+
+                    for n_clusters in range(1, _total_models):
+
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore", category=RuntimeWarning)
+
+                            try:
+                                db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(x)
+                            except ValueError:
+                                db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(numpy.real(x))
+
+                        labels = db.labels_
+
+                        list_labels = list(labels)
+                        set_labels = set(labels)
+
+                        _n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
+                        n_noise = list_labels.count(-1)
+
+                        md5 = hashlib.md5(str(list_labels).encode('utf-8'))
+
+                        if md5 in md5_set:
+                            continue
+
+                        md5_set.add(md5)
+
+                        result = {'features': features, 'min_samples': min_samples,
+                                  'clusters': n_clusters, 'noise': n_noise}
+
+                        score = 0.0
+
+                        for label in set_labels:
+
+                            fraction = float(list_labels.count(label)) / _total_models
+
+                            _rmsd = []
+
+                            label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
+
+                            for i, j in itertools.combinations(label_idx, 2):
+                                if i == j or i > j:
+                                    continue
+                                _rmsd.append(d_avr[i, j])
+
+                            if len(_rmsd) == 0:
+                                score = -1.0
+                                break
+
+                            mean_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
+
+                            score += mean_rmsd * fraction
+
+                        if score <= 0.0:
+                            break
+
+                        result['score'] = score
+
+                        if _n_clusters > 0 and stop_min_samples == -1:
+                            stop_min_samples = min_samples - 2
+
+                        if self.__verbose and self.__debug:
+                            self.__log.write(f'{result}\n')
+
+                        if score < min_score or (n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY):
+                            min_score = score
+                            min_result = result
 
         if min_result is not None:
             x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
 
-            try:
-                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
-            except ValueError:
-                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+            if MODEL_CLUSTERING_WITH_DBSCAN:
+
+                try:
+                    db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
+                except ValueError:
+                    db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+
+            else:
+
+                try:
+                    db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(x)
+                except ValueError:
+                    db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(numpy.real(x))
 
             labels = db.labels_
 
             list_labels = list(labels)
             set_labels = set(labels)
+
+            reset_label = False
+            for label in set_labels:
+                if label != -1 and list_labels.count(label) <= 2:
+                    for idx, _label in enumerate(list_labels):
+                        if _label == label:
+                            labels[idx] = -1
+                    reset_label = True
+
+            if reset_label:
+                list_labels = list(labels)
+                set_labels = set(labels)
 
             n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
 
@@ -2319,46 +2457,86 @@ class CifReader:
                                  f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
                                  f"clusters: {n_clusters}, score: {min_score}\n")
 
-            for label, count in collections.Counter(list_labels).most_common():
+            most_comon = collections.Counter(list_labels).most_common()
 
-                item = {'cluster_id': int(label) + 1 if label != -1 else -1,
-                        'total_models': count if label != -1 else 1,
+            clust_id = 1
+
+            for label, count in most_comon:
+
+                if label == -1:
+                    continue
+
+                pc = []
+                for idx, _label in enumerate(list_labels):
+                    if _label != label:
+                        continue
+                    item = {'model_id': eff_model_ids[idx],
+                            'pc1': float(f'{t[0] * numpy.dot(d_avr[idx], v[0]):.2f}'),
+                            'pc2': float(f'{t[1] * numpy.dot(d_avr[idx], v[1]):.2f}')}
+                    pc.append(item)
+
+                item = {'cluster_id': clust_id,
+                        'total_models': count,
                         'model_ids': [eff_model_ids[idx] for idx, _label in enumerate(list_labels)
-                                      if _label == label]}
+                                      if _label == label],
+                        'principal_components': pc}
 
-                if label != -1:
-                    label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
+                label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
 
-                    min_rmsd = 1000000.0
-                    min_idx = -1
+                min_rmsd = 1000000.0
+                min_idx = -1
 
-                    for i in label_idx:
-                        _rmsd = []
-                        for j in label_idx:
-                            if i == j:
-                                continue
-                            _rmsd.append(d_avr[i, j])
+                for i in label_idx:
+                    _rmsd = []
+                    for j in label_idx:
+                        if i == j:
+                            continue
+                        _rmsd.append(d_avr[i, j])
 
-                        avr_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
-                        if avr_rmsd < min_rmsd:
-                            min_idx = i
-                            min_rmsd = avr_rmsd
+                    avr_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
+                    if avr_rmsd < min_rmsd:
+                        min_idx = i
+                        min_rmsd = avr_rmsd
 
-                    if min_idx != -1:
-                        item['medoid_model_id'] = eff_model_ids[min_idx]
-                        item['medoid_rmsd'] = float(f"{min_rmsd:.4f}")
+                if min_idx != -1:
+                    item['medoid_model_id'] = eff_model_ids[min_idx]
+                    item['medoid_rmsd'] = float(f"{min_rmsd:.4f}")
 
-                        _rmsd = []
-                        for i, j in itertools.combinations(label_idx, 2):
-                            if i == j or i > j:
-                                continue
-                            _rmsd.append(d_avr[i, j])
+                    _rmsd = []
+                    for i, j in itertools.combinations(label_idx, 2):
+                        if i == j or i > j:
+                            continue
+                        _rmsd.append(d_avr[i, j])
 
-                        item['mean_rmsd'] = float(f"{numpy.mean(numpy.array(_rmsd, dtype=float)):.4f}")
+                    item['mean_rmsd'] = float(f"{numpy.mean(numpy.array(_rmsd, dtype=float)):.4f}")
 
                 clist.append(item)
 
-                if self.__verbose and self.__debug:
-                    self.__log.write(clist)
+                clust_id += 1
+
+            for label, _ in most_comon:
+
+                if label != -1:
+                    continue
+
+                pc = []
+                for idx, _label in enumerate(list_labels):
+                    if _label != label:
+                        continue
+                    item = {'model_id': eff_model_ids[idx],
+                            'pc1': float(f'{t[0] * numpy.dot(d_avr[idx], v[0]):.2f}'),
+                            'pc2': float(f'{t[1] * numpy.dot(d_avr[idx], v[1]):.2f}')}
+                    pc.append(item)
+
+                item = {'cluster_id': -1,
+                        'total_models': 1,
+                        'model_ids': [eff_model_ids[idx] for idx, _label in enumerate(list_labels)
+                                      if _label == label],
+                        'principal_components': pc}
+
+                clist.append(item)
+
+            if self.__verbose and self.__debug:
+                self.__log.write(clist)
 
         return rlist, dlist, clist

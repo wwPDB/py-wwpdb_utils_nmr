@@ -118,7 +118,7 @@ CIF_ITEM_TYPES = ('str', 'bool',
                   'enum', 'enum-int', 'starts-with-alnum')
 
 # whether to apply DBSCAN method for clustering analysis of the ensemble, otherwise KMeans method is applied (default)
-MODEL_CLUSTERING_WITH_DBSCAN = True
+MODEL_CLUSTERING_WITH_DBSCAN = False
 
 
 def M(axis: list, theta: float) -> list:
@@ -2487,8 +2487,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': float(f'{(t[0] * numpy.dot(d_avr[idx], v[0])).real:.2f}'),
-                            'pc2': float(f'{(t[1] * numpy.dot(d_avr[idx], v[1])).real:.2f}')}
+                            'pc1': float(f'{(t[0] * numpy.dot(v[idx], x[:, 0])).real:.2f}'),
+                            'pc2': float(f'{(t[1] * numpy.dot(v[idx], x[:, 1])).real:.2f}')}
                     pc.append(item)
 
                 item = {'cluster_id': clust_id,
@@ -2540,8 +2540,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': float(f'{(t[0] * numpy.dot(d_avr[idx], v[0])).real:.2f}'),
-                            'pc2': float(f'{(t[1] * numpy.dot(d_avr[idx], v[1])).real:.2f}')}
+                            'pc1': float(f'{(t[0] * numpy.dot(v[idx], x[:, 0])).real:.2f}'),
+                            'pc2': float(f'{(t[1] * numpy.dot(v[idx], x[:, 1])).real:.2f}')}
                     pc.append(item)
 
                 item = {'cluster_id': -1,

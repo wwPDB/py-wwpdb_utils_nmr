@@ -841,8 +841,8 @@
                       }
                     }
                   },
-                  "medoid_model_id": {
-                    "description": "The medoid model in a cluster.",
+                  "centroid_model_id": {
+                    "description": "The centroid model in a cluster.",
                     "type": "integer",
                     "minimum": 1
                   },
@@ -850,7 +850,7 @@
                     "type": "number",
                     "minimum": 0.0
                   },
-                  "medoid_rmsd": {
+                  "centroid_rmsd": {
                     "type": "number",
                     "minimum": 0.0
                   }

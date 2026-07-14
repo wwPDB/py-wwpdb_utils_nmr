@@ -10293,7 +10293,7 @@ class NmrDpUtility:
                 if len(well_defined_region) > 0:
                     self.__ensemble_composition['well_defined_region'] = well_defined_region
                     if cluster is not None:
-                        self.__ensemble_composition['cluster_anlysys'] = cluster
+                        self.__ensemble_composition['cluster_analysis'] = cluster
 
             cif_input_source.setItemValue('ensemble_composition', self.__ensemble_composition)
 

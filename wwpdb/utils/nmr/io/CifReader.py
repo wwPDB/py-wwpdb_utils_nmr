@@ -118,7 +118,7 @@ CIF_ITEM_TYPES = ('str', 'bool',
                   'enum', 'enum-int', 'starts-with-alnum')
 
 # whether to apply DBSCAN method for clustering analysis of the ensemble, otherwise KMeans method is applied (default)
-MODEL_CLUSTERING_WITH_DBSCAN = False
+MODEL_CLUSTERING_WITH_DBSCAN = True
 
 
 def M(axis: list, theta: float) -> list:
@@ -2305,6 +2305,19 @@ class CifReader:
                         list_labels = list(labels)
                         set_labels = set(labels)
 
+                        # single-model cluster should not have effective cluster number
+                        reset_label = False
+                        for label in set_labels:
+                            if label != -1 and list_labels.count(label) < 2:
+                                for idx, _label in enumerate(list_labels):
+                                    if _label == label:
+                                        labels[idx] = -1
+                                reset_label = True
+
+                        if reset_label:
+                            list_labels = list(labels)
+                            set_labels = set(labels)
+
                         n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                         n_noise = list_labels.count(-1)
 
@@ -2380,6 +2393,7 @@ class CifReader:
                         list_labels = list(labels)
                         set_labels = set(labels)
 
+                        # single-model cluster should not have effective cluster number
                         reset_label = False
                         for label in set_labels:
                             if label != -1 and list_labels.count(label) < 2:
@@ -2469,9 +2483,10 @@ class CifReader:
             list_labels = list(labels)
             set_labels = set(labels)
 
+            # single-model cluster should not have effective cluster number
             reset_label = False
             for label in set_labels:
-                if label != -1 and list_labels.count(label) <= 2:
+                if label != -1 and list_labels.count(label) < 2:
                     for idx, _label in enumerate(list_labels):
                         if _label == label:
                             labels[idx] = -1

@@ -2502,8 +2502,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': float(f"{(numpy.dot(d_ord[idx], v[0])).real:.2f}"),
-                            'pc2': float(f"{(numpy.dot(d_ord[idx], v[1])).real:.2f}")
+                            'pc1': float(f"{(numpy.dot(d_ord[idx], v[0])).real:.4f}"),
+                            'pc2': float(f"{(numpy.dot(d_ord[idx], v[1])).real:.4f}")
                             }
                     pc.append(item)
 
@@ -2556,8 +2556,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': float(f"{(numpy.dot(d_ord[idx], v[0])).real:.2f}"),
-                            'pc2': float(f"{(numpy.dot(d_ord[idx], v[1])).real:.2f}")
+                            'pc1': float(f"{(numpy.dot(d_ord[idx], v[0])).real:.4f}"),
+                            'pc2': float(f"{(numpy.dot(d_ord[idx], v[1])).real:.4f}")
                             }
                     pc.append(item)
 

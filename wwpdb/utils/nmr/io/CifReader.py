@@ -2365,6 +2365,18 @@ class CifReader:
                         list_labels = list(labels)
                         set_labels = set(labels)
 
+                        reset_label = False
+                        for label in set_labels:
+                            if label != -1 and list_labels.count(label) < 2:
+                                for idx, _label in enumerate(list_labels):
+                                    if _label == label:
+                                        labels[idx] = -1
+                                reset_label = True
+
+                        if reset_label:
+                            list_labels = list(labels)
+                            set_labels = set(labels)
+
                         _n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                         n_noise = list_labels.count(-1)
 
@@ -2383,6 +2395,10 @@ class CifReader:
                         for label in set_labels:
 
                             fraction = float(list_labels.count(label)) / _total_models
+
+                            if label == -1:
+                                score += RMSD_CUTOFF_FOR_DOMAIN * fraction
+                                continue
 
                             _rmsd = []
 
@@ -2499,8 +2515,8 @@ class CifReader:
                         min_rmsd = avr_rmsd
 
                 if min_idx != -1:
-                    item['medoid_model_id'] = eff_model_ids[min_idx]
-                    item['medoid_rmsd'] = float(f"{min_rmsd:.4f}")
+                    item['centroid_model_id'] = eff_model_ids[min_idx]
+                    item['centroid_rmsd'] = float(f"{min_rmsd:.4f}")
 
                     _rmsd = []
                     for i, j in itertools.combinations(label_idx, 2):

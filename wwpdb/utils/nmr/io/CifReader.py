@@ -108,7 +108,7 @@ REORDER_METHOD = reorder_hungarian
 USE_REFLECTIONS = False
 # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes,
 # (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept
-USE_REFLECTIONS_KEEP_STEREO = False
+USE_REFLECTIONS_KEEP_STEREO = True
 REORDER = False
 
 # allowed item types
@@ -2253,7 +2253,7 @@ class CifReader:
 
                 d_avr[ref_idx, test_idx] = d_avr[test_idx, ref_idx] = _rmsd_
 
-        max_d_avr = RMSD_CUTOFF_FOR_DOMAIN
+        max_d_avr = min(numpy.max(d_var), RMSD_CUTOFF_FOR_DOMAIN)
 
         d_ord = numpy.ones(matrix_size, dtype=float)
 

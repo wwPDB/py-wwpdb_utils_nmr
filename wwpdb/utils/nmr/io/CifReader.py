@@ -2105,7 +2105,7 @@ class CifReader:
                 if len(_bb_atom_site_p) == 0:
                     continue
 
-                for test_model_id in range(2, _total_models + 1):
+                for test_model_id in range(ref_model_id + 1, _total_models + 1):
 
                     if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
                         continue
@@ -2236,7 +2236,7 @@ class CifReader:
             if len(_bb_atom_site_p) == 0:
                 continue
 
-            for test_model_id in range(2, total_models + 1):
+            for test_model_id in range(ref_model_id + 1, total_models + 1):
 
                 if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
                     continue
@@ -2253,7 +2253,22 @@ class CifReader:
 
                 d_avr[ref_idx, test_idx] = d_avr[test_idx, ref_idx] = _rmsd_
 
-        t, v = numpy.linalg.eig(d_avr)
+        max_d_avr = RMSD_CUTOFF_FOR_DOMAIN
+
+        d_ord = numpy.ones(matrix_size, dtype=float)
+
+        if max_d_avr > 0.0:
+
+            for i, j in itertools.combinations(range(_total_models), 2):
+
+                if i < j:
+                    q = max(1.0 - d_avr[i, j] / max_d_avr, 0.0)
+                else:
+                    q = max(1.0 - d_avr[j, i] / max_d_avr, 0.0)
+
+                d_ord[i, j] = d_ord[j, i] = q
+
+        _, v = numpy.linalg.eig(d_ord)
 
         md5_set = set()
 
@@ -2487,8 +2502,9 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': float(f'{(t[0] * numpy.dot(v[idx], x[:, 0])).real:.2f}'),
-                            'pc2': float(f'{(t[1] * numpy.dot(v[idx], x[:, 1])).real:.2f}')}
+                            'pc1': float(f"{(numpy.dot(d_ord[idx], v[0])).real:.2f}"),
+                            'pc2': float(f"{(numpy.dot(d_ord[idx], v[1])).real:.2f}")
+                            }
                     pc.append(item)
 
                 item = {'cluster_id': clust_id,
@@ -2540,8 +2556,9 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': float(f'{(t[0] * numpy.dot(v[idx], x[:, 0])).real:.2f}'),
-                            'pc2': float(f'{(t[1] * numpy.dot(v[idx], x[:, 1])).real:.2f}')}
+                            'pc1': float(f"{(numpy.dot(d_ord[idx], v[0])).real:.2f}"),
+                            'pc2': float(f"{(numpy.dot(d_ord[idx], v[1])).real:.2f}")
+                            }
                     pc.append(item)
 
                 item = {'cluster_id': -1,

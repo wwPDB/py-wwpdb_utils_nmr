@@ -118,7 +118,7 @@ CIF_ITEM_TYPES = ('str', 'bool',
                   'enum', 'enum-int', 'starts-with-alnum')
 
 # whether to apply DBSCAN method for clustering analysis of the ensemble, otherwise KMeans method is applied (default)
-MODEL_CLUSTERING_WITH_DBSCAN = False
+MODEL_CLUSTERING_WITH_DBSCAN = True
 
 
 def M(axis: list, theta: float) -> list:
@@ -2321,7 +2321,7 @@ class CifReader:
                             label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
 
                             for i, j in itertools.combinations(label_idx, 2):
-                                if i == j or i > j:
+                                if i >= j:
                                     continue
                                 _rmsd.append(d_avr[i, j])
 
@@ -2405,7 +2405,7 @@ class CifReader:
                             label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
 
                             for i, j in itertools.combinations(label_idx, 2):
-                                if i == j or i > j:
+                                if i >= j:
                                     continue
                                 _rmsd.append(d_avr[i, j])
 
@@ -2520,7 +2520,7 @@ class CifReader:
 
                     _rmsd = []
                     for i, j in itertools.combinations(label_idx, 2):
-                        if i == j or i > j:
+                        if i >= j:
                             continue
                         _rmsd.append(d_avr[i, j])
 

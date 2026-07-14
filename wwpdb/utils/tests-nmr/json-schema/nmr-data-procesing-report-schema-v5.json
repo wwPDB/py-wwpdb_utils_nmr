@@ -810,7 +810,7 @@
                     "type": "integer"
                   },
                   "total_models": {
-                    "description": "The total number of models in a cluster. In case of the single-model clusters, this value should be 1.",
+                    "description": "The total number of models in a cluster. In case of the single-model clusters, this value is set to 1.",
                     "type": "integer",
                     "minimum": 1
                   },
@@ -820,6 +820,25 @@
                     "items": {
                       "type": "integer",
                       "minimum": 1
+                    }
+                  },
+                  "principal_components": {
+                    "description": "The list of principal components of each model in a cluster.",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "model_id": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "pc1" : {
+                          "type": "number"
+                        },
+                        "pc2" : {
+                          "type": "number"
+                        }
+                      }
                     }
                   },
                   "medoid_model_id": {

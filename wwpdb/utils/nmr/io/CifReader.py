@@ -1573,7 +1573,9 @@ class CifReader:
 
         ret = [None] * len(seq_ids)
 
-        helix_id_name = 'pdbx_PDB_helix_id' if self.hasItem('struct_conf', 'pdbx_PDB_helix_id') else 'pdb_id'
+        helix_id_name = 'pdbx_PDB_helix_id' if self.hasItem('struct_conf', 'pdbx_PDB_helix_id')\
+            else 'pdb_id' if self.hasItem('struct_conf', 'pdb_id')\
+            else 'id'
 
         struct_conf = self.getDictListWithFilter('struct_conf',
                                                  [{'name': 'conf_type_id', 'type': 'str'},

@@ -15588,7 +15588,18 @@ class NmrDpValidation:
 
                                 cif_ps = self.__reg.report.getModelPolymerSequenceWithNmrChainId(chain_id)
 
-                                if cif_ps is not None and 'well_defined_region' in cif_ps:
+                                if cif_ps is not None and 'well_defined_region' in cif_ps and self.__reg.caC is not None:
+                                    chain_id = int(chain_id)
+                                    auth_to_star_seq = self.__reg.caC['auth_to_star_seq']
+                                    dom = [None] * len(result['rci'])
+                                    for idx, seq_id in enumerate(result['seq_id']):
+                                        for r in cif_ps['well_defined_region']:
+                                            seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                            if v[0] == chain_id and v[1] == seq_id), None)
+                                            if seq_key is not None and seq_key[1] in r['seq_id']:
+                                                dom[idx] = r['domain_id']
+                                                break
+                                    result['domain_id'] = dom
 
                                     _score = 0.0
                                     dom_idx = -1
@@ -20324,6 +20335,14 @@ class NmrDpValidation:
                                                                 item['struct_conf'].append(None)
 
                                                     if 'well_defined_region' in cif_ps:
+                                                        dom = [None] * len(result['rci'])
+                                                        for idx, seq_id in enumerate(result['seq_id']):
+                                                            for r in cif_ps['well_defined_region']:
+                                                                if seq_id in r['seq_id']:
+                                                                    dom[idx] = r['domain_id']
+                                                                    break
+                                                        item['domain_id'] = dom
+
                                                         _score = 0.0
                                                         dom_idx = -1
 

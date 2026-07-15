@@ -20345,7 +20345,7 @@ class NmrDpValidation:
                                                         coord_unobs_res = self.__reg.caC['coord_unobs_res']
                                                         dom = [None] * len(result['rci'])
                                                         for idx, (seq_id, comp_id)\
-                                                                in enumerate(zip(result['seq_id'], result['comp_id'])):
+                                                                in enumerate(zip(result['seq_id'], item['comp_id'])):
                                                             seq_key = (auth_chain_id, seq_id, comp_id)
                                                             if seq_key in coord_unobs_res:
                                                                 dom[idx] = -1

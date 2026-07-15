@@ -4451,6 +4451,92 @@ class NmrVrptUtility:
                     else:
                         seq_ids_wo_assign.append(auth_seq_id)
 
+                if self.__chemShiftUnmapped is not None and list_id in self.__chemShiftUnmapped:
+                    unmap_cs_data = self.__chemShiftUnmapped[list_id]
+
+                    unmap_cs_data_ = [cs for cs in unmap_cs_data
+                                      if cs['auth_chain_id'] == auth_chain_id
+                                      and cs['value'] not in EMPTY_VALUE]
+
+                    if len(unmap_cs_data_) > 0:
+                        unmap_rci_residues = []
+
+                        for cs in unmap_cs_data_:
+                            auth_seq_id = int(cs['auth_seq_id'])
+                            comp_id = cs['comp_id']
+                            atom_id = cs['atom_id']
+
+                            if comp_id not in EMPTY_VALUE:
+                                if comp_id not in STD_MON_DICT:
+                                    continue
+                                if not self.__csStat.peptideLike(comp_id):
+                                    continue
+
+                                residue = [comp_id, auth_seq_id]
+                                if residue not in unmap_rci_residues:
+                                    unmap_rci_residues.append(residue)
+
+                        if len(unmap_rci_residues) > 0:
+                            rci_residues.extend(unmap_rci_residues)
+                            rci_residues = sorted(rci_residues, key=itemgetter(1))
+
+                            for comp_id, auth_seq_id in unmap_rci_residues:
+
+                                _unmap_cs_data = [cs for cs in unmap_cs_data_
+                                                  if cs['auth_seq_id'] == auth_seq_id
+                                                  and cs['comp_id'] == comp_id]
+
+                                if len(_unmap_cs_data) == 0:
+                                    continue
+
+                                has_bb_atoms = False
+
+                                for cs in _unmap_cs_data:
+                                    atom_id = cs['atom_id']
+
+                                    if atom_id not in rci_atom_ids:
+                                        continue
+
+                                    rci_assignments.append([comp_id, auth_seq_id, atom_id, atom_id[0], cs['value']])
+
+                                    has_bb_atoms = True
+
+                                if has_bb_atoms:
+
+                                    if comp_id in ('CYS', 'DCY'):
+
+                                        ca_chem_shift = cb_chem_shift = None
+
+                                        for cs_key, cs_vals in _unmap_cs_data.items():
+                                            atom_id = cs_key[3]
+
+                                            if atom_id == 'CA':
+                                                ca_chem_shift = cs_vals['value']
+                                            elif atom_id == 'CB':
+                                                cb_chem_shift = cs_vals['value']
+
+                                        ambig_redox_state = False
+
+                                        if cb_chem_shift is not None:
+                                            if cb_chem_shift < 32.0:
+                                                pass
+                                            elif cb_chem_shift > 35.0:
+                                                oxidized_cys_seq_ids.append(auth_seq_id)
+                                            else:
+                                                ambig_redox_state = True
+                                        elif ca_chem_shift is not None:
+                                            ambig_redox_state = True
+
+                                        if ambig_redox_state:
+                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
+                                            if oxi < 0.001:
+                                                pass
+                                            elif red < 0.001 or oxi > 0.5:
+                                                oxidized_cys_seq_ids.append(auth_seq_id)
+
+                                else:
+                                    seq_ids_wo_assign.append(auth_seq_id)
+
                 if len(rci_assignments) > 0:
                     rci_result[list_id][auth_chain_id] =\
                         rci.calculate(rci_residues, rci_assignments, oxidized_cys_seq_ids, seq_ids_wo_assign)

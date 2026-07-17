@@ -20767,6 +20767,38 @@ class NmrDpValidation:
                             sf_info['number_of_parsed_with_warning'] = len(warn_ordinals)
                             sf_info['number_of_unparsed_with_error'] = len(err_ordinals)
 
+                        index_tag = INDEX_TAGS[file_type][content_subtype]
+
+                        if index_tag is not None:
+                            conflict_warns = self.__reg.report.warning.getValueListWithSf('conflicted_data', sf_framecode)
+                            inconsist_warns = self.__reg.report.warning.getValueListWithSf('inconsistent_data', sf_framecode)
+                            redundant_warns = self.__reg.report.warning.getValueListWithSf('redundant_data', sf_framecode)
+
+                            warning_index = set()
+
+                            if conflict_warns is not None:
+
+                                for item in conflict_warns:
+                                    if 'row_locations' in item:
+                                        for index in item['row_locations'][index_tag]:
+                                            warning_index.add(int(index))
+
+                            if inconsist_warns is not None:
+
+                                for item in inconsist_warns:
+                                    if 'row_locations' in item:
+                                        for index in item['row_locations'][index_tag]:
+                                            warning_index.add(int(index))
+
+                            if redundant_warns is not None:
+
+                                for item in redundant_warns:
+                                    if 'row_locations' in item:
+                                        for index in item['row_locations'][index_tag]:
+                                            warning_index.add(int(index))
+
+                            sf_info['number_of_parsed_with_warning'] += len(warning_index)
+
                     except KeyError:
                         sf_info['number_of_parsed'] = \
                             sf_info['number_of_mapped_to_model'] = \

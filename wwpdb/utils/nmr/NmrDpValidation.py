@@ -5162,12 +5162,14 @@ class NmrDpValidation:
 
     def testDataConsistencyInLoop(self, file_list_id: int, file_name: str, file_type: str, content_subtype: str,
                                   sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                  sf_framecode: str, lp_category: str, parent_pointer: int) -> None:
+                                  sf_framecode: str, lp_category: str, parent_pointer: int) -> bool:
         """ Perform consistency test on data of interesting loops.
         """
 
         allowed_tags = ALLOWED_TAGS[file_type][content_subtype]
         disallowed_tags = None
+
+        modified = False
 
         if content_subtype == 'spectral_peak':
 
@@ -5180,7 +5182,7 @@ class NmrDpValidation:
                     raise ValueError()
 
             except ValueError:  # raised error already at testIndexConsistency()
-                return
+                return False
 
             max_dim = num_dim + 1
 
@@ -5326,8 +5328,9 @@ class NmrDpValidation:
                         else:
                             item = 'insufficient_data'
                     elif self.__reg.resolve_conflict:
-                        item = 'redundant_data'
+                        # item = 'redundant_data'
                         has_multiple_data = True
+                        continue
                     else:
                         item = 'multiple_data'
 
@@ -5375,6 +5378,8 @@ class NmrDpValidation:
                             for idx, row in enumerate(loop, start=1):
                                 row[index_col] = idx
 
+                    modified = True
+
             # try to parse data without bad patterns
             if has_bad_pattern:
                 conflict_id = self.__reg.nefT.get_bad_pattern_id(sf, lp_category, key_items, data_items)[0]
@@ -5384,6 +5389,8 @@ class NmrDpValidation:
 
                     for lcid in conflict_id:
                         del loop.data[lcid]
+
+                    modified = True
 
             try:
 
@@ -5405,6 +5412,8 @@ class NmrDpValidation:
 
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Error  - {str(e)}\n")
+
+        return modified
 
     def detectConflictDataInLoop(self, file_name: str, file_type: str, content_subtype: str,
                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
@@ -13599,7 +13608,7 @@ class NmrDpValidation:
 
         if content_subtype != 'poly_seq':
             lp_data = next((lp['data'] for lp in self.__reg.lp_data[content_subtype]
-                            if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
+                            if lp['sf_framecode'] == sf_framecode), None)
         else:
             lp_data = next((lp['data'] for lp in self.__reg.aux_data[content_subtype]
                            if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode
@@ -15589,7 +15598,7 @@ class NmrDpValidation:
                                 cif_ps = self.__reg.report.getModelPolymerSequenceWithNmrChainId(chain_id)
 
                                 if cif_ps is not None and 'well_defined_region' in cif_ps and self.__reg.caC is not None:
-                                    chain_id = int(chain_id)
+                                    chain_id = int(chain_id) if chain_id.isdigit() else letterToDigit(chain_id)
                                     auth_to_star_seq = self.__reg.caC['auth_to_star_seq']
                                     coord_unobs_res = self.__reg.caC['coord_unobs_res']
                                     dom = [None] * len(result['rci'])

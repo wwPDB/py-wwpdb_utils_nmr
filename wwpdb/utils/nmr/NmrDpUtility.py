@@ -1243,6 +1243,7 @@ class NmrDpUtility:
             self.__reg.cs_unusual_error_scaled_by_sigma = 3.5
             self.__reg.cs_diff_error_scaled_by_sigma = 5.0
             self.__reg.nefT.set_bmrb_only_mode(True)
+            self.__reg.resolve_conflict = True
 
             if self.__reg.conversion_server:
                 if self.__reg.entry_id is not None and CNV_ID_PAT.match(self.__reg.entry_id):
@@ -1324,12 +1325,6 @@ class NmrDpUtility:
                 self.__reg.check_auth_seq = self.__reg.inputParamDict['check_auth_seq']
             else:
                 self.__reg.check_auth_seq = self.__reg.inputParamDict['check_auth_seq'] in TRUE_VALUE
-
-        if has_key_value(self.__reg.inputParamDict, 'validation_server'):
-            if isinstance(self.__reg.inputParamDict['validation_server'], bool):
-                self.__reg.validation_server = self.__reg.inputParamDict['validation_server']
-            else:
-                self.__reg.validation_server = self.__reg.inputParamDict['validation_server'] in TRUE_VALUE
 
         if has_key_value(self.__reg.inputParamDict, 'transl_pseudo_name'):
             if isinstance(self.__reg.inputParamDict['transl_pseudo_name'], bool):

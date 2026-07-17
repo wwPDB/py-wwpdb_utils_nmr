@@ -5392,6 +5392,40 @@ class NmrDpValidation:
 
                     modified = True
 
+            # collect unresolved redundant data
+            if has_multiple_data:
+
+                try:
+
+                    lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
+                                                         allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+                                                         test_on_index=True,  # important
+                                                         enforce_allowed_tags=(file_type == 'nmr-star'
+                                                                               and not self.__reg.bmrb_only),
+                                                         excl_missing_data=self.__reg.excl_missing_data)[0]
+
+                except UserWarning as e2:
+
+                    warns = str(e2).strip("'").split('\n')
+
+                    for warn in warns:
+
+                        if len(warn) == 0 or not warn.startswith('[Multiple data]'):
+                            continue
+
+                        p = warn.index(']') + 2
+                        warn = warn[p:]
+
+                        self.__reg.report.warning.appendDescription('redundant_data',
+                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                     'category': lp_category, 'description': warn})
+
+                        if self.__reg.verbose:
+                            self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Warning  - {warn}\n")
+
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+
             try:
 
                 lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
@@ -13787,11 +13821,11 @@ class NmrDpValidation:
                         item_names = ITEM_NAMES_IN_CS_LOOP[file_type]
 
                         anomalous_errs =\
-                            self.__reg.report.error.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
+                            self.__reg.report.error.getValueListWithSf('anomalous_data', sf_framecode, key='Z_score')
                         anomalous_warns =\
-                            self.__reg.report.warning.getValueListWithSf('anomalous_data', file_name, sf_framecode, key='Z_score')
+                            self.__reg.report.warning.getValueListWithSf('anomalous_data', sf_framecode, key='Z_score')
                         unusual_warns =\
-                            self.__reg.report.warning.getValueListWithSf('unusual_data', file_name, sf_framecode, key='Z_score')
+                            self.__reg.report.warning.getValueListWithSf('unusual_data', sf_framecode, key='Z_score')
 
                         cs_ann = []
 
@@ -13888,9 +13922,9 @@ class NmrDpValidation:
                         self.__reg.nefT.get_conflict_id_set(sf, lp_category,
                                                             self.__reg.consist_key_items[file_type][content_subtype])[0]
 
-                    conflict_warns = self.__reg.report.warning.getValueListWithSf('conflicted_data', file_name, sf_framecode)
-                    inconsist_warns = self.__reg.report.warning.getValueListWithSf('inconsistent_data', file_name, sf_framecode)
-                    redundant_warns = self.__reg.report.warning.getValueListWithSf('redundant_data', file_name, sf_framecode)
+                    conflict_warns = self.__reg.report.warning.getValueListWithSf('conflicted_data', sf_framecode)
+                    inconsist_warns = self.__reg.report.warning.getValueListWithSf('inconsistent_data', sf_framecode)
+                    redundant_warns = self.__reg.report.warning.getValueListWithSf('redundant_data', sf_framecode)
 
                     inconsistent = set()
                     redundant = set()

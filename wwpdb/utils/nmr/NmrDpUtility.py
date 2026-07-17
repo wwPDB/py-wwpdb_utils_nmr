@@ -5917,6 +5917,42 @@ class NmrDpUtility:
 
                                         modified = True
 
+                                # collect unresolved redundant data
+                                if has_multiple_data:
+
+                                    try:
+
+                                        aux_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
+                                                                              allowed_tags, None, parent_pointer=parent_pointer,
+                                                                              test_on_index=True,  # important
+                                                                              enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                                              excl_missing_data=self.__reg.excl_missing_data)[0]
+
+                                    except UserWarning as e2:
+
+                                        warns = str(e2).strip("'").split('\n')
+
+                                        for warn in warns:
+
+                                            if len(warn) == 0 or not warn.startswith('[Multiple data]'):
+                                                continue
+
+                                            p = warn.index(']') + 2
+                                            warn = warn[p:]
+
+                                            self.__reg.report.warning.appendDescription('redundant_data',
+                                                                                        {'file_name': file_name,
+                                                                                         'sf_framecode': sf_framecode,
+                                                                                         'category': lp_category,
+                                                                                         'description': warn})
+
+                                            if self.__reg.verbose:
+                                                self.__reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() "
+                                                                     f"++ Warning  - {warn}\n")
+
+                                    except Exception:  # pylint: disable=broad-exception-caught
+                                        pass
+
                                 try:
 
                                     aux_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
@@ -6229,6 +6265,41 @@ class NmrDpUtility:
                                     del _loop.data[lcid]
 
                                 modified = True
+
+                        # collect unresolved redundant data
+                        if has_multiple_data:
+
+                            try:
+
+                                aux_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
+                                                                      allowed_tags, None, parent_pointer=parent_pointer,
+                                                                      test_on_index=True,  # important
+                                                                      enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                                      excl_missing_data=self.__reg.excl_missing_data)[0]
+
+                            except UserWarning as e2:
+
+                                warns = str(e2).strip("'").split('\n')
+
+                                for warn in warns:
+
+                                    if len(warn) == 0 or not warn.startswith('[Multiple data]'):
+                                        continue
+
+                                    p = warn.index(']') + 2
+                                    warn = warn[p:]
+
+                                    self.__reg.report.warning.appendDescription("redundant_data",
+                                                                                {'file_name': file_name,
+                                                                                 'sf_framecode': sf_framecode,
+                                                                                 'category': lp_category, 'description': warn})
+
+                                    if self.__reg.verbose:
+                                        self.__reg.log.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() "
+                                                             f"++ Warning  - {warn}\n")
+
+                            except Exception:  # pylint: disable=broad-exception-caught
+                                pass
 
                         try:
 

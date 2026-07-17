@@ -5001,6 +5001,8 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
+            modified = False
+
             for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype in ('entry_info', 'entity'):
@@ -5013,15 +5015,15 @@ class NmrDpUtility:
                     sf = self.__reg.star_data[fileListId]
                     sf_framecode = ''
 
-                    self.__reg.dpV.testDataConsistencyInLoop(fileListId, file_name, file_type, content_subtype,
-                                                             sf, sf_framecode, lp_category, 1)
+                    modified |= self.__reg.dpV.testDataConsistencyInLoop(fileListId, file_name, file_type, content_subtype,
+                                                                         sf, sf_framecode, lp_category, 1)
 
                 elif self.__reg.star_data_type[fileListId] == 'Saveframe':
                     sf = self.__reg.star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                    self.__reg.dpV.testDataConsistencyInLoop(fileListId, file_name, file_type, content_subtype,
-                                                             sf, sf_framecode, lp_category, 1)
+                    modified |= self.__reg.dpV.testDataConsistencyInLoop(fileListId, file_name, file_type, content_subtype,
+                                                                         sf, sf_framecode, lp_category, 1)
 
                 else:
 
@@ -5034,8 +5036,11 @@ class NmrDpUtility:
                         if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
-                        self.__reg.dpV.testDataConsistencyInLoop(fileListId, file_name, file_type, content_subtype,
-                                                                 sf, sf_framecode, lp_category, parent_pointer)
+                        modified |= self.__reg.dpV.testDataConsistencyInLoop(fileListId, file_name, file_type, content_subtype,
+                                                                             sf, sf_framecode, lp_category, parent_pointer)
+
+            if modified and fileListId == 0:
+                self.__depositNmrData()
 
         return self.__reg.report.getTotalErrors() == __errors
 
@@ -5681,6 +5686,8 @@ class NmrDpUtility:
             if input_source_dic['content_subtype'] is None:
                 continue
 
+            modified = False
+
             for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype == 'entity':
@@ -5839,8 +5846,9 @@ class NmrDpUtility:
                                             else:
                                                 item = 'insufficient_data'
                                         elif self.__reg.resolve_conflict:
-                                            item = 'redundant_data'
+                                            # item = 'redundant_data'
                                             has_multiple_data = True
+                                            continue
                                         else:
                                             item = 'multiple_data'
 
@@ -5895,6 +5903,8 @@ class NmrDpUtility:
                                                 for idx, row in enumerate(loop, start=1):
                                                     row[index_col] = idx
 
+                                        modified = True
+
                                 # try to parse data without bad patterns
                                 if has_bad_pattern:
                                     conflict_id = self.__reg.nefT.get_bad_pattern_id(sf, lp_category, key_items, data_items)[0]
@@ -5904,6 +5914,8 @@ class NmrDpUtility:
 
                                         for lcid in conflict_id:
                                             del _loop.data[lcid]
+
+                                        modified = True
 
                                 try:
 
@@ -5970,6 +5982,9 @@ class NmrDpUtility:
                                     self.__reg.log.write(f"+{self.__class_name__}.__testDataConsistencyInAuxLoop() "
                                                          f"++ Warning  - {warn}\n")
 
+            if modified and fileListId == 0:
+                self.__depositNmrData()
+
         return self.__reg.report.getTotalErrors() == __errors
 
     def __testDataConsistencyInPkAuxLoop(self) -> bool:
@@ -6003,6 +6018,8 @@ class NmrDpUtility:
         lp_category = LP_CATEGORIES[file_type][content_subtype]
 
         parent_pointer = 0
+
+        modified = False
 
         for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
@@ -6145,8 +6162,9 @@ class NmrDpUtility:
                                     else:
                                         item = 'insufficient_data'
                                 elif self.__reg.resolve_conflict:
-                                    item = 'redundant_data'
+                                    # item = 'redundant_data'
                                     has_multiple_data = True
+                                    continue
                                 else:
                                     item = 'multiple_data'
 
@@ -6198,6 +6216,8 @@ class NmrDpUtility:
                                         for idx, row in enumerate(loop, start=1):
                                             row[index_col] = idx
 
+                                modified = True
+
                         # try to parse data without bad patterns
                         if has_bad_pattern:
                             conflict_id = self.__reg.nefT.get_bad_pattern_id(sf, lp_category, key_items, data_items)[0]
@@ -6207,6 +6227,8 @@ class NmrDpUtility:
 
                                 for lcid in conflict_id:
                                     del _loop.data[lcid]
+
+                                modified = True
 
                         try:
 
@@ -6269,6 +6291,9 @@ class NmrDpUtility:
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.__testDataConsistencyInPkAuxLoop() "
                                                  f"++ Warning  - {warn}\n")
+
+        if modified:
+            self.__depositNmrData()
 
         return self.__reg.report.getTotalErrors() == __errors
 
@@ -6509,7 +6534,7 @@ class NmrDpUtility:
                     modified |= self.__reg.dpV.validateCsValue(fileListId, file_name, file_type, content_subtype,
                                                                sf, sf_framecode, lp_category)
 
-            if modified:
+            if modified and fileListId == 0:
                 self.__depositNmrData()
 
         return self.__reg.report.getTotalErrors() == __errors
@@ -6702,7 +6727,8 @@ class NmrDpUtility:
                     except IndexError:
                         pass
 
-                self.__depositNmrData()
+                if fileListId == 0:
+                    self.__depositNmrData()
 
         return self.__reg.report.getTotalErrors() == __errors
 
@@ -6754,7 +6780,7 @@ class NmrDpUtility:
 
                         modified |= self.__reg.dpR.removeUnusedPdbInsCode(fileListId, content_subtype, sf, lp_category)
 
-            if modified:
+            if modified and fileListId == 0:
                 self.__depositNmrData()
 
         return self.__reg.report.getTotalErrors() == __errors
@@ -12721,7 +12747,7 @@ class NmrDpUtility:
                                                                               sf, list_id, sf_framecode, lp_category, cif_poly_seq,
                                                                               seq_align_dic, nmr2ca, ref_chain_id)
 
-            if modified:
+            if modified and fileListId == 0:
                 self.__depositNmrData()
 
         return self.__reg.report.getTotalErrors() == __errors
@@ -12871,22 +12897,22 @@ class NmrDpUtility:
                         conflict_id = self.__reg.nefT.get_conflict_atom_id(sf, file_type, lp_category, key_items)[0]
 
                         if len(conflict_id) > 0:
-                            modified = True
-
                             loop = sf.get_loop(lp_category)
 
                             for _id in conflict_id:
                                 del loop.data[_id]
+
+                            modified = True
 
                         conflict_id = self.__reg.nefT.get_bad_pattern_id(sf, lp_category, key_items, data_items)[0]
 
                         if len(conflict_id) > 0:
-                            modified = True
-
                             loop = sf.get_loop(lp_category)
 
                             for _id in conflict_id:
                                 del loop.data[_id]
+
+                            modified = True
 
                         if modified:
 

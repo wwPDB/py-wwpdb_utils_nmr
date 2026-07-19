@@ -4856,7 +4856,7 @@ class NmrVrptUtility:
                 for r_list in self.__dihedRestDict.values():
                     for r in r_list:
                         angle_type_set.add(r['angle_type'])
-                angle_type = list(angle_type_set) + [any_type]
+                angle_type = sorted(list(angle_type_set)) + [any_type]
             except IndexError:
                 self.__log.write("Dihedral angle analysis failed due to data error in the dihedral angle restraints. "
                                  f"{self.__dihedRestDict.values()}\n")
@@ -5100,7 +5100,7 @@ class NmrVrptUtility:
                 for r_list in self.__rdcRestDict.values():
                     for r in r_list:
                         rdc_type_set.add(r['rdc_type'])
-                rdc_type = list(rdc_type_set) + [any_type]
+                rdc_type = sorted(list(rdc_type_set)) + [any_type]
             except IndexError:
                 self.__log.write(f"RDC analysis failed due to data error in the RDC restraints. {self.__rdcRestDict.values()}\n")
                 self.__results['error_message_rdc'] = 'RDC analysis failed due to data error in the RDC angle restraints'

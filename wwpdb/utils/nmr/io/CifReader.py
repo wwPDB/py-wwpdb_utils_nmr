@@ -2206,7 +2206,7 @@ class CifReader:
                 _item['range_of_seq_id'] = ','.join(_seq_range)
                 _item['percent_of_core'] = float(f"{float(count) / lengths[chain_ids.index(chain_id)] * 100.0:.1f}")
 
-                dlist[chain_ids.index(chain_id)].append(_item)
+                dlist[chain_ids.index(chain_id)].append(copy.deepcopy(_item))
 
         if self.__verbose and self.__debug:
             self.__log.write(f"{dlist}\n")
@@ -2587,6 +2587,6 @@ class CifReader:
                 clist.append(item)
 
             if self.__verbose and self.__debug:
-                self.__log.write(clist)
+                self.__log.write(f'{clist}')
 
         return rlist, dlist, clist

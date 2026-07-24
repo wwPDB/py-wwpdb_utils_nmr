@@ -253,7 +253,7 @@ For example,
 
 ## Schema of NMR data processing report file
 
-[NmrDpReport class](NmrDpReport.py) handles writing and reading the report file. Document structure of the report file is defined in [JSON Schema file](../tests-nmr/json-schema/nmr-data-procesing-report-schema-v4.json).
+[NmrDpReport class](NmrDpReport.py) handles writing and reading the report file. Document structure of the report file is defined in [JSON Schema file](../tests-nmr/json-schema/nmr-data-processing-report-schema-v5.json).
 
 ## Standalone mode
 

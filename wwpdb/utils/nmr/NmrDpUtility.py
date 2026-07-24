@@ -281,6 +281,7 @@
 # 30-Jun-2026  M. Yokochi - add support for chemical shift perturbation experiment by adding 'nm-csp-*' file types (DAOTHER-9785)
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 # 13-Jul-2026  M. Yokochi - implement ensemble composition analysis including cluster analysis (DAOTHER-9785)
+# 24-Jul-2026  M. Yokochi - explain exact copy of the multimer's chemical shifts using comma-separated Auth_asym_IDs (DAOTHER-10898)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -13401,6 +13402,29 @@ class NmrDpUtility:
         if len(poly_seq) < LEN_MAJOR_ASYM_ID or len(poly_seq) != len(orig_poly_seq):
             seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq, orig_poly_seq, conservative=False)
             chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, poly_seq, orig_poly_seq, seq_align)
+
+            # trim cross chain assignment (DAOTHER-10898)
+            if len(chain_assign) > len(poly_seq) > 1:
+
+                _del_ca_idx = []
+
+                for ca_idx, ca in enumerate(chain_assign):
+
+                    if ca['conflict'] != 0:
+                        continue
+
+                    ref_chain_id = ca['ref_chain_id']
+                    test_chain_id = ca['test_chain_id']
+
+                    if any(True for _ca in chain_assign
+                           if ((_ca['ref_chain_id'] == ref_chain_id and _ca['test_chain_id'] != test_chain_id)
+                               or (_ca['ref_chain_id'] != ref_chain_id and _ca['test_chain_id'] == test_chain_id))
+                           and _ca['conflict'] == 0):
+                        _del_ca_idx.append(ca_idx)
+
+                if len(_del_ca_idx) > 0:
+                    for ca_idx in reversed(_del_ca_idx):
+                        del chain_assign[ca_idx]
 
             self.__reg.chain_id_map_for_remediation.clear()
             self.__reg.seq_id_map_for_remediation.clear()

@@ -14,6 +14,7 @@
 # 22-May-2026  M. Yokochi - transplant BMRB chemical shift analysis except for PANAV support,
 #                           add 'nmr-chemical-shift-validation' workflow operation (DAOTHER-9785)
 # 16-Jun-2025  M. Yokochi - enable to set working directory and cache file directory (DAOTHER-9785)
+# 24-Jul-2026  M. Yokochi - map comma-separated Auth_asym_IDs for calculation of chemical shift completeness (DAOTHER-10898)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -24,7 +25,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.2.1"
+__version__ = "v1.2.2"
 
 import collections
 import copy
@@ -2178,23 +2179,49 @@ class NmrVrptUtility:
                             cs_auth_seq_id = _cs['auth_seq_id']
                             cs_comp_id = _cs['comp_id']
                             cs_atom_id = _cs['atom_id']
-                            if not any(True for cs in data
-                                       if cs['auth_chain_id'] == cs_auth_chain_id
-                                       and cs['auth_seq_id'] == cs_auth_seq_id
-                                       and cs['comp_id'] == cs_comp_id
-                                       and cs['atom_id'] == cs_atom_id):
-                                cs_value = _cs['value']
-                                cs_error = _cs['error']
-                                ambig_code = _cs['ambig_code']
 
-                                if 'PDB_ins_code' not in tags or _cs['ins_code'] in EMPTY_VALUE:
-                                    cs_key = (cs_auth_chain_id, str(cs_auth_seq_id), cs_comp_id, cs_atom_id)
-                                else:
-                                    cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + _cs['ins_code'], cs_comp_id, cs_atom_id)
+                            # DAOTHER-10898
+                            if ',' in cs_auth_chain_id:
+                                for cs_auth_chain_id in _cs['auth_chain_id'].split(','):
+                                    cs_auth_chain_id = cs_auth_chain_id.strip()
+                                    if not any(True for cs in data
+                                               if cs['auth_chain_id'] == cs_auth_chain_id
+                                               and cs['auth_seq_id'] == cs_auth_seq_id
+                                               and cs['comp_id'] == cs_comp_id
+                                               and cs['atom_id'] == cs_atom_id):
+                                        cs_value = _cs['value']
+                                        cs_error = _cs['error']
+                                        ambig_code = _cs['ambig_code']
 
-                                err_cs_values = list(cs_key)
-                                err_cs_values.extend([cs_value, cs_error, ambig_code])
-                                self.__chemShiftUnparsed[list_id].append(err_cs_values)
+                                        if 'PDB_ins_code' not in tags or _cs['ins_code'] in EMPTY_VALUE:
+                                            cs_key = (cs_auth_chain_id, str(cs_auth_seq_id), cs_comp_id, cs_atom_id)
+                                        else:
+                                            cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + _cs['ins_code'],
+                                                      cs_comp_id, cs_atom_id)
+
+                                        err_cs_values = list(cs_key)
+                                        err_cs_values.extend([cs_value, cs_error, ambig_code])
+                                        self.__chemShiftUnparsed[list_id].append(err_cs_values)
+
+                            else:
+                                if not any(True for cs in data
+                                           if cs['auth_chain_id'] == cs_auth_chain_id
+                                           and cs['auth_seq_id'] == cs_auth_seq_id
+                                           and cs['comp_id'] == cs_comp_id
+                                           and cs['atom_id'] == cs_atom_id):
+                                    cs_value = _cs['value']
+                                    cs_error = _cs['error']
+                                    ambig_code = _cs['ambig_code']
+
+                                    if 'PDB_ins_code' not in tags or _cs['ins_code'] in EMPTY_VALUE:
+                                        cs_key = (cs_auth_chain_id, str(cs_auth_seq_id), cs_comp_id, cs_atom_id)
+                                    else:
+                                        cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + _cs['ins_code'],
+                                                  cs_comp_id, cs_atom_id)
+
+                                    err_cs_values = list(cs_key)
+                                    err_cs_values.extend([cs_value, cs_error, ambig_code])
+                                    self.__chemShiftUnparsed[list_id].append(err_cs_values)
 
             return True
 

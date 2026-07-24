@@ -5108,6 +5108,9 @@ class NmrDpRemediation:
                         _seq_key = (auth_chain_id, auth_seq_id)
                         truncated_loop_sequence.append(_seq_key)
 
+            # DAOTHER-10898
+            copied_auth_asym_id_mapping = {}
+
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
                 reparse = False
                 _src_idx = src_idx
@@ -5131,6 +5134,9 @@ class NmrDpRemediation:
                     # DAOTHER-8817
                     if 'chain_id' in _coord_atom_site:
                         _row[16] = _coord_atom_site['chain_id']
+                        # DAOTHER-10898
+                        if _row[16] in copied_auth_asym_id_mapping:
+                            _row[16] = _row[20] = copied_auth_asym_id_mapping[_row[16]]
                     _row[5] = _row[18] = comp_id = _coord_atom_site['comp_id']
                     valid = True
                     missing_ch3 = []
@@ -5897,6 +5903,7 @@ class NmrDpRemediation:
 
             copied_auth_chain_ids = set()
             copied_chain_ids = set()
+            copied_auth_asym_id_mapping = {}
 
             if has_auth_seq:
                 auth_asym_ids = [row[0] for row in auth_dat]
@@ -5939,6 +5946,17 @@ class NmrDpRemediation:
 
                         if _auth_cs_1 == _auth_cs_2:
                             copied_auth_chain_ids.add(_auth_chain_id_2)
+
+                            # DAOTHER-10898
+                            if _auth_chain_id_1 not in copied_auth_asym_id_mapping:
+                                copied_auth_asym_id_mapping[_auth_chain_id_1] = [_auth_chain_id_1]
+                            if _auth_chain_id_2 not in copied_auth_asym_id_mapping[_auth_chain_id_1]:
+                                copied_auth_asym_id_mapping[_auth_chain_id_1].append(_auth_chain_id_2)
+
+                # DAOTHER-10898
+                if len(copied_auth_chain_ids) > 0:
+                    for k, v in copied_auth_asym_id_mapping.items():
+                        copied_auth_asym_id_mapping[k] = ','.join(sorted(v))
 
             else:
 

@@ -682,7 +682,7 @@ class NmrDpValidation:
 
                     if _file_type != file_type:
 
-                        if self.__reg.internal_mode and _file_type == 'nef':
+                        if (self.__reg.internal_mode or self.__reg.conversion_server) and _file_type == 'nef':
 
                             _csPath = self.getNextPath(csPath, '.nef2str')
 

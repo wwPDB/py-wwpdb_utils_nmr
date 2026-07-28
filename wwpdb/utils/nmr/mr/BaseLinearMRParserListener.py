@@ -1752,6 +1752,10 @@ class BaseLinearMRParserListener():
                     cifCompId = origCompId = fixedCompId
                 else:
                     if cifCompId is not None:
+                        if seqId not in ps['auth_seq_id'] and seqId in ps['seq_id']:
+                            seqId = ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+                        if seqId not in ps['auth_seq_id']:
+                            continue
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
                     else:
@@ -2441,6 +2445,10 @@ class BaseLinearMRParserListener():
                     cifCompId = origCompId = fixedCompId
                 else:
                     if cifCompId is not None:
+                        if seqId not in ps['auth_seq_id'] and seqId in ps['seq_id']:
+                            seqId = ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+                        if seqId not in ps['auth_seq_id']:
+                            continue
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
                     else:
@@ -2971,6 +2979,10 @@ class BaseLinearMRParserListener():
                     cifCompId = fixedCompId
                 else:
                     if cifCompId is not None:
+                        if seqId not in ps['auth_seq_id'] and seqId in ps['seq_id']:
+                            seqId = ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+                        if seqId not in ps['auth_seq_id']:
+                            continue
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
                     else:
@@ -3192,6 +3204,10 @@ class BaseLinearMRParserListener():
                     cifCompId = fixedCompId
                 else:
                     if cifCompId is not None:
+                        if seqId not in ps['auth_seq_id'] and seqId in ps['seq_id']:
+                            seqId = ps['auth_seq_id'][ps['seq_id'].index(seqId)]
+                        if seqId not in ps['auth_seq_id']:
+                            continue
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
                     else:
@@ -3622,6 +3638,10 @@ class BaseLinearMRParserListener():
                     cifCompId = origCompId = fixedCompId
                 else:
                     if cifCompId is not None:
+                        if seqId not in ps['auth_seq_id'] and seqId in ps['seq_id']:
+                            seqId = ps['auth_seq_id'][(ps['seq_id'].index(seqId))]
+                        if seqId not in ps['auth_seq_id']:
+                            continue
                         idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
                                     if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
                     else:

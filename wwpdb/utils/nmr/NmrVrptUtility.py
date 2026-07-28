@@ -4534,13 +4534,13 @@ class NmrVrptUtility:
 
                                         ca_chem_shift = cb_chem_shift = None
 
-                                        for cs_key, cs_vals in _unmap_cs_data.items():
-                                            atom_id = cs_key[3]
+                                        for cs in _unmap_cs_data:
+                                            atom_id = cs['atom_id']
 
                                             if atom_id == 'CA':
-                                                ca_chem_shift = cs_vals['value']
+                                                ca_chem_shift = cs['value']
                                             elif atom_id == 'CB':
-                                                cb_chem_shift = cs_vals['value']
+                                                cb_chem_shift = cs['value']
 
                                         ambig_redox_state = False
 

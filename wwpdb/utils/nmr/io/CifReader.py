@@ -1889,6 +1889,11 @@ class CifReader:
                     if score == 0.0:
                         continue
 
+                    domains = collections.Counter(list_labels).most_common()
+
+                    if domains[0][0] == -1:
+                        continue
+
                     result['score'] = score
 
                     if n_clusters > 0 and stop_min_samples == -1:

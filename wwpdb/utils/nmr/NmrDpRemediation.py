@@ -17626,7 +17626,7 @@ class NmrDpRemediation:
         """
 
         if self.__reg.combined_mode or not self.__reg.remediation_mode or self.__reg.dstPath is None:
-            return True
+            return False
 
         if len(self.__reg.star_data) == 0 or not isinstance(self.__reg.star_data[0], pynmrstar.Entry):
             return False

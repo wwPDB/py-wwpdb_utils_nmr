@@ -15823,7 +15823,25 @@ class NmrDpUtility:
         """ Merge CS+MR+PK into next NMR unified data files.
         """
 
-        return self.__reg.dpR.mergeLegacyData()
+        if not self.__reg.dpR.mergeLegacyData():
+            return False
+
+        # reset cache dictionaries
+
+        for v in self.__reg.lp_data.values():
+            v.clear()
+
+        for v in self.__reg.aux_data.values():
+            v.clear()
+
+        for v in self.__reg.sf_tag_data.values():
+            v.clear()
+
+        self.__testDataConsistencyInLoop()
+        self.__testDataConsistencyInAuxLoop()
+        self.__testSfTagConsistency()
+
+        return True
 
     def __updateConstraintStats(self) -> bool:
         """ Update _Constraint_stat_list saveframe.

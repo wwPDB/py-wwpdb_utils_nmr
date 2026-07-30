@@ -14258,6 +14258,7 @@ class NmrDpUtility:
                     continue
 
                 other = {}
+                other['bond_type'] = sc['conn_type_id']
                 other['chain_id_1'] = sc['ptnr1_label_asym_id']
                 other['seq_id_1'] = sc['ptnr1_label_seq_id']
                 other['comp_id_1'] = sc['ptnr1_label_comp_id']

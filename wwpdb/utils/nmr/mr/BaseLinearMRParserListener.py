@@ -6293,7 +6293,8 @@ class BaseLinearMRParserListener():
             poly_seq_model = next(ps for ps in self.polySeq
                                   if ps['chain_id'] == ref_chain_id)
 
-            for ref_seq_id, test_seq_id in zip(sa['ref_auth_seq_id'], sa['test_seq_id']):
+            for ref_seq_id, test_seq_id in zip(sa['ref_auth_seq_id' if 'ref_auth_seq_id' in sa else 'ref_seq_id'],
+                                               sa['test_seq_id']):
                 if test_seq_id is None or test_seq_id != seqId:
                     continue
                 if compId is None or compId == poly_seq_model['comp_id'][poly_seq_model['auth_seq_id'].index(ref_seq_id)]:

@@ -15,6 +15,7 @@
 #                           add 'nmr-chemical-shift-validation' workflow operation (DAOTHER-9785)
 # 16-Jun-2025  M. Yokochi - enable to set working directory and cache file directory (DAOTHER-9785)
 # 24-Jul-2026  M. Yokochi - map comma-separated Auth_asym_IDs for calculation of chemical shift completeness (DAOTHER-10898)
+# 31-Jul-2026  M. Yokochi - fix unexpected missing of dihedral angle restraint validation
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -25,7 +26,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.2.2"
+__version__ = "v1.2.3"
 
 import collections
 import copy
@@ -3469,9 +3470,6 @@ class NmrVrptUtility:
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
         """
 
-        if self.__distRestDict is None or self.__has_prev_results:
-            return True
-
         if self.__coordinates is None:
             return False
 
@@ -3480,6 +3478,9 @@ class NmrVrptUtility:
         self.__distRestViolDict = {}
         self.__distRestViolCombKeyDict = {}
         self.__distRestUnmapped = []
+
+        if self.__distRestDict is None or self.__has_prev_results:
+            return True
 
         try:
 
@@ -3759,9 +3760,6 @@ class NmrVrptUtility:
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID)
         """
 
-        if self.__dihedRestDict is None or self.__has_prev_results:
-            return True
-
         if self.__coordinates is None:
             return False
 
@@ -3770,6 +3768,9 @@ class NmrVrptUtility:
         self.__dihedRestViolDict = {}
         self.__dihedRestViolCombKeyDict = {}
         self.__dihedRestUnmapped = []
+
+        if self.__dihedRestDict is None or self.__has_prev_results:
+            return True
 
         try:
 
@@ -3937,19 +3938,17 @@ class NmrVrptUtility:
             @author: Masashi Yokochi
         """
 
-        if self.__rdcRestDict is None or self.__has_prev_results:
-            return True
-
         if self.__coordinates is None:
             return False
-
-        return True  # TODO  pylint: disable=fixme
 
         self.__rdcRestDictWithCombKey = {}  # pylint: disable='unreachable'
 
         self.__rdcRestViolDict = {}
         self.__rdcRestViolCombKeyDict = {}
         self.__rdcRestUnmapped = []
+
+        if self.__rdcRestDict is None or self.__has_prev_results:
+            return True
 
         try:
 
@@ -4606,15 +4605,12 @@ class NmrVrptUtility:
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
 
-        if self.__has_prev_results:
+        if self.__has_prev_results or self.__distRestDict is None or len(self.__distRestDict) == 0:
             return True
 
         try:
 
             self.__results['distance'] = self.__distRestViolDict is not None and len(self.__distRestViolDict) > 0
-
-            if not self.__results['distance']:
-                return True
 
             self.__results['dist_seq_dict'] = self.__distRestSeqDict
             self.__results['unmapped_dist'] = self.__distRestUnmapped
@@ -4862,16 +4858,13 @@ class NmrVrptUtility:
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
 
-        if self.__has_prev_results:
+        if self.__has_prev_results or self.__dihedRestDict is None or len(self.__dihedRestDict) == 0:
             return True
 
         try:
 
             self.__results['angle'] = self.__dihedRestViolDict is not None and len(self.__dihedRestViolDict) > 0
             self.__results['error_message_angle'] = None
-
-            if not self.__results['angle']:
-                return True
 
             self.__results['angle_seq_dict'] = self.__dihedRestSeqDict
             self.__results['unmapped_angle'] = self.__dihedRestUnmapped
@@ -5106,16 +5099,13 @@ class NmrVrptUtility:
             @author: Masashi Yokochi
         """
 
-        if self.__has_prev_results:
+        if self.__has_prev_results or self.__rdcRestDict is None or len(self.__rdcRestDict) == 0:
             return True
 
         try:
 
             self.__results['rdc'] = self.__rdcRestViolDict is not None and len(self.__rdcRestViolDict) > 0
             self.__results['error_message_rdc'] = None
-
-            if not self.__results['rdc']:
-                return True
 
             self.__results['rdc_seq_dict'] = self.__rdcRestSeqDict
             self.__results['unmapped_rdc'] = self.__rdcRestUnmapped

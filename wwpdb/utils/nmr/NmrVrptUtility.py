@@ -16,6 +16,7 @@
 # 16-Jun-2025  M. Yokochi - enable to set working directory and cache file directory (DAOTHER-9785)
 # 24-Jul-2026  M. Yokochi - map comma-separated Auth_asym_IDs for calculation of chemical shift completeness (DAOTHER-10898)
 # 31-Jul-2026  M. Yokochi - fix unexpected missing of dihedral angle restraint validation
+# 03-Aug-2026  M. Yokochi - add RDC restraint analysis (DAOTHER-9785, v1.3.0)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -26,7 +27,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.2.3"
+__version__ = "v1.3.0"
 
 import collections
 import copy
@@ -78,7 +79,11 @@ try:
                                                CUTOFF_PARAMAGNETIC,
                                                VICINITY_AROMATIC,
                                                VICINITY_PARAMAGNETIC,
-                                               MAGIC_ANGLE)
+                                               MAGIC_ANGLE,
+                                               GYROMAGNETIC_RATIOS,
+                                               PERMEABILITY_0,
+                                               PLANCK_CONSTANT,
+                                               REDUCED_PLANCK_CONSTANT)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -122,7 +127,11 @@ except ImportError:
                                    CUTOFF_PARAMAGNETIC,
                                    VICINITY_AROMATIC,
                                    VICINITY_PARAMAGNETIC,
-                                   MAGIC_ANGLE)
+                                   MAGIC_ANGLE,
+                                   GYROMAGNETIC_RATIOS,
+                                   PERMEABILITY_0,
+                                   PLANCK_CONSTANT,
+                                   REDUCED_PLANCK_CONSTANT)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.NmrDpReport import NmrDpReport
@@ -217,34 +226,6 @@ def to_unit_vector(a: list) -> list:
     return a / numpy.linalg.norm(a)
 
 
-def dihedral_angle(p0: list, p1: list, p2: list, p3: list) -> float:
-    """ Return dihedral angle from a series of four points.
-    """
-
-    b0 = -1.0 * (p1 - p0)
-    b1 = p2 - p1
-    b2 = p3 - p2
-
-    # normalize b1 so that it does not influence magnitude of vector
-    # rejections that come next
-    b1 = to_unit_vector(b1)
-
-    # vector rejections
-    # v = projection of b0 onto plane perpendicular to b1
-    #   = b0 minus component that aligns with b1
-    # w = projection of b2 onto plane perpendicular to b1
-    #   = b2 minus component that aligns with b1
-    v = b0 - numpy.dot(b0, b1) * b1
-    w = b2 - numpy.dot(b2, b1) * b1
-
-    # angle between v and w in a plane is the torsion angle
-    # v and w may not be normalized but that's fine since tan is y/x
-    x = numpy.dot(v, w)
-    y = numpy.dot(numpy.cross(b1, v), w)
-
-    return numpy.degrees(numpy.arctan2(y, x))
-
-
 def dist_inv_6_summed(r_list: List[float]) -> float:
     """ Return r^−6-summed distance for a given list of distances for ambiguous restraints as recommended by NMR VTF.
         Reference:
@@ -337,6 +318,34 @@ def dist_error(lower_bound: Optional[float], upper_bound: Optional[float], dist:
         pass
 
     return error
+
+
+def dihedral_angle(p0: list, p1: list, p2: list, p3: list) -> float:
+    """ Return dihedral angle from a series of four points.
+    """
+
+    b0 = -1.0 * (p1 - p0)
+    b1 = p2 - p1
+    b2 = p3 - p2
+
+    # normalize b1 so that it does not influence magnitude of vector
+    # rejections that come next
+    b1 = to_unit_vector(b1)
+
+    # vector rejections
+    # v = projection of b0 onto plane perpendicular to b1
+    #   = b0 minus component that aligns with b1
+    # w = projection of b2 onto plane perpendicular to b1
+    #   = b2 minus component that aligns with b1
+    v = b0 - numpy.dot(b0, b1) * b1
+    w = b2 - numpy.dot(b2, b1) * b1
+
+    # angle between v and w in a plane is the torsion angle
+    # v and w may not be normalized but that's fine since tan is y/x
+    x = numpy.dot(v, w)
+    y = numpy.dot(numpy.cross(b1, v), w)
+
+    return numpy.degrees(numpy.arctan2(y, x))
 
 
 def angle_target_values(target_value: Optional[float], target_value_uncertainty: Optional[float],
@@ -471,6 +480,15 @@ def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], targ
         return 0.0
 
     return min(angle_diff(upper_bound, angle), angle_diff(lower_bound, angle))
+
+
+def rdc_dmax(atom_type_1: str, atom_type_2: str, bond_distance: float, hz_unit: bool = True):
+    """ Return scale factor of residual coupling constant for a given nuclei vector.
+    """
+
+    return - PERMEABILITY_0 * (PLANCK_CONSTANT if hz_unit else REDUCED_PLANCK_CONSTANT)\
+        * GYROMAGNETIC_RATIOS[atom_type_1] * GYROMAGNETIC_RATIOS[atom_type_2]\
+        / math.pow(2.0e-10 * numpy.pi * bond_distance, 3.0)
 
 
 def rdc_target_values(target_value: Optional[float], target_value_uncertainty: Optional[float],
@@ -937,6 +955,9 @@ class NmrVrptUtility:
                  '__rdcRestDict',
                  '__rdcRestDictWithCombKey',
                  '__rdcRestSeqDict',
+                 '__rdcSaupeOrderMatrix',
+                 '__rdcCalcDict',
+                 '__rdcCompPlotDict',
                  '__distRestViolDict',
                  '__distRestUnmapped',
                  '__distRestViolCombKeyDict',
@@ -1053,6 +1074,13 @@ class NmrVrptUtility:
         self.__rdcRestDictWithCombKey = None
         # RDC restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__rdcRestSeqDict = None
+
+        # Saupe order matrix (Molecular alignment tensor)
+        self.__rdcSaupeOrderMatrix = None
+        # calculated RDC values based on molecular alignment tensor
+        self.__rdcCalcDict = None
+        # RDC comparison plot of observed and calculated RDCs for each list
+        self.__rdcCompPlotDict = None
 
         # unique chemical shifts for each list_id and atom_key
         self.__chemShiftUniqDict = None
@@ -2768,6 +2796,7 @@ class NmrVrptUtility:
                 has_lower_linear_limit = 'RDC_lower_linear_limit' in tags
                 has_upper_linear_limit = 'RDC_upper_linear_limit' in tags
                 has_target_val_uncertainty = 'Target_value_uncertainty' in tags
+                has_weight = 'Weight' in tags
 
                 if has_combination_id:
                     data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
@@ -2790,6 +2819,8 @@ class NmrVrptUtility:
                 if has_target_val_uncertainty:
                     data_items.append({'name': 'Target_value_uncertainty', 'type': 'abs-float',
                                        'alt_name': 'target_value_uncertainty'})
+                if has_weight:
+                    data_items.append({'name': 'Weight', 'type': 'float'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -2831,6 +2862,9 @@ class NmrVrptUtility:
                     upper_limit = r.get('upper_limit')
                     lower_linear_limit = r.get('lower_linear_limit')
                     upper_linear_limit = r.get('upper_linear_limit')
+                    weight = r.get('weight')
+                    if weight is None or weight < 0:
+                        weight = 1.0
 
                     target_value, lower_bound, upper_bound =\
                         rdc_target_values(target_value, target_value_uncertainty, value, value_uncertainty,
@@ -2851,7 +2885,8 @@ class NmrVrptUtility:
                                                          'rdc_type': rdc_type,
                                                          'lower_bound': lower_bound,
                                                          'upper_bound': upper_bound,
-                                                         'target_value': target_value})
+                                                         'target_value': target_value,
+                                                         'weight': weight})
 
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
@@ -2872,7 +2907,11 @@ class NmrVrptUtility:
             for v in self.__rdcRestSeqDict.values():
                 v = list(set(v))
 
-            if len(self.__rdcRestDict) == 0:
+            if len(self.__rdcRestDict) != 0:
+                # settle molecular alignment tensor for each rdc list
+                self.__settleMolecularAlignmentTensors()
+
+            else:
                 self.__rdcRestDict = self.__rdcRestSeqDict = None
 
             return True
@@ -2883,6 +2922,123 @@ class NmrVrptUtility:
             self.__log.write(f"+{self.__class_name__}.__extractRdcConstraints() ++ Error  - {str(e)}\n")
 
             self.__rdcRestDict = self.__rdcRestSeqDict = None
+
+        return False
+
+    def __settleMolecularAlignmentTensors(self) -> bool:
+        """ Settle molecular alignment tensors for each RDC list based on coordinates and experimental RDC values.
+            @author: Masashi Yokochi
+            Reference:
+              Order Matrix Analysis of Residual Dipolar Couplings Using Singular Value Decomposition
+              J. A. Losonczi, M. Andrec, M. W. F. Fischer, and J. H. Prestegard.
+              Journal of Magnetic Resonance, 138, 334-342 (1999)
+              DOI: 10.1006/jmre.1999.1754
+        """
+
+        self.__rdcSaupeOrderMatrix = {}
+        self.__rdcCalcDict = {}
+
+        try:
+
+            list_ids = set()
+            for rest_key in self.__rdcRestDict:
+                list_ids.add(rest_key[0])
+
+            for list_id in sorted(list(list_ids)):
+
+                dmax = None
+
+                self.__rdcSaupeOrderMatrix[list_id] = {}
+
+                for model_id in self.__coordinates:
+
+                    target_rest_keys = []
+
+                    A = numpy.empty((0, 5), dtype=float)
+                    b_exp = []
+
+                    for rest_key, restraints in self.__rdcRestDict.items():
+
+                        if rest_key[0] != list_id:
+                            continue
+
+                        for r in restraints:
+
+                            if r['weight'] == 0.0:
+                                continue
+
+                            atom_key_1 = r['atom_key_1']
+                            atom_key_2 = r['atom_key_2']
+
+                            atom_present = True
+
+                            try:
+                                pos_1 = self.__coordinates[model_id][atom_key_1]
+                            except KeyError:
+                                atom_present = False
+
+                            try:
+                                pos_2 = self.__coordinates[model_id][atom_key_2]
+                            except KeyError:
+                                atom_present = False
+
+                            if not atom_present:
+                                continue
+
+                            atom_type_1 = atom_key_1[3][0]
+                            atom_type_2 = atom_key_2[3][0]
+
+                            if atom_type_1 not in GYROMAGNETIC_RATIOS\
+                               or atom_type_2 not in GYROMAGNETIC_RATIOS:
+                                continue
+
+                            target_rest_keys.append(rest_key)
+
+                            if dmax is None:
+                                dmax = rdc_dmax(atom_type_1, atom_type_2, distance(pos_1, pos_2), hz_unit=True)
+
+                            vector = to_unit_vector(pos_2 - pos_1)
+                            cos_x, cos_y, cos_z = vector[0], vector[1], vector[2]
+                            cos_x_2 = cos_x * cos_x
+                            cos_y_2 = cos_y * cos_y
+                            cos_z_2 = cos_z * cos_z
+
+                            A = numpy.append(A, numpy.array([[cos_y_2 - cos_x_2, cos_z_2 - cos_x_2,
+                                                              2.0 * cos_x * cos_y,
+                                                              2.0 * cos_x * cos_z,
+                                                              2.0 * cos_y * cos_z]]), axis=0)
+
+                            b_exp.append(r['target_value'] / dmax)
+
+                    if len(b_exp) < 5:
+                        continue
+
+                    b = numpy.array(b_exp, dtype=float)
+
+                    U, S, Vh = numpy.linalg.svd(A, full_matrices=False)
+
+                    Si = numpy.diag(numpy.array([1.0 / s for s in list(S)], dtype=float))
+
+                    x = Vh.T @ Si @ U.T @ b
+
+                    Syy, Szz, Sxy, Sxz, Syz = x[0], x[1], x[2], x[3], x[4]
+
+                    if -0.5 <= Syy <= 1.0 and -0.5 <= Szz <= 1.0 and abs(Sxy) <= 0.75 and abs(Sxz) <= 0.75 and abs(Syz) <= 0.75:
+                        self.__rdcSaupeOrderMatrix[list_id][model_id] = {'Syy': Syy, 'Szz': Szz,
+                                                                         'Sxy': Sxy, 'Sxz': Sxz, 'Syz': Syz}
+                        b_calc = list(A @ x)
+
+                        for rest_key, val in zip(target_rest_keys, b_calc):
+                            if rest_key not in self.__rdcCalcDict:
+                                self.__rdcCalcDict[rest_key] = {}
+                            self.__rdcCalcDict[rest_key][model_id] = val * dmax
+
+            return True
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__settleMolecularAlignmentTensors() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -3614,7 +3770,6 @@ class NmrVrptUtility:
                                 atom_present = False
 
                         if atom_present:
-
                             d = distance(pos_1, pos_2)
                             if d == 0.0:
                                 self.__log.write(f"+{self.__class_name__}.__validateDistanceRestraints() ++ Error  - "
@@ -3947,6 +4102,8 @@ class NmrVrptUtility:
         self.__rdcRestViolCombKeyDict = {}
         self.__rdcRestUnmapped = []
 
+        self.__rdcCompPlotDict = {}
+
         if self.__rdcRestDict is None or self.__has_prev_results:
             return True
 
@@ -3992,12 +4149,9 @@ class NmrVrptUtility:
                             atom_present = False
 
                         if atom_present:
-                            # """ TODO: rdc() should return calculated RDC value for a given vector
-                            # using the RDC alignment tensor of rest_key[0]
-                            # r = rdc(rest_key[0], pos_1, pos_2)
-                            # rdc_list_set[bound_key].append(r)
-                            # """
-                            pass
+                            if rest_key in self.__rdcCalcDict and model_id in self.__rdcCalcDict[rest_key]:
+                                r_calc = self.__rdcCalcDict[rest_key][model_id]
+                                rdc_list_set[bound_key].append(r_calc)
                         else:
                             self.__rdcRestUnmapped.append(rest_key)
 
@@ -4082,6 +4236,44 @@ class NmrVrptUtility:
                     get_viol_per_model(min_error_per_model, min_comb_key_per_model)
 
             self.__rdcRestUnmapped = list(set(self.__rdcRestUnmapped))
+
+            list_ids = set()
+            for rest_key in self.__rdcCalcDict:
+                list_ids.add(rest_key[0])
+
+            for list_id in sorted(list(list_ids)):
+                rdc_values, rdc_errors = {}, {}
+
+                for rest_key, calc_rdc in self.__rdcCalcDict.items():
+
+                    if rest_key[0] != list_id:
+                        continue
+
+                    restraints = self.__rdcRestDict[rest_key]
+
+                    for r in restraints:
+                        rdc_type = r['rdc_type']
+
+                        if rdc_type not in rdc_values:
+                            rdc_values[rdc_type] = []
+                            rdc_errors[rdc_type] = []
+
+                        calc_rdcs = numpy.array(list(calc_rdc.values()), dtype=float)
+
+                        a_key = r['atom_key_1']
+                        a_key_2 = r['atom_key_2']
+
+                        exp_rdc_center = r['target_value']
+                        calc_rdc_center = float(f'{numpy.mean(calc_rdcs):.2f}')
+
+                        rdc_values[rdc_type].append([exp_rdc_center, calc_rdc_center,
+                                                     f"{a_key[0]}:{a_key[1]}:{a_key[2]}:{a_key[3]}-{a_key_2[3]}"])
+                        rdc_errors[rdc_type].append([exp_rdc_center, calc_rdc_center,
+                                                     r['lower_bound'], r['upper_bound'],
+                                                     float(f'{numpy.min(calc_rdcs):.2f}'),
+                                                     float(f'{numpy.max(calc_rdcs):.2f}')])
+
+                self.__rdcCompPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors}
 
             return True
 
@@ -5310,6 +5502,9 @@ class NmrVrptUtility:
                                                             err])
 
             self.__results['rdc_violation_seq'] = rdc_violation_seq
+
+            if len(self.__rdcCompPlotDict) > 0:
+                self.__results['rdc_comparison_plot'] = self.__rdcCompPlotDict
 
             return True
 

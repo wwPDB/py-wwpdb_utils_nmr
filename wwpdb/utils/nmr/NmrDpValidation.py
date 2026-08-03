@@ -19758,27 +19758,46 @@ class NmrDpValidation:
 
             has_dist = vrpt_mr is not None and 'distance_summary' in vrpt_mr
             dist_any_type = 'total'
-            distance_type = ('intraresidue', 'sequential', 'medium', 'long', 'interchain',
-                             'hbond', 'sbond', 'sebond', 'metal', dist_any_type)
-            distance_type_name = ('intra-residue', 'sequential', 'medium_range', 'long_range', 'inter-chain',
-                                  'hydrogen_bond', 'disulfide_bond', 'diselenide_bond', 'metal_coordiantion', dist_any_type)
-            distance_type_abbr = ('ir', 'sq', 'mr', 'lr', 'ic', 'hb', 'sb', 'seb', 'metal', 'total')
-            distance_sub_type = ('backbone-backbone', 'backbone-sidechain', 'sidechain-sidechain')
-            distance_bond_type = ('hbond', 'sbond', 'sebond', 'metal')
-            distance_general_bond_type = ('hbond', 'sbond', 'sebond', 'metal', None)
+            dist_types = ('intraresidue', 'sequential', 'medium', 'long', 'interchain',
+                          'hbond', 'sbond', 'sebond', 'metal', dist_any_type)
+            dist_type_names = ('intra-residue', 'sequential', 'medium_range', 'long_range', 'inter-chain',
+                               'hydrogen_bond', 'disulfide_bond', 'diselenide_bond', 'metal_coordiantion', dist_any_type)
+            dist_type_abbrs = ('ir', 'sq', 'mr', 'lr', 'ic', 'hb', 'sb', 'seb', 'metal', 'total')
+            dist_sub_types = ('backbone-backbone', 'backbone-sidechain', 'sidechain-sidechain')
+            dist_bond_types = ('hbond', 'sbond', 'sebond', 'metal')
+            dist_general_bond_types = ('hbond', 'sbond', 'sebond', 'metal', None)
 
             has_dihed = vrpt_mr is not None and 'angle_summary' in vrpt_mr
             dihed_any_type = 'Total'
-            dihed_angle_type = vrpt_mr['key_lists']['angle_type'] if has_dihed else []
+            dihed_types = vrpt_mr['key_lists']['angle_type'] if has_dihed else []
 
             has_rdc = vrpt_mr is not None and 'rdc_summary' in vrpt_mr
             rdc_any_type = 'Total'
-            # rdc_type = vrpt_mr['key_lists']['rdc_type'] if has_rdc else []
+            rdc_types = vrpt_mr['key_lists']['rdc_type'] if has_rdc else []
 
             total_dist_restraint_count = sum(vrpt_mr['distance_summary'][dist_any_type][dist_sub_type][None]
-                                             for dist_sub_type in distance_sub_type) if has_dist else 0
+                                             for dist_sub_type in dist_sub_types) if has_dist else 0
             total_dihed_restraint_count = vrpt_mr['angle_summary'][dihed_any_type] if has_dihed else 0
             total_rdc_restraint_count = vrpt_mr['rdc_summary'][rdc_any_type] if has_rdc else 0
+
+            # integrate RDC comparison plot of observed and calculated RDCs
+            if has_rdc and 'rdc_comparison_plot' in vrpt_mr:
+                rdc_comparison_plot = vrpt_mr['rdc_comparison_plot']
+
+                input_source_ = self.__reg.report_prev.input_sources[0]
+                input_source_dic_ = input_source_.get()
+                content_subtypes_ = input_source_dic_['content_subtype']
+
+                if 'rdc_restraint' in content_subtypes_ and 'stats_of_exptl_data' in input_source_dic_:
+                    stats_of_exptl_data = input_source_dic_['stats_of_exptl_data']
+
+                    if 'rdc_restraint' in stats_of_exptl_data:
+
+                        for rdc_stat in stats_of_exptl_data['rdc_restraint']:
+                            list_id = rdc_stat['list_id']
+
+                            if list_id in rdc_comparison_plot:
+                                rdc_stat['comparison_plot'] = rdc_comparison_plot[list_id]
 
             def get_dist_violations_per_model():
                 violations_per_model = []
@@ -19804,26 +19823,38 @@ class NmrDpValidation:
                                                  'max_violation_in_bin': v[0][1]})
                 return violations_per_model
 
+            def get_rdc_violation_per_model():
+                violations_per_model = []
+                for k, v in vrpt_mr['residual_rdc_violation'].items():
+                    len_bin = len(violations_per_model)
+                    bin_suffix = ' (' + ('Small' if len_bin == 0
+                                         else 'Medium' if len_bin == 1
+                                         else 'Large') + ')'
+                    violations_per_model.append({'bin_type': k + bin_suffix,
+                                                 'average_number_of_violations_per_model': v[0][3],
+                                                 'max_violation_in_bin': v[0][1]})
+                return violations_per_model
+
             def get_dist_violation_summary():
                 violation_summary = []
-                for dist_type in distance_type:
+                for dist_type in dist_types:
                     name_suffix = ''
                     if dist_type == 'intraresidue':
-                        name_suffix = ' (|i-j|=0)'
+                        name_suffix = ' (|i - j| = 0)'
                     elif dist_type == 'sequential':
-                        name_suffix = ' (|i-j|=1)'
+                        name_suffix = ' (|i - j| = 1)'
                     elif dist_type == 'medium':
-                        name_suffix = ' (|i-j|>1 & |i-j|<5)'
+                        name_suffix = ' (1 < |i - j| < 5)'
                     elif dist_type == 'long':
-                        name_suffix = ' (|i-j|≥5)'
-                    restraint_type = distance_type_name[distance_type.index(dist_type)] + name_suffix
+                        name_suffix = ' (|i - j| ≥ 5)'
+                    restraint_type = dist_type_names[dist_types.index(dist_type)] + name_suffix
                     bond_type = dist_type if dist_type in ('hbond', 'sbond', 'sebond', 'metal') else None
                     if bond_type is None:
                         restraint_count = sum(vrpt_mr['distance_summary'][dist_type][dist_sub_type][bond_type]
-                                              for dist_sub_type in distance_sub_type)
+                                              for dist_sub_type in dist_sub_types)
                     else:
                         restraint_count = sum(vrpt_mr['distance_summary'][dist_any_type][dist_sub_type][bond_type]
-                                              for dist_sub_type in distance_sub_type)
+                                              for dist_sub_type in dist_sub_types)
 
                     if restraint_count == 0:
                         if dist_type in ('sebond', 'metal'):
@@ -19835,10 +19866,10 @@ class NmrDpValidation:
 
                     if bond_type is None:
                         viol_count = sum(vrpt_mr['distance_violation'][dist_type][dist_sub_type][bond_type]
-                                         for dist_sub_type in distance_sub_type)
+                                         for dist_sub_type in dist_sub_types)
                     else:
                         viol_count = sum(vrpt_mr['distance_violation'][dist_any_type][dist_sub_type][bond_type]
-                                         for dist_sub_type in distance_sub_type)
+                                         for dist_sub_type in dist_sub_types)
 
                     viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
                         if restraint_count > 0 else None
@@ -19846,10 +19877,10 @@ class NmrDpValidation:
 
                     if bond_type is None:
                         consist_viol_count = sum(vrpt_mr['consistent_distance_violation'][dist_type][dist_sub_type][bond_type]
-                                                 for dist_sub_type in distance_sub_type)
+                                                 for dist_sub_type in dist_sub_types)
                     else:
                         consist_viol_count = sum(vrpt_mr['consistent_distance_violation'][dist_any_type][dist_sub_type][bond_type]
-                                                 for dist_sub_type in distance_sub_type)
+                                                 for dist_sub_type in dist_sub_types)
 
                     consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
                         if restraint_count > 0 else None
@@ -19864,11 +19895,11 @@ class NmrDpValidation:
                                               'consist_viol_absol_percent': consist_viol_absol_percent
                                               })
 
-                    if dist_type in distance_bond_type:
+                    if dist_type in dist_bond_types:
                         continue
 
-                    for dist_sub_type in distance_sub_type:
-                        restraint_type = distance_type_abbr[distance_type.index(dist_type)] + '; ' + dist_sub_type
+                    for dist_sub_type in dist_sub_types:
+                        restraint_type = dist_type_abbrs[dist_types.index(dist_type)] + '; ' + dist_sub_type
                         bond_type = None
                         restraint_count = vrpt_mr['distance_summary'][dist_type][dist_sub_type][bond_type]
 
@@ -19899,7 +19930,7 @@ class NmrDpValidation:
 
             def get_dihed_violation_summary():
                 violation_summary = []
-                for dihed_type in dihed_angle_type:
+                for dihed_type in dihed_types:
                     restraint_type = dihed_type.lower()
                     restraint_count = vrpt_mr['angle_summary'][dihed_type]
                     restraint_percent = float(f"{100.0 * restraint_count / total_dihed_restraint_count:.1f}")
@@ -19925,18 +19956,46 @@ class NmrDpValidation:
 
                 return violation_summary
 
+            def get_rdc_violation_summary():
+                violation_summary = []
+                for rdc_type in rdc_types:
+                    restraint_type = rdc_type.lower()
+                    restraint_count = vrpt_mr['rdc_summary'][rdc_type]
+                    restraint_percent = float(f"{100.0 * restraint_count / total_rdc_restraint_count:.1f}")
+
+                    viol_count = vrpt_mr['rdc_violation'][rdc_type]
+                    viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
+                        if restraint_count > 0 else None
+                    viol_absol_percent = float(f"{100.0 * viol_count / total_rdc_restraint_count:.1f}")
+
+                    consist_viol_count = vrpt_mr['consistent_rdc_violation'][rdc_type]
+                    consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
+                        if restraint_count > 0 else None
+                    consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_rdc_restraint_count:.1f}")
+
+                    violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
+                                              'restraint_percent': restraint_percent,
+                                              'viol_count': viol_count, 'viol_inline_percent': viol_inline_percent,
+                                              'viol_absol_percent': viol_absol_percent,
+                                              'consist_viol_count': consist_viol_count,
+                                              'consist_viol_inline_percent': consist_viol_inline_percent,
+                                              'consist_viol_absol_percent': consist_viol_absol_percent
+                                              })
+
+                return violation_summary
+
             def get_dist_violation_for_each_model():
                 violation_summary = []
                 for model_id in self.__reg.eff_model_ids:
                     item = {'model_id': model_id}
                     errors = []
-                    for dist_type in distance_type:
-                        if dist_type in distance_bond_type:
+                    for dist_type in dist_types:
+                        if dist_type in dist_bond_types:
                             continue
-                        viol_type = distance_type_abbr[distance_type.index(dist_type)] + '_viol_count'
+                        viol_type = dist_type_abbrs[dist_types.index(dist_type)] + '_viol_count'
                         count = 0
-                        for dist_sub_type in distance_sub_type:
-                            for bond_type in distance_general_bond_type:
+                        for dist_sub_type in dist_sub_types:
+                            for bond_type in dist_general_bond_types:
                                 count += len(vrpt_mr['distance_violations_in_models'][
                                     model_id][dist_type][dist_sub_type][bond_type])
                                 errors.extend(vrpt_mr['distance_violations_in_models'][
@@ -19965,10 +20024,37 @@ class NmrDpValidation:
                 for model_id in self.__reg.eff_model_ids:
                     item = {'model_id': model_id}
                     errors = []
-                    for dihed_type in dihed_angle_type:
+                    for dihed_type in dihed_types:
                         viol_type = dihed_type.lower() + '_viol_count'
                         item[viol_type] = len(vrpt_mr['angle_violations_in_models'][model_id][dihed_type])
                         errors.extend(vrpt_mr['angle_violations_in_models'][model_id][dihed_type])
+
+                    if len(errors) > 1:
+                        _errors = numpy.array(errors, dtype=float)
+
+                        item['mean_violation'] = float(f"{numpy.mean(_errors):.2f}")
+                        item['min_violation'] = min(errors)
+                        item['max_violation'] = max(errors)
+                        item['std_violation'] = float(f"{numpy.std(_errors):.2f}")
+                        item['median_violation'] = float(f"{numpy.median(_errors):.2f}")
+
+                    else:
+                        item['mean_violation'] = item['min_violation'] = item['max_violation'] =\
+                            item['std_violation'] = item['median_violation'] = None
+
+                    violation_summary.append(item)
+
+                return violation_summary
+
+            def get_rdc_violation_for_each_model():
+                violation_summary = []
+                for model_id in self.__reg.eff_model_ids:
+                    item = {'model_id': model_id}
+                    errors = []
+                    for rdc_type in rdc_types:
+                        viol_type = rdc_type.lower() + '_viol_count'
+                        item[viol_type] = len(vrpt_mr['rdc_violations_in_models'][model_id][rdc_type])
+                        errors.extend(vrpt_mr['rdc_violations_in_models'][model_id][rdc_type])
 
                     if len(errors) > 1:
                         _errors = numpy.array(errors, dtype=float)
@@ -19993,13 +20079,13 @@ class NmrDpValidation:
                 for fraction in range(1, len_eff_model_ids + 1):
                     item = {'fraction_count': fraction,
                             'fraction_percent': float(f"{100.0 * fraction / len_eff_model_ids:.1f}")}
-                    for dist_type in distance_type:
-                        if dist_type in distance_bond_type:
+                    for dist_type in dist_types:
+                        if dist_type in dist_bond_types:
                             continue
-                        viol_type = distance_type_abbr[distance_type.index(dist_type)] + '_viol_count'
+                        viol_type = dist_type_abbrs[dist_types.index(dist_type)] + '_viol_count'
                         count = 0
-                        for dist_sub_type in distance_sub_type:
-                            for bond_type in distance_general_bond_type:
+                        for dist_sub_type in dist_sub_types:
+                            for bond_type in dist_general_bond_types:
                                 count += vrpt_mr['distance_violations_vs_models'][
                                     dist_type][dist_sub_type][bond_type][fraction]
                         item[viol_type] = count
@@ -20014,9 +20100,23 @@ class NmrDpValidation:
                 for fraction in range(1, len_eff_model_ids + 1):
                     item = {'fraction_count': fraction,
                             'fraction_percent': float(f"{100.0 * fraction / len_eff_model_ids:.1f}")}
-                    for dihed_type in dihed_angle_type:
+                    for dihed_type in dihed_types:
                         viol_type = dihed_type.lower() + '_viol_count'
                         item[viol_type] = vrpt_mr['angle_violations_vs_models'][dihed_type][fraction]
+
+                    violation_summary.append(item)
+
+                return violation_summary
+
+            def get_rdc_violation_for_ensemble():
+                violation_summary = []
+                len_eff_model_ids = len(self.__reg.eff_model_ids)
+                for fraction in range(1, len_eff_model_ids + 1):
+                    item = {'fraction_count': fraction,
+                            'fraction_percent': float(f"{100.0 * fraction / len_eff_model_ids:.1f}")}
+                    for rdc_type in rdc_types:
+                        viol_type = rdc_type.lower() + '_viol_count'
+                        item[viol_type] = vrpt_mr['rdc_violations_vs_models'][rdc_type][fraction]
 
                     violation_summary.append(item)
 
@@ -20036,11 +20136,11 @@ class NmrDpValidation:
 
             def convert_to_distance_type(d_type, b_type):
                 if b_type is None:
-                    if d_type in distance_type:
-                        return distance_type_name[distance_type.index(d_type)]
+                    if d_type in dist_types:
+                        return dist_type_names[dist_types.index(d_type)]
                     return 'unknown'
-                if b_type in distance_type:
-                    return distance_type_name[distance_type.index(b_type)]
+                if b_type in dist_types:
+                    return dist_type_names[dist_types.index(b_type)]
                 return 'unknown'
 
             def get_most_violated_dist_restraints():
@@ -20085,6 +20185,26 @@ class NmrDpValidation:
 
                 return violations
 
+            def get_most_violated_rdc_restraints():
+                if len(vrpt_mr['most_violated_rdc']) == 0:
+                    return None
+
+                violations = []
+                for rdc_viol in vrpt_mr['most_violated_rdc']:
+                    violations.append({'restraint_key': convert_to_rest_key(rdc_viol[0]),
+                                       'atom_key_1': convert_to_atom_key(rdc_viol[1]),
+                                       'atom_key_2': convert_to_atom_key(rdc_viol[2]),
+                                       'rdc_type': rdc_viol[3],
+                                       'total_violated_models': rdc_viol[4],
+                                       'violated_model_id': rdc_viol[5],
+                                       'min_violation': rdc_viol[6],
+                                       'max_violation': rdc_viol[7],
+                                       'mean_violation': float(f"{rdc_viol[8]:.2f}"),
+                                       'std_violation': float(f"{rdc_viol[9]:.2f}"),
+                                       'median_violation': float(f"{rdc_viol[10]:.2f}")})
+
+                return violations
+
             def get_all_dist_violations():
                 if len(vrpt_mr['all_distance_violations']) == 0:
                     return None
@@ -20114,6 +20234,21 @@ class NmrDpValidation:
                                        'dihedral_angle_name': dihed_viol[6],
                                        'model_id': dihed_viol[5],
                                        'violation': dihed_viol[7]})
+
+                return violations
+
+            def get_all_rdc_violations():
+                if len(vrpt_mr['all_rdc_violations']) == 0:
+                    return None
+
+                violations = []
+                for dihed_viol in vrpt_mr['all_rdc_violations']:
+                    violations.append({'restraint_key': convert_to_rest_key(dihed_viol[0]),
+                                       'atom_key_1': convert_to_atom_key(dihed_viol[1]),
+                                       'atom_key_2': convert_to_atom_key(dihed_viol[2]),
+                                       'rdc_type': dihed_viol[4],
+                                       'model_id': dihed_viol[3],
+                                       'violation': dihed_viol[5]})
 
                 return violations
 
@@ -20443,11 +20578,11 @@ class NmrDpValidation:
                                                 sum(v['hbond'] for v in dist_summary['total'].values())
                                             if rest_summary['hydrogen_bond_restraints'] > 0:
                                                 rest_summary['hydrogen_bond_dist_types'] =\
-                                                    ','.join(distance_type_abbr[distance_type.index(d_type)]
-                                                             for d_type in distance_type
+                                                    ','.join(dist_type_abbrs[dist_types.index(d_type)]
+                                                             for d_type in dist_types
                                                              if d_type != dist_any_type
                                                              and d_type in dist_summary
-                                                             and any(True for s_type in distance_sub_type
+                                                             and any(True for s_type in dist_sub_types
                                                                      if dist_summary[d_type][s_type]['hbond'] > 0))
                                             rest_summary['disulfide_bond_restraints'] =\
                                                 sum(v['sbond'] for v in dist_summary['total'].values())
@@ -20456,11 +20591,11 @@ class NmrDpValidation:
                                                     del rest_summary['disulfide_bond_restraints']
                                             else:
                                                 rest_summary['disulfide_bond_dist_types'] =\
-                                                    ','.join(distance_type_abbr[distance_type.index(d_type)]
-                                                             for d_type in distance_type
+                                                    ','.join(dist_type_abbrs[dist_types.index(d_type)]
+                                                             for d_type in dist_types
                                                              if d_type != dist_any_type
                                                              and d_type in dist_summary
-                                                             and any(True for s_type in distance_sub_type
+                                                             and any(True for s_type in dist_sub_types
                                                                      if dist_summary[d_type][s_type]['sbond'] > 0))
                                             rest_summary['diselenide_bond_restraints'] =\
                                                 sum(v['sebond'] for v in dist_summary['total'].values())
@@ -20468,11 +20603,11 @@ class NmrDpValidation:
                                                 del rest_summary['diselenide_bond_restraints']
                                             else:
                                                 rest_summary['diselenide_bond_dist_types'] =\
-                                                    ','.join(distance_type_abbr[distance_type.index(d_type)]
-                                                             for d_type in distance_type
+                                                    ','.join(dist_type_abbrs[dist_types.index(d_type)]
+                                                             for d_type in dist_types
                                                              if d_type != dist_any_type
                                                              and d_type in dist_summary
-                                                             and any(True for s_type in distance_sub_type
+                                                             and any(True for s_type in dist_sub_types
                                                                      if dist_summary[d_type][s_type]['sebond'] > 0))
                                             rest_summary['metal_coordination_restraints'] =\
                                                 sum(v['metal'] for v in dist_summary['total'].values())
@@ -20480,11 +20615,11 @@ class NmrDpValidation:
                                                 del rest_summary['metal_coordination_restraints']
                                             else:
                                                 rest_summary['metal_coordination_dist_types'] =\
-                                                    ','.join(distance_type_abbr[distance_type.index(d_type)]
-                                                             for d_type in distance_type
+                                                    ','.join(dist_type_abbrs[dist_types.index(d_type)]
+                                                             for d_type in dist_types
                                                              if d_type != dist_any_type
                                                              and d_type in dist_summary
-                                                             and any(True for s_type in distance_sub_type
+                                                             and any(True for s_type in dist_sub_types
                                                                      if dist_summary[d_type][s_type]['metal'] > 0))
                                             if has_dihed:
                                                 rest_summary['total_dihedral_angle_restraints'] = total_dihed_restraint_count
@@ -20510,6 +20645,10 @@ class NmrDpValidation:
                                             if 'residual_angle_violation' in vrpt_mr:
                                                 rest_summary['average_number_of_dihed_violations_per_model'] =\
                                                     get_dihed_violation_per_model()
+
+                                            if 'residual_rdc_violation' in vrpt_mr:
+                                                rest_summary['average_number_of_rdc_violations_per_model'] =\
+                                                    get_rdc_violation_per_model()
 
                                             if total_dist_restraint_count > 0:
                                                 rest_summary['dist_violation_summary'] =\
@@ -20555,6 +20694,28 @@ class NmrDpValidation:
                                                 if rest_summary['all_dihed_violations'] is None:
                                                     del rest_summary['all_dihed_violations']
 
+                                            if total_rdc_restraint_count > 0:
+                                                rest_summary['rdc_violation_summary'] =\
+                                                    get_rdc_violation_summary()
+
+                                                rest_summary['rdc_violation_for_each_model'] =\
+                                                    get_rdc_violation_for_each_model()
+
+                                                rest_summary['rdc_violation_for_ensemble'] =\
+                                                    get_rdc_violation_for_ensemble()
+
+                                                rest_summary['most_violated_rdc_restraints'] =\
+                                                    get_most_violated_rdc_restraints()
+
+                                                if rest_summary['most_violated_rdc_restraints'] is None:
+                                                    del rest_summary['most_violated_rdc_restraints']
+
+                                                rest_summary['all_rdc_violations'] =\
+                                                    get_all_rdc_violations()
+
+                                                if rest_summary['all_rdc_violations'] is None:
+                                                    del rest_summary['all_rdc_violations']
+
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                     if _content_subtype == 'dihed_restraint':
@@ -20584,6 +20745,10 @@ class NmrDpValidation:
                                             rest_summary['average_number_of_dihed_violations_per_model'] =\
                                                 get_dihed_violation_per_model()
 
+                                            if 'residual_rdc_violation' in vrpt_mr:
+                                                rest_summary['average_number_of_rdc_violations_per_model'] =\
+                                                    get_rdc_violation_per_model()
+
                                             rest_summary['dihed_violation_summary'] =\
                                                 get_dihed_violation_summary()
 
@@ -20605,6 +20770,28 @@ class NmrDpValidation:
                                             if rest_summary['all_dihed_violations'] is None:
                                                 del rest_summary['all_dihed_violations']
 
+                                            if total_rdc_restraint_count > 0:
+                                                rest_summary['rdc_violation_summary'] =\
+                                                    get_rdc_violation_summary()
+
+                                                rest_summary['rdc_violation_for_each_model'] =\
+                                                    get_rdc_violation_for_each_model()
+
+                                                rest_summary['rdc_violation_for_ensemble'] =\
+                                                    get_rdc_violation_for_ensemble()
+
+                                                rest_summary['most_violated_rdc_restraints'] =\
+                                                    get_most_violated_rdc_restraints()
+
+                                                if rest_summary['most_violated_rdc_restraints'] is None:
+                                                    del rest_summary['most_violated_rdc_restraints']
+
+                                                rest_summary['all_rdc_violations'] =\
+                                                    get_all_rdc_violations()
+
+                                                if rest_summary['all_rdc_violations'] is None:
+                                                    del rest_summary['all_rdc_violations']
+
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
                                     if _content_subtype == 'rdc_restraint':
@@ -20624,6 +20811,30 @@ class NmrDpValidation:
                                             rest_summary['number_of_restaints_per_residue'] = \
                                                 float(f"{float(total_rdc_restraint_count) / vrpt_mr['seq_length']:.1f}")
                                             rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
+
+                                            rest_summary['average_number_of_rdc_violations_per_model'] =\
+                                                get_rdc_violation_per_model()
+
+                                            rest_summary['rdc_violation_summary'] =\
+                                                get_rdc_violation_summary()
+
+                                            rest_summary['rdc_violation_for_each_model'] =\
+                                                get_rdc_violation_for_each_model()
+
+                                            rest_summary['rdc_violation_for_ensemble'] =\
+                                                get_rdc_violation_for_ensemble()
+
+                                            rest_summary['most_violated_rdc_restraints'] =\
+                                                get_most_violated_rdc_restraints()
+
+                                            if rest_summary['most_violated_rdc_restraints'] is None:
+                                                del rest_summary['most_violated_rdc_restraints']
+
+                                            rest_summary['all_rdc_violations'] =\
+                                                get_all_rdc_violations()
+
+                                            if rest_summary['all_rdc_violations'] is None:
+                                                del rest_summary['all_rdc_violations']
 
                                             self.__reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 

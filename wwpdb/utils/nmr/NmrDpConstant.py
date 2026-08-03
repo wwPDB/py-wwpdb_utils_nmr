@@ -193,6 +193,21 @@ ISOTOPE_NAMES_OF_NMR_OBS_NUCS = tuple(ISOTOPE_NAMES_OF_NMR_OBS_NUCS)
 # nucleus with half spin
 HALF_SPIN_NUCLEUS = ('H', 'C', 'N', 'P', 'F', 'CD')
 
+# gyromagnetic ratio
+GYROMAGNETIC_RATIOS = {'H': 2.67522e+8,
+                       'C': 6.72828e+7,
+                       'N': -2.7116e+7,
+                       'P': 1.08291e+8,
+                       'F': 2.51815e+8
+                       }
+
+# permeability of vacuum
+PERMEABILITY_0 = 1.256637061e-6
+
+# Planck constant
+PLANCK_CONSTANT = 6.62607015e-34
+REDUCED_PLANCK_CONSTANT = 1.054571817e-34
+
 # allowed BMRB ambiguity codes
 ALLOWED_AMBIGUITY_CODES = (1, 2, 3, 4, 5, 6, 9)
 

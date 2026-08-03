@@ -3812,6 +3812,23 @@
             "$ref": "#/definitions/rdc_constraints_per_residue"
           }
         },
+        "comparison_plot": {
+          "description": "Template for Observed-Calculated RDC plot data per RDC vector type",
+          "type": "object",
+          "properties": {
+            "values": {
+              "$ref": "#/definitions/rdc_plot_values"
+            },
+            "errors": {
+              "$ref": "#/definitions/rdc_plot_errors"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "values",
+            "errors"
+          ]
+        },
         "histogram": {
           "description": "Template for histogram of RDC restraints.",
           "type": "object",
@@ -3995,6 +4012,68 @@
         "atom_id_2",
         "discrepancy"
       ]
+    },
+    "rdc_plot_values": {
+      "description": "Template for plot data per RDC vector type.",
+      "type": "object",
+      "patternProperties": {
+        "^[1A-Za-z_]+$": {
+          "type": "array",
+          "items": {
+            "description": "The first/second items correspond to observed and calculated RDC, respectively, the last item represents the positions of RDC vector.",
+            "type": "array",
+            "items": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "minItems": 3,
+            "maxItems": 3
+          }
+        }
+      }
+    },
+    "rdc_plot_errors": {
+      "description": "Template for plot error per RDC vector type.",
+      "type": "object",
+      "patternProperties": {
+        "^[1A-Za-z_]+$": {
+          "type": "array",
+          "items": {
+            "description": "The first/second items correspond to observed and calculated RDC, respectively, the rest items corespond to error bar for observed and calculated RDC.",
+            "type": "array",
+            "items": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "minItems": 6,
+            "maxItems": 6
+          }
+        }
+      }
     },
     "common_stats_of_spectral_peak": {
       "description": "Template for common statistics of spectral peak lists.",
@@ -4904,6 +4983,14 @@
                 "maxItems": 3
               }
             },
+            "average_number_of_rdc_violations_per_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_violations_per_model",
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
             "dist_violation_summary": {
               "type": "array",
               "items": {
@@ -4968,6 +5055,41 @@
               }
             },
             "all_dihed_violations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_all_violations",
+                "minItems": 1
+              }
+            },
+            "rdc_violation_summary": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_summary",
+                "minItems": 2
+              }
+            },
+            "rdc_violation_for_each_model": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_for_each_model",
+                "minItems": 1
+              }
+            },
+            "rdc_violation_for_ensemble": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_violation_for_ensemble",
+                "minItems": 1
+              }
+            },
+            "most_violated_rdc_restraints": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/output_stats_common_most_violated_restraints",
+                "minItems": 1
+              }
+            },
+            "all_rdc_violations": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/output_stats_common_all_violations",

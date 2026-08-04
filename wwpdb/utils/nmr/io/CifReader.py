@@ -155,7 +155,7 @@ def get_coordinates(p: list
     V = []
 
     for a in p:
-        V.append(to_np_array(a))
+        V.append(a['v'] if 'v' in a else to_np_array(a))
 
     atoms = [ELEMENT_SYMBOLS[a['element']] for a in p]
 
@@ -935,7 +935,7 @@ class CifReader:
 
         # DAOTHER-9674
         if len(unmapSeqIds) > 1:
-            for (i, j) in itertools.combinations(unmapSeqIds.keys(), 2):
+            for i, j in itertools.combinations(unmapSeqIds.keys(), 2):
                 if (i not in chainIdWoDefault or j not in chainIdWoDefault)\
                    and unmapSeqIds[i] == unmapSeqIds[j]\
                    and (len(unmapAuthSeqIds[i]) % len(mapAuthSeqIds[i]) == 0
@@ -1631,10 +1631,14 @@ class CifReader:
         _atom_site_dict = {}
         for model_id in eff_model_ids:
             _atom_site_dict[model_id] = [a for a in atom_sites if a['model_id'] == model_id]
+            for a in _atom_site_dict[model_id]:
+                a['v'] = to_np_array(a)
 
         _bb_atom_site_dict = {}
         for model_id in eff_model_ids:
             _bb_atom_site_dict[model_id] = [a for a in bb_atom_sites if a['model_id'] == model_id]
+            for a in _bb_atom_site_dict[model_id]:
+                a['v'] = to_np_array(a)
 
         size = len(_atom_site_dict[1])
 
@@ -1651,17 +1655,16 @@ class CifReader:
 
             _atom_site = _atom_site_dict[model_id]
 
-            if len(_atom_site) == 0:
+            len_atom_site = len(_atom_site)
+
+            if len_atom_site == 0:
                 continue
 
             _total_models += 1
 
-            for a_i, a_j in itertools.combinations(_atom_site, 2):
+            for i, j in itertools.combinations(range(len_atom_site), 2):
 
-                i = _atom_site.index(a_i)
-                j = _atom_site.index(a_j)
-
-                d = numpy.linalg.norm(to_np_array(a_i) - to_np_array(a_j))
+                d = numpy.linalg.norm(_atom_site[i]['v'] - _atom_site[j]['v'])
 
                 if i < j:
                     d_avr[i, j] += d
@@ -1681,15 +1684,14 @@ class CifReader:
 
             _atom_site = _atom_site_dict[model_id]
 
-            if len(_atom_site) == 0:
+            len_atom_site = len(_atom_site)
+
+            if len_atom_site == 0:
                 continue
 
-            for a_i, a_j in itertools.combinations(_atom_site, 2):
+            for i, j in itertools.combinations(range(len_atom_site), 2):
 
-                i = _atom_site.index(a_i)
-                j = _atom_site.index(a_j)
-
-                d = numpy.linalg.norm(to_np_array(a_i) - to_np_array(a_j))
+                d = numpy.linalg.norm(_atom_site[i]['v'] - _atom_site[j]['v'])
 
                 if i < j:
                     d -= d_avr[i, j]
@@ -2040,11 +2042,11 @@ class CifReader:
                         ref_atom = _atom_site_p[idx]
                         test_atom = _atom_site_q[idx]
 
-                        ref_v = to_np_array(ref_atom)
+                        ref_v = ref_atom['v']
                         if self.__random_rotaion_test:
                             ref_v = numpy.dot(randomM[ref_model_id], ref_v)
 
-                        test_v = to_np_array(test_atom)
+                        test_v = test_atom['v']
                         if self.__random_rotaion_test:
                             test_v = numpy.dot(randomM[test_model_id], test_v)
                         d = test_v - ref_v

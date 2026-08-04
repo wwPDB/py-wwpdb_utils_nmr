@@ -6310,9 +6310,9 @@ class RCI:
                         row_idx = ret['seq_id'].index(dyna_corr_residue_number)
                         # RCI, and its empirical conversions to the expected NMR-ensemble RMSD (Angstrom)
                         # and order parameter S2 (Berjanskii & Wishart, 2005).
-                        ret['rci'][row_idx] = float(f'{dyna_corr_value:.3f}')
-                        ret['nmr_rmsd'][row_idx] = float(f'{dyna_corr_value * 16.44:.3f}')
-                        ret['s2'][row_idx] = float(f'{1 - (0.4 * log(1 + (dyna_corr_value * 17.7))):.3f}')
+                        ret['rci'][row_idx] = round(dyna_corr_value, 3)
+                        ret['nmr_rmsd'][row_idx] = round(dyna_corr_value * 16.44, 3)
+                        ret['s2'][row_idx] = round(1 - (0.4 * log(1 + (dyna_corr_value * 17.7))), 3)
 
         return ret
 

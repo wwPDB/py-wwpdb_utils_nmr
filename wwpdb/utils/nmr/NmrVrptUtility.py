@@ -957,7 +957,7 @@ class NmrVrptUtility:
                  '__rdcRestSeqDict',
                  '__rdcSaupeOrderMatrix',
                  '__rdcCalcDict',
-                 '__rdcCompPlotDict',
+                 '__rdcCorrPlotDict',
                  '__distRestViolDict',
                  '__distRestUnmapped',
                  '__distRestViolCombKeyDict',
@@ -1079,8 +1079,8 @@ class NmrVrptUtility:
         self.__rdcSaupeOrderMatrix = None
         # calculated RDC values based on molecular alignment tensor
         self.__rdcCalcDict = None
-        # RDC comparison plot of observed and calculated RDCs for each list
-        self.__rdcCompPlotDict = None
+        # RDC correlation plot of observed and calculated RDCs for each list
+        self.__rdcCorrPlotDict = None
 
         # unique chemical shifts for each list_id and atom_key
         self.__chemShiftUniqDict = None
@@ -3177,7 +3177,7 @@ class NmrVrptUtility:
 
                         self.__chemShiftUniqDict[list_id][cs_key]['primary'] = True
 
-                        z_score = float(f"{(cs['value'] - avg_value) / std_value:.2f}")
+                        z_score = round((cs['value'] - avg_value) / std_value, 2)
 
                         if abs(z_score) > 5.0:
                             na = self.__getNearestAromaticRing(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
@@ -3206,8 +3206,8 @@ class NmrVrptUtility:
 
                             out_cs_values = list(cs_key)
                             out_cs_values.extend([cs_value, ambig_code, z_score,
-                                                  float(f"{avg_value - 5.0 * std_value:.2f}"),
-                                                  float(f"{avg_value + 5.0 * std_value:.2f}"),
+                                                  round(avg_value - 5.0 * std_value, 2),
+                                                  round(avg_value + 5.0 * std_value, 2),
                                                   details])
 
                             self.__chemShiftOutlier[list_id].append(out_cs_values)
@@ -3506,9 +3506,9 @@ class NmrVrptUtility:
             return None
 
         na['ring_atoms'] = ring_atoms
-        na['distance'] = float(f"{dist / len_model_ids:.1f}")
-        na['ring_distance'] = float(f"{ring_dist / len_model_ids:.1f}")
-        na['ring_angle'] = float(f"{numpy.degrees(ring_angle / len_model_ids):.1f}")
+        na['distance'] = round(dist / len_model_ids, 1)
+        na['ring_distance'] = round(ring_dist / len_model_ids, 1)
+        na['ring_angle'] = round(numpy.degrees(ring_angle / len_model_ids), 1)
 
         return na
 
@@ -3643,7 +3643,7 @@ class NmrVrptUtility:
         for __p in _p:
             dist += distance(to_np_array(__p), o)
 
-        p['distance'] = float(f"{dist / len(_p):.1f}")
+        p['distance'] = round(dist / len(_p), 1)
 
         return p
 
@@ -4132,7 +4132,7 @@ class NmrVrptUtility:
         self.__rdcRestViolCombKeyDict = {}
         self.__rdcRestUnmapped = []
 
-        self.__rdcCompPlotDict = {}
+        self.__rdcCorrPlotDict = {}
 
         if self.__rdcRestDict is None or self.__has_prev_results:
             return True
@@ -4272,9 +4272,9 @@ class NmrVrptUtility:
                 list_ids.add(rest_key[0])
 
             for list_id in sorted(list(list_ids)):
-                rdc_values, rdc_errors = {}, {}
+                rdc_values, rdc_errors, q_scores = {}, {}, {}
 
-                for rest_key, calc_rdc in self.__rdcCalcDict.items():
+                for rest_key, rdc_calc in self.__rdcCalcDict.items():
 
                     if rest_key[0] != list_id:
                         continue
@@ -4287,14 +4287,19 @@ class NmrVrptUtility:
                         if rdc_type not in rdc_values:
                             rdc_values[rdc_type] = []
                             rdc_errors[rdc_type] = []
+                            q_scores[rdc_type] = {'rdc_exp': [], 'rdc_calc': []}
 
-                        calc_rdcs = numpy.array(list(calc_rdc.values()), dtype=float)
+                        rdc_calcs = numpy.array(list(rdc_calc.values()), dtype=float)
 
                         ak1 = r['atom_key_1']
                         ak2 = r['atom_key_2']
 
-                        exp_rdc_center = r['target_value']
-                        calc_rdc_center = float(f'{numpy.mean(calc_rdcs):.2f}')
+                        rdc_exp_center = r['target_value']
+                        rdc_calc_mean = numpy.mean(rdc_calcs)
+                        rdc_calc_center = round(rdc_calc_mean, 2)
+
+                        q_scores[rdc_type]['rdc_exp'].append(rdc_exp_center)
+                        q_scores[rdc_type]['rdc_calc'].append(rdc_calc_mean)
 
                         if ak1[0] == ak2[0]:
                             if ak1[1] == ak2[1]:
@@ -4306,13 +4311,31 @@ class NmrVrptUtility:
                             vector_name = f"{ak1[0]}:{ak1[1]}:{ak1[2]}:{ak1[3]}-"\
                                 f"{ak2[0]}:{ak2[1]}:{ak2[2]}:{ak2[3]}"
 
-                        rdc_values[rdc_type].append([exp_rdc_center, calc_rdc_center, vector_name])
-                        rdc_errors[rdc_type].append([exp_rdc_center, calc_rdc_center,
+                        rdc_values[rdc_type].append([rdc_exp_center, rdc_calc_center, vector_name])
+                        rdc_errors[rdc_type].append([rdc_exp_center, rdc_calc_center,
                                                      r['lower_bound'], r['upper_bound'],
-                                                     float(f'{numpy.min(calc_rdcs):.2f}'),
-                                                     float(f'{numpy.max(calc_rdcs):.2f}')])
+                                                     round(numpy.min(rdc_calcs), 2),
+                                                     round(numpy.max(rdc_calcs), 2)])
 
-                self.__rdcCompPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors}
+                da_array = numpy.array([float(v['Szz']) * float(v['Dmax'])
+                                        for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
+                eta_array = numpy.array([float(v['eta']) for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
+                denominator_unit = (da_array.mean() ** 2 * (4.0 + 3.0 * eta_array.mean() ** 2) / 5.0)
+
+                for k, v in copy.copy(q_scores).items():
+                    rdc_exp_array = numpy.array(v['rdc_exp'], dtype=float)
+                    rdc_calc_array = numpy.array(v['rdc_calc'], dtype=float)
+                    rdc_exp_mean = numpy.mean(rdc_exp_array)
+                    total_sum_of_square = ((rdc_exp_array - rdc_exp_mean) ** 2).sum()
+                    sum_of_squared_errors = ((rdc_exp_array - rdc_calc_array) ** 2).sum()
+                    sum_of_squared_values = (rdc_exp_array ** 2).sum()
+                    q_scores[k]['r2'] = round(1.0 - sum_of_squared_errors / total_sum_of_square, 2)
+                    q_scores[k]['Cornilescu_Q'] = round(math.sqrt(sum_of_squared_errors / sum_of_squared_values), 2)
+                    q_scores[k]['Clore_Q'] = round(math.sqrt(sum_of_squared_errors / (rdc_exp_array.shape[0] * denominator_unit)), 2)
+                    del q_scores[k]['rdc_exp']
+                    del q_scores[k]['rdc_calc']
+
+                self.__rdcCorrPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors, 'q_scores': q_scores}
 
             return True
 
@@ -4571,11 +4594,11 @@ class NmrVrptUtility:
         completeness = {task_key: _completeness[task_key][any_type]['overall'] for task_key in task_keys}
 
         completeness['chemical_shift_completeness'] =\
-            float(f"{100.0 * completeness['well_defined'][0] / completeness['well_defined'][1]:.2f}")\
+            round(100.0 * completeness['well_defined'][0] / completeness['well_defined'][1], 2)\
             if completeness['well_defined'][1] > 0 else 0.0
 
         completeness['chemical_shift_completeness_full_length'] =\
-            float(f"{100.0 * completeness['full_length'][0] / completeness['full_length'][1]:.2f}")\
+            round(100.0 * completeness['full_length'][0] / completeness['full_length'][1], 2)\
             if completeness['full_length'][1] > 0 else 0.0
 
         favor_completeness = {task_key: _completeness[task_key][any_type]['favorable'] for task_key in task_keys}
@@ -4584,11 +4607,11 @@ class NmrVrptUtility:
         completeness['favor_full_length'] = _completeness['full_length'][any_type]['favorable']
 
         completeness['favor_chem_shift_completeness'] =\
-            float(f"{100.0 * favor_completeness['well_defined'][0] / favor_completeness['well_defined'][1]:.2f}")\
+            round(100.0 * favor_completeness['well_defined'][0] / favor_completeness['well_defined'][1], 2)\
             if favor_completeness['well_defined'][1] > 0 else 0.0
 
         completeness['favor_chem_shift_completeness_full_length'] =\
-            float(f"{100.0 * favor_completeness['full_length'][0] / favor_completeness['full_length'][1]:.2f}")\
+            round(100.0 * favor_completeness['full_length'][0] / favor_completeness['full_length'][1], 2)\
             if favor_completeness['full_length'][1] > 0 else 0.0
 
         self.__results['completeness'] = completeness
@@ -5542,8 +5565,8 @@ class NmrVrptUtility:
 
             self.__results['rdc_violation_seq'] = rdc_violation_seq
 
-            if len(self.__rdcCompPlotDict) > 0:
-                self.__results['rdc_comparison_plot'] = self.__rdcCompPlotDict
+            if len(self.__rdcCorrPlotDict) > 0:
+                self.__results['rdc_correlation_plot'] = self.__rdcCorrPlotDict
 
             return True
 

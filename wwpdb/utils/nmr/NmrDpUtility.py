@@ -4112,7 +4112,7 @@ class NmrDpUtility:
 
                             seq_align = {'list_id': _poly_seq_in_lp['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id,
                                          'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                                         'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
+                                         'sequence_coverage': round(float(length - (unmapped + conflict)) / ref_length, 3),
                                          'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -4348,7 +4348,7 @@ class NmrDpUtility:
 
                             seq_align = {'list_id': _poly_seq_in_lp['list_id'], 'sf_framecode': sf_framecode2, 'chain_id': chain_id,
                                          'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                                         'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
+                                         'sequence_coverage': round(float(length - (unmapped + conflict)) / ref_length, 3),
                                          'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -4625,7 +4625,7 @@ class NmrDpUtility:
                                                  'length': ref_length, 'matched': matched,
                                                  'conflict': conflict, 'unmapped': unmapped,
                                                  'sequence_coverage':
-                                                 float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
+                                                 round(float(length - (unmapped + conflict)) / ref_length, 3),
                                                  'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                                                  'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                                                  'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -10384,7 +10384,7 @@ class NmrDpUtility:
                     well_defined_region.append({'domain_id': domain_id,
                                                 'medoid_model_id': _medoid_model_id,
                                                 'number_of_monomers': _monomers,
-                                                'percent_of_core': float(f"{float(_monomers) / _total_seq * 100.0:.1f}"),
+                                                'percent_of_core': round(float(_monomers) / _total_seq * 100.0, 1),
                                                 'mean_rmsd': _mean_rmsd,
                                                 'medoid_rmsd': _medoid_rmsd,
                                                 'range_of_seq_id': f"{', '.join(_range_of_seq_id)}"})
@@ -11155,7 +11155,7 @@ class NmrDpUtility:
         matched = mid_code.count('|')
 
         return {'length': ref_length, 'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
+                'sequence_coverage': round(float(length - (unmapped + conflict)) / ref_length, 3),
                 'ref_seq_id': ps1['seq_id'], 'test_seq_id': ps2['seq_id'],
                 'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                 'test_code': test_code, 'test_gauge_code': test_gauge_code}

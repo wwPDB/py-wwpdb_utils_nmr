@@ -2567,7 +2567,7 @@ class BmrbChemShiftStat:
             max_count = max(a['count'] for a in _list)
 
             for a in _list:
-                a['norm_freq'] = float(f"{float(a['count']) / max_count:.3f}")
+                a['norm_freq'] = round(float(a['count']) / max_count, 3)
                 if max_count >= CS_STAT_MAX_COUNT_THRESHOLD:
                     if a['count'] > max_count * primary_th:
                         a['primary'] = True

@@ -2180,7 +2180,7 @@ class NmrDpValidation:
             if None in (a_1, a_2):
                 continue
 
-            bond.append({'model_id': model_id, 'distance': float(f"{distance(to_np_array(a_1), to_np_array(a_2)):.3f}")})
+            bond.append({'model_id': model_id, 'distance': round(distance(to_np_array(a_1), to_np_array(a_2)), 3)})
 
         if len(bond) > 0:
             return bond
@@ -2539,9 +2539,9 @@ class NmrDpValidation:
                 return None
 
             na['ring_atoms'] = ring_atoms
-            na['distance'] = float(f"{dist / len_model_ids:.1f}")
-            na['ring_distance'] = float(f"{ring_dist / len_model_ids:.1f}")
-            na['ring_angle'] = float(f"{numpy.degrees(ring_angle / len_model_ids):.1f}")
+            na['distance'] = round(dist / len_model_ids, 1)
+            na['ring_distance'] = round(ring_dist / len_model_ids, 1)
+            na['ring_angle'] = round(numpy.degrees(ring_angle / len_model_ids), 1)
 
             self.__reg.cpC['near_ring'][seq_key] = na
             return na
@@ -2728,7 +2728,7 @@ class NmrDpValidation:
             for __p in _p:
                 dist += distance(to_np_array(__p), o)
 
-            p['distance'] = float(f"{dist / len(_p):.1f}")
+            p['distance'] = round(dist / len(_p), 1)
 
             self.__reg.cpC['near_para_ferro'][seq_key] = p
             return p
@@ -3131,7 +3131,7 @@ class NmrDpValidation:
             for k, v in _rot1.items():
                 if k == 'name':
                     continue
-                rot1[k] = float(f"{v/total_models:.3f}")
+                rot1[k] = round(v / total_models, 3)
 
             self.__reg.cpC['rotamer'][seq_key] = [rot1]
             return [rot1]
@@ -3259,12 +3259,12 @@ class NmrDpValidation:
             for k, v in _rot1.items():
                 if k == 'name':
                     continue
-                rot1[k] = float(f"{v/total_models:.3f}")
+                rot1[k] = round(v / total_models, 3)
 
             for k, v in _rot2.items():
                 if k == 'name':
                     continue
-                rot2[k] = float(f"{v/total_models:.3f}")
+                rot2[k] = round(v / total_models, 3)
 
             self.__reg.cpC['rotamer'][seq_key] = [rot1, rot2]
             return [rot1, rot2]
@@ -3392,12 +3392,12 @@ class NmrDpValidation:
             for k, v in _rot1.items():
                 if k == 'name':
                     continue
-                rot1[k] = float(f"{v/total_models:.3f}")
+                rot1[k] = round(v / total_models, 3)
 
             for k, v in _rot2.items():
                 if k == 'name':
                     continue
-                rot2[k] = float(f"{v/total_models:.3f}")
+                rot2[k] = round(v / total_models, 3)
 
             self.__reg.cpC['rotamer'][seq_key] = [rot1, rot2]
             return [rot1, rot2]
@@ -5641,7 +5641,7 @@ class NmrDpValidation:
                         self.__reg.report.warning.appendDescription('conflicted_data',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                      'category': lp_category, 'description': warn,
-                                                                     'sigma': float(f"{r / max_inclusive:.2f}")})
+                                                                     'sigma': round(r / max_inclusive, 2)})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.detetConflictDataInLoop() ++ Warning  - {warn}\n")
@@ -5662,7 +5662,7 @@ class NmrDpValidation:
                         self.__reg.report.warning.appendDescription('inconsistent_data',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                      'category': lp_category, 'description': warn,
-                                                                     'sigma': float(f"{r / max_inclusive:.2f}")})
+                                                                     'sigma': round(r / max_inclusive, 2)})
 
                         if self.__reg.verbose:
                             self.__reg.log.write(f"+{self.__class_name__}.detetConflictDataInLoop() ++ Warning  - {warn}\n")
@@ -6054,7 +6054,7 @@ class NmrDpValidation:
 
                                 else:
 
-                                    _sigma = float(f"{abs(value - methyl_cs_vals[methyl_cs_key]) / max_inclusive:.2f}")
+                                    _sigma = round(abs(value - methyl_cs_vals[methyl_cs_key]) / max_inclusive, 2)
 
                                     self.__reg.report.warning.appendDescription('conflicted_data',
                                                                                 {'file_name': file_name,
@@ -6098,7 +6098,7 @@ class NmrDpValidation:
 
                             continue
 
-                        z_score = float(f"{(value - avg_value) / std_value:.2f}")
+                        z_score = round((value - avg_value) / std_value, 2)
                         sigma = abs(z_score)
 
                         if self.__reg.csStat.hasSufficientStat(comp_id, polypeptide_like):
@@ -6801,7 +6801,7 @@ class NmrDpValidation:
 
                                 else:
 
-                                    _sigma = float(f"{abs(value - methyl_cs_vals[methyl_cs_key]) / max_inclusive:.2f}")
+                                    _sigma = round(abs(value - methyl_cs_vals[methyl_cs_key]) / max_inclusive, 2)
 
                                     self.__reg.report.warning.appendDescription('conflicted_data',
                                                                                 {'file_name': file_name,
@@ -6845,7 +6845,7 @@ class NmrDpValidation:
 
                             continue
 
-                        z_score = float(f"{(value - avg_value) / std_value:.2f}")
+                        z_score = round((value - avg_value) / std_value, 2)
                         sigma = abs(z_score)
                         tolerance = std_value
 
@@ -12721,14 +12721,14 @@ class NmrDpValidation:
                                 max_limit = center_point + HARD_PROBE_LIMIT / 2.0 / sp_freq
 
                         if min_point is not None:
-                            min_points[i - 1] = float(f"{min_point:.7f}")
+                            min_points[i - 1] = round(min_point, 7)
                         if max_point is not None:
-                            max_points[i - 1] = float(f"{max_point:.7f}")
+                            max_points[i - 1] = round(max_point, 7)
 
                         if min_limit is not None:
-                            min_limits[i - 1] = float(f"{min_limit:.7f}")
+                            min_limits[i - 1] = round(min_limit, 7)
                         if max_limit is not None:
-                            max_limits[i - 1] = float(f"{max_limit:.7f}")
+                            max_limits[i - 1] = round(max_limit, 7)
 
                         break
 
@@ -12910,14 +12910,14 @@ class NmrDpValidation:
                                 max_limit = center_point + HARD_PROBE_LIMIT / 2.0 / sp_freq
 
                         if min_point is not None:
-                            min_points[i - 1] = float(f"{min_point:.7f}")
+                            min_points[i - 1] = round(min_point, 7)
                         if max_point is not None:
-                            max_points[i - 1] = float(f"{max_point:.7f}")
+                            max_points[i - 1] = round(max_point, 7)
 
                         if min_limit is not None:
-                            min_limits[i - 1] = float(f"{min_limit:.7f}")
+                            min_limits[i - 1] = round(min_limit, 7)
                         if max_limit is not None:
-                            max_limits[i - 1] = float(f"{max_limit:.7f}")
+                            max_limits[i - 1] = round(max_limit, 7)
 
                         break
 
@@ -13345,7 +13345,7 @@ class NmrDpValidation:
             for k, v in _rot1.items():
                 if k == 'name':
                     continue
-                rot1[k] = float(f"{v/total_models:.3f}")
+                rot1[k] = round(v / total_models, 3)
 
             self.__reg.cpC['rotamer'][seq_key] = [rot1]
             return [rot1]
@@ -13474,12 +13474,12 @@ class NmrDpValidation:
             for k, v in _rot1.items():
                 if k == 'name':
                     continue
-                rot1[k] = float(f"{v/total_models:.3f}")
+                rot1[k] = round(v / total_models, 3)
 
             for k, v in _rot2.items():
                 if k == 'name':
                     continue
-                rot2[k] = float(f"{v/total_models:.3f}")
+                rot2[k] = round(v / total_models, 3)
 
             self.__reg.cpC['rotamer'][seq_key] = [rot1, rot2]
             return [rot1, rot2]
@@ -13608,12 +13608,12 @@ class NmrDpValidation:
             for k, v in _rot1.items():
                 if k == 'name':
                     continue
-                rot1[k] = float(f"{v/total_models:.3f}")
+                rot1[k] = round(v / total_models, 3)
 
             for k, v in _rot2.items():
                 if k == 'name':
                     continue
-                rot2[k] = float(f"{v/total_models:.3f}")
+                rot2[k] = round(v / total_models, 3)
 
             self.__reg.cpC['rotamer'][seq_key] = [rot1, rot2]
             return [rot1, rot2]
@@ -14218,7 +14218,7 @@ class NmrDpValidation:
                         for c in all_c:
                             if c['number_of_target_shifts'] > 0:
                                 c['completeness'] =\
-                                    float(f"{float(c['number_of_assigned_shifts']) / c['number_of_target_shifts']:.3f}")
+                                    round(float(c['number_of_assigned_shifts']) / c['number_of_target_shifts'], 3)
                             else:
                                 c['completeness'] = None
 
@@ -14356,7 +14356,7 @@ class NmrDpValidation:
                         for c in bb_c:
                             if c['number_of_target_shifts'] > 0:
                                 c['completeness'] =\
-                                    float(f"{float(c['number_of_assigned_shifts']) / c['number_of_target_shifts']:.3f}")
+                                    round(float(c['number_of_assigned_shifts']) / c['number_of_target_shifts'], 3)
                             else:
                                 c['completeness'] = None
 
@@ -14492,7 +14492,7 @@ class NmrDpValidation:
                         for c in sc_c:
                             if c['number_of_target_shifts'] > 0:
                                 c['completeness'] =\
-                                    float(f"{float(c['number_of_assigned_shifts']) / c['number_of_target_shifts']:.3f}")
+                                    round(float(c['number_of_assigned_shifts']) / c['number_of_target_shifts'], 3)
                             else:
                                 c['completeness'] = None
 
@@ -14607,7 +14607,7 @@ class NmrDpValidation:
                         for c in ch3_c:
                             if c['number_of_target_shifts'] > 0:
                                 c['completeness'] =\
-                                    float(f"{float(c['number_of_assigned_shifts']) / c['number_of_target_shifts']:.3f}")
+                                    round(float(c['number_of_assigned_shifts']) / c['number_of_target_shifts'], 3)
                             else:
                                 c['completeness'] = None
 
@@ -14732,7 +14732,7 @@ class NmrDpValidation:
                         for c in aro_c:
                             if c['number_of_target_shifts'] > 0:
                                 c['completeness'] =\
-                                    float(f"{float(c['number_of_assigned_shifts']) / c['number_of_target_shifts']:.3f}")
+                                    round(float(c['number_of_assigned_shifts']) / c['number_of_target_shifts'], 3)
                             else:
                                 c['completeness'] = None
 
@@ -16110,7 +16110,7 @@ class NmrDpValidation:
                 ent['constraints_on_contact_map'] = count_on_map
             if has_inter_chain_constraint:
                 ent['constraints_on_asym_contact_map'] = count_on_asym_map
-            ent['range'] = {'max_value': float(f'{max_val:.2f}'), 'min_value': float(f'{min_val:.2f}')}
+            ent['range'] = {'max_value': round(max_val, 2), 'min_value': round(min_val, 2)}
             if len(weights) > 0:
                 _weights = {}
                 for k, v in weights.items():
@@ -16238,7 +16238,7 @@ class NmrDpValidation:
                                     ann['seq_id_2'] = row_2[seq_id_2_name]
                                     ann['comp_id_2'] = row_2[comp_id_2_name]
                                 ann['atom_id_2'] = row_2[atom_id_2_name]
-                                ann['discrepancy'] = float(f"{discrepancy:.1f}")
+                                ann['discrepancy'] = round(discrepancy, 1)
 
                                 dist_ann.append(ann)
 
@@ -17385,7 +17385,7 @@ class NmrDpValidation:
                     else:
                         continue
 
-                target_value = float(f"{target_value:.1f}")
+                target_value = round(target_value, 1)
 
                 while target_value > 180.0:
                     target_value -= 360.0
@@ -17769,7 +17769,7 @@ class NmrDpValidation:
                                     ann['atom_id_2'] = atom2['atom_id']
                                     ann['atom_id_3'] = atom3['atom_id']
                                     ann['atom_id_4'] = atom4['atom_id']
-                                    ann['discrepancy'] = float(f"{discrepancy:.1f}")
+                                    ann['discrepancy'] = round(discrepancy, 1)
 
                                     dihed_ann.append(ann)
 
@@ -18124,7 +18124,7 @@ class NmrDpValidation:
                 ent['number_of_redundant_constraints'] = redu_count
             if poly_seq is not None:
                 ent['constraints_per_residue'] = value_per_residue
-            ent['range'] = {'max_value': float(f'{max_val_:.2f}'), 'min_value': float(f'{min_val_:.2f}')}
+            ent['range'] = {'max_value': round(max_val_, 2), 'min_value': round(min_val_, 2)}
             if len(weights) > 0:
                 _weights = {}
                 for k, v in weights.items():
@@ -18238,7 +18238,7 @@ class NmrDpValidation:
                                 ann['comp_id'] = row_1[comp_id_1_name]
                                 ann['atom_id_1'] = row_1[atom_id_1_name]
                                 ann['atom_id_2'] = row_1[atom_id_2_name]
-                                ann['discrepancy'] = float(f"{discrepancy:.1f}")
+                                ann['discrepancy'] = round(discrepancy, 1)
 
                                 rdc_ann.append(ann)
 
@@ -18522,7 +18522,7 @@ class NmrDpValidation:
 
                         spectral_dim = {'id': i, 'atom_type': atom_type, 'atom_isotope_number': atom_isotope_number,
                                         'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit,
-                                        'center_frequency_offset': None if center_point is None else float(f"{center_point:.8f}"),
+                                        'center_frequency_offset': None if center_point is None else round(center_point, 8),
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code,
                                         'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
@@ -18816,7 +18816,7 @@ class NmrDpValidation:
 
                         spectral_dim = {'id': i, 'atom_type': atom_type, 'atom_isotope_number': atom_isotope_number,
                                         'sweep_width': copy.copy(sp_width), 'sweep_width_units': axis_unit,
-                                        'center_frequency_offset': None if center_point is None else float(f"{center_point:.8f}"),
+                                        'center_frequency_offset': None if center_point is None else round(center_point, 8),
                                         'under_sampling_type': under_sampling_type, 'encoding_code': encoding_code,
                                         'encoded_source_dimension_id': encoded_src_dim_id, 'magnetization_linkage_id': mag_link_id}
 
@@ -19476,9 +19476,9 @@ class NmrDpValidation:
                     cs_summary['number_of_favorable_assigned_shifts_in_well_defined_region'] =\
                         completeness['favor_well_defined'][0]
                     cs_summary['completeness_in_well_defined_region'] =\
-                        float(f"{float(completeness['well_defined'][0]) / completeness['well_defined'][1]:.3f}")
+                        round(float(completeness['well_defined'][0]) / completeness['well_defined'][1], 3)
                     cs_summary['completeness_in_well_defined_region_with_favorable_shift'] =\
-                        float(f"{float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1]:.3f}")
+                        round(float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1], 3)
 
                     software_info.append({'name': 'wwpdb.utils.io.CifReader',
                                           'version': self.__reg.cR.version,
@@ -19491,9 +19491,9 @@ class NmrDpValidation:
                 cs_summary['number_of_favorable_assigned_shifts_in_full_length_region'] =\
                     completeness['favor_full_length'][0]
                 cs_summary['completeness_in_full_length_region'] =\
-                    float(f"{float(completeness['full_length'][0]) / completeness['full_length'][1]:.3f}")
+                    round(float(completeness['full_length'][0]) / completeness['full_length'][1], 3)
                 cs_summary['completeness_in_full_length_region_with_favorable_shift'] =\
-                    float(f"{float(completeness['favor_full_length'][0]) / completeness['full_length'][1]:.3f}")
+                    round(float(completeness['favor_full_length'][0]) / completeness['full_length'][1], 3)
 
                 self.__reg.output_statistics.setItemValue('chem_shift_summary', cs_summary)
 
@@ -19516,49 +19516,49 @@ class NmrDpValidation:
                             [{'atom_group': 'overall_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
-                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                              'completeness': round(float(v[0]) / v[1], 3)}
                              ]
                     elif k == 'favorable':
                         ret['completeness_of_favorable_assignments'] =\
                             [{'atom_group': 'favorable_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
-                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                              'completeness': round(float(v[0]) / v[1], 3)}
                              ]
                     elif k == 'backbone':
                         ret['completeness_of_backbone_assignments'] =\
                             [{'atom_group': 'backbone_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
-                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                              'completeness': round(float(v[0]) / v[1], 3)}
                              ]
                     elif k == 'sidechain':
                         ret['completeness_of_sidechain_assignments'] =\
                             [{'atom_group': 'sidechain_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
-                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                              'completeness': round(float(v[0]) / v[1], 3)}
                              ]
                     elif k == 'aromatic':
                         ret['completeness_of_aromatic_assignments'] =\
                             [{'atom_group': 'aromatic_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
-                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                              'completeness': round(float(v[0]) / v[1], 3)}
                              ]
                     elif k == 'sugar':
                         ret['completeness_of_sugar_assignments'] =\
                             [{'atom_group': 'sugar_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
-                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                              'completeness': round(float(v[0]) / v[1], 3)}
                              ]
                     elif k == 'base':
                         ret['completeness_of_base_assignments'] =\
                             [{'atom_group': 'base_all_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
-                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}
+                              'completeness': round(float(v[0]) / v[1], 3)}
                              ]
 
                 for k, v in src['H'].items():
@@ -19569,43 +19569,43 @@ class NmrDpValidation:
                             {'atom_group': 'overall_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'favorable':
                         ret['completeness_of_favorable_assignments'].append(
                             {'atom_group': 'favorable_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'backbone':
                         ret['completeness_of_backbone_assignments'].append(
                             {'atom_group': 'backbone_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'sidechain':
                         ret['completeness_of_sidechain_assignments'].append(
                             {'atom_group': 'sidechain_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'aromatic':
                         ret['completeness_of_aromatic_assignments'].append(
                             {'atom_group': 'aromatic_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'sugar':
                         ret['completeness_of_sugar_assignments'].append(
                             {'atom_group': 'sugar_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'base':
                         ret['completeness_of_base_assignments'].append(
                             {'atom_group': 'base_1h_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
 
                 for k, v in src['C'].items():
                     if v[1] == 0:
@@ -19615,43 +19615,43 @@ class NmrDpValidation:
                             {'atom_group': 'overall_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'favorable':
                         ret['completeness_of_favorable_assignments'].append(
                             {'atom_group': 'favorable_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'backbone':
                         ret['completeness_of_backbone_assignments'].append(
                             {'atom_group': 'backbone_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'sidechain':
                         ret['completeness_of_sidechain_assignments'].append(
                             {'atom_group': 'sidechain_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'aromatic':
                         ret['completeness_of_aromatic_assignments'].append(
                             {'atom_group': 'aromatic_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'sugar':
                         ret['completeness_of_sugar_assignments'].append(
                             {'atom_group': 'sugar_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'base':
                         ret['completeness_of_base_assignments'].append(
                             {'atom_group': 'base_13c_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
 
                 for k, v in src['N'].items():
                     if v[1] == 0:
@@ -19661,43 +19661,43 @@ class NmrDpValidation:
                             {'atom_group': 'overall_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'favorable':
                         ret['completeness_of_favorable_assignments'].append(
                             {'atom_group': 'favorable_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'backbone':
                         ret['completeness_of_backbone_assignments'].append(
                             {'atom_group': 'backbone_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'sidechain':
                         ret['completeness_of_sidechain_assignments'].append(
                             {'atom_group': 'sidechain_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'aromatic':
                         ret['completeness_of_aromatic_assignments'].append(
                             {'atom_group': 'aromatic_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'sugar':
                         ret['completeness_of_sugar_assignments'].append(
                             {'atom_group': 'sugar_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'base':
                         ret['completeness_of_base_assignments'].append(
                             {'atom_group': 'base_15n_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
 
                 for k, v in src['P'].items():
                     if v[1] == 0:
@@ -19707,43 +19707,43 @@ class NmrDpValidation:
                             {'atom_group': 'overall_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'favorable':
                         ret['completeness_of_favorable_assignments'].append(
                             {'atom_group': 'favorable_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'backbone':
                         ret['completeness_of_backbone_assignments'].append(
                             {'atom_group': 'backbone_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'sidechain':
                         ret['completeness_of_sidechain_assignments'].append(
                             {'atom_group': 'sidechain_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'aromatic':
                         ret['completeness_of_aromatic_assignments'].append(
                             {'atom_group': 'aromatic_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'sugar':
                         ret['completeness_of_sugar_assignments'].append(
                             {'atom_group': 'sugar_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
                     elif k == 'base':
                         ret['completeness_of_base_assignments'].append(
                             {'atom_group': 'base_31p_chemical_shifts',
                              'number_of_assigned_shifts': v[0],
                              'number_of_target_shifts': v[1],
-                             'completeness': float(f"{float(v[0]) / v[1]:.3f}")})
+                             'completeness': round(float(v[0]) / v[1], 3)})
 
                 if 'stereomethyl' in src:
                     v = src['stereomethyl']
@@ -19752,7 +19752,7 @@ class NmrDpValidation:
                             [{'atom_group': 'stereomethyl_13c_chemical_shifts',
                               'number_of_assigned_shifts': v[0],
                               'number_of_target_shifts': v[1],
-                              'completeness': float(f"{float(v[0]) / v[1]:.3f}")}]
+                              'completeness': round(float(v[0]) / v[1], 3)}]
 
                 return ret
 
@@ -19780,9 +19780,9 @@ class NmrDpValidation:
             total_dihed_restraint_count = vrpt_mr['angle_summary'][dihed_any_type] if has_dihed else 0
             total_rdc_restraint_count = vrpt_mr['rdc_summary'][rdc_any_type] if has_rdc else 0
 
-            # integrate RDC comparison plot of observed and calculated RDCs
-            if has_rdc and 'rdc_comparison_plot' in vrpt_mr:
-                rdc_comparison_plot = vrpt_mr['rdc_comparison_plot']
+            # integrate RDC correlation plot of observed and calculated RDCs
+            if has_rdc and 'rdc_correlation_plot' in vrpt_mr:
+                rdc_correlation_plot = vrpt_mr['rdc_correlation_plot']
 
                 input_source_ = self.__reg.report_prev.input_sources[0]
                 input_source_dic_ = input_source_.get()
@@ -19796,8 +19796,8 @@ class NmrDpValidation:
                         for rdc_stat in stats_of_exptl_data['rdc_restraint']:
                             list_id = rdc_stat['list_id']
 
-                            if list_id in rdc_comparison_plot:
-                                rdc_stat['comparison_plot'] = rdc_comparison_plot[list_id]
+                            if list_id in rdc_correlation_plot:
+                                rdc_stat['correlation_plot'] = rdc_correlation_plot[list_id]
 
             def get_dist_violations_per_model():
                 violations_per_model = []
@@ -19862,7 +19862,7 @@ class NmrDpValidation:
                         if dist_type == 'sbond' and not has_cystain:
                             continue
 
-                    restraint_percent = float(f"{100.0 * restraint_count / total_dist_restraint_count:.1f}")
+                    restraint_percent = round(100.0 * restraint_count / total_dist_restraint_count, 1)
 
                     if bond_type is None:
                         viol_count = sum(vrpt_mr['distance_violation'][dist_type][dist_sub_type][bond_type]
@@ -19871,9 +19871,9 @@ class NmrDpValidation:
                         viol_count = sum(vrpt_mr['distance_violation'][dist_any_type][dist_sub_type][bond_type]
                                          for dist_sub_type in dist_sub_types)
 
-                    viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
+                    viol_inline_percent = round(100.0 * viol_count / restraint_count, 1)\
                         if restraint_count > 0 else None
-                    viol_absol_percent = float(f"{100.0 * viol_count / total_dist_restraint_count:.1f}")
+                    viol_absol_percent = round(100.0 * viol_count / total_dist_restraint_count, 1)
 
                     if bond_type is None:
                         consist_viol_count = sum(vrpt_mr['consistent_distance_violation'][dist_type][dist_sub_type][bond_type]
@@ -19882,9 +19882,9 @@ class NmrDpValidation:
                         consist_viol_count = sum(vrpt_mr['consistent_distance_violation'][dist_any_type][dist_sub_type][bond_type]
                                                  for dist_sub_type in dist_sub_types)
 
-                    consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
+                    consist_viol_inline_percent = round(100.0 * consist_viol_count / restraint_count, 1)\
                         if restraint_count > 0 else None
-                    consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_dist_restraint_count:.1f}")
+                    consist_viol_absol_percent = round(100.0 * consist_viol_count / total_dist_restraint_count, 1)
 
                     violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
                                               'restraint_percent': restraint_percent,
@@ -19903,19 +19903,19 @@ class NmrDpValidation:
                         bond_type = None
                         restraint_count = vrpt_mr['distance_summary'][dist_type][dist_sub_type][bond_type]
 
-                        percent = float(f"{100.0 * restraint_count / total_dist_restraint_count:.1f}")
+                        percent = round(100.0 * restraint_count / total_dist_restraint_count, 1)
 
                         viol_count = vrpt_mr['distance_violation'][dist_type][dist_sub_type][bond_type]
 
-                        viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
+                        viol_inline_percent = round(100.0 * viol_count / restraint_count, 1)\
                             if restraint_count > 0 else None
-                        viol_absol_percent = float(f"{100.0 * viol_count / total_dist_restraint_count:.1f}")
+                        viol_absol_percent = round(100.0 * viol_count / total_dist_restraint_count, 1)
 
                         consist_viol_count = vrpt_mr['consistent_distance_violation'][dist_type][dist_sub_type][bond_type]
 
-                        consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
+                        consist_viol_inline_percent = round(100.0 * consist_viol_count / restraint_count, 1)\
                             if restraint_count > 0 else None
-                        consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_dist_restraint_count:.1f}")
+                        consist_viol_absol_percent = round(100.0 * consist_viol_count / total_dist_restraint_count, 1)
 
                         violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
                                                   'restraint_percent': percent,
@@ -19933,17 +19933,17 @@ class NmrDpValidation:
                 for dihed_type in dihed_types:
                     restraint_type = dihed_type.lower()
                     restraint_count = vrpt_mr['angle_summary'][dihed_type]
-                    restraint_percent = float(f"{100.0 * restraint_count / total_dihed_restraint_count:.1f}")
+                    restraint_percent = round(100.0 * restraint_count / total_dihed_restraint_count, 1)
 
                     viol_count = vrpt_mr['angle_violation'][dihed_type]
-                    viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
+                    viol_inline_percent = round(100.0 * viol_count / restraint_count, 1)\
                         if restraint_count > 0 else None
-                    viol_absol_percent = float(f"{100.0 * viol_count / total_dihed_restraint_count:.1f}")
+                    viol_absol_percent = round(100.0 * viol_count / total_dihed_restraint_count, 1)
 
                     consist_viol_count = vrpt_mr['consistent_angle_violation'][dihed_type]
-                    consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
+                    consist_viol_inline_percent = round(100.0 * consist_viol_count / restraint_count, 1)\
                         if restraint_count > 0 else None
-                    consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_dihed_restraint_count:.1f}")
+                    consist_viol_absol_percent = round(100.0 * consist_viol_count / total_dihed_restraint_count, 1)
 
                     violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
                                               'restraint_percent': restraint_percent,
@@ -19961,17 +19961,17 @@ class NmrDpValidation:
                 for rdc_type in rdc_types:
                     restraint_type = rdc_type.lower()
                     restraint_count = vrpt_mr['rdc_summary'][rdc_type]
-                    restraint_percent = float(f"{100.0 * restraint_count / total_rdc_restraint_count:.1f}")
+                    restraint_percent = round(100.0 * restraint_count / total_rdc_restraint_count, 1)
 
                     viol_count = vrpt_mr['rdc_violation'][rdc_type]
-                    viol_inline_percent = float(f"{100.0 * viol_count / restraint_count:.1f}")\
+                    viol_inline_percent = round(100.0 * viol_count / restraint_count, 1)\
                         if restraint_count > 0 else None
-                    viol_absol_percent = float(f"{100.0 * viol_count / total_rdc_restraint_count:.1f}")
+                    viol_absol_percent = round(100.0 * viol_count / total_rdc_restraint_count, 1)
 
                     consist_viol_count = vrpt_mr['consistent_rdc_violation'][rdc_type]
-                    consist_viol_inline_percent = float(f"{100.0 * consist_viol_count / restraint_count:.1f}")\
+                    consist_viol_inline_percent = round(100.0 * consist_viol_count / restraint_count, 1)\
                         if restraint_count > 0 else None
-                    consist_viol_absol_percent = float(f"{100.0 * consist_viol_count / total_rdc_restraint_count:.1f}")
+                    consist_viol_absol_percent = round(100.0 * consist_viol_count / total_rdc_restraint_count, 1)
 
                     violation_summary.append({'restraint_type': restraint_type, 'restraint_count': restraint_count,
                                               'restraint_percent': restraint_percent,
@@ -20005,11 +20005,11 @@ class NmrDpValidation:
                     if len(errors) > 1:
                         _errors = numpy.array(errors, dtype=float)
 
-                        item['mean_violation'] = float(f"{numpy.mean(_errors):.2f}")
-                        item['min_violation'] = float(f"{numpy.min(_errors):.2f}")
-                        item['max_violation'] = float(f"{numpy.max(_errors):.2f}")
-                        item['std_violation'] = float(f"{numpy.std(_errors):.2f}")
-                        item['median_violation'] = float(f"{numpy.median(_errors):.2f}")
+                        item['mean_violation'] = round(numpy.mean(_errors), 2)
+                        item['min_violation'] = round(numpy.min(_errors), 2)
+                        item['max_violation'] = round(numpy.max(_errors), 2)
+                        item['std_violation'] = round(numpy.std(_errors), 2)
+                        item['median_violation'] = round(numpy.median(_errors), 2)
 
                     else:
                         item['mean_violation'] = item['min_violation'] = item['max_violation'] =\
@@ -20032,11 +20032,11 @@ class NmrDpValidation:
                     if len(errors) > 1:
                         _errors = numpy.array(errors, dtype=float)
 
-                        item['mean_violation'] = float(f"{numpy.mean(_errors):.2f}")
-                        item['min_violation'] = min(errors)
-                        item['max_violation'] = max(errors)
-                        item['std_violation'] = float(f"{numpy.std(_errors):.2f}")
-                        item['median_violation'] = float(f"{numpy.median(_errors):.2f}")
+                        item['mean_violation'] = round(numpy.mean(_errors), 2)
+                        item['min_violation'] = round(numpy.min(_errors), 2)
+                        item['max_violation'] = round(numpy.max(_errors), 2)
+                        item['std_violation'] = round(numpy.std(_errors), 2)
+                        item['median_violation'] = round(numpy.median(_errors), 2)
 
                     else:
                         item['mean_violation'] = item['min_violation'] = item['max_violation'] =\
@@ -20059,11 +20059,11 @@ class NmrDpValidation:
                     if len(errors) > 1:
                         _errors = numpy.array(errors, dtype=float)
 
-                        item['mean_violation'] = float(f"{numpy.mean(_errors):.2f}")
-                        item['min_violation'] = min(errors)
-                        item['max_violation'] = max(errors)
-                        item['std_violation'] = float(f"{numpy.std(_errors):.2f}")
-                        item['median_violation'] = float(f"{numpy.median(_errors):.2f}")
+                        item['mean_violation'] = round(numpy.mean(_errors), 2)
+                        item['min_violation'] = round(numpy.min(_errors), 2)
+                        item['max_violation'] = round(numpy.max(_errors), 2)
+                        item['std_violation'] = round(numpy.std(_errors), 2)
+                        item['median_violation'] = round(numpy.median(_errors), 2)
 
                     else:
                         item['mean_violation'] = item['min_violation'] = item['max_violation'] =\
@@ -20078,7 +20078,7 @@ class NmrDpValidation:
                 len_eff_model_ids = len(self.__reg.eff_model_ids)
                 for fraction in range(1, len_eff_model_ids + 1):
                     item = {'fraction_count': fraction,
-                            'fraction_percent': float(f"{100.0 * fraction / len_eff_model_ids:.1f}")}
+                            'fraction_percent': round(100.0 * fraction / len_eff_model_ids, 1)}
                     for dist_type in dist_types:
                         if dist_type in dist_bond_types:
                             continue
@@ -20099,7 +20099,7 @@ class NmrDpValidation:
                 len_eff_model_ids = len(self.__reg.eff_model_ids)
                 for fraction in range(1, len_eff_model_ids + 1):
                     item = {'fraction_count': fraction,
-                            'fraction_percent': float(f"{100.0 * fraction / len_eff_model_ids:.1f}")}
+                            'fraction_percent': round(100.0 * fraction / len_eff_model_ids, 1)}
                     for dihed_type in dihed_types:
                         viol_type = dihed_type.lower() + '_viol_count'
                         item[viol_type] = vrpt_mr['angle_violations_vs_models'][dihed_type][fraction]
@@ -20113,7 +20113,7 @@ class NmrDpValidation:
                 len_eff_model_ids = len(self.__reg.eff_model_ids)
                 for fraction in range(1, len_eff_model_ids + 1):
                     item = {'fraction_count': fraction,
-                            'fraction_percent': float(f"{100.0 * fraction / len_eff_model_ids:.1f}")}
+                            'fraction_percent': round(100.0 * fraction / len_eff_model_ids, 1)}
                     for rdc_type in rdc_types:
                         viol_type = rdc_type.lower() + '_viol_count'
                         item[viol_type] = vrpt_mr['rdc_violations_vs_models'][rdc_type][fraction]
@@ -20157,9 +20157,9 @@ class NmrDpValidation:
                                        'violated_model_id': dist_viol[7],
                                        'min_violation': dist_viol[8],
                                        'max_violation': dist_viol[9],
-                                       'mean_violation': float(f"{dist_viol[10]:.2f}"),
-                                       'std_violation': float(f"{dist_viol[11]:.2f}"),
-                                       'median_violation': float(f"{dist_viol[12]:.2f}")})
+                                       'mean_violation': round(dist_viol[10], 2),
+                                       'std_violation': round(dist_viol[11], 2),
+                                       'median_violation': round(dist_viol[12], 2)})
 
                 return violations
 
@@ -20179,9 +20179,9 @@ class NmrDpValidation:
                                        'violated_model_id': dihed_viol[7],
                                        'min_violation': dihed_viol[8],
                                        'max_violation': dihed_viol[9],
-                                       'mean_violation': float(f"{dihed_viol[10]:.2f}"),
-                                       'std_violation': float(f"{dihed_viol[11]:.2f}"),
-                                       'median_violation': float(f"{dihed_viol[12]:.2f}")})
+                                       'mean_violation': round(dihed_viol[10], 2),
+                                       'std_violation': round(dihed_viol[11], 2),
+                                       'median_violation': round(dihed_viol[12], 2)})
 
                 return violations
 
@@ -20199,9 +20199,9 @@ class NmrDpValidation:
                                        'violated_model_id': rdc_viol[5],
                                        'min_violation': rdc_viol[6],
                                        'max_violation': rdc_viol[7],
-                                       'mean_violation': float(f"{rdc_viol[8]:.2f}"),
-                                       'std_violation': float(f"{rdc_viol[9]:.2f}"),
-                                       'median_violation': float(f"{rdc_viol[10]:.2f}")})
+                                       'mean_violation': round(rdc_viol[8], 2),
+                                       'std_violation': round(rdc_viol[9], 2),
+                                       'median_violation': round(rdc_viol[10], 2)})
 
                 return violations
 
@@ -20635,9 +20635,10 @@ class NmrDpValidation:
                                                 + total_dihed_restraint_count\
                                                 + total_rdc_restraint_count
                                             rest_summary['number_of_restaints_per_residue'] = \
-                                                float(f"{float(all_total) / vrpt_mr['seq_length']:.1f}")
+                                                round(float(all_total) / vrpt_mr['seq_length'], 1)
                                             rest_summary['number_of_long_range_restraints_per_residue'] =\
-                                                float(f"{float(sum(sum(v.values()) for v in dist_summary['long'].values())) / vrpt_mr['seq_length']:.1f}")  # noqa: E501, pylint: disable=line-too-long
+                                                round(float(sum(sum(v.values()) for v in dist_summary['long'].values()))
+                                                      / vrpt_mr['seq_length'], 1)
 
                                             rest_summary['average_number_of_dist_violations_per_model'] =\
                                                 get_dist_violations_per_model()
@@ -20739,7 +20740,7 @@ class NmrDpValidation:
                                             rest_summary['number_of_unmapped_restraints'] = all_unmapped
                                             all_total = total_dihed_restraint_count + total_rdc_restraint_count
                                             rest_summary['number_of_restaints_per_residue'] = \
-                                                float(f"{float(all_total) / vrpt_mr['seq_length']:.1f}")
+                                                round(float(all_total) / vrpt_mr['seq_length'], 1)
                                             rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
 
                                             rest_summary['average_number_of_dihed_violations_per_model'] =\
@@ -20809,7 +20810,7 @@ class NmrDpValidation:
                                             rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
                                             rest_summary['number_of_unmapped_restraints'] = len(vrpt_mr['unmapped_rdc'])
                                             rest_summary['number_of_restaints_per_residue'] = \
-                                                float(f"{float(total_rdc_restraint_count) / vrpt_mr['seq_length']:.1f}")
+                                                round(float(total_rdc_restraint_count) / vrpt_mr['seq_length'], 1)
                                             rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
 
                                             rest_summary['average_number_of_rdc_violations_per_model'] =\

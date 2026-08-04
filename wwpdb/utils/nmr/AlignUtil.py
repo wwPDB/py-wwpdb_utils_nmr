@@ -1498,7 +1498,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
             seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                         'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
+                         'sequence_coverage': round(float(length - (unmapped + conflict)) / ref_length, 3),
                          'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,
                          'test_code': test_code, 'test_gauge_code': test_gauge_code}
@@ -1874,7 +1874,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
 
             seq_align = {'ref_chain_id': chain_id, 'test_chain_id': chain_id2, 'length': ref_length,
                          'matched': matched, 'conflict': conflict, 'unmapped': unmapped,
-                         'sequence_coverage': float(f"{float(length - (unmapped + conflict)) / ref_length:.3f}"),
+                         'sequence_coverage': round(float(length - (unmapped + conflict)) / ref_length, 3),
                          'ref_seq_id': _ps1['seq_id'], 'test_seq_id': _ps2['seq_id'],
                          'ref_comp_id': _ps1['comp_id'], 'test_comp_id': _ps2['comp_id'],
                          'ref_gauge_code': ref_gauge_code, 'ref_code': ref_code, 'mid_code': mid_code,

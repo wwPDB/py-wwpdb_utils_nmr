@@ -759,7 +759,7 @@
             },
             "selection_criteria": {
               "description": "The criteria used to select the representative structure from the ensemble.",
-              "type": "string",
+              "type": "string"
             },
             "well_defined_region": {
               "description": "The summary of identified well-defined regions in the ensemble.",
@@ -4751,7 +4751,7 @@
           "properties": {
             "name": {
               "description": "Summary of the molecular system.",
-              "type": "string",
+              "type": "string"
             },
             "number_of_components": {
               "description": "Total number of molecular components.",
@@ -5235,7 +5235,7 @@
         "role": {
           "description": "The function of the component within the assembly.",
           "type": "string"
-        },
+        }
       },
       "required": [
         "entity_assembly_id",

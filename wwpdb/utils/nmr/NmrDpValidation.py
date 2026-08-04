@@ -19454,6 +19454,11 @@ class NmrDpValidation:
                                   'version': vrpt_util.version,
                                   'classification': 'workflow that performs chemical shift and restraint validations'})
 
+            software_info.append({'name': 'wwpdb.utils.io.CifReader',
+                                  'version': self.__reg.cR.version,
+                                  'classification': 'PDBx/mmCIF parser, domain recognition, '
+                                                    'and clustering analysis of the ensemble structure'})
+
             vrpt_util.addInput(name='pynmrstar_object', value=self.__reg.star_data[0], type='param')
 
             if REPORT_FILE_PATH_KEY in self.__reg.inputParamDict:
@@ -19479,10 +19484,6 @@ class NmrDpValidation:
                         round(float(completeness['well_defined'][0]) / completeness['well_defined'][1], 3)
                     cs_summary['completeness_in_well_defined_region_with_favorable_shift'] =\
                         round(float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1], 3)
-
-                    software_info.append({'name': 'wwpdb.utils.io.CifReader',
-                                          'version': self.__reg.cR.version,
-                                          'classification': 'PDBx/mmCIF parser and domain recognition of the ensemble structure'})
 
                 cs_summary['number_of_target_shifts_in_full_length_region'] =\
                     completeness['full_length'][1]

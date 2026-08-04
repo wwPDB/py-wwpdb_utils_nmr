@@ -2061,7 +2061,7 @@ class CifReader:
                     if _rmsd < RMSD_OVERLAID_EXACTLY and ref_model_id < test_model_id:
                         exact_overlaid_model_ids.append({'ref_model_id': ref_model_id,
                                                          'test_model_id': test_model_id,
-                                                         'rmsd_in_well_defined_region': float(f"{_rmsd:.4f}")})
+                                                         'rmsd_in_well_defined_region': round(_rmsd, 4)})
                 if len(core_rmsd) == 0:
                     continue
 
@@ -2075,8 +2075,8 @@ class CifReader:
 
             if min_label != -1:
                 item['domain_id'] = eff_domain_id[min_label]
-                item['raw_rmsd_in_well_defined_region'] = float(f"{min_core_rmsd:.4f}")
-                item['rmsd_in_well_defined_region'] = float(f"{mean_align_rmsd:.4f}")
+                item['raw_rmsd_in_well_defined_region'] = round(min_core_rmsd, 4)
+                item['rmsd_in_well_defined_region'] = round(mean_align_rmsd, 4)
                 if len(exact_overlaid_model_ids) > 0:
                     item['exactly_overlaid_model'] = exact_overlaid_model_ids
                 for chain_id in dst_chain_ids:
@@ -2136,7 +2136,7 @@ class CifReader:
                     _rmsd.append(_rmsd_)
 
             if len(_rmsd) > 0:
-                item['mean_rmsd'] = float(f"{numpy.mean(numpy.array(_rmsd, dtype=float)):.4f}")
+                item['mean_rmsd'] = round(numpy.mean(numpy.array(_rmsd, dtype=float)), 4)
 
             _, v = numpy.linalg.eig(r)
             x = numpy.delete(numpy.abs(v), numpy.s_[1:], 1)
@@ -2171,7 +2171,7 @@ class CifReader:
                     _rmsd.append(calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q))
 
             if len(_rmsd) > 0:
-                item['medoid_rmsd'] = float(f"{numpy.mean(numpy.array(_rmsd, dtype=float)):.4f}")
+                item['medoid_rmsd'] = round(numpy.mean(numpy.array(_rmsd, dtype=float)), 4)
 
             _item = copy.copy(item)
 
@@ -2211,7 +2211,7 @@ class CifReader:
                     except AttributeError:
                         pass
                 _item['range_of_seq_id'] = ','.join(_seq_range)
-                _item['percent_of_core'] = float(f"{float(count) / lengths[chain_ids.index(chain_id)] * 100.0:.1f}")
+                _item['percent_of_core'] = round(float(count) / lengths[chain_ids.index(chain_id)] * 100.0, 1)
 
                 dlist[chain_ids.index(chain_id)].append(copy.deepcopy(_item))
 
@@ -2526,8 +2526,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': float(f"{(numpy.dot(d_ord[idx], v[0])).real:.4f}"),
-                            'pc2': float(f"{(numpy.dot(d_ord[idx], v[1])).real:.4f}")
+                            'pc1': round((numpy.dot(d_ord[idx], v[0])).real, 4),
+                            'pc2': round((numpy.dot(d_ord[idx], v[1])).real, 4)
                             }
                     pc.append(item)
 
@@ -2556,7 +2556,7 @@ class CifReader:
 
                 if min_idx != -1:
                     item['centroid_model_id'] = eff_model_ids[min_idx]
-                    item['centroid_rmsd'] = float(f"{min_rmsd:.4f}")
+                    item['centroid_rmsd'] = round(min_rmsd, 4)
 
                     _rmsd = []
                     for i, j in itertools.combinations(label_idx, 2):
@@ -2564,7 +2564,7 @@ class CifReader:
                             continue
                         _rmsd.append(d_avr[i, j])
 
-                    item['mean_rmsd'] = float(f"{numpy.mean(numpy.array(_rmsd, dtype=float)):.4f}")
+                    item['mean_rmsd'] = round(numpy.mean(numpy.array(_rmsd, dtype=float)), 4)
 
                 clist.append(item)
 
@@ -2580,8 +2580,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': float(f"{(numpy.dot(d_ord[idx], v[0])).real:.4f}"),
-                            'pc2': float(f"{(numpy.dot(d_ord[idx], v[1])).real:.4f}")
+                            'pc1': round((numpy.dot(d_ord[idx], v[0])).real, 4),
+                            'pc2': round((numpy.dot(d_ord[idx], v[1])).real, 4)
                             }
                     pc.append(item)
 

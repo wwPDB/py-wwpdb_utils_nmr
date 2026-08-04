@@ -3812,8 +3812,8 @@
             "$ref": "#/definitions/rdc_constraints_per_residue"
           }
         },
-        "comparison_plot": {
-          "description": "Template for Observed-Calculated RDC plot data per RDC vector type",
+        "correlation_plot": {
+          "description": "Template for correlation plot between observed and calculated RDCs per RDC vector type",
           "type": "object",
           "properties": {
             "values": {
@@ -3821,6 +3821,9 @@
             },
             "errors": {
               "$ref": "#/definitions/rdc_plot_errors"
+            },
+            "q_scores": {
+              "$ref": "#/definitions/rdc_plot_q_scores"
             }
           },
           "additionalProperties": false,
@@ -4071,6 +4074,35 @@
             ],
             "minItems": 6,
             "maxItems": 6
+          }
+        }
+      }
+    },
+    "rdc_plot_q_scores": {
+      "description": "Template for quality score for correlation of observed and calculated RDCs per RDC vector type.",
+      "type": "object",
+      "patternProperties": {
+        "^[1A-Za-z_]+$": {
+          "type": "object",
+          "properties": {
+            "r2": {
+              "descritopn": "Linear correlation coefficients between observed and calculated RDC values: 1.0 - sum( (Dexp - Dcalc)^2 ) / sum( (Dexp - <Dexp>)^2 ), where Dexp is observed RDC value, Dcalc is calculated RDC value, and <Dexp> is mean value of observed RDCs.",
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "Cornilescu_Q": {
+              "descritopn": "Cornilescu's RDC quality score: sqrt( sum( (Dexp - Dcalc)^2 ) / sum( Dexp^2 )) where Dexp is observed RDC value, Dcalc is calculated RDC value.",
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "Clore_Q": {
+              "descritopn": "Clore's RDC quality score: sqrt( sum( (Dexp - Dcalc)^2 ) / (N * Da^2 * (4 + 3 * eta^2) / 5)) where N is the number of RDCs assessed, Da is the axial component (Dmax * Szz), and eta is the rhombicity ((Syy - Sxx) / Szz).",
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            }
           }
         }
       }

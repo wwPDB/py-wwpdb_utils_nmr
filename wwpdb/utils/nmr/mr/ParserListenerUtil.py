@@ -6108,7 +6108,7 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
         if None in (a_1, a_2):
             continue
 
-        bond.append({'model_id': model_id, 'distance': float(f"{numpy.linalg.norm(to_np_array(a_1) - to_np_array(a_2)):.3f}")})
+        bond.append({'model_id': model_id, 'distance': round(numpy.linalg.norm(to_np_array(a_1) - to_np_array(a_2)), 3)})
 
     if len(bond) > 0:
         return bond

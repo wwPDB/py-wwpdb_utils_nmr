@@ -3024,8 +3024,38 @@ class NmrVrptUtility:
                     Syy, Szz, Sxy, Sxz, Syz = x[0], x[1], x[2], x[3], x[4]
 
                     if -0.5 <= Syy <= 1.0 and -0.5 <= Szz <= 1.0 and abs(Sxy) <= 0.75 and abs(Sxz) <= 0.75 and abs(Syz) <= 0.75:
-                        self.__rdcSaupeOrderMatrix[list_id][model_id] = {'Syy': Syy, 'Szz': Szz,
-                                                                         'Sxy': Sxy, 'Sxz': Sxz, 'Syz': Syz}
+                        Sxx = -(Syy + Szz)
+                        Sorder = sorted([abs(Sxx), abs(Syy), abs(Szz)], reverse=True)
+                        Szz_, Syy_, Sxx_ = Sorder[0], Sorder[1], Sorder[2]
+
+                        if Szz_ == abs(Szz):
+                            if Syy_ == abs(Syy):  # zz > yy >> xx
+                                Sxy_, Sxz_, Syz_ = Sxy, Sxz, Syz
+                            else:  # zz > xx > yy : x <-> y
+                                Sxy_, Sxz_, Syz_ = Sxy, Syz, Sxz
+                        elif Szz_ == abs(Syy):
+                            if Syy_ == abs(Szz):  # yy > zz > xx : y <-> z
+                                Sxy_, Sxz_, Syz_ = Sxz, Sxy, Syz
+                            else:  # yy > xx > zz : y->z, x->y, z->x
+                                Sxy_, Sxz_, Syz_ = Syz, Sxy, Sxz
+                        else:
+                            if Syy_ == abs(Szz):  # xx > zz > yy : x->z, z->y, y->x
+                                Sxy_, Sxz_, Syz_ = Sxz, Syz, Sxy
+                            else:  # xx > yy > zz : x <-> z
+                                Sxy_, Sxz_, Syz_ = Syz, Sxz, Sxy
+
+                        eta = (Syy_ - Sxx_) / Szz_
+
+                        self.__rdcSaupeOrderMatrix[list_id][model_id] = {'Sxx': f'{Sxx_:.4e}', 'Syy': f'{Syy_:.4e}',
+                                                                         'Szz': f'{Szz_:.4e}',
+                                                                         'Sxy': f'{Sxy_:.4e}', 'Sxz': f'{Sxz_:.4e}',
+                                                                         'Syz': f'{Syz_:.4e}',
+                                                                         'Da': f'{Sxx_ - Syy_:.4e}', 'eta': f'{eta:.4e}',
+                                                                         'Dmax': f'{dmax:.4e}'}
+
+                        assert abs(Szz_) >= abs(Syy_) >= abs(Sxx_)
+                        assert 0 <= eta <= 1.0
+
                         b_calc = list(A @ x)
 
                         for rest_key, val in zip(target_rest_keys, b_calc):
@@ -4260,14 +4290,23 @@ class NmrVrptUtility:
 
                         calc_rdcs = numpy.array(list(calc_rdc.values()), dtype=float)
 
-                        a_key = r['atom_key_1']
-                        a_key_2 = r['atom_key_2']
+                        ak1 = r['atom_key_1']
+                        ak2 = r['atom_key_2']
 
                         exp_rdc_center = r['target_value']
                         calc_rdc_center = float(f'{numpy.mean(calc_rdcs):.2f}')
 
-                        rdc_values[rdc_type].append([exp_rdc_center, calc_rdc_center,
-                                                     f"{a_key[0]}:{a_key[1]}:{a_key[2]}:{a_key[3]}-{a_key_2[3]}"])
+                        if ak1[0] == ak2[0]:
+                            if ak1[1] == ak2[1]:
+                                vector_name = f"{ak1[0]}:{ak1[1]}:{ak1[2]}:{ak1[3]}-{ak2[3]}"
+                            else:
+                                vector_name = f"{ak1[0]}:{ak1[1]}:{ak1[2]}:{ak1[3]}-"\
+                                    f"{ak2[1]}:{ak2[2]}:{ak2[3]}"
+                        else:
+                            vector_name = f"{ak1[0]}:{ak1[1]}:{ak1[2]}:{ak1[3]}-"\
+                                f"{ak2[0]}:{ak2[1]}:{ak2[2]}:{ak2[3]}"
+
+                        rdc_values[rdc_type].append([exp_rdc_center, calc_rdc_center, vector_name])
                         rdc_errors[rdc_type].append([exp_rdc_center, calc_rdc_center,
                                                      r['lower_bound'], r['upper_bound'],
                                                      float(f'{numpy.min(calc_rdcs):.2f}'),

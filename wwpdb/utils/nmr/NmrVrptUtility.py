@@ -3029,20 +3029,20 @@ class NmrVrptUtility:
                         Szz_, Syy_, Sxx_ = Sorder[0], Sorder[1], Sorder[2]
 
                         if Szz_ == abs(Szz):
-                            if Syy_ == abs(Syy):  # zz > yy >> xx
+                            if Syy_ == abs(Syy):  # zz > yy > xx (as is)
                                 Sxy_, Sxz_, Syz_ = Sxy, Sxz, Syz
-                            else:  # zz > xx > yy : x <-> y
-                                Sxy_, Sxz_, Syz_ = Sxy, Syz, Sxz
+                            else:  # zz > xx > yy : x <-> y, z -> -z
+                                Sxy_, Sxz_, Syz_ = Sxy, -Syz, -Sxz
                         elif Szz_ == abs(Syy):
-                            if Syy_ == abs(Szz):  # yy > zz > xx : y <-> z
-                                Sxy_, Sxz_, Syz_ = Sxz, Sxy, Syz
-                            else:  # yy > xx > zz : y->z, x->y, z->x
+                            if Syy_ == abs(Szz):  # yy > zz > xx : y <-> z, x -> -x
+                                Sxy_, Sxz_, Syz_ = -Sxz, -Sxy, Syz
+                            else:  # yy > xx > zz : y->z, x->y, z->x (rotation)
                                 Sxy_, Sxz_, Syz_ = Syz, Sxy, Sxz
                         else:
-                            if Syy_ == abs(Szz):  # xx > zz > yy : x->z, z->y, y->x
+                            if Syy_ == abs(Szz):  # xx > zz > yy : x->z, z->y, y->x (rotation)
                                 Sxy_, Sxz_, Syz_ = Sxz, Syz, Sxy
-                            else:  # xx > yy > zz : x <-> z
-                                Sxy_, Sxz_, Syz_ = Syz, Sxz, Sxy
+                            else:  # xx > yy > zz : x <-> z, y -> -y
+                                Sxy_, Sxz_, Syz_ = -Syz, Sxz, -Sxy
 
                         eta = (Syy_ - Sxx_) / Szz_
 

@@ -328,7 +328,7 @@ def dihedral_angle(p0: list, p1: list, p2: list, p3: list) -> float:
     """ Return dihedral angle from a series of four points.
     """
 
-    b0 = -1.0 * (p1 - p0)
+    b0 = p0 - p1
     b1 = p2 - p1
     b2 = p3 - p2
 
@@ -360,7 +360,7 @@ def dihedral_angles(p0: numpy.ndarray, p1: numpy.ndarray, p2: numpy.ndarray, p3:
         many scalar callers across the package.)
     """
 
-    b0 = -(p1 - p0)
+    b0 = p0 - p1
     b1 = p2 - p1
     b2 = p3 - p2
 
@@ -3799,73 +3799,73 @@ class NmrVrptUtility:
 
             def calc_dist_rest_viol(rest_key, restraints):
 
+                model_ids = list(self.__coordinates)              # stable order for stacking
+                coords_by_model = [self.__coordinates[m] for m in model_ids]
+
+                # per model: {bound_key: [d, ...]}
+                dist_list_set_per_model = [{} for _ in model_ids]
+
+                for r in restraints:
+                    atom_key_1 = r['atom_key_1']
+                    atom_key_2 = r['atom_key_2']
+                    bound_key = (r['lower_bound'], r['upper_bound'],
+                                 'or' if r['or_member'] else r['member_id'])
+
+                    # per-model coordinates (direct, or reconstructed for uninstanced
+                    # protons); collect the models where both atoms resolve
+                    present_idx, p1_rows, p2_rows = [], [], []
+                    for i, (model_id, coord) in enumerate(zip(model_ids, coords_by_model)):
+                        pos_1 = coord.get(atom_key_1)
+                        if pos_1 is None:
+                            pos_1 = get_uninstanced_hydrogen_coord(model_id, atom_key_1)
+                            if pos_1 is None and self.__verbose:
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
+                                                 f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
+                                                 f"not found in the coordinates for distance restraint {rest_key}.\n")
+                        pos_2 = coord.get(atom_key_2)
+                        if pos_2 is None:
+                            pos_2 = get_uninstanced_hydrogen_coord(model_id, atom_key_2)
+                            if pos_2 is None and self.__verbose:
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
+                                                 f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
+                                                 f"not found in the coordinates for distance restraint {rest_key}.\n")
+
+                        if pos_1 is None or pos_2 is None:
+                            self.__distRestUnmapped.append(rest_key)
+                            continue
+
+                        present_idx.append(i)
+                        p1_rows.append(pos_1)
+                        p2_rows.append(pos_2)
+
+                    if len(present_idx) == 0:
+                        continue
+
+                    # one vectorized set of distances over present models (was a
+                    # per-model scalar distance() call, i.e. models x restraints calls)
+                    d_arr = numpy.linalg.norm(numpy.array(p1_rows) - numpy.array(p2_rows), axis=1)
+
+                    for k, i in enumerate(present_idx):
+                        d = d_arr[k]
+                        if d == 0.0:
+                            self.__log.write(f"+{self.__class_name__}.__validateDistanceRestraints() ++ Error  - "
+                                             f"distance restraint {rest_key} {r} does not make sense, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        dist_list_set_per_model[i].setdefault(bound_key, []).append(d)
+
                 error_per_model = {}
 
-                for model_id in self.__coordinates:
-
-                    dist_list_set = {}
-
-                    for r in restraints:
-                        atom_key_1 = r['atom_key_1']
-                        atom_key_2 = r['atom_key_2']
-                        lower_bound = r['lower_bound']
-                        upper_bound = r['upper_bound']
-
-                        bound_key = (lower_bound, upper_bound, 'or' if r['or_member'] else r['member_id'])
-
-                        if bound_key not in dist_list_set:
-                            dist_list_set[bound_key] = []
-
-                        atom_present = True
-
-                        try:
-                            pos_1 = self.__coordinates[model_id][atom_key_1]
-                        except KeyError:
-                            pos_1 = get_uninstanced_hydrogen_coord(model_id, atom_key_1)
-                            if pos_1 is None:
-                                if self.__verbose:
-                                    self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
-                                                     f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
-                                                     f"not found in the coordinates for distance restraint {rest_key}.\n")
-                                atom_present = False
-
-                        try:
-                            pos_2 = self.__coordinates[model_id][atom_key_2]
-                        except KeyError:
-                            pos_2 = get_uninstanced_hydrogen_coord(model_id, atom_key_2)
-                            if pos_2 is None:
-                                if self.__verbose:
-                                    self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
-                                                     f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
-                                                     f"not found in the coordinates for distance restraint {rest_key}.\n")
-                                atom_present = False
-
-                        if atom_present:
-                            d = distance(pos_1, pos_2)
-                            if d == 0.0:
-                                self.__log.write(f"+{self.__class_name__}.__validateDistanceRestraints() ++ Error  - "
-                                                 f"distance restraint {rest_key} {r} does not make sense, "
-                                                 f"{os.path.basename(self.__nmrDataPath)}.\n")
-                            dist_list_set[bound_key].append(d)
-                        else:
-                            self.__distRestUnmapped.append(rest_key)
-
+                for i, model_id in enumerate(model_ids):
                     error = None
 
-                    if len(dist_list_set) > 0:
+                    for bound_key, dist_list in dist_list_set_per_model[i].items():
+                        lower_bound, upper_bound, _ = bound_key
+                        avr_d = dist_inv_6_summed(dist_list)
 
-                        for bound_key, dist_list in dist_list_set.items():
+                        _error = dist_error(lower_bound, upper_bound, avr_d)
 
-                            if len(dist_list) == 0:
-                                continue
-
-                            lower_bound, upper_bound, _ = bound_key
-                            avr_d = dist_inv_6_summed(dist_list)
-
-                            _error = dist_error(lower_bound, upper_bound, avr_d)
-
-                            if error is None or error > _error:
-                                error = _error
+                        if error is None or error > _error:
+                            error = _error
 
                     error_per_model[model_id] = error
 

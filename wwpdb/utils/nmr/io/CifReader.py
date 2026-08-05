@@ -41,6 +41,7 @@
 # 16-Jun-2025 - my  - set cache directory path (DAOTHER-9785)
 # 10-Jul-2026 - my  - fill single gap in a domain (v1.0.8, 8vrc)
 # 13-Jul-2026 - my  - implement ensemble composition analysis including cluster analysis (v1.0.9)
+# 05-Aug-2026 - my  - performance enhancement on RMSD calculation (v1.1.0)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -48,7 +49,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.9"
+__version__ = "1.1.0"
 
 import collections
 import copy
@@ -69,6 +70,8 @@ from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
 
 import numpy
+
+from scipy.spatial.distance import pdist, squareform
 
 from rmsd.calculate_rmsd import (centroid, check_reflections,  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,unused-import,line-too-long
                                  kabsch_rmsd, quaternion_rmsd, quaternion_rotate,
@@ -100,7 +103,9 @@ except ImportError:
 
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None
-ROTATION_METHOD = quaternion_rmsd
+# kabsch_rmsd is a fully-vectorized Kabsch (P.T@Q matmul + 3x3 SVD); it scales
+# better on large N than quaternion_rmsd (Python per-atom loop in quaternion_rotate)
+ROTATION_METHOD = kabsch_rmsd
 # must be one of reorder_hungarian, reorder_brute, reorder_distance, None
 REORDER_METHOD = reorder_hungarian
 # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes,
@@ -108,7 +113,12 @@ REORDER_METHOD = reorder_hungarian
 USE_REFLECTIONS = False
 # scan through reflections in planes (e.g. Y transformed to -Y -> X, -Y, Z) and axis changes,
 # (e.g. X and Z coords exchanged -> Z, Y, X). Stereo-chemistry will be kept
-USE_REFLECTIONS_KEEP_STEREO = True
+# Disabled: for ensemble RMSD the atoms already correspond 1:1 by (chain_id, seq_id)
+# order and conformers differ by a proper rotation (never a reflection), so the
+# check_reflections()/reorder_hungarian() scan is unnecessary. Keeping it True made
+# every calculate_rmsd() call ~24*O(N^3) (24 reflections x Hungarian) instead of the
+# O(N) Kabsch superposition reached via ROTATION_METHOD below.
+USE_REFLECTIONS_KEEP_STEREO = False
 REORDER = False
 
 # allowed item types
@@ -1628,17 +1638,24 @@ class CifReader:
         if None in (atom_sites, bb_atom_sites):
             return None, None, None
 
-        _atom_site_dict = {}
-        for model_id in eff_model_ids:
-            _atom_site_dict[model_id] = [a for a in atom_sites if a['model_id'] == model_id]
-            for a in _atom_site_dict[model_id]:
-                a['v'] = to_np_array(a)
+        # Group atoms by model in a single pass (was O(models * total_atoms)); each
+        # eff model keeps a list in the original atom order. 'v' (numpy coords) is
+        # attached once per atom.
+        eff_model_id_set = set(eff_model_ids)
 
-        _bb_atom_site_dict = {}
-        for model_id in eff_model_ids:
-            _bb_atom_site_dict[model_id] = [a for a in bb_atom_sites if a['model_id'] == model_id]
-            for a in _bb_atom_site_dict[model_id]:
+        _atom_site_dict = {model_id: [] for model_id in eff_model_ids}
+        for a in atom_sites:
+            model_id = a['model_id']
+            if model_id in eff_model_id_set:
                 a['v'] = to_np_array(a)
+                _atom_site_dict[model_id].append(a)
+
+        _bb_atom_site_dict = {model_id: [] for model_id in eff_model_ids}
+        for a in bb_atom_sites:
+            model_id = a['model_id']
+            if model_id in eff_model_id_set:
+                a['v'] = to_np_array(a)
+                _bb_atom_site_dict[model_id].append(a)
 
         size = len(_atom_site_dict[1])
 
@@ -1647,7 +1664,16 @@ class CifReader:
 
         matrix_size = (size, size)
 
-        d_avr = numpy.zeros(matrix_size, dtype=float)
+        # H2: average and variance of intra-model inter-atom distances, vectorized.
+        # Per model, pdist() returns the condensed upper-triangle distance vector in
+        # one C call (was two O(models * size^2) Python loops of numpy.linalg.norm).
+        # Accumulate sum and sum-of-squares; var = E[d^2] - E[d]^2, identical to the
+        # old mean of squared deviations. squareform() rebuilds the symmetric
+        # matrices (downstream reads only the i<j upper triangle and numpy.max()).
+        # Models whose atom count != size (empty / inconsistent) are skipped, as the
+        # per-atom index accumulation required all models to share `size` atoms.
+        sum_d = numpy.zeros(size * (size - 1) // 2, dtype=float)
+        sum_d2 = numpy.zeros_like(sum_d)
 
         _total_models = 0
 
@@ -1655,52 +1681,23 @@ class CifReader:
 
             _atom_site = _atom_site_dict[model_id]
 
-            len_atom_site = len(_atom_site)
-
-            if len_atom_site == 0:
+            if len(_atom_site) != size:
                 continue
 
             _total_models += 1
 
-            for i, j in itertools.combinations(range(len_atom_site), 2):
-
-                d = numpy.linalg.norm(_atom_site[i]['v'] - _atom_site[j]['v'])
-
-                if i < j:
-                    d_avr[i, j] += d
-                else:
-                    d_avr[j, i] += d
+            coord = numpy.array([a['v'] for a in _atom_site], dtype=float)
+            dvec = pdist(coord)
+            sum_d += dvec
+            sum_d2 += dvec * dvec
 
         if _total_models <= 1:
             return None, None, None
 
         factor = 1.0 / _total_models
 
-        d_avr = numpy.multiply(d_avr, factor)
-
-        d_var = numpy.zeros(matrix_size, dtype=float)
-
-        for model_id in eff_model_ids:
-
-            _atom_site = _atom_site_dict[model_id]
-
-            len_atom_site = len(_atom_site)
-
-            if len_atom_site == 0:
-                continue
-
-            for i, j in itertools.combinations(range(len_atom_site), 2):
-
-                d = numpy.linalg.norm(_atom_site[i]['v'] - _atom_site[j]['v'])
-
-                if i < j:
-                    d -= d_avr[i, j]
-                    d_var[i, j] += d * d
-                else:
-                    d -= d_avr[j, i]
-                    d_var[j, i] += d * d
-
-        d_var = numpy.multiply(d_var, factor)
+        avr = sum_d * factor
+        d_var = squareform(sum_d2 * factor - avr * avr)  # d_avr (size x size) unused downstream
 
         max_d_var = min(numpy.max(d_var), RMSD_CUTOFF_FOR_DOMAIN * RMSD_CUTOFF_FOR_DOMAIN)
 
@@ -2015,8 +2012,7 @@ class CifReader:
                 _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
                 _dst_chain_ids = set(_a['chain_id'] for _a in _atom_site_p)
-                _seq_keys = sorted(set((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p),
-                                   key=itemgetter(0, 1))
+                _seq_keys = frozenset((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p)  # H1: O(1) membership
                 _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
                 core_rmsd, align_rmsd, exact_overlaid_model_ids = [], [], []
@@ -2098,18 +2094,20 @@ class CifReader:
 
             _rmsd = []
 
+            # H3b: seq_keys is model-independent for a label; precompute the backbone
+            # atom list per model once (was rebuilt for every ref/test model pair).
+            _seq_keys = frozenset((_a['chain_id'], _a['seq_id'])
+                                  for _a, _l in zip(_atom_site_dict[1], list_labels) if _l == label)
+            bb_of = {m: [_a for _a in _bb_atom_site_dict[m]
+                         if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+                     for m in eff_model_ids}
+
             for ref_model_id in range(1, _total_models):
 
                 if ref_model_id not in eff_model_ids:
                     continue
 
-                _atom_site_ref = _atom_site_dict[ref_model_id]
-                _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
-
-                _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
-                _seq_keys = sorted(set((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p),
-                                   key=itemgetter(0, 1))
-                _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+                _bb_atom_site_p = bb_of[ref_model_id]
 
                 if len(_bb_atom_site_p) == 0:
                     continue
@@ -2119,11 +2117,7 @@ class CifReader:
                     if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
                         continue
 
-                    # _atom_site_test = _atom_site_dict[test_model_id]
-                    # _atom_site_q = [_a for _a, _l in zip(_atom_site_test, list_labels) if _l == label]
-
-                    _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
-                    _bb_atom_site_q = [_a for _a in _bb_atom_site_test if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+                    _bb_atom_site_q = bb_of[test_model_id]
 
                     if len(_bb_atom_site_p) != len(_bb_atom_site_q):
                         continue
@@ -2147,7 +2141,7 @@ class CifReader:
             _atom_site_ref = _atom_site_dict[ref_model_id]
             _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
             _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
-            _seq_keys = sorted(set((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p))
+            _seq_keys = frozenset((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p)  # H1: O(1) membership
             _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
             _rmsd = []
@@ -2226,6 +2220,14 @@ class CifReader:
 
         d_avr = numpy.zeros(matrix_size, dtype=float)
 
+        # H3b: seq_keys (atoms in the effective domains) is model-independent;
+        # precompute the backbone atom list per model once.
+        _seq_keys = frozenset((_a['chain_id'], _a['seq_id'])
+                              for _a, _l in zip(_atom_site_dict[1], list_labels) if _l in eff_labels)
+        bb_of = {m: [_a for _a in _bb_atom_site_dict[m]
+                     if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+                 for m in eff_model_ids}
+
         for ref_model_id in range(1, total_models):
 
             if ref_model_id not in eff_model_ids:
@@ -2233,14 +2235,7 @@ class CifReader:
 
             ref_idx = eff_model_ids.index(ref_model_id)
 
-            _atom_site_ref = _atom_site_dict[ref_model_id]
-            _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l in eff_labels]
-
-            _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
-            _seq_keys = sorted(set((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p),
-                               key=itemgetter(0, 1))
-
-            _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+            _bb_atom_site_p = bb_of[ref_model_id]
 
             if len(_bb_atom_site_p) == 0:
                 continue
@@ -2252,8 +2247,7 @@ class CifReader:
 
                 test_idx = eff_model_ids.index(test_model_id)
 
-                _bb_atom_site_test = _bb_atom_site_dict[test_model_id]
-                _bb_atom_site_q = [_a for _a in _bb_atom_site_test if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+                _bb_atom_site_q = bb_of[test_model_id]
 
                 if len(_bb_atom_site_p) != len(_bb_atom_site_q):
                     continue

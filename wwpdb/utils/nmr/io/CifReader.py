@@ -1780,7 +1780,7 @@ class CifReader:
                         for label in set_labels:
                             monomers = list_labels.count(label)
 
-                            if monomers < self.__min_monomers_for_domain and long:
+                            if monomers == 0 or (monomers < self.__min_monomers_for_domain and long):
                                 continue
 
                             _atom_site_ref = _atom_site_dict[1]
@@ -1839,7 +1839,7 @@ class CifReader:
 
                         monomers = list_labels.count(label)
 
-                        if monomers < self.__min_monomers_for_domain and long:
+                        if monomers == 0 or (monomers < self.__min_monomers_for_domain and long):
                             continue
 
                         fraction = float(monomers) / size
@@ -1930,7 +1930,7 @@ class CifReader:
         for label in set_labels:
             monomers = list_labels.count(label)
 
-            if monomers < self.__min_monomers_for_domain and long:
+            if monomers == 0 or (monomers < self.__min_monomers_for_domain and long):
                 continue
 
             _atom_site_ref = _atom_site_dict[1]

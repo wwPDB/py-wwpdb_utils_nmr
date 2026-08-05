@@ -2797,6 +2797,7 @@ class NmrVrptUtility:
                 has_upper_linear_limit = 'RDC_upper_linear_limit' in tags
                 has_target_val_uncertainty = 'Target_value_uncertainty' in tags
                 has_weight = 'Weight' in tags
+                has_scale_factor = 'RDC_val_scale_factor' in tags
 
                 if has_combination_id:
                     data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
@@ -2821,6 +2822,8 @@ class NmrVrptUtility:
                                        'alt_name': 'target_value_uncertainty'})
                 if has_weight:
                     data_items.append({'name': 'Weight', 'type': 'float'})
+                if has_scale_factor:
+                    data_items.append({'name': 'RDC_val_scale_factor', 'type': 'float'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -2863,8 +2866,11 @@ class NmrVrptUtility:
                     lower_linear_limit = r.get('lower_linear_limit')
                     upper_linear_limit = r.get('upper_linear_limit')
                     weight = r.get('weight')
-                    if weight is None or weight < 0:
+                    if weight is None or weight < 0.0:
                         weight = 1.0
+                    scale_factor = r.get('scale_factgor')
+                    if scale_factor is None or scale_factor < 0.0:
+                        scale_factor = 1.0
 
                     target_value, lower_bound, upper_bound =\
                         rdc_target_values(target_value, target_value_uncertainty, value, value_uncertainty,
@@ -2886,7 +2892,8 @@ class NmrVrptUtility:
                                                          'lower_bound': lower_bound,
                                                          'upper_bound': upper_bound,
                                                          'target_value': target_value,
-                                                         'weight': weight})
+                                                         'weight': weight,
+                                                         'scale_factor': scale_factor})
 
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
@@ -3008,7 +3015,7 @@ class NmrVrptUtility:
                                                               2.0 * cos_x * cos_z,
                                                               2.0 * cos_y * cos_z]]), axis=0)
 
-                            b_exp.append(r['target_value'] / dmax)
+                            b_exp.append(r['scale_factor'] * r['target_value'] / dmax)
 
                     if len(b_exp) < 5:
                         continue
@@ -4294,7 +4301,7 @@ class NmrVrptUtility:
                         ak1 = r['atom_key_1']
                         ak2 = r['atom_key_2']
 
-                        rdc_exp_center = r['target_value']
+                        rdc_exp_center = r['scale_factor'] * r['target_value']
                         rdc_calc_mean = numpy.mean(rdc_calcs)
                         rdc_calc_center = round(rdc_calc_mean, 2)
 

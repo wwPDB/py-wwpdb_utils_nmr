@@ -2823,7 +2823,7 @@ class NmrVrptUtility:
                 if has_weight:
                     data_items.append({'name': 'Weight', 'type': 'float'})
                 if has_scale_factor:
-                    data_items.append({'name': 'RDC_val_scale_factor', 'type': 'float'})
+                    data_items.append({'name': 'RDC_val_scale_factor', 'type': 'float', 'alt_name': 'scale_factor'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 

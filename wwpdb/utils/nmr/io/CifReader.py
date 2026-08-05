@@ -1664,7 +1664,7 @@ class CifReader:
 
         matrix_size = (size, size)
 
-        # H2: average and variance of intra-model inter-atom distances, vectorized.
+        # average and variance of intra-model inter-atom distances, vectorized.
         # Per model, pdist() returns the condensed upper-triangle distance vector in
         # one C call (was two O(models * size^2) Python loops of numpy.linalg.norm).
         # Accumulate sum and sum-of-squares; var = E[d^2] - E[d]^2, identical to the
@@ -1717,6 +1717,7 @@ class CifReader:
         md5_set = set()
 
         abort = False
+        long = size > 2 * self.__min_monomers_for_domain
 
         min_score = 1000000.0
         min_result = None
@@ -1755,7 +1756,7 @@ class CifReader:
                     n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                     n_noise = list_labels.count(-1)
 
-                    if n_clusters == 0 or n_clusters >= features - 2:
+                    if n_clusters == 0 or (n_clusters >= features - 2 and long):
                         continue
 
                     md5 = hashlib.md5(str(list_labels).encode('utf-8'))
@@ -1779,7 +1780,7 @@ class CifReader:
                         for label in set_labels:
                             monomers = list_labels.count(label)
 
-                            if monomers < self.__min_monomers_for_domain:
+                            if monomers < self.__min_monomers_for_domain and long:
                                 continue
 
                             _atom_site_ref = _atom_site_dict[1]
@@ -1838,7 +1839,7 @@ class CifReader:
 
                         monomers = list_labels.count(label)
 
-                        if monomers < self.__min_monomers_for_domain:
+                        if monomers < self.__min_monomers_for_domain and long:
                             continue
 
                         fraction = float(monomers) / size
@@ -1929,7 +1930,7 @@ class CifReader:
         for label in set_labels:
             monomers = list_labels.count(label)
 
-            if monomers < self.__min_monomers_for_domain:
+            if monomers < self.__min_monomers_for_domain and long:
                 continue
 
             _atom_site_ref = _atom_site_dict[1]
@@ -1960,7 +1961,8 @@ class CifReader:
             list_labels = list(labels)
             domains = collections.Counter(list_labels).most_common()
 
-        eff_labels = [label for label, count in domains if label != -1 and count >= self.__min_monomers_for_domain]
+        eff_labels = [label for label, count in domains if label != -1 and (count >= self.__min_monomers_for_domain
+                                                                            or not long)]
         eff_domain_id = {}
 
         n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
@@ -2010,7 +2012,7 @@ class CifReader:
                 _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
 
                 _dst_chain_ids = set(_a['chain_id'] for _a in _atom_site_p)
-                _seq_keys = frozenset((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p)  # H1: O(1) membership
+                _seq_keys = frozenset((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p)  # O(1) membership
                 _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
                 core_rmsd, align_rmsd, exact_overlaid_model_ids = [], [], []
@@ -2092,7 +2094,7 @@ class CifReader:
 
             _rmsd = []
 
-            # H3b: seq_keys is model-independent for a label; precompute the backbone
+            # seq_keys is model-independent for a label; precompute the backbone
             # atom list per model once (was rebuilt for every ref/test model pair).
             _seq_keys = frozenset((_a['chain_id'], _a['seq_id'])
                                   for _a, _l in zip(_atom_site_dict[1], list_labels) if _l == label)
@@ -2139,7 +2141,7 @@ class CifReader:
             _atom_site_ref = _atom_site_dict[ref_model_id]
             _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
             _bb_atom_site_ref = _bb_atom_site_dict[ref_model_id]
-            _seq_keys = frozenset((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p)  # H1: O(1) membership
+            _seq_keys = frozenset((_a['chain_id'], _a['seq_id']) for _a in _atom_site_p)  # O(1) membership
             _bb_atom_site_p = [_a for _a in _bb_atom_site_ref if (_a['chain_id'], _a['seq_id']) in _seq_keys]
 
             _rmsd = []
@@ -2218,7 +2220,7 @@ class CifReader:
 
         d_avr = numpy.zeros(matrix_size, dtype=float)
 
-        # H3b: seq_keys (atoms in the effective domains) is model-independent;
+        # seq_keys (atoms in the effective domains) is model-independent;
         # precompute the backbone atom list per model once.
         _seq_keys = frozenset((_a['chain_id'], _a['seq_id'])
                               for _a, _l in zip(_atom_site_dict[1], list_labels) if _l in eff_labels)

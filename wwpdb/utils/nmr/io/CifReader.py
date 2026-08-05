@@ -1694,10 +1694,8 @@ class CifReader:
         if _total_models <= 1:
             return None, None, None
 
-        factor = 1.0 / _total_models
-
-        avr = sum_d * factor
-        d_var = squareform(sum_d2 * factor - avr * avr)  # d_avr (size x size) unused downstream
+        avr = sum_d / _total_models
+        d_var = squareform(sum_d2 / _total_models - avr * avr)  # d_avr (size x size) unused downstream
 
         max_d_var = min(numpy.max(d_var), RMSD_CUTOFF_FOR_DOMAIN * RMSD_CUTOFF_FOR_DOMAIN)
 
@@ -1708,9 +1706,9 @@ class CifReader:
             for i, j in itertools.combinations(range(size), 2):
 
                 if i < j:
-                    q = max(1.0 - math.sqrt(d_var[i, j] / max_d_var), 0.0)
+                    q = max(1.0 - math.sqrt(max(d_var[i, j], 0.0) / max_d_var), 0.0)
                 else:
-                    q = max(1.0 - math.sqrt(d_var[j, i] / max_d_var), 0.0)
+                    q = max(1.0 - math.sqrt(max(d_var[j, i], 0.0) / max_d_var), 0.0)
 
                 d_ord[i, j] = d_ord[j, i] = q
 

@@ -41,6 +41,7 @@
 # 16-Jun-2025 - my  - set cache directory path (DAOTHER-9785)
 # 10-Jul-2026 - my  - fill single gap in a domain (v1.0.8, 8vrc)
 # 13-Jul-2026 - my  - implement ensemble composition analysis including cluster analysis (v1.0.9)
+# 05-Aug-2026 - my  - performance enhancement on RMSD calculation (v1.1.0)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -48,7 +49,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.0.9"
+__version__ = "1.1.0"
 
 import collections
 import copy

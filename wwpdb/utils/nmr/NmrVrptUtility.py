@@ -3049,6 +3049,9 @@ class NmrVrptUtility:
                                                               2.0 * cos_x * cos_z,
                                                               2.0 * cos_y * cos_z]]), axis=0)
 
+                            # input observed RDC values calibrated with a given scale factor
+                            # so, calculated RDC values will be scaled by default,
+                            # this effect should be taken into consideration when comparing (raw) observed RDCs and calculated RDCs
                             b_exp.append(r['scale_factor'] * r['target_value'] / dmax)
 
                     if len(b_exp) < 5:
@@ -4299,9 +4302,10 @@ class NmrVrptUtility:
                         ak1 = r['atom_key_1']
                         ak2 = r['atom_key_2']
 
-                        rdc_exp_center = r['target_value']  # as-is (without scale factor)
+                        rdc_exp_center = r['target_value']  # raw observed RDC value (without scale factor)
 
-                        # compensate calculated value with scale factor
+                        # since calculated RDC values have been scaled through scaled RDC input data at SVD operation
+                        # cancel scale factor of the calculated RDC values to compare with the raw observed RDC values
                         rdc_calcs = numpy.array(list(rdc_calc.values()), dtype=float) / r['scale_factor']
                         rdc_calc_mean = numpy.mean(rdc_calcs)
                         rdc_calc_center = round(rdc_calc_mean, 2)

@@ -4980,7 +4980,7 @@ class NmrDpUtility:
 
         return not self.__reg.report.isError()
 
-    def __testDataConsistencyInLoop(self) -> bool:
+    def __testDataConsistencyInLoop(self, target_content_subtype: str = None) -> bool:
         """ Perform consistency test on data of interesting loops.
         """
 
@@ -5002,6 +5002,9 @@ class NmrDpUtility:
             for content_subtype in input_source_dic['content_subtype']:
 
                 if content_subtype in ('entry_info', 'entity'):
+                    continue
+
+                if target_content_subtype is not None and content_subtype != target_content_subtype:
                     continue
 
                 sf_category = SF_CATEGORIES[file_type][content_subtype]
@@ -8711,6 +8714,8 @@ class NmrDpUtility:
                     modified |= self.__reg.dpR.remediateDihedLoop(file_type, sf.get_loop(lp_category))
 
                 if modified and fileListId == 0:
+                    self.__reg.lp_data[content_subtype].clear()
+                    self.__testDataConsistencyInLoop(content_subtype)
                     self.__depositNmrData()
 
         if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
@@ -13572,6 +13577,8 @@ class NmrDpUtility:
                             continue
 
                 if modified:
+                    self.__reg.lp_data[content_subtype].clear()
+                    self.__testDataConsistencyInLoop(content_subtype)
                     self.__depositNmrData()
 
             return True

@@ -8671,6 +8671,48 @@ class NmrDpUtility:
 
             return True
 
+        if self.__reg.combined_mode and self.__reg.remediation_mode:
+
+            if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
+                return True
+
+            master_entry = self.__reg.star_data[0]
+
+            fileListId = 0
+
+            input_source = self.__reg.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            if file_type != 'nmr-star':
+                return True
+
+            file_name = input_source_dic['file_name']
+
+            if input_source_dic['content_subtype'] is None:
+                return True
+
+            content_subtype = 'dihed_restraint'
+
+            if content_subtype in input_source_dic['content_subtype']:
+
+                sf_category = SF_CATEGORIES[file_type][content_subtype]
+                lp_category = LP_CATEGORIES[file_type][content_subtype]
+
+                modified = False
+
+                for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
+
+                    if not any(True for loop in sf.loops if loop.category == lp_category):
+                        continue
+
+                    modified |= self.__reg.dpR.remediateDihedLoop(file_type, sf.get_loop(lp_category))
+
+                if modified and fileListId == 0:
+                    self.__depositNmrData()
+
         if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
             return True
 

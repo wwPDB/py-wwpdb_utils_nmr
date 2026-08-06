@@ -10683,6 +10683,10 @@ class NmrDpValidation:
                     upper_linear_limit_col = lp.tags.index(item_names['upper_linear_limit'])
                 except ValueError:
                     upper_linear_limit_col = -1
+                try:
+                    torsion_angle_name_col = lp.tags.index('Torsion_angle_name')
+                except ValueError:
+                    torsion_angle_name_col = -1
 
                 potential_type = get_first_sf_tag(sf, 'Potential_type')
                 has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
@@ -10717,46 +10721,6 @@ class NmrDpValidation:
 
                 if not has_potential_type and _potential_type is not None:
                     set_sf_tag(sf, 'Potential_type', _potential_type)
-
-                # convert radian unit (8vrc)
-
-                if -1 not in (target_value_col, lower_limit_col, upper_limit_col, torsion_angle_name_col):
-                    is_rad = False
-
-                    for row in lp:
-                        angle_name = row[torsion_angle_name_col]
-                        if angle_name not in ('PHI', 'PSI'):
-                            continue
-
-                        comp_id = row[lp.tag.index('Auth_comp_ID_2')]
-                        if not self.__reg.csStat.peptideLike(comp_id):
-                            continue
-
-                        if row[target_value_col] not in EMPTY_VALUE\
-                           and row[lower_limit_col] not in EMPTY_VALUE\
-                           and row[upper_limit_col] not in EMPTY_VALUE:
-                            target_value = float(row[target_value_col])
-                            lower_limit = float(row[lower_limit_col])
-                            upper_limit = float(row[upper_limit_col])
-
-                            if -3.12 < target_value < 3.12\
-                               and 0.0 <= target_value - lower_limit < 1.0\
-                               and 0.0 <= upper_limit - target_value < 1.0:
-                                is_rad = True
-                                break
-
-                    if is_rad:
-                        for idx, row in enumerate(lp):
-                            if row[target_value_col] not in EMPTY_VALUE:
-                                lp.data[idx][target_value_col] = f'{numpy.degrees(float(row[target_value_col])):.1f}'
-                            if row[lower_limit_col] not in EMPTY_VALUE:
-                                lp.data[idx][lower_limit_col] = f'{numpy.degrees(float(row[lower_limit_col])):.1f}'
-                            if row[upper_limit_col] not in EMPTY_VALUE:
-                                lp.data[idx][upper_limit_col] = f'{numpy.degrees(float(row[upper_limit_col])):.1f}'
-                            if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in EMPTY_VALUE:
-                                lp.data[idx][lower_linear_limit_col] = f'{numpy.degrees(float(row[lower_linear_limit_col])):.1f}'
-                            if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in EMPTY_VALUE:
-                                lp.data[idx][upper_linear_limit_col] = f'{numpy.degrees(float(row[upper_linear_limit_col])):.1f}'
 
                 sf_item['id'] = count
 

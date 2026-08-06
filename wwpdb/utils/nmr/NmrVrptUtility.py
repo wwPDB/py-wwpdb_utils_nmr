@@ -3005,7 +3005,7 @@ class NmrVrptUtility:
 
                         for r in restraints:
 
-                            if r['weight'] == 0.0:
+                            if 0.0 in (r['weight'], r['scale_factor']):
                                 continue
 
                             atom_key_1 = r['atom_key_1']
@@ -4288,14 +4288,6 @@ class NmrVrptUtility:
 
                     restraints = self.__rdcRestDict[rest_key]
 
-                    # rdc_calc is fixed per rest_key; compute its statistics once
-                    # (were recomputed for every r below).
-                    rdc_calcs = numpy.array(list(rdc_calc.values()), dtype=float)
-                    rdc_calc_mean = numpy.mean(rdc_calcs)
-                    rdc_calc_center = round(rdc_calc_mean, 2)
-                    rdc_calc_min = round(numpy.min(rdc_calcs), 2)
-                    rdc_calc_max = round(numpy.max(rdc_calcs), 2)
-
                     for r in restraints:
                         rdc_type = r['rdc_type']
 
@@ -4307,7 +4299,14 @@ class NmrVrptUtility:
                         ak1 = r['atom_key_1']
                         ak2 = r['atom_key_2']
 
-                        rdc_exp_center = r['scale_factor'] * r['target_value']
+                        rdc_exp_center = r['target_value']  # as-is (without scale factor)
+
+                        # compensate calculated value with scale factor
+                        rdc_calcs = numpy.array(list(rdc_calc.values()), dtype=float) / r['scale_factor']
+                        rdc_calc_mean = numpy.mean(rdc_calcs)
+                        rdc_calc_center = round(rdc_calc_mean, 2)
+                        rdc_calc_min = round(numpy.min(rdc_calcs), 2)
+                        rdc_calc_max = round(numpy.max(rdc_calcs), 2)
 
                         q_scores[rdc_type]['rdc_exp'].append(rdc_exp_center)
                         q_scores[rdc_type]['rdc_calc'].append(rdc_calc_mean)

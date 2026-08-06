@@ -15655,7 +15655,7 @@ class NmrDpValidation:
 
                                     for i, r in enumerate(cif_ps['well_defined_region']):
                                         try:
-                                            score = r['percent_of_core'] / r['medoid_rmsd']
+                                            score = r['percent_of_core'] / max(r['medoid_rmsd'], 1.0)
                                             if score > _score:
                                                 _score = score
                                                 dom_idx = i
@@ -20542,7 +20542,8 @@ class NmrDpValidation:
 
                                                         for i, r in enumerate(cif_ps['well_defined_region']):
                                                             try:
-                                                                score = r['percent_of_core'] / r['medoid_rmsd']
+                                                                score = r['percent_of_core']\
+                                                                    / max(r['medoid_rmsd'], 1.0)
                                                                 if score > _score:
                                                                     _score = score
                                                                     dom_idx = i

@@ -23,6 +23,8 @@ from datetime import datetime, timedelta
 from operator import itemgetter
 from typing import List, Optional, Tuple, Union
 
+import numpy
+
 import pynmrstar
 
 try:
@@ -5108,6 +5110,9 @@ class NmrDpRemediation:
                         _seq_key = (auth_chain_id, auth_seq_id)
                         truncated_loop_sequence.append(_seq_key)
 
+            # DAOTHER-10898
+            copied_auth_asym_id_mapping = {}
+
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
                 reparse = False
                 _src_idx = src_idx
@@ -5131,6 +5136,9 @@ class NmrDpRemediation:
                     # DAOTHER-8817
                     if 'chain_id' in _coord_atom_site:
                         _row[16] = _coord_atom_site['chain_id']
+                        # DAOTHER-10898
+                        if _row[16] in copied_auth_asym_id_mapping:
+                            _row[16] = _row[20] = copied_auth_asym_id_mapping[_row[16]]
                     _row[5] = _row[18] = comp_id = _coord_atom_site['comp_id']
                     valid = True
                     missing_ch3 = []
@@ -5897,6 +5905,7 @@ class NmrDpRemediation:
 
             copied_auth_chain_ids = set()
             copied_chain_ids = set()
+            copied_auth_asym_id_mapping = {}
 
             if has_auth_seq:
                 auth_asym_ids = [row[0] for row in auth_dat]
@@ -5939,6 +5948,17 @@ class NmrDpRemediation:
 
                         if _auth_cs_1 == _auth_cs_2:
                             copied_auth_chain_ids.add(_auth_chain_id_2)
+
+                            # DAOTHER-10898
+                            if _auth_chain_id_1 not in copied_auth_asym_id_mapping:
+                                copied_auth_asym_id_mapping[_auth_chain_id_1] = [_auth_chain_id_1]
+                            if _auth_chain_id_2 not in copied_auth_asym_id_mapping[_auth_chain_id_1]:
+                                copied_auth_asym_id_mapping[_auth_chain_id_1].append(_auth_chain_id_2)
+
+                # DAOTHER-10898
+                if len(copied_auth_chain_ids) > 0:
+                    for k, v in copied_auth_asym_id_mapping.items():
+                        copied_auth_asym_id_mapping[k] = ','.join(sorted(v))
 
             else:
 
@@ -9623,6 +9643,72 @@ class NmrDpRemediation:
 
                 except KeyError:
                     pass
+
+    def remediateDihedLoop(self, file_type: str, loop: pynmrstar.Loop) -> bool:  # pylint: disable=no-self-use
+        """ Remediate dihedral angle target values in radian unit, if required.
+        """
+
+        modified = False
+
+        item_names = ITEM_NAMES_IN_DIHED_LOOP[file_type]
+
+        tags = [item_names['angle_type'], item_names['comp_id_2'],
+                item_names['lower_limit'], item_names['target_value'], item_names['upper_limit']]
+
+        if set(tags) & set(loop.tags) == set(tags):
+
+            dat = loop.get_tag(tags)
+
+            is_rad = False
+
+            for idx, row in enumerate(dat):
+
+                angle_type, comp_id, lower_limit, target_value, upper_limit =\
+                    row[0], row[1], row[2], row[3], row[4]
+
+                if angle_type not in ('PHI', 'PSI'):
+                    continue
+
+                if not self.__reg.csStat.peptideLike(comp_id):
+                    continue
+
+                if target_value not in EMPTY_VALUE\
+                   and lower_limit not in EMPTY_VALUE\
+                   and upper_limit not in EMPTY_VALUE:
+                    target_value = float(target_value)
+                    lower_limit = float(lower_limit)
+                    upper_limit = float(upper_limit)
+
+                    if -3.12 < target_value < 3.12\
+                       and 0.0 <= target_value - lower_limit < 1.0\
+                       and 0.0 <= upper_limit - target_value < 1.0:
+                        is_rad = True
+                        break
+
+            if is_rad:
+                target_value_col = loop.tags.index(item_names['target_value'])
+                lower_limit_col = loop.tags.index(item_names['lower_limit'])
+                upper_limit_col = loop.tags.index(item_names['upper_limit'])
+                lower_linear_limit_col = loop.tags.index(item_names['lower_linear_limit'])\
+                    if item_names['lower_linear_limit'] in loop.tags else -1
+                upper_linear_limit_col = loop.tags.index(item_names['upper_linear_limit'])\
+                    if item_names['upper_linear_limit'] in loop.tags else -1
+
+                for idx, row in enumerate(loop):
+                    if row[target_value_col] not in EMPTY_VALUE:
+                        loop.data[idx][target_value_col] = f'{numpy.degrees(float(row[target_value_col])):.3f}'
+                    if row[lower_limit_col] not in EMPTY_VALUE:
+                        loop.data[idx][lower_limit_col] = f'{numpy.degrees(float(row[lower_limit_col])):.3f}'
+                    if row[upper_limit_col] not in EMPTY_VALUE:
+                        loop.data[idx][upper_limit_col] = f'{numpy.degrees(float(row[upper_limit_col])):.3f}'
+                    if lower_linear_limit_col != -1 and row[lower_linear_limit_col] not in EMPTY_VALUE:
+                        loop.data[idx][lower_linear_limit_col] = f'{numpy.degrees(float(row[lower_linear_limit_col])):.3f}'
+                    if upper_linear_limit_col != -1 and row[upper_linear_limit_col] not in EMPTY_VALUE:
+                        loop.data[idx][upper_linear_limit_col] = f'{numpy.degrees(float(row[upper_linear_limit_col])):.3f}'
+
+                modified = True
+
+        return modified
 
     def remediateRdcLoop(self, file_type: str, loop: pynmrstar.Loop) -> bool:  # pylint: disable=no-self-use
         """ Remediate RDC target value due to the known OneDep bug, if required.
@@ -17608,7 +17694,7 @@ class NmrDpRemediation:
         """
 
         if self.__reg.combined_mode or not self.__reg.remediation_mode or self.__reg.dstPath is None:
-            return True
+            return False
 
         if len(self.__reg.star_data) == 0 or not isinstance(self.__reg.star_data[0], pynmrstar.Entry):
             return False

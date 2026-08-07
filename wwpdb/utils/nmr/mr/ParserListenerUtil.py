@@ -2522,9 +2522,9 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
 
             try:
-                polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                withStructConf=False,
-                                                withRmsd=False)
+                polySeq, _ = cR.getPolymerSequence(lpCategory, keyItems,
+                                                   withStructConf=False,
+                                                   withRmsd=False)
             except KeyError:  # pdbx_PDB_ins_code throws KeyError
                 polySeq = []
 
@@ -2538,9 +2538,9 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     keyItems.append({'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
 
                 try:
-                    polySeq = cR.getPolymerSequence(lpCategory, keyItems,
-                                                    withStructConf=False,
-                                                    withRmsd=False)
+                    polySeq, _ = cR.getPolymerSequence(lpCategory, keyItems,
+                                                       withStructConf=False,
+                                                       withRmsd=False)
                 except KeyError:
                     polySeq = []
                 except ValueError:
@@ -2844,9 +2844,9 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
 
             try:
-                nonPoly = cR.getPolymerSequence(lpCategory, keyItems,
-                                                withStructConf=False,
-                                                withRmsd=False)
+                nonPoly, _ = cR.getPolymerSequence(lpCategory, keyItems,
+                                                   withStructConf=False,
+                                                   withRmsd=False)
 
                 internal_conflict = False
                 conflict_per_chain = [False] * len(nonPoly)
@@ -3044,9 +3044,9 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
 
             try:
-                branched = cR.getPolymerSequence(lpCategory, keyItems,
-                                                 withStructConf=False,
-                                                 withRmsd=False)
+                branched, _ = cR.getPolymerSequence(lpCategory, keyItems,
+                                                    withStructConf=False,
+                                                    withRmsd=False)
 
                 internal_conflict = False
                 conflict_per_chain = [False] * len(branched)
@@ -6108,7 +6108,7 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
         if None in (a_1, a_2):
             continue
 
-        bond.append({'model_id': model_id, 'distance': float(f"{numpy.linalg.norm(to_np_array(a_1) - to_np_array(a_2)):.3f}")})
+        bond.append({'model_id': model_id, 'distance': round(numpy.linalg.norm(to_np_array(a_1) - to_np_array(a_2)), 3)})
 
     if len(bond) > 0:
         return bond

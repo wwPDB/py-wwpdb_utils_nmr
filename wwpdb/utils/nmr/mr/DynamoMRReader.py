@@ -249,6 +249,16 @@ class DynamoMRReader:
 if __name__ == "__main__":
     reader = DynamoMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6yeg/talos-pred.txt-corrected',
+                 '../../tests-nmr/mock-data-remediation/6yeg/6yeg.cif')
+
+    reader = DynamoMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6yq5/pred.tab',
+                 '../../tests-nmr/mock-data-remediation/6yq5/6yq5.cif')
+
+    reader = DynamoMRReader(True)
+    reader.setDebugMode(True)
     reader_listener, _, _ =\
         reader.parse('../../tests-nmr/mock-data-remediation/8vrc/bmr31140/work/data/D_1000281082_mr-upload_P1.dynamo.V1',
                      '../../tests-nmr/mock-data-remediation/8vrc/8vrc.cif')

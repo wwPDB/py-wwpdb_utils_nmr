@@ -14,6 +14,9 @@
 # 22-May-2026  M. Yokochi - transplant BMRB chemical shift analysis except for PANAV support,
 #                           add 'nmr-chemical-shift-validation' workflow operation (DAOTHER-9785)
 # 16-Jun-2025  M. Yokochi - enable to set working directory and cache file directory (DAOTHER-9785)
+# 24-Jul-2026  M. Yokochi - map comma-separated Auth_asym_IDs for calculation of chemical shift completeness (DAOTHER-10898)
+# 31-Jul-2026  M. Yokochi - fix unexpected missing of dihedral angle restraint validation
+# 03-Aug-2026  M. Yokochi - add RDC restraint analysis (DAOTHER-9785, v1.3.0)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -24,7 +27,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.2.1"
+__version__ = "v1.3.0"
 
 import collections
 import copy
@@ -76,7 +79,11 @@ try:
                                                CUTOFF_PARAMAGNETIC,
                                                VICINITY_AROMATIC,
                                                VICINITY_PARAMAGNETIC,
-                                               MAGIC_ANGLE)
+                                               MAGIC_ANGLE,
+                                               GYROMAGNETIC_RATIOS,
+                                               PERMEABILITY_0,
+                                               PLANCK_CONSTANT,
+                                               REDUCED_PLANCK_CONSTANT)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -120,7 +127,11 @@ except ImportError:
                                    CUTOFF_PARAMAGNETIC,
                                    VICINITY_AROMATIC,
                                    VICINITY_PARAMAGNETIC,
-                                   MAGIC_ANGLE)
+                                   MAGIC_ANGLE,
+                                   GYROMAGNETIC_RATIOS,
+                                   PERMEABILITY_0,
+                                   PLANCK_CONSTANT,
+                                   REDUCED_PLANCK_CONSTANT)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.NmrDpReport import NmrDpReport
@@ -205,42 +216,18 @@ def distance(p0: list, p1: list) -> float:
     """ Return distance between two points.
     """
 
-    return numpy.linalg.norm(p0 - p1)
+    # math.hypot on the 3 components is ~2x faster than numpy.linalg.norm for a
+    # single 3-vector (this is the most-called geometry primitive) and numerically
+    # identical. p0/p1 are numpy arrays (their difference is a length-3 array).
+    d = p0 - p1
+    return math.hypot(d[0], d[1], d[2])
 
 
 def to_unit_vector(a: list) -> list:
     """ Return unit vector of a given vector.
     """
 
-    return a / numpy.linalg.norm(a)
-
-
-def dihedral_angle(p0: list, p1: list, p2: list, p3: list) -> float:
-    """ Return dihedral angle from a series of four points.
-    """
-
-    b0 = -1.0 * (p1 - p0)
-    b1 = p2 - p1
-    b2 = p3 - p2
-
-    # normalize b1 so that it does not influence magnitude of vector
-    # rejections that come next
-    b1 = to_unit_vector(b1)
-
-    # vector rejections
-    # v = projection of b0 onto plane perpendicular to b1
-    #   = b0 minus component that aligns with b1
-    # w = projection of b2 onto plane perpendicular to b1
-    #   = b2 minus component that aligns with b1
-    v = b0 - numpy.dot(b0, b1) * b1
-    w = b2 - numpy.dot(b2, b1) * b1
-
-    # angle between v and w in a plane is the torsion angle
-    # v and w may not be normalized but that's fine since tan is y/x
-    x = numpy.dot(v, w)
-    y = numpy.dot(numpy.cross(b1, v), w)
-
-    return numpy.degrees(numpy.arctan2(y, x))
+    return a / math.hypot(a[0], a[1], a[2])
 
 
 def dist_inv_6_summed(r_list: List[float]) -> float:
@@ -335,6 +322,57 @@ def dist_error(lower_bound: Optional[float], upper_bound: Optional[float], dist:
         pass
 
     return error
+
+
+def dihedral_angle(p0: list, p1: list, p2: list, p3: list) -> float:
+    """ Return dihedral angle from a series of four points.
+    """
+
+    b0 = p0 - p1
+    b1 = p2 - p1
+    b2 = p3 - p2
+
+    # normalize b1 so that it does not influence magnitude of vector
+    # rejections that come next
+    b1 = to_unit_vector(b1)
+
+    # vector rejections
+    # v = projection of b0 onto plane perpendicular to b1
+    #   = b0 minus component that aligns with b1
+    # w = projection of b2 onto plane perpendicular to b1
+    #   = b2 minus component that aligns with b1
+    v = b0 - numpy.dot(b0, b1) * b1
+    w = b2 - numpy.dot(b2, b1) * b1
+
+    # angle between v and w in a plane is the torsion angle
+    # v and w may not be normalized but that's fine since tan is y/x
+    x = numpy.dot(v, w)
+    y = numpy.dot(numpy.cross(b1, v), w)
+
+    return numpy.degrees(numpy.arctan2(y, x))
+
+
+def dihedral_angles(p0: numpy.ndarray, p1: numpy.ndarray, p2: numpy.ndarray, p3: numpy.ndarray
+                    ) -> numpy.ndarray:
+    """ Vectorized dihedral_angle(): p0..p3 are (M, 3) arrays (one row per model);
+        returns an (M,) array of angles in degrees. Same Praxeolitic formula as
+        dihedral_angle(), applied row-wise. (dihedral_angle() itself is kept for the
+        many scalar callers across the package.)
+    """
+
+    b0 = p0 - p1
+    b1 = p2 - p1
+    b2 = p3 - p2
+
+    b1 = b1 / numpy.linalg.norm(b1, axis=1, keepdims=True)
+
+    v = b0 - numpy.sum(b0 * b1, axis=1, keepdims=True) * b1
+    w = b2 - numpy.sum(b2 * b1, axis=1, keepdims=True) * b1
+
+    x = numpy.sum(v * w, axis=1)
+    y = numpy.sum(numpy.cross(b1, v) * w, axis=1)
+
+    return numpy.degrees(numpy.arctan2(y, x))
 
 
 def angle_target_values(target_value: Optional[float], target_value_uncertainty: Optional[float],
@@ -469,6 +507,15 @@ def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], targ
         return 0.0
 
     return min(angle_diff(upper_bound, angle), angle_diff(lower_bound, angle))
+
+
+def rdc_dmax(atom_type_1: str, atom_type_2: str, bond_distance: float, hz_unit: bool = True):
+    """ Return scale factor of residual coupling constant for a given nuclei vector.
+    """
+
+    return - PERMEABILITY_0 * (PLANCK_CONSTANT if hz_unit else REDUCED_PLANCK_CONSTANT)\
+        * GYROMAGNETIC_RATIOS[atom_type_1] * GYROMAGNETIC_RATIOS[atom_type_2]\
+        / math.pow(2.0e-10 * numpy.pi * bond_distance, 3.0)
 
 
 def rdc_target_values(target_value: Optional[float], target_value_uncertainty: Optional[float],
@@ -935,6 +982,9 @@ class NmrVrptUtility:
                  '__rdcRestDict',
                  '__rdcRestDictWithCombKey',
                  '__rdcRestSeqDict',
+                 '__rdcSaupeOrderMatrix',
+                 '__rdcCalcDict',
+                 '__rdcCorrPlotDict',
                  '__distRestViolDict',
                  '__distRestUnmapped',
                  '__distRestViolCombKeyDict',
@@ -1051,6 +1101,13 @@ class NmrVrptUtility:
         self.__rdcRestDictWithCombKey = None
         # RDC restraint keys for each sequence key (auth_asym_id, auth_seq_id, auth_comp_id)
         self.__rdcRestSeqDict = None
+
+        # Saupe order matrix (Molecular alignment tensor)
+        self.__rdcSaupeOrderMatrix = None
+        # calculated RDC values based on molecular alignment tensor
+        self.__rdcCalcDict = None
+        # RDC correlation plot of observed and calculated RDCs for each list
+        self.__rdcCorrPlotDict = None
 
         # unique chemical shifts for each list_id and atom_key
         self.__chemShiftUniqDict = None
@@ -1876,7 +1933,7 @@ class NmrVrptUtility:
 
                 atom_id = c[_auth_atom_id_]
 
-                if atom_id not in self.__entityInstance[auth_chain_id][seq_key]:
+                if atom_id not in self.__entityInstance[auth_chain_id][seq_key]['atoms']:
                     self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(atom_id)
 
             # include unmodeled entity
@@ -2173,28 +2230,52 @@ class NmrVrptUtility:
                                                                 filter_items,
                                                                 datablock_name)
 
+                        # Prebuild the parsed (chain, seq, comp, atom) keys once so the
+                        # "already parsed?" test below is O(1) instead of a full linear
+                        # scan of `data` per unparsed row (was O(len(_data) * len(data))).
+                        data_keys = {(cs['auth_chain_id'], cs['auth_seq_id'],
+                                      cs['comp_id'], cs['atom_id']) for cs in data}
+
                         for _cs in _data:
                             cs_auth_chain_id = _cs['auth_chain_id']
                             cs_auth_seq_id = _cs['auth_seq_id']
                             cs_comp_id = _cs['comp_id']
                             cs_atom_id = _cs['atom_id']
-                            if not any(True for cs in data
-                                       if cs['auth_chain_id'] == cs_auth_chain_id
-                                       and cs['auth_seq_id'] == cs_auth_seq_id
-                                       and cs['comp_id'] == cs_comp_id
-                                       and cs['atom_id'] == cs_atom_id):
-                                cs_value = _cs['value']
-                                cs_error = _cs['error']
-                                ambig_code = _cs['ambig_code']
 
-                                if 'PDB_ins_code' not in tags or _cs['ins_code'] in EMPTY_VALUE:
-                                    cs_key = (cs_auth_chain_id, str(cs_auth_seq_id), cs_comp_id, cs_atom_id)
-                                else:
-                                    cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + _cs['ins_code'], cs_comp_id, cs_atom_id)
+                            # DAOTHER-10898
+                            if ',' in cs_auth_chain_id:
+                                for cs_auth_chain_id in _cs['auth_chain_id'].split(','):
+                                    cs_auth_chain_id = cs_auth_chain_id.strip()
+                                    if (cs_auth_chain_id, cs_auth_seq_id, cs_comp_id, cs_atom_id) not in data_keys:
+                                        cs_value = _cs['value']
+                                        cs_error = _cs['error']
+                                        ambig_code = _cs['ambig_code']
 
-                                err_cs_values = list(cs_key)
-                                err_cs_values.extend([cs_value, cs_error, ambig_code])
-                                self.__chemShiftUnparsed[list_id].append(err_cs_values)
+                                        if 'PDB_ins_code' not in tags or _cs['ins_code'] in EMPTY_VALUE:
+                                            cs_key = (cs_auth_chain_id, str(cs_auth_seq_id), cs_comp_id, cs_atom_id)
+                                        else:
+                                            cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + _cs['ins_code'],
+                                                      cs_comp_id, cs_atom_id)
+
+                                        err_cs_values = list(cs_key)
+                                        err_cs_values.extend([cs_value, cs_error, ambig_code])
+                                        self.__chemShiftUnparsed[list_id].append(err_cs_values)
+
+                            else:
+                                if (cs_auth_chain_id, cs_auth_seq_id, cs_comp_id, cs_atom_id) not in data_keys:
+                                    cs_value = _cs['value']
+                                    cs_error = _cs['error']
+                                    ambig_code = _cs['ambig_code']
+
+                                    if 'PDB_ins_code' not in tags or _cs['ins_code'] in EMPTY_VALUE:
+                                        cs_key = (cs_auth_chain_id, str(cs_auth_seq_id), cs_comp_id, cs_atom_id)
+                                    else:
+                                        cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + _cs['ins_code'],
+                                                  cs_comp_id, cs_atom_id)
+
+                                    err_cs_values = list(cs_key)
+                                    err_cs_values.extend([cs_value, cs_error, ambig_code])
+                                    self.__chemShiftUnparsed[list_id].append(err_cs_values)
 
             return True
 
@@ -2226,6 +2307,11 @@ class NmrVrptUtility:
 
         self.__distRestDict = {}
         self.__distRestSeqDict = {}
+
+        # {comp_id: frozenset(backbone atom_ids)} cache — getBackBoneAtoms() rebuilds
+        # a list (and may touch the CCD/CSV) on every call, and comp_id repeats across
+        # restraints; cache once and use set membership below (was O(restraints * bb_len)).
+        bb_atoms_cache = {}
 
         lp_category = 'Gen_dist_constraint'
         sf_category = 'Gen_dist_constraint_list'
@@ -2378,8 +2464,12 @@ class NmrVrptUtility:
                     else:
                         distance_type = 'long'
 
-                    bb_atoms_1 = self.__csStat.getBackBoneAtoms(comp_id_1, incl_nstd_bb_atom=True)
-                    bb_atoms_2 = self.__csStat.getBackBoneAtoms(comp_id_2, incl_nstd_bb_atom=True)
+                    if comp_id_1 not in bb_atoms_cache:
+                        bb_atoms_cache[comp_id_1] = frozenset(self.__csStat.getBackBoneAtoms(comp_id_1, incl_nstd_bb_atom=True))
+                    if comp_id_2 not in bb_atoms_cache:
+                        bb_atoms_cache[comp_id_2] = frozenset(self.__csStat.getBackBoneAtoms(comp_id_2, incl_nstd_bb_atom=True))
+                    bb_atoms_1 = bb_atoms_cache[comp_id_1]
+                    bb_atoms_2 = bb_atoms_cache[comp_id_2]
 
                     if atom_id_1 in bb_atoms_1 and atom_id_2 in bb_atoms_2:
                         distance_sub_type = 'backbone-backbone'
@@ -2456,8 +2546,8 @@ class NmrVrptUtility:
                     if len(v) == 0:
                         del self.__distRestDict[k]
 
-            for v in self.__distRestSeqDict.values():
-                v = list(set(v))
+            for k, v in self.__distRestSeqDict.items():
+                self.__distRestSeqDict[k] = list(set(v))
 
             if len(self.__distRestDict) == 0:
                 self.__distRestDict = self.__distRestSeqDict = None
@@ -2661,8 +2751,8 @@ class NmrVrptUtility:
                     if len(v) == 0:
                         del self.__dihedRestDict[k]
 
-            for v in self.__dihedRestSeqDict.values():
-                v = list(set(v))
+            for k, v in self.__dihedRestSeqDict.items():
+                self.__dihedRestSeqDict[k] = list(set(v))
 
             if len(self.__dihedRestDict) == 0:
                 self.__dihedRestDict = self.__dihedRestSeqDict = None
@@ -2740,6 +2830,8 @@ class NmrVrptUtility:
                 has_lower_linear_limit = 'RDC_lower_linear_limit' in tags
                 has_upper_linear_limit = 'RDC_upper_linear_limit' in tags
                 has_target_val_uncertainty = 'Target_value_uncertainty' in tags
+                has_weight = 'Weight' in tags
+                has_scale_factor = 'RDC_val_scale_factor' in tags
 
                 if has_combination_id:
                     data_items.append({'name': 'Combination_ID', 'type': 'int', 'alt_name': 'combination_id'})
@@ -2762,6 +2854,10 @@ class NmrVrptUtility:
                 if has_target_val_uncertainty:
                     data_items.append({'name': 'Target_value_uncertainty', 'type': 'abs-float',
                                        'alt_name': 'target_value_uncertainty'})
+                if has_weight:
+                    data_items.append({'name': 'Weight', 'type': 'float'})
+                if has_scale_factor:
+                    data_items.append({'name': 'RDC_val_scale_factor', 'type': 'float', 'alt_name': 'scale_factor'})
 
                 filter_items = [{'name': 'RDC_constraint_list_ID', 'type': 'int', 'value': list_id}]
 
@@ -2803,6 +2899,12 @@ class NmrVrptUtility:
                     upper_limit = r.get('upper_limit')
                     lower_linear_limit = r.get('lower_linear_limit')
                     upper_linear_limit = r.get('upper_linear_limit')
+                    weight = r.get('weight')
+                    if weight is None or weight < 0.0:
+                        weight = 1.0
+                    scale_factor = r.get('scale_factor')
+                    if scale_factor is None or scale_factor < 0.0:
+                        scale_factor = 1.0
 
                     target_value, lower_bound, upper_bound =\
                         rdc_target_values(target_value, target_value_uncertainty, value, value_uncertainty,
@@ -2823,7 +2925,9 @@ class NmrVrptUtility:
                                                          'rdc_type': rdc_type,
                                                          'lower_bound': lower_bound,
                                                          'upper_bound': upper_bound,
-                                                         'target_value': target_value})
+                                                         'target_value': target_value,
+                                                         'weight': weight,
+                                                         'scale_factor': scale_factor})
 
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
@@ -2841,10 +2945,14 @@ class NmrVrptUtility:
                     if len(v) == 0:
                         del self.__rdcRestDict[k]
 
-            for v in self.__rdcRestSeqDict.values():
-                v = list(set(v))
+            for k, v in self.__rdcRestSeqDict.items():
+                self.__rdcRestSeqDict[k] = list(set(v))
 
-            if len(self.__rdcRestDict) == 0:
+            if len(self.__rdcRestDict) != 0:
+                # settle molecular alignment tensor for each rdc list
+                self.__settleMolecularAlignmentTensors()
+
+            else:
                 self.__rdcRestDict = self.__rdcRestSeqDict = None
 
             return True
@@ -2855,6 +2963,156 @@ class NmrVrptUtility:
             self.__log.write(f"+{self.__class_name__}.__extractRdcConstraints() ++ Error  - {str(e)}\n")
 
             self.__rdcRestDict = self.__rdcRestSeqDict = None
+
+        return False
+
+    def __settleMolecularAlignmentTensors(self) -> bool:
+        """ Settle molecular alignment tensors for each RDC list based on coordinates and experimental RDC values.
+            @author: Masashi Yokochi
+            Reference:
+              Order Matrix Analysis of Residual Dipolar Couplings Using Singular Value Decomposition
+              J. A. Losonczi, M. Andrec, M. W. F. Fischer, and J. H. Prestegard.
+              Journal of Magnetic Resonance, 138, 334-342 (1999)
+              DOI: 10.1006/jmre.1999.1754
+        """
+
+        self.__rdcSaupeOrderMatrix = {}
+        self.__rdcCalcDict = {}
+
+        try:
+
+            list_ids = set()
+            for rest_key in self.__rdcRestDict:
+                list_ids.add(rest_key[0])
+
+            for list_id in sorted(list(list_ids)):
+
+                dmax = None
+
+                self.__rdcSaupeOrderMatrix[list_id] = {}
+
+                for model_id in self.__coordinates:
+
+                    target_rest_keys = []
+
+                    A = numpy.empty((0, 5), dtype=float)
+                    b_exp = []
+
+                    for rest_key, restraints in self.__rdcRestDict.items():
+
+                        if rest_key[0] != list_id:
+                            continue
+
+                        for r in restraints:
+
+                            if 0.0 in (r['weight'], r['scale_factor']):
+                                continue
+
+                            atom_key_1 = r['atom_key_1']
+                            atom_key_2 = r['atom_key_2']
+
+                            atom_present = True
+
+                            try:
+                                pos_1 = self.__coordinates[model_id][atom_key_1]
+                            except KeyError:
+                                atom_present = False
+
+                            try:
+                                pos_2 = self.__coordinates[model_id][atom_key_2]
+                            except KeyError:
+                                atom_present = False
+
+                            if not atom_present:
+                                continue
+
+                            atom_type_1 = atom_key_1[3][0]
+                            atom_type_2 = atom_key_2[3][0]
+
+                            if atom_type_1 not in GYROMAGNETIC_RATIOS\
+                               or atom_type_2 not in GYROMAGNETIC_RATIOS:
+                                continue
+
+                            target_rest_keys.append(rest_key)
+
+                            if dmax is None:
+                                dmax = rdc_dmax(atom_type_1, atom_type_2, distance(pos_1, pos_2), hz_unit=True)
+
+                            vector = to_unit_vector(pos_2 - pos_1)
+                            cos_x, cos_y, cos_z = vector[0], vector[1], vector[2]
+                            cos_x_2 = cos_x * cos_x
+                            cos_y_2 = cos_y * cos_y
+                            cos_z_2 = cos_z * cos_z
+
+                            A = numpy.append(A, numpy.array([[cos_y_2 - cos_x_2, cos_z_2 - cos_x_2,
+                                                              2.0 * cos_x * cos_y,
+                                                              2.0 * cos_x * cos_z,
+                                                              2.0 * cos_y * cos_z]]), axis=0)
+
+                            # input observed RDC values calibrated with a given scale factor
+                            # so, calculated RDC values will be scaled by default,
+                            # this effect should be taken into consideration when comparing (raw) observed RDCs and calculated RDCs
+                            b_exp.append(r['scale_factor'] * r['target_value'] / dmax)
+
+                    if len(b_exp) < 5:
+                        continue
+
+                    b = numpy.array(b_exp, dtype=float)
+
+                    U, S, Vh = numpy.linalg.svd(A, full_matrices=False)
+
+                    Si = numpy.diag(numpy.array([1.0 / s for s in list(S)], dtype=float))
+
+                    x = Vh.T @ Si @ U.T @ b
+
+                    Syy, Szz, Sxy, Sxz, Syz = x[0], x[1], x[2], x[3], x[4]
+
+                    if -0.5 <= Syy <= 1.0 and -0.5 <= Szz <= 1.0 and abs(Sxy) <= 0.75 and abs(Sxz) <= 0.75 and abs(Syz) <= 0.75:
+                        Sxx = -(Syy + Szz)
+                        Sorder = sorted([abs(Sxx), abs(Syy), abs(Szz)], reverse=True)
+                        Szz_, Syy_, Sxx_ = Sorder[0], Sorder[1], Sorder[2]
+
+                        if Szz_ == abs(Szz):
+                            if Syy_ == abs(Syy):  # zz > yy > xx (as is)
+                                Sxy_, Sxz_, Syz_ = Sxy, Sxz, Syz
+                            else:  # zz > xx > yy : x <-> y, z -> -z
+                                Sxy_, Sxz_, Syz_ = Sxy, -Syz, -Sxz
+                        elif Szz_ == abs(Syy):
+                            if Syy_ == abs(Szz):  # yy > zz > xx : y <-> z, x -> -x
+                                Sxy_, Sxz_, Syz_ = -Sxz, -Sxy, Syz
+                            else:  # yy > xx > zz : y->z, x->y, z->x (rotation)
+                                Sxy_, Sxz_, Syz_ = Syz, Sxy, Sxz
+                        else:
+                            if Syy_ == abs(Szz):  # xx > zz > yy : x->z, z->y, y->x (rotation)
+                                Sxy_, Sxz_, Syz_ = Sxz, Syz, Sxy
+                            else:  # xx > yy > zz : x <-> z, y -> -y
+                                Sxy_, Sxz_, Syz_ = -Syz, Sxz, -Sxy
+
+                        eta = (Syy_ - Sxx_) / Szz_
+
+                        self.__rdcSaupeOrderMatrix[list_id][model_id] = {'Sxx': f'{Sxx_:.4e}', 'Syy': f'{Syy_:.4e}',
+                                                                         'Szz': f'{Szz_:.4e}',
+                                                                         'Sxy': f'{Sxy_:.4e}', 'Sxz': f'{Sxz_:.4e}',
+                                                                         'Syz': f'{Syz_:.4e}',
+                                                                         'Da': f'{Sxx_ - Syy_:.4e}', 'eta': f'{eta:.4e}',
+                                                                         'Dmax': f'{dmax:.4e}'}
+
+                        assert abs(Szz_) >= abs(Syy_) >= abs(Sxx_)
+                        assert 0 <= eta <= 1.0
+
+                        b_calc = list(A @ x)
+
+                        for rest_key, val in zip(target_rest_keys, b_calc):
+                            if rest_key not in self.__rdcCalcDict:
+                                self.__rdcCalcDict[rest_key] = {}
+                            self.__rdcCalcDict[rest_key][model_id] = val * dmax
+
+            return True
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__cifPath)} "
+                             f"and {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__settleMolecularAlignmentTensors() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -2963,7 +3221,7 @@ class NmrVrptUtility:
 
                         self.__chemShiftUniqDict[list_id][cs_key]['primary'] = True
 
-                        z_score = float(f"{(cs['value'] - avg_value) / std_value:.2f}")
+                        z_score = round((cs['value'] - avg_value) / std_value, 2)
 
                         if abs(z_score) > 5.0:
                             na = self.__getNearestAromaticRing(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
@@ -2992,8 +3250,8 @@ class NmrVrptUtility:
 
                             out_cs_values = list(cs_key)
                             out_cs_values.extend([cs_value, ambig_code, z_score,
-                                                  float(f"{avg_value - 5.0 * std_value:.2f}"),
-                                                  float(f"{avg_value + 5.0 * std_value:.2f}"),
+                                                  round(avg_value - 5.0 * std_value, 2),
+                                                  round(avg_value + 5.0 * std_value, 2),
                                                   details])
 
                             self.__chemShiftOutlier[list_id].append(out_cs_values)
@@ -3292,9 +3550,9 @@ class NmrVrptUtility:
             return None
 
         na['ring_atoms'] = ring_atoms
-        na['distance'] = float(f"{dist / len_model_ids:.1f}")
-        na['ring_distance'] = float(f"{ring_dist / len_model_ids:.1f}")
-        na['ring_angle'] = float(f"{numpy.degrees(ring_angle / len_model_ids):.1f}")
+        na['distance'] = round(dist / len_model_ids, 1)
+        na['ring_distance'] = round(ring_dist / len_model_ids, 1)
+        na['ring_angle'] = round(numpy.degrees(ring_angle / len_model_ids), 1)
 
         return na
 
@@ -3429,7 +3687,7 @@ class NmrVrptUtility:
         for __p in _p:
             dist += distance(to_np_array(__p), o)
 
-        p['distance'] = float(f"{dist / len(_p):.1f}")
+        p['distance'] = round(dist / len(_p), 1)
 
         return p
 
@@ -3442,9 +3700,6 @@ class NmrVrptUtility:
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
         """
 
-        if self.__distRestDict is None or self.__has_prev_results:
-            return True
-
         if self.__coordinates is None:
             return False
 
@@ -3453,6 +3708,9 @@ class NmrVrptUtility:
         self.__distRestViolDict = {}
         self.__distRestViolCombKeyDict = {}
         self.__distRestUnmapped = []
+
+        if self.__distRestDict is None or self.__has_prev_results:
+            return True
 
         try:
 
@@ -3544,74 +3802,73 @@ class NmrVrptUtility:
 
             def calc_dist_rest_viol(rest_key, restraints):
 
+                model_ids = list(self.__coordinates)              # stable order for stacking
+                coords_by_model = [self.__coordinates[m] for m in model_ids]
+
+                # per model: {bound_key: [d, ...]}
+                dist_list_set_per_model = [{} for _ in model_ids]
+
+                for r in restraints:
+                    atom_key_1 = r['atom_key_1']
+                    atom_key_2 = r['atom_key_2']
+                    bound_key = (r['lower_bound'], r['upper_bound'],
+                                 'or' if r['or_member'] else r['member_id'])
+
+                    # per-model coordinates (direct, or reconstructed for uninstanced
+                    # protons); collect the models where both atoms resolve
+                    present_idx, p1_rows, p2_rows = [], [], []
+                    for i, (model_id, coord) in enumerate(zip(model_ids, coords_by_model)):
+                        pos_1 = coord.get(atom_key_1)
+                        if pos_1 is None:
+                            pos_1 = get_uninstanced_hydrogen_coord(model_id, atom_key_1)
+                            if pos_1 is None and self.__verbose:
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
+                                                 f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
+                                                 f"not found in the coordinates for distance restraint {rest_key}.\n")
+                        pos_2 = coord.get(atom_key_2)
+                        if pos_2 is None:
+                            pos_2 = get_uninstanced_hydrogen_coord(model_id, atom_key_2)
+                            if pos_2 is None and self.__verbose:
+                                self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
+                                                 f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
+                                                 f"not found in the coordinates for distance restraint {rest_key}.\n")
+
+                        if pos_1 is None or pos_2 is None:
+                            self.__distRestUnmapped.append(rest_key)
+                            continue
+
+                        present_idx.append(i)
+                        p1_rows.append(pos_1)
+                        p2_rows.append(pos_2)
+
+                    if len(present_idx) == 0:
+                        continue
+
+                    # one vectorized set of distances over present models (was a
+                    # per-model scalar distance() call, i.e. models x restraints calls)
+                    d_arr = numpy.linalg.norm(numpy.array(p1_rows) - numpy.array(p2_rows), axis=1)
+
+                    for k, i in enumerate(present_idx):
+                        d = d_arr[k]
+                        if d == 0.0:
+                            self.__log.write(f"+{self.__class_name__}.__validateDistanceRestraints() ++ Error  - "
+                                             f"distance restraint {rest_key} {r} does not make sense, "
+                                             f"{os.path.basename(self.__nmrDataPath)}.\n")
+                        dist_list_set_per_model[i].setdefault(bound_key, []).append(d)
+
                 error_per_model = {}
 
-                for model_id in self.__coordinates:
-
-                    dist_list_set = {}
-
-                    for r in restraints:
-                        atom_key_1 = r['atom_key_1']
-                        atom_key_2 = r['atom_key_2']
-                        lower_bound = r['lower_bound']
-                        upper_bound = r['upper_bound']
-
-                        bound_key = (lower_bound, upper_bound, 'or' if r['or_member'] else r['member_id'])
-
-                        if bound_key not in dist_list_set:
-                            dist_list_set[bound_key] = []
-
-                        atom_present = True
-
-                        try:
-                            pos_1 = self.__coordinates[model_id][atom_key_1]
-                        except KeyError:
-                            pos_1 = get_uninstanced_hydrogen_coord(model_id, atom_key_1)
-                            if pos_1 is None:
-                                if self.__verbose:
-                                    self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
-                                                     f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
-                                                     f"not found in the coordinates for distance restraint {rest_key}.\n")
-                                atom_present = False
-
-                        try:
-                            pos_2 = self.__coordinates[model_id][atom_key_2]
-                        except KeyError:
-                            pos_2 = get_uninstanced_hydrogen_coord(model_id, atom_key_2)
-                            if pos_2 is None:
-                                if self.__verbose:
-                                    self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
-                                                     f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
-                                                     f"not found in the coordinates for distance restraint {rest_key}.\n")
-                                atom_present = False
-
-                        if atom_present:
-
-                            d = distance(pos_1, pos_2)
-                            if d == 0.0:
-                                self.__log.write(f"+{self.__class_name__}.__validateDistanceRestraints() ++ Error  - "
-                                                 f"distance restraint {rest_key} {r} does not make sense, "
-                                                 f"{os.path.basename(self.__nmrDataPath)}.\n")
-                            dist_list_set[bound_key].append(d)
-                        else:
-                            self.__distRestUnmapped.append(rest_key)
-
+                for i, model_id in enumerate(model_ids):
                     error = None
 
-                    if len(dist_list_set) > 0:
+                    for bound_key, dist_list in dist_list_set_per_model[i].items():
+                        lower_bound, upper_bound, _ = bound_key
+                        avr_d = dist_inv_6_summed(dist_list)
 
-                        for bound_key, dist_list in dist_list_set.items():
+                        _error = dist_error(lower_bound, upper_bound, avr_d)
 
-                            if len(dist_list) == 0:
-                                continue
-
-                            lower_bound, upper_bound, _ = bound_key
-                            avr_d = dist_inv_6_summed(dist_list)
-
-                            _error = dist_error(lower_bound, upper_bound, avr_d)
-
-                            if error is None or error > _error:
-                                error = _error
+                        if error is None or error > _error:
+                            error = _error
 
                     error_per_model[model_id] = error
 
@@ -3732,9 +3989,6 @@ class NmrVrptUtility:
                      support combinational restraints (_Torsion_angle_constraint.Combination_ID)
         """
 
-        if self.__dihedRestDict is None or self.__has_prev_results:
-            return True
-
         if self.__coordinates is None:
             return False
 
@@ -3744,90 +3998,64 @@ class NmrVrptUtility:
         self.__dihedRestViolCombKeyDict = {}
         self.__dihedRestUnmapped = []
 
+        if self.__dihedRestDict is None or self.__has_prev_results:
+            return True
+
         try:
 
             def calc_dihed_rest_viol(rest_key, restraints):
 
-                error_per_model = {}
+                model_ids = list(self.__coordinates)              # stable order for stacking
+                coords_by_model = [self.__coordinates[m] for m in model_ids]
 
-                for model_id in self.__coordinates:
+                # per model: {bound_key: [a = dihedral + 180, ...]}
+                angle_list_set_per_model = [{} for _ in model_ids]
 
-                    angle_list_set = {}
+                for r in restraints:
+                    atom_keys = (r['atom_key_1'], r['atom_key_2'], r['atom_key_3'], r['atom_key_4'])
+                    bound_key = (r['lower_bound'], r['upper_bound'], r['target_value'])
 
-                    for r in restraints:
-                        atom_key_1 = r['atom_key_1']
-                        atom_key_2 = r['atom_key_2']
-                        atom_key_3 = r['atom_key_3']
-                        atom_key_4 = r['atom_key_4']
-                        lower_bound = r['lower_bound']
-                        upper_bound = r['upper_bound']
-                        target_value = r['target_value']
-
-                        bound_key = (lower_bound, upper_bound, target_value)
-
-                        if bound_key not in angle_list_set:
-                            angle_list_set[bound_key] = []
-
+                    # per-model presence; collect the model indices where all four atoms exist
+                    present_idx = []
+                    for i, coord in enumerate(coords_by_model):
                         atom_present = True
-
-                        try:
-                            pos_1 = self.__coordinates[model_id][atom_key_1]
-                        except KeyError:
-                            if self.__verbose:
-                                self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
-                                                 f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
-                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
-                            atom_present = False
-
-                        try:
-                            pos_2 = self.__coordinates[model_id][atom_key_2]
-                        except KeyError:
-                            if self.__verbose:
-                                self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
-                                                 f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
-                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
-                            atom_present = False
-
-                        try:
-                            pos_3 = self.__coordinates[model_id][atom_key_3]
-                        except KeyError:
-                            if self.__verbose:
-                                self.__log.write(f"Atom (auth_asym_id: {atom_key_3[0]}, auth_seq_id: {atom_key_3[1]}, "
-                                                 f"comp_id: {atom_key_3[2]}, atom_id: {atom_key_3[3]}) "
-                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
-                            atom_present = False
-
-                        try:
-                            pos_4 = self.__coordinates[model_id][atom_key_4]
-                        except KeyError:
-                            if self.__verbose:
-                                self.__log.write(f"Atom (auth_asym_id: {atom_key_4[0]}, auth_seq_id: {atom_key_4[1]}, "
-                                                 f"comp_id: {atom_key_4[2]}, atom_id: {atom_key_4[3]}) "
-                                                 f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
-                            atom_present = False
-
+                        for atom_key in atom_keys:
+                            if atom_key not in coord:
+                                atom_present = False
+                                if self.__verbose:
+                                    self.__log.write(f"Atom (auth_asym_id: {atom_key[0]}, auth_seq_id: {atom_key[1]}, "
+                                                     f"comp_id: {atom_key[2]}, atom_id: {atom_key[3]}) "
+                                                     f"not found in the coordinates for dihedral angle restraint {rest_key}.\n")
                         if atom_present:
-                            a = dihedral_angle(pos_1, pos_2, pos_3, pos_4) + 180.0
-                            angle_list_set[bound_key].append(a)
+                            present_idx.append(i)
                         else:
                             self.__dihedRestUnmapped.append(rest_key)
 
+                    if len(present_idx) == 0:
+                        continue
+
+                    # one vectorized dihedral over all present models (was a per-model
+                    # scalar dihedral_angle() call, i.e. models x restraints calls)
+                    p0, p1, p2, p3 = (numpy.array([coords_by_model[i][ak] for i in present_idx])
+                                      for ak in atom_keys)
+                    angles = dihedral_angles(p0, p1, p2, p3) + 180.0
+
+                    for k, i in enumerate(present_idx):
+                        angle_list_set_per_model[i].setdefault(bound_key, []).append(angles[k])
+
+                error_per_model = {}
+
+                for i, model_id in enumerate(model_ids):
                     error = None
 
-                    if len(angle_list_set) > 0:
+                    for bound_key, angle_list in angle_list_set_per_model[i].items():
+                        lower_bound, upper_bound, target_value = bound_key
+                        avr_a = numpy.mean(numpy.array(angle_list, dtype=float)) - 180.0
 
-                        for bound_key, angle_list in angle_list_set.items():
+                        _error = angle_error(lower_bound, upper_bound, target_value, avr_a)
 
-                            if len(angle_list) == 0:
-                                continue
-
-                            lower_bound, upper_bound, target_value = bound_key
-                            avr_a = numpy.mean(numpy.array(angle_list, dtype=float)) - 180.0
-
-                            _error = angle_error(lower_bound, upper_bound, target_value, avr_a)
-
-                            if error is None or error > _error:
-                                error = _error
+                        if error is None or error > _error:
+                            error = _error
 
                     error_per_model[model_id] = error
 
@@ -3910,13 +4138,8 @@ class NmrVrptUtility:
             @author: Masashi Yokochi
         """
 
-        if self.__rdcRestDict is None or self.__has_prev_results:
-            return True
-
         if self.__coordinates is None:
             return False
-
-        return True  # TODO  pylint: disable=fixme
 
         self.__rdcRestDictWithCombKey = {}  # pylint: disable='unreachable'
 
@@ -3924,73 +4147,70 @@ class NmrVrptUtility:
         self.__rdcRestViolCombKeyDict = {}
         self.__rdcRestUnmapped = []
 
+        self.__rdcCorrPlotDict = {}
+
+        if self.__rdcRestDict is None or self.__has_prev_results:
+            return True
+
         try:
 
             def calc_rdc_rest_viol(rest_key, restraints):
 
                 error_per_model = {}
 
+                # __rdcCalcDict[rest_key][model_id] is one calculated RDC per model,
+                # independent of the individual restraint r, so averaging a bound_key
+                # list (copies of the same value) == that value; the pos_1/pos_2
+                # fetches were only atom-presence checks. Hoist the model-independent
+                # rest_key lookup and drop the per-(model, bound_key) numpy.mean.
+                calc_per_model = self.__rdcCalcDict.get(rest_key, {})
+
                 for model_id in self.__coordinates:
 
-                    rdc_list_set = {}
+                    coords = self.__coordinates[model_id]
+                    has_calc = model_id in calc_per_model
+                    r_calc = calc_per_model[model_id] if has_calc else None
+
+                    error = None
+                    seen_bound_keys = set()
 
                     for r in restraints:
                         atom_key_1 = r['atom_key_1']
                         atom_key_2 = r['atom_key_2']
-                        lower_bound = r['lower_bound']
-                        upper_bound = r['upper_bound']
-
-                        bound_key = (lower_bound, upper_bound)
-
-                        if bound_key not in rdc_list_set:
-                            rdc_list_set[bound_key] = []
 
                         atom_present = True
 
-                        try:
-                            pos_1 = self.__coordinates[model_id][atom_key_1]  # noqa: F841, pylint: disable='unused-variable'
-                        except KeyError:
+                        if atom_key_1 not in coords:
                             if self.__verbose:
                                 self.__log.write(f"Atom (auth_asym_id: {atom_key_1[0]}, auth_seq_id: {atom_key_1[1]}, "
                                                  f"comp_id: {atom_key_1[2]}, atom_id: {atom_key_1[3]}) "
                                                  f"not found in the coordinates for RDC restraint {rest_key}.\n")
                             atom_present = False
 
-                        try:
-                            pos_2 = self.__coordinates[model_id][atom_key_2]  # noqa: F841, pylint: disable='unused-variable'
-                        except KeyError:
+                        if atom_key_2 not in coords:
                             if self.__verbose:
                                 self.__log.write(f"Atom (auth_asym_id: {atom_key_2[0]}, auth_seq_id: {atom_key_2[1]}, "
                                                  f"comp_id: {atom_key_2[2]}, atom_id: {atom_key_2[3]}) "
                                                  f"not found in the coordinates for RDC restraint {rest_key}.\n")
                             atom_present = False
 
-                        if atom_present:
-                            # """ TODO: rdc() should return calculated RDC value for a given vector
-                            # using the RDC alignment tensor of rest_key[0]
-                            # r = rdc(rest_key[0], pos_1, pos_2)
-                            # rdc_list_set[bound_key].append(r)
-                            # """
-                            pass
-                        else:
+                        if not atom_present:
                             self.__rdcRestUnmapped.append(rest_key)
+                            continue
 
-                    error = None
+                        if not has_calc:
+                            continue
 
-                    if len(rdc_list_set) > 0:
+                        bound_key = (r['lower_bound'], r['upper_bound'])
 
-                        for bound_key, rdc_list in rdc_list_set.items():
+                        if bound_key in seen_bound_keys:  # same r_calc -> same error
+                            continue
+                        seen_bound_keys.add(bound_key)
 
-                            if len(rdc_list) == 0:
-                                continue
+                        _error = rdc_error(bound_key[0], bound_key[1], r_calc)
 
-                            lower_bound, upper_bound = bound_key
-                            avr_r = numpy.mean(numpy.array(rdc_list, dtype=float))
-
-                            _error = rdc_error(lower_bound, upper_bound, avr_r)
-
-                            if error is None or error > _error:
-                                error = _error
+                        if error is None or error > _error:
+                            error = _error
 
                     error_per_model[model_id] = error
 
@@ -4056,6 +4276,81 @@ class NmrVrptUtility:
                     get_viol_per_model(min_error_per_model, min_comb_key_per_model)
 
             self.__rdcRestUnmapped = list(set(self.__rdcRestUnmapped))
+
+            list_ids = set()
+            for rest_key in self.__rdcCalcDict:
+                list_ids.add(rest_key[0])
+
+            for list_id in sorted(list(list_ids)):
+                rdc_values, rdc_errors, q_scores = {}, {}, {}
+
+                for rest_key, rdc_calc in self.__rdcCalcDict.items():
+
+                    if rest_key[0] != list_id:
+                        continue
+
+                    restraints = self.__rdcRestDict[rest_key]
+
+                    for r in restraints:
+                        rdc_type = r['rdc_type']
+
+                        if rdc_type not in rdc_values:
+                            rdc_values[rdc_type] = []
+                            rdc_errors[rdc_type] = []
+                            q_scores[rdc_type] = {'rdc_exp': [], 'rdc_calc': []}
+
+                        ak1 = r['atom_key_1']
+                        ak2 = r['atom_key_2']
+
+                        rdc_exp_center = r['target_value']  # raw observed RDC value (without scale factor)
+
+                        # since calculated RDC values have been scaled through scaled RDC input data at SVD operation
+                        # cancel scale factor of the calculated RDC values to compare with the raw observed RDC values
+                        rdc_calcs = numpy.array(list(rdc_calc.values()), dtype=float) / r['scale_factor']
+                        rdc_calc_mean = numpy.mean(rdc_calcs)
+                        rdc_calc_center = round(rdc_calc_mean, 2)
+                        rdc_calc_min = round(numpy.min(rdc_calcs), 2)
+                        rdc_calc_max = round(numpy.max(rdc_calcs), 2)
+
+                        q_scores[rdc_type]['rdc_exp'].append(rdc_exp_center)
+                        q_scores[rdc_type]['rdc_calc'].append(rdc_calc_mean)
+
+                        if ak1[0] == ak2[0]:
+                            if ak1[1] == ak2[1]:
+                                vector_name = f"{ak1[0]}:{ak1[1]}:{ak1[2]}:{ak1[3]}-{ak2[3]}"
+                            else:
+                                vector_name = f"{ak1[0]}:{ak1[1]}:{ak1[2]}:{ak1[3]}-"\
+                                    f"{ak2[1]}:{ak2[2]}:{ak2[3]}"
+                        else:
+                            vector_name = f"{ak1[0]}:{ak1[1]}:{ak1[2]}:{ak1[3]}-"\
+                                f"{ak2[0]}:{ak2[1]}:{ak2[2]}:{ak2[3]}"
+
+                        rdc_values[rdc_type].append([rdc_exp_center, rdc_calc_center, vector_name])
+                        rdc_errors[rdc_type].append([rdc_exp_center, rdc_calc_center,
+                                                     r['lower_bound'], r['upper_bound'],
+                                                     rdc_calc_min,
+                                                     rdc_calc_max])
+
+                da_array = numpy.array([float(v['Szz']) * float(v['Dmax'])
+                                        for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
+                eta_array = numpy.array([float(v['eta']) for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
+                denominator_unit = da_array.mean() ** 2 * (4.0 + 3.0 * eta_array.mean() ** 2) / 5.0
+
+                for k, v in copy.copy(q_scores).items():
+                    rdc_exp_array = numpy.array(v['rdc_exp'], dtype=float)
+                    rdc_calc_array = numpy.array(v['rdc_calc'], dtype=float)
+                    rdc_exp_mean = numpy.mean(rdc_exp_array)
+                    total_sum_of_square = ((rdc_exp_array - rdc_exp_mean) ** 2).sum()
+                    sum_of_squared_errors = ((rdc_exp_array - rdc_calc_array) ** 2).sum()
+                    sum_of_squared_values = (rdc_exp_array ** 2).sum()
+                    q_scores[k]['r2'] = round(1.0 - sum_of_squared_errors / total_sum_of_square, 2)
+                    q_scores[k]['Cornilescu_Q'] = round(math.sqrt(sum_of_squared_errors / sum_of_squared_values), 2)
+                    q_scores[k]['Clore_Q'] = round(math.sqrt(sum_of_squared_errors
+                                                             / (rdc_exp_array.shape[0] * denominator_unit)), 2)
+                    del q_scores[k]['rdc_exp']
+                    del q_scores[k]['rdc_calc']
+
+                self.__rdcCorrPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors, 'q_scores': q_scores}
 
             return True
 
@@ -4232,11 +4527,11 @@ class NmrVrptUtility:
                     keyItems.append({'name': 'auth_mon_id', 'type': 'str', 'alt_name': 'alt_comp_id', 'default-from': 'mon_id'})
 
                 try:
-                    polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                           withRmsd=True,
-                                                           totalModels=self.__total_models,
-                                                           effModelIds=self.__eff_model_ids,
-                                                           repAltId=self.__representative_alt_id)
+                    polySeq, _ = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                              withRmsd=True,
+                                                              totalModels=self.__total_models,
+                                                              effModelIds=self.__eff_model_ids,
+                                                              repAltId=self.__representative_alt_id)
                 except KeyError:  # pdbx_PDB_ins_code throws KeyError
                     pass
 
@@ -4256,11 +4551,11 @@ class NmrVrptUtility:
                         keyItems.append({'name': 'pdbx_PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '.'})
 
                     try:
-                        polySeq = self.__cR.getPolymerSequence(lpCategory, keyItems,
-                                                               withRmsd=True,
-                                                               totalModels=self.__total_models,
-                                                               effModelIds=self.__eff_model_ids,
-                                                               repAltId=self.__representative_alt_id)
+                        polySeq, _ = self.__cR.getPolymerSequence(lpCategory, keyItems,
+                                                                  withRmsd=True,
+                                                                  totalModels=self.__total_models,
+                                                                  effModelIds=self.__eff_model_ids,
+                                                                  repAltId=self.__representative_alt_id)
                     except (KeyError, ValueError):
                         pass
 
@@ -4314,11 +4609,11 @@ class NmrVrptUtility:
         completeness = {task_key: _completeness[task_key][any_type]['overall'] for task_key in task_keys}
 
         completeness['chemical_shift_completeness'] =\
-            float(f"{100.0 * completeness['well_defined'][0] / completeness['well_defined'][1]:.2f}")\
+            round(100.0 * completeness['well_defined'][0] / completeness['well_defined'][1], 2)\
             if completeness['well_defined'][1] > 0 else 0.0
 
         completeness['chemical_shift_completeness_full_length'] =\
-            float(f"{100.0 * completeness['full_length'][0] / completeness['full_length'][1]:.2f}")\
+            round(100.0 * completeness['full_length'][0] / completeness['full_length'][1], 2)\
             if completeness['full_length'][1] > 0 else 0.0
 
         favor_completeness = {task_key: _completeness[task_key][any_type]['favorable'] for task_key in task_keys}
@@ -4327,11 +4622,11 @@ class NmrVrptUtility:
         completeness['favor_full_length'] = _completeness['full_length'][any_type]['favorable']
 
         completeness['favor_chem_shift_completeness'] =\
-            float(f"{100.0 * favor_completeness['well_defined'][0] / favor_completeness['well_defined'][1]:.2f}")\
+            round(100.0 * favor_completeness['well_defined'][0] / favor_completeness['well_defined'][1], 2)\
             if favor_completeness['well_defined'][1] > 0 else 0.0
 
         completeness['favor_chem_shift_completeness_full_length'] =\
-            float(f"{100.0 * favor_completeness['full_length'][0] / favor_completeness['full_length'][1]:.2f}")\
+            round(100.0 * favor_completeness['full_length'][0] / favor_completeness['full_length'][1], 2)\
             if favor_completeness['full_length'][1] > 0 else 0.0
 
         self.__results['completeness'] = completeness
@@ -4451,6 +4746,92 @@ class NmrVrptUtility:
                     else:
                         seq_ids_wo_assign.append(auth_seq_id)
 
+                if self.__chemShiftUnmapped is not None and list_id in self.__chemShiftUnmapped:
+                    unmap_cs_data = self.__chemShiftUnmapped[list_id]
+
+                    unmap_cs_data_ = [cs for cs in unmap_cs_data
+                                      if cs['auth_chain_id'] == auth_chain_id
+                                      and cs['value'] not in EMPTY_VALUE]
+
+                    if len(unmap_cs_data_) > 0:
+                        unmap_rci_residues = []
+
+                        for cs in unmap_cs_data_:
+                            auth_seq_id = int(cs['auth_seq_id'])
+                            comp_id = cs['comp_id']
+                            atom_id = cs['atom_id']
+
+                            if comp_id not in EMPTY_VALUE:
+                                if comp_id not in STD_MON_DICT:
+                                    continue
+                                if not self.__csStat.peptideLike(comp_id):
+                                    continue
+
+                                residue = [comp_id, auth_seq_id]
+                                if residue not in unmap_rci_residues:
+                                    unmap_rci_residues.append(residue)
+
+                        if len(unmap_rci_residues) > 0:
+                            rci_residues.extend(unmap_rci_residues)
+                            rci_residues = sorted(rci_residues, key=itemgetter(1))
+
+                            for comp_id, auth_seq_id in unmap_rci_residues:
+
+                                _unmap_cs_data = [cs for cs in unmap_cs_data_
+                                                  if cs['auth_seq_id'] == auth_seq_id
+                                                  and cs['comp_id'] == comp_id]
+
+                                if len(_unmap_cs_data) == 0:
+                                    continue
+
+                                has_bb_atoms = False
+
+                                for cs in _unmap_cs_data:
+                                    atom_id = cs['atom_id']
+
+                                    if atom_id not in rci_atom_ids:
+                                        continue
+
+                                    rci_assignments.append([comp_id, auth_seq_id, atom_id, atom_id[0], cs['value']])
+
+                                    has_bb_atoms = True
+
+                                if has_bb_atoms:
+
+                                    if comp_id in ('CYS', 'DCY'):
+
+                                        ca_chem_shift = cb_chem_shift = None
+
+                                        for cs in _unmap_cs_data:
+                                            atom_id = cs['atom_id']
+
+                                            if atom_id == 'CA':
+                                                ca_chem_shift = cs['value']
+                                            elif atom_id == 'CB':
+                                                cb_chem_shift = cs['value']
+
+                                        ambig_redox_state = False
+
+                                        if cb_chem_shift is not None:
+                                            if cb_chem_shift < 32.0:
+                                                pass
+                                            elif cb_chem_shift > 35.0:
+                                                oxidized_cys_seq_ids.append(auth_seq_id)
+                                            else:
+                                                ambig_redox_state = True
+                                        elif ca_chem_shift is not None:
+                                            ambig_redox_state = True
+
+                                        if ambig_redox_state:
+                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
+                                            if oxi < 0.001:
+                                                pass
+                                            elif red < 0.001 or oxi > 0.5:
+                                                oxidized_cys_seq_ids.append(auth_seq_id)
+
+                                else:
+                                    seq_ids_wo_assign.append(auth_seq_id)
+
                 if len(rci_assignments) > 0:
                     rci_result[list_id][auth_chain_id] =\
                         rci.calculate(rci_residues, rci_assignments, oxidized_cys_seq_ids, seq_ids_wo_assign)
@@ -4493,15 +4874,12 @@ class NmrVrptUtility:
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
 
-        if self.__has_prev_results:
+        if self.__has_prev_results or self.__distRestDict is None or len(self.__distRestDict) == 0:
             return True
 
         try:
 
             self.__results['distance'] = self.__distRestViolDict is not None and len(self.__distRestViolDict) > 0
-
-            if not self.__results['distance']:
-                return True
 
             self.__results['dist_seq_dict'] = self.__distRestSeqDict
             self.__results['unmapped_dist'] = self.__distRestUnmapped
@@ -4521,28 +4899,36 @@ class NmrVrptUtility:
             consistent_distance_violation, distance_violations_vs_models, distance_violations_in_models =\
                 {}, {}, {}
 
+            # Non-per-model accumulators: build once (were re-created and overwritten
+            # inside the per-model loop below, i.e. total_models times).
+            for t in distance_type:
+                distance_summary[t] = {}
+                distance_violation[t] = {}
+                consistent_distance_violation[t] = {}
+                distance_violations_vs_models[t] = {}
+
+                for s in distance_sub_type:
+                    distance_summary[t][s] = {}
+                    distance_violation[t][s] = {}
+                    consistent_distance_violation[t][s] = {}
+                    distance_violations_vs_models[t][s] = {}
+
+                    for b in bond_flag:
+                        distance_summary[t][s][b] = 0
+                        distance_violation[t][s][b] = 0
+                        consistent_distance_violation[t][s][b] = 0
+                        distance_violations_vs_models[t][s][b] = [0] * (self.__total_models + 1)
+
             for m in self.__eff_model_ids:
                 distance_violations_in_models[m] = {}
 
                 for t in distance_type:
-                    distance_summary[t] = {}
-                    distance_violation[t] = {}
-                    consistent_distance_violation[t] = {}
-                    distance_violations_vs_models[t] = {}
                     distance_violations_in_models[m][t] = {}
 
                     for s in distance_sub_type:
-                        distance_summary[t][s] = {}
-                        distance_violation[t][s] = {}
-                        consistent_distance_violation[t][s] = {}
-                        distance_violations_vs_models[t][s] = {}
                         distance_violations_in_models[m][t][s] = {}
 
                         for b in bond_flag:
-                            distance_summary[t][s][b] = 0
-                            distance_violation[t][s][b] = 0
-                            consistent_distance_violation[t][s][b] = 0
-                            distance_violations_vs_models[t][s][b] = [0] * (self.__total_models + 1)
                             distance_violations_in_models[m][t][s][b] = []
 
             for rest_key, restraints in self.__distRestDict.items():
@@ -4622,6 +5008,10 @@ class NmrVrptUtility:
 
                 if len(vm) > 1:
                     e = numpy.array([err for err in viol_per_model.values() if err is not None and err > 0.0], dtype=float)
+                    # e is fixed per rest_key; compute the five statistics once
+                    # (were recomputed for every r below).
+                    e_min, e_max, e_mean, e_std, e_median = \
+                        numpy.min(e), numpy.max(e), numpy.mean(e), numpy.std(e), numpy.median(e)
 
                     comb_keys = []
                     for _m in set(vm):
@@ -4643,11 +5033,11 @@ class NmrVrptUtility:
                                                            r['bond_flag'],
                                                            len(vm),
                                                            vm,
-                                                           numpy.min(e),
-                                                           numpy.max(e),
-                                                           numpy.mean(e),
-                                                           numpy.std(e),
-                                                           numpy.median(e)])
+                                                           e_min,
+                                                           e_max,
+                                                           e_mean,
+                                                           e_std,
+                                                           e_median])
 
             self.__results['most_violated_distance'] =\
                 sorted(most_violated_distance, reverse=True, key=itemgetter(6, 10))
@@ -4749,16 +5139,13 @@ class NmrVrptUtility:
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
 
-        if self.__has_prev_results:
+        if self.__has_prev_results or self.__dihedRestDict is None or len(self.__dihedRestDict) == 0:
             return True
 
         try:
 
             self.__results['angle'] = self.__dihedRestViolDict is not None and len(self.__dihedRestViolDict) > 0
             self.__results['error_message_angle'] = None
-
-            if not self.__results['angle']:
-                return True
 
             self.__results['angle_seq_dict'] = self.__dihedRestSeqDict
             self.__results['unmapped_angle'] = self.__dihedRestUnmapped
@@ -4770,7 +5157,7 @@ class NmrVrptUtility:
                 for r_list in self.__dihedRestDict.values():
                     for r in r_list:
                         angle_type_set.add(r['angle_type'])
-                angle_type = list(angle_type_set) + [any_type]
+                angle_type = sorted(list(angle_type_set)) + [any_type]
             except IndexError:
                 self.__log.write("Dihedral angle analysis failed due to data error in the dihedral angle restraints. "
                                  f"{self.__dihedRestDict.values()}\n")
@@ -4787,14 +5174,18 @@ class NmrVrptUtility:
             consistent_angle_violation, angle_violations_vs_models, angle_violations_in_models =\
                 {}, {}, {}
 
+            # Non-per-model accumulators: build once (were re-created and overwritten
+            # inside the per-model loop below, i.e. total_models times).
+            for t in angle_type:
+                angle_summary[t] = 0
+                angle_violation[t] = 0
+                consistent_angle_violation[t] = 0
+                angle_violations_vs_models[t] = [0] * (self.__total_models + 1)
+
             for m in self.__eff_model_ids:
                 angle_violations_in_models[m] = {}
 
                 for t in angle_type:
-                    angle_summary[t] = 0
-                    angle_violation[t] = 0
-                    consistent_angle_violation[t] = 0
-                    angle_violations_vs_models[t] = [0] * (self.__total_models + 1)
                     angle_violations_in_models[m][t] = []
 
             for rest_key, restraints in self.__dihedRestDict.items():
@@ -4871,6 +5262,8 @@ class NmrVrptUtility:
 
                 if len(vm) > 1:
                     e = numpy.array([err for err in viol_per_model.values() if err is not None and err > 0.0], dtype=float)
+                    e_min, e_max, e_mean, e_std, e_median = \
+                        numpy.min(e), numpy.max(e), numpy.mean(e), numpy.std(e), numpy.median(e)
 
                     comb_keys = []
                     for _m in set(vm):
@@ -4892,11 +5285,11 @@ class NmrVrptUtility:
                                                         r['angle_type'],
                                                         len(vm),
                                                         vm,
-                                                        numpy.min(e),
-                                                        numpy.max(e),
-                                                        numpy.mean(e),
-                                                        numpy.std(e),
-                                                        numpy.median(e)])
+                                                        e_min,
+                                                        e_max,
+                                                        e_mean,
+                                                        e_std,
+                                                        e_median])
 
             self.__results['most_violated_angle'] =\
                 sorted(most_violated_angle, reverse=True, key=itemgetter(6, 10))
@@ -4993,16 +5386,13 @@ class NmrVrptUtility:
             @author: Masashi Yokochi
         """
 
-        if self.__has_prev_results:
+        if self.__has_prev_results or self.__rdcRestDict is None or len(self.__rdcRestDict) == 0:
             return True
 
         try:
 
             self.__results['rdc'] = self.__rdcRestViolDict is not None and len(self.__rdcRestViolDict) > 0
             self.__results['error_message_rdc'] = None
-
-            if not self.__results['rdc']:
-                return True
 
             self.__results['rdc_seq_dict'] = self.__rdcRestSeqDict
             self.__results['unmapped_rdc'] = self.__rdcRestUnmapped
@@ -5014,7 +5404,7 @@ class NmrVrptUtility:
                 for r_list in self.__rdcRestDict.values():
                     for r in r_list:
                         rdc_type_set.add(r['rdc_type'])
-                rdc_type = list(rdc_type_set) + [any_type]
+                rdc_type = sorted(list(rdc_type_set)) + [any_type]
             except IndexError:
                 self.__log.write(f"RDC analysis failed due to data error in the RDC restraints. {self.__rdcRestDict.values()}\n")
                 self.__results['error_message_rdc'] = 'RDC analysis failed due to data error in the RDC angle restraints'
@@ -5028,14 +5418,18 @@ class NmrVrptUtility:
             consistent_rdc_violation, rdc_violations_vs_models, rdc_violations_in_models =\
                 {}, {}, {}
 
+            # Non-per-model accumulators: build once (were re-created and overwritten
+            # inside the per-model loop below, i.e. total_models times).
+            for t in rdc_type:
+                rdc_summary[t] = 0
+                rdc_violation[t] = 0
+                consistent_rdc_violation[t] = 0
+                rdc_violations_vs_models[t] = [0] * (self.__total_models + 1)
+
             for m in self.__eff_model_ids:
                 rdc_violations_in_models[m] = {}
 
                 for t in rdc_type:
-                    rdc_summary[t] = 0
-                    rdc_violation[t] = 0
-                    consistent_rdc_violation[t] = 0
-                    rdc_violations_vs_models[t] = [0] * (self.__total_models + 1)
                     rdc_violations_in_models[m][t] = []
 
             for rest_key, restraints in self.__rdcRestDict.items():
@@ -5112,6 +5506,8 @@ class NmrVrptUtility:
 
                 if len(vm) > 1:
                     e = numpy.array([err for err in viol_per_model.values() if err is not None and err > 0.0], dtype=float)
+                    e_min, e_max, e_mean, e_std, e_median = \
+                        numpy.min(e), numpy.max(e), numpy.mean(e), numpy.std(e), numpy.median(e)
 
                     comb_keys = []
                     for _m in set(vm):
@@ -5131,11 +5527,11 @@ class NmrVrptUtility:
                                                       r['rdc_type'],
                                                       len(vm),
                                                       vm,
-                                                      numpy.min(e),
-                                                      numpy.max(e),
-                                                      numpy.mean(e),
-                                                      numpy.std(e),
-                                                      numpy.median(e)])
+                                                      e_min,
+                                                      e_max,
+                                                      e_mean,
+                                                      e_std,
+                                                      e_median])
 
             self.__results['most_violated_rdc'] =\
                 sorted(most_violated_rdc, reverse=True, key=itemgetter(4, 8))
@@ -5207,6 +5603,9 @@ class NmrVrptUtility:
                                                             err])
 
             self.__results['rdc_violation_seq'] = rdc_violation_seq
+
+            if len(self.__rdcCorrPlotDict) > 0:
+                self.__results['rdc_correlation_plot'] = self.__rdcCorrPlotDict
 
             return True
 

@@ -138,6 +138,7 @@
 # 07-Jan-2026  M. Yokochi - update status code when adding error/warning description
 # 27-Jan-2026  M. Yokochi - add hasSequenceMismatchErrorInCsLoop() (DAOTHER-10487)
 # 30-Jun-2026  M. Yokochi - add 'nm-csp-*' file type to support chemical shift perturbation (DAOTHER-9785)
+# 10-Jul-2026  M. Yokochi - add 'ensemble_composition' item in NmrDpReportInputSource class (DAOTHER-9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -1985,7 +1986,7 @@ class NmrDpReportInputSource:
         self.items = ('file_name', 'file_type', 'original_file_name', 'content_type', 'content_subtype',
                       'polymer_sequence', 'polymer_sequence_in_loop',
                       'non_standard_residue', 'disulfide_bond', 'other_bond',
-                      'stats_of_exptl_data', 'ignore_error')
+                      'stats_of_exptl_data', 'ensemble_composition', 'ignore_error')
         self.file_types = ('pdbx',
                            'nef', 'nmr-star',
                            'nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb', 'nm-aux-xea',
@@ -2433,9 +2434,9 @@ class NmrDpReportError:
         return [c for c in self.__contents[item]
                 if c['file_name'] == file_name or (key is None or key in c['description'])]
 
-    def getValueListWithSf(self, item: str, file_name: str, sf_framecode: str, key: Optional[str] = None
+    def getValueListWithSf(self, item: str, sf_framecode: str, key: Optional[str] = None
                            ) -> Optional[List[dict]]:
-        """ Return list of error values specified by item name, file name, and saveframe.
+        """ Return list of error values specified by item name and saveframe.
         """
 
         if item in ('total', 'internal_error') or self.__contents is None\
@@ -2443,7 +2444,7 @@ class NmrDpReportError:
             return None
 
         return [c for c in self.__contents[item]
-                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode
+                if 'sf_framecode' in c and c['sf_framecode'] == sf_framecode
                 and (key is None or key in c['description'])]
 
     def getInheritableValueList(self, item: str
@@ -2825,9 +2826,9 @@ class NmrDpReportWarning:
         return [c for c in self.__contents[item] if c['file_name'] == file_name
                 and (key is None or key in c['description'])]
 
-    def getValueListWithSf(self, item: str, file_name: str, sf_framecode: str, key: Optional[str] = None
+    def getValueListWithSf(self, item: str, sf_framecode: str, key: Optional[str] = None
                            ) -> Optional[List[dict]]:
-        """ Return list of warning values specified by item name, file name, and saveframe.
+        """ Return list of warning values specified by item name and saveframe.
         """
 
         if item == 'total' or self.__contents is None\
@@ -2835,7 +2836,7 @@ class NmrDpReportWarning:
             return None
 
         return [c for c in self.__contents[item]
-                if c['file_name'] == file_name and 'sf_framecode' in c and c['sf_framecode'] == sf_framecode
+                if 'sf_framecode' in c and c['sf_framecode'] == sf_framecode
                 and (key is None or key in c['description'])]
 
     def getInheritableValueList(self, item: str

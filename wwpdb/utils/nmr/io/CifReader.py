@@ -71,12 +71,12 @@ from mmcif.io.PdbxReader import PdbxReader
 
 import numpy
 
-from scipy.spatial.distance import pdist, squareform
-
 from rmsd.calculate_rmsd import (centroid, check_reflections,  # noqa: F401,E501 pylint: disable=no-name-in-module,import-error,unused-import,line-too-long
                                  kabsch_rmsd, quaternion_rmsd, quaternion_rotate,
                                  reorder_brute, reorder_distance, reorder_hungarian,
                                  rmsd)
+
+from scipy.spatial.distance import pdist, squareform
 
 from sklearn.cluster import (DBSCAN, KMeans)
 

@@ -284,6 +284,8 @@ For example,
     pip install urllib3==1.26.18  # Only for Python 3.6, 3.7, 3.8, and 3.9.
 ```
 
+- compiler supported c++17 (e.g. gcc 8.1 or later, optional for big performance acceleration based on speedy-antlr-tool)
+
 ### Set up standalone mode
 
 Set enviromnent variable PYTHONPATH
@@ -392,7 +394,7 @@ speedy-antlr-tool upgrade fails loudly rather than silently dropping a patch:
 Off by default, so the sdist and source wheel published to PyPI stay pure Python:
 
 ```bash
-    WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python setup.py build_clib build_ext --inplace -j $(nproc)
+    WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python3 setup.py build_clib build_ext --inplace -j $(nproc)
     find wwpdb/utils/nmr -name 'sa_*_cpp_parser*.so' -exec strip --strip-unneeded {} +
 ```
 

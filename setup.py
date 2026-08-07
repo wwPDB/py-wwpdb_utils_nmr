@@ -2,14 +2,84 @@
 # Date: 3-Oct-2018
 #
 # Update:
+#  7-Aug-2026 my optional speedy-antlr-tool C++ parser accelerators
 #
+import glob
+import os
 import re
 
-from setuptools import find_packages
-from setuptools import setup
+from setuptools import Extension, find_packages, setup
 
 packages = []
 thisPackage = 'wwpdb.utils.nmr'
+
+# ------------------------------------------------------------------------------
+# Optional speedy-antlr-tool C++ parser accelerators.
+#
+# Off by default: the sdist/source wheel published to PyPI stays pure Python, and
+# each sa_<grammar>.py shim transparently falls back to the ANTLR Python runtime
+# when its extension is absent. Set WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 to compile
+# them (see tools/gen_speedy_antlr.py and the Dockerfile builder stage):
+#
+#   WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python setup.py build_clib build_ext --inplace -j $(nproc)
+#
+# Extension name -> (subpackage, generated-source prefix). Keep in step with
+# GRAMMARS in tools/gen_speedy_antlr.py.
+SPEEDY_ANTLR_EXTENSIONS = {
+    'sa_nmrpipecs_cpp_parser': ('cs', 'NmrPipeCS'),
+    'sa_xplormr_cpp_parser': ('mr', 'XplorMR'),
+}
+
+CPP_SRC_DIR = os.path.join('wwpdb', 'utils', 'nmr', 'cpp_src')
+CPP_RUNTIME_DIR = os.path.join(CPP_SRC_DIR, 'antlr4-cpp-runtime')
+
+# ANTLR's C++ runtime is ~140 translation units. Building it once as a static
+# library, rather than folding it into every Extension, keeps the build time flat
+# as more grammars are bridged.
+ANTLR_CFLAGS = ['-std=c++17', '-O2', '-DANTLR4CPP_STATIC']
+
+
+def speedyAntlrLibraries() -> list:
+    """ The ANTLR4 C++ runtime, compiled once and shared by every accelerator.
+    """
+
+    sources = sorted(glob.glob(os.path.join(CPP_RUNTIME_DIR, '**', '*.cpp'), recursive=True))
+    if not sources:
+        raise RuntimeError(f'{CPP_RUNTIME_DIR} is empty; run tools/gen_speedy_antlr.py first.')
+
+    return [('antlr4_cpp_runtime', {'sources': sources,
+                                    'include_dirs': [CPP_RUNTIME_DIR],
+                                    'cflags': ANTLR_CFLAGS,
+                                    'language': 'c++'})]
+
+
+def speedyAntlrExtensions() -> list:
+    """ One Extension per bridged grammar, linked against the shared runtime.
+    """
+
+    extensions = []
+
+    for moduleName, (subPackage, prefix) in sorted(SPEEDY_ANTLR_EXTENSIONS.items()):
+        sources = sorted(set(glob.glob(os.path.join(CPP_SRC_DIR, prefix + '*.cpp'))
+                             + glob.glob(os.path.join(CPP_SRC_DIR, moduleName[:-len('_cpp_parser')] + '*.cpp'))
+                             + [os.path.join(CPP_SRC_DIR, 'speedy_antlr.cpp')]))
+        missing = [path for path in sources if not os.path.isfile(path)]
+        if missing or not sources:
+            raise RuntimeError(f'{moduleName}: generated sources are missing {missing or "entirely"}; '
+                               'run tools/gen_speedy_antlr.py first.')
+
+        extensions.append(
+            Extension(f'wwpdb.utils.nmr.{subPackage}.{moduleName}',
+                      sources=sources,
+                      include_dirs=[CPP_SRC_DIR, CPP_RUNTIME_DIR],
+                      libraries=['antlr4_cpp_runtime'],
+                      extra_compile_args=ANTLR_CFLAGS,
+                      language='c++'))
+
+    return extensions
+
+
+buildSpeedyAntlr = os.environ.get('WWPDB_NMR_BUILD_SPEEDY_ANTLR', '') not in ('', '0', 'false', 'False')
 
 with open('wwpdb/utils/nmr/__init__.py', 'r', encoding='utf-8') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
@@ -55,6 +125,8 @@ setup(
                       "datetime",
                       "dataclasses; python_version == '3.6'"],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'wwpdb.utils.tests-nmr-tox', 'mock-data']),
+    libraries=speedyAntlrLibraries() if buildSpeedyAntlr else [],
+    ext_modules=speedyAntlrExtensions() if buildSpeedyAntlr else [],
     # Enables Manifest to be used
     include_package_data=True,
     package_data={

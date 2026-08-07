@@ -327,6 +327,77 @@ CS_STAT_REL=2026-06-24    # BMRB chemical shift statistics release date
 
 For more information, see [Docker image in forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr/blob/main/Dockerfile)
 
+## ANTLR4 C++ parser accelerators
+
+Parsing dominates the cost of NMR data conversion, and the ANTLR4 *Python*
+runtime is slow. [speedy-antlr-tool](https://github.com/amykyta3/speedy-antlr-tool)
+runs the ANTLR4 lexer and parser via the **C++** target and translates the result
+back into ordinary `antlr4-python3-runtime` node objects, so every hand-written
+`*ParserListener` class is reused unchanged.
+
+Measured on `test_daother_7871` (four XPLOR-NIH restraint files, full
+`nmr-cs-str-consistency-check`): **65.2 s → 11.7 s**, with a byte-identical
+processing report.
+
+Bridged grammars are listed in `GRAMMARS` in [tools/gen_speedy_antlr.py](../../../tools/gen_speedy_antlr.py).
+
+### Regenerating
+
+Requires the `antlr4-tools` and `speedy-antlr-tool` pip packages, plus Java
+(`antlr4-tools` provisions a JRE on first use):
+
+```bash
+    python3 tools/gen_speedy_antlr.py --list          # show bridged grammars
+    python3 tools/gen_speedy_antlr.py XplorMR         # regenerate one
+    python3 tools/gen_speedy_antlr.py --all
+```
+
+This emits the `sa_<grammar>.py` shim next to its generated parser, plus C++
+sources under `wwpdb/utils/nmr/cpp_src`. Both are tracked in git, together with
+the bundled ANTLR4 C++ runtime source, so building the container needs only a
+C++17 compiler - no Java, no network, and no `.g4` grammars.
+
+The generated Python lexer/parser are **not** regenerated: they are already
+byte-identical to a fresh `antlr4 -Dlanguage=Python3 -no-visitor` run with ANTLR
+4.13.0, and regenerating in place would overwrite the hand-written
+`<Grammar>ParserListener.py`, which deliberately shadows ANTLR's generated
+listener base of the same name.
+
+### Building
+
+Off by default, so the sdist and source wheel published to PyPI stay pure Python:
+
+```bash
+    WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python setup.py build_clib build_ext --inplace -j $(nproc)
+    find wwpdb/utils/nmr -name 'sa_*_cpp_parser*.so' -exec strip --strip-unneeded {} +
+```
+
+`build_clib` compiles the ANTLR4 C++ runtime once into a static library shared by
+every accelerator, so build time stays flat as grammars are added. Stripping
+matters - it takes each accelerator from ~25 MB to ~2 MB. The Dockerfile builder
+stage runs both steps.
+
+### Fallback
+
+If an accelerator is missing (any pip install, or an unsupported platform),
+`sa_<grammar>.py` sets `USE_CPP_IMPLEMENTATION = False` and
+[AntlrParseUtil.parseAntlr()](AntlrParseUtil.py) transparently runs the ANTLR
+Python runtime. `parseAntlr()` is the single parse driver for all `*Reader`
+classes; it also honours the SLL prediction mode on both paths, which matters
+because `XplorMRReader`, `CnsMRReader`, `CyanaMRReader`, `CharmmMRReader`,
+`SchrodingerMRReader` and `CyanaNOAReader` choose it per call.
+
+### Known difference
+
+speedy-antlr-tool materializes error-recovery nodes as `TerminalNodeImpl` rather
+than `ErrorNodeImpl`. This is invisible here: `ErrorNodeImpl` subclasses
+`TerminalNodeImpl` (so every `ctx.SomeToken()` accessor behaves identically), and
+no listener in this package implements `visitErrorNode`/`visitTerminal`. Parse
+trees, tokens and both syntax-error reports are otherwise identical between the
+two paths - see
+[SpeedyAntlrErrorListener.py](mr/SpeedyAntlrErrorListener.py), which also undoes
+the C++ target's `?` escaping of `?` so error messages match byte for byte.
+
 ## Appendix
 
 The codes used for specifying each file type in NmrDpUtility are compatible with OneDep system as follows:

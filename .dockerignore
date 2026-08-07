@@ -6,7 +6,7 @@ MANIFEST.in
 README.md
 *.yml
 pylintrc
-setup.*
+setup.cfg
 tox.ini
 
 wwpdb/utils/tests-nmr

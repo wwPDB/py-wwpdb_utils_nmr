@@ -2,6 +2,11 @@ recursive-include wwpdb/utils/nmr/bmrb_cs_stat *.csv *.pkl
 recursive-include wwpdb/utils/nmr/nmr-star_schema *.csv
 recursive-include wwpdb/utils/nmr/chem_comp_util *.pkl
 
+# The speedy-antlr-tool C++ accelerator sources are only built for the container
+# image (see the Dockerfile builder stage); the sdist and source wheel published
+# to PyPI stay pure Python and fall back to the ANTLR Python runtime.
+prune wwpdb/utils/nmr/cpp_src
+
 prune wwpdb/utils/nmr/obsolete
 prune wwpdb/utils/tests-nmr/obsolete
 prune wwpdb/utils/nmr/nef/NefTranslator/lib

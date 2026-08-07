@@ -282,6 +282,7 @@
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 # 13-Jul-2026  M. Yokochi - implement ensemble composition analysis including cluster analysis (DAOTHER-9785)
 # 24-Jul-2026  M. Yokochi - explain exact copy of the multimer's chemical shifts using comma-separated Auth_asym_IDs (DAOTHER-10898)
+# 07-Aug-2026  M. Yokochi - bridge ANTLR4 C++ lexer/parser into the Python listeners (speedy-antlr-tool, DAOTHER-9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -290,7 +291,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.2.0"
+__version__ = "5.3.0"
 
 import collections
 import copy

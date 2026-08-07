@@ -35,7 +35,7 @@ MANIFEST_PATH = os.path.join(CPP_SRC_DIR, 'speedy_antlr_manifest.json')
 # ANTLR's C++ runtime is ~140 translation units. Building it once as a static
 # library, rather than folding it into every Extension, keeps the build time flat
 # as more grammars are bridged.
-ANTLR_CFLAGS = ['-std=c++17', '-O2', '-DANTLR4CPP_STATIC']
+ANTLR_CFLAGS = ['-std=c++17', '-O2', '-DANTLR4CPP_STATIC', '-Wno-overloaded-virtual']
 
 
 def speedyAntlrLibraries() -> list:

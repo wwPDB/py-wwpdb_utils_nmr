@@ -5,6 +5,7 @@
 #  7-Aug-2026 my optional speedy-antlr-tool C++ parser accelerators
 #
 import glob
+import json
 import os
 import re
 
@@ -23,15 +24,13 @@ thisPackage = 'wwpdb.utils.nmr'
 #
 #   WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python setup.py build_clib build_ext --inplace -j $(nproc)
 #
-# Extension name -> (subpackage, generated-source prefix). Keep in step with
-# GRAMMARS in tools/gen_speedy_antlr.py.
-SPEEDY_ANTLR_EXTENSIONS = {
-    'sa_nmrpipecs_cpp_parser': ('cs', 'NmrPipeCS'),
-    'sa_xplormr_cpp_parser': ('mr', 'XplorMR'),
-}
-
+# The accelerators are declared by cpp_src/speedy_antlr_manifest.json, written by
+# tools/gen_speedy_antlr.py. Reading the manifest (rather than importing that
+# script, or duplicating its grammar table here) keeps the build independent of
+# tools/, which the container deletes after building.
 CPP_SRC_DIR = os.path.join('wwpdb', 'utils', 'nmr', 'cpp_src')
 CPP_RUNTIME_DIR = os.path.join(CPP_SRC_DIR, 'antlr4-cpp-runtime')
+MANIFEST_PATH = os.path.join(CPP_SRC_DIR, 'speedy_antlr_manifest.json')
 
 # ANTLR's C++ runtime is ~140 translation units. Building it once as a static
 # library, rather than folding it into every Extension, keeps the build time flat
@@ -57,19 +56,28 @@ def speedyAntlrExtensions() -> list:
     """ One Extension per bridged grammar, linked against the shared runtime.
     """
 
+    if not os.path.isfile(MANIFEST_PATH):
+        raise RuntimeError(f'{MANIFEST_PATH} is missing; run tools/gen_speedy_antlr.py --all first.')
+
+    with open(MANIFEST_PATH, 'r', encoding='utf-8') as ifh:
+        manifest = json.load(ifh)
+
+    # Sources are listed per accelerator rather than globbed by prefix, because
+    # NmrViewNPKParser, SparkyNPKParser and SparkyRPKParser borrow another
+    # grammar's lexer.
+    sharedSources = [os.path.join(CPP_SRC_DIR, name) for name in manifest.get('shared_sources', [])]
+
     extensions = []
 
-    for moduleName, (subPackage, prefix) in sorted(SPEEDY_ANTLR_EXTENSIONS.items()):
-        sources = sorted(set(glob.glob(os.path.join(CPP_SRC_DIR, prefix + '*.cpp'))
-                             + glob.glob(os.path.join(CPP_SRC_DIR, moduleName[:-len('_cpp_parser')] + '*.cpp'))
-                             + [os.path.join(CPP_SRC_DIR, 'speedy_antlr.cpp')]))
+    for entry in manifest['extensions']:
+        sources = [os.path.join(CPP_SRC_DIR, name) for name in entry['sources']] + sharedSources
         missing = [path for path in sources if not os.path.isfile(path)]
-        if missing or not sources:
-            raise RuntimeError(f'{moduleName}: generated sources are missing {missing or "entirely"}; '
+        if missing:
+            raise RuntimeError(f'{entry["module"]}: generated sources are missing {missing}; '
                                'run tools/gen_speedy_antlr.py first.')
 
         extensions.append(
-            Extension(f'wwpdb.utils.nmr.{subPackage}.{moduleName}',
+            Extension(f'wwpdb.utils.nmr.{entry["subpackage"]}.{entry["module"]}',
                       sources=sources,
                       include_dirs=[CPP_SRC_DIR, CPP_RUNTIME_DIR],
                       libraries=['antlr4_cpp_runtime'],

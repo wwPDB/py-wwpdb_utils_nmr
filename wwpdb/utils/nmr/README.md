@@ -339,7 +339,7 @@ Measured on `test_daother_7871` (four XPLOR-NIH restraint files, full
 `nmr-cs-str-consistency-check`): **65.2 s → 11.7 s**, with a byte-identical
 processing report.
 
-Bridged grammars are listed in `GRAMMARS` in [tools/gen_speedy_antlr.py](../../../tools/gen_speedy_antlr.py).
+All **42 grammars**, driven by all 46 `*Reader` classes, are bridged.
 
 ### Regenerating
 
@@ -352,16 +352,40 @@ Requires the `antlr4-tools` and `speedy-antlr-tool` pip packages, plus Java
     python3 tools/gen_speedy_antlr.py --all
 ```
 
-This emits the `sa_<grammar>.py` shim next to its generated parser, plus C++
-sources under `wwpdb/utils/nmr/cpp_src`. Both are tracked in git, together with
-the bundled ANTLR4 C++ runtime source, so building the container needs only a
-C++17 compiler - no Java, no network, and no `.g4` grammars.
+Grammars are **discovered from the `*Reader.py` classes** rather than listed in a
+table: each Reader names its lexer/parser in its imports, its entry rule in the
+`parseAntlr()` call, and whether it wants the SLL prediction mode. So a new
+grammar needs no edit to the script, and an accelerator cannot drift away from
+the Python path. `--list` shows what was discovered.
+
+Generation emits the `sa_<grammar>.py` shim next to its generated parser, C++
+sources under `wwpdb/utils/nmr/cpp_src`, and `cpp_src/speedy_antlr_manifest.json`
+which `setup.py` reads to declare the extensions. All are tracked in git,
+together with the bundled ANTLR4 C++ runtime source, so building the container
+needs only a C++17 compiler - no Java, no network, and no `.g4` grammars.
 
 The generated Python lexer/parser are **not** regenerated: they are already
 byte-identical to a fresh `antlr4 -Dlanguage=Python3 -no-visitor` run with ANTLR
 4.13.0, and regenerating in place would overwrite the hand-written
 `<Grammar>ParserListener.py`, which deliberately shadows ANTLR's generated
-listener base of the same name.
+listener base of the same name. (Note that the `-no-listener` flag used by
+speedy-antlr-tool's own example would strip the `enterRule`/`exitRule` hooks that
+`ParseTreeWalker` needs - all 42 committed parsers carry them.)
+
+Two classes of generated code are patched, both with exact-match assertions so a
+speedy-antlr-tool upgrade fails loudly rather than silently dropping a patch:
+
+1. **Prediction mode**, made a per-call argument of `do_parse()` and the shim's
+   `parse()`. It cannot be a compile-time constant: six `mr/` Readers choose it
+   at runtime via `if not isFilePath or self.__sll_pred`, `NmrDpMrSplitter`
+   escalates it on retry, and the XML accelerator is shared by `AriaMRXReader`
+   (SLL) and `AriaCSReader`/`AriaPKReader`/`TopSpinPKReader` (LL).
+2. **Borrowed lexers.** speedy-antlr-tool names the lexer after the parser, which
+   breaks the three grammars that reuse another grammar's lexer via `tokenVocab`
+   (`NmrViewNPKParser` → `NmrViewPKLexer`, `SparkyNPKParser` and
+   `SparkyRPKParser` → `SparkyPKLexer`). Left alone the C++ fails to compile, and
+   the shim raises `ModuleNotFoundError` at import - taking the Reader down
+   rather than degrading to the Python parser.
 
 ### Building
 
@@ -387,16 +411,42 @@ classes; it also honours the SLL prediction mode on both paths, which matters
 because `XplorMRReader`, `CnsMRReader`, `CyanaMRReader`, `CharmmMRReader`,
 `SchrodingerMRReader` and `CyanaNOAReader` choose it per call.
 
-### Known difference
+### Known differences
 
-speedy-antlr-tool materializes error-recovery nodes as `TerminalNodeImpl` rather
-than `ErrorNodeImpl`. This is invisible here: `ErrorNodeImpl` subclasses
-`TerminalNodeImpl` (so every `ctx.SomeToken()` accessor behaves identically), and
-no listener in this package implements `visitErrorNode`/`visitTerminal`. Parse
-trees, tokens and both syntax-error reports are otherwise identical between the
-two paths - see
-[SpeedyAntlrErrorListener.py](mr/SpeedyAntlrErrorListener.py), which also undoes
-the C++ target's `?` escaping of `?` so error messages match byte for byte.
+Verified by A/B running all 42 grammars through both paths over six inputs x both
+prediction modes - 504 comparisons, each in its own process - checking parse trees
+field-for-field (token type, channel, line, column, start/stop, tokenIndex, text)
+plus both syntax-error reports. **502 of 504 were identical**; the two exceptions
+are case 2 below. Both known differences are confined to error recovery on
+malformed input:
+
+1. **Error-recovery nodes** are materialized as `TerminalNodeImpl` rather than
+   `ErrorNodeImpl`. Invisible here: `ErrorNodeImpl` subclasses `TerminalNodeImpl`
+   (so every `ctx.SomeToken()` accessor behaves identically), and no listener in
+   this package implements `visitErrorNode`/`visitTerminal`.
+
+2. **Tokens the parser inserts during error recovery** are named differently. For
+   a missing `Integer`, the C++ runtime yields `<missing Integer>` while the
+   Python runtime yields `<missing <INVALID>>`. This is an ANTLR *Python* runtime
+   defect: `DefaultErrorStrategy.getMissingSymbol()` reads
+   `literalNames[tokenType]`, which is the literal string `'<INVALID>'` rather
+   than `None`, so it never falls through to `symbolicNames`; the C++
+   `Vocabulary::getDisplayName()` resolves it correctly. The C++ text is the more
+   accurate one, and the syntax-error messages users see are unaffected.
+
+[SpeedyAntlrErrorListener.py](mr/SpeedyAntlrErrorListener.py) also undoes the C++
+target's `?` escaping of `?`, so error messages match byte for byte.
+
+### Note on the ANTLR Python runtime's shared DFA cache
+
+Unrelated to the accelerators, but worth knowing when comparing runs: a generated
+Python parser keeps `decisionsToDFA` and `sharedContextCache` as **class**
+attributes, shared by every instance in the process. An SLL parse therefore
+pollutes what a later LL parse of the same input reports - e.g. `missing RETURN at
+'55.123'` instead of `extraneous input '55.123' expecting {...}`. Since
+`NmrDpMrSplitter` escalates `sll_pred` across retries, Python-path error reports
+can depend on what was parsed earlier in the same process. The C++ accelerators
+are order-independent, so they are the more reproducible of the two paths.
 
 ## Appendix
 

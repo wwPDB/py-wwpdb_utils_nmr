@@ -15,7 +15,7 @@ import os
 import sys
 from typing import IO, List, Optional, Tuple
 
-from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker, PredictionMode
+from antlr4 import ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -25,6 +25,8 @@ try:
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.AntlrParseUtil import parseAntlr
+    from wwpdb.utils.nmr.mr import sa_gromacspt
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.mr.GromacsPTLexer import GromacsPTLexer
@@ -39,6 +41,8 @@ except ImportError:
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
+    from nmr.AntlrParseUtil import parseAntlr
+    from nmr.mr import sa_gromacspt
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.GromacsPTLexer import GromacsPTLexer
@@ -141,7 +145,7 @@ class GromacsPTReader:
                     return None, None, None
 
                 ifh = open(ptFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
+                ptText = ifh.read()
 
             else:
                 ptFilePath, ptString = None, ptFilePath
@@ -151,7 +155,7 @@ class GromacsPTReader:
                         self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
-                input = InputStream(ptString)
+                ptText = ptString
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
@@ -166,11 +170,12 @@ class GromacsPTReader:
                             self.__log.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
-            lexer = GromacsPTLexer(input)
-            lexer.removeErrorListeners()
-
-            lexer_error_listener = LexerErrorListener(ptFilePath, maxErrorReport=self.__maxLexerErrorReport)
-            lexer.addErrorListener(lexer_error_listener)
+            tree, parser_error_listener, lexer_error_listener =\
+                parseAntlr(GromacsPTLexer, GromacsPTParser, 'gromacs_pt', ptText,
+                           filePath=ptFilePath, saModule=sa_gromacspt,
+                           maxLexerErrorReport=self.__maxLexerErrorReport,
+                           maxParserErrorReport=self.__maxParserErrorReport,
+                           predictionModeSll=True)
 
             messageList = lexer_error_listener.getMessageList()
 
@@ -181,15 +186,6 @@ class GromacsPTReader:
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
-
-            stream = CommonTokenStream(lexer)
-            parser = GromacsPTParser(stream)
-            # try with simpler/faster SLL prediction mode
-            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
-            parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(ptFilePath, maxErrorReport=self.__maxParserErrorReport)
-            parser.addErrorListener(parser_error_listener)
-            tree = parser.gromacs_pt()
 
             walker = ParseTreeWalker()
             listener = GromacsPTParserListener(self.__verbose, self.__log,

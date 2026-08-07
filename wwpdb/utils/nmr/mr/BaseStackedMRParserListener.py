@@ -287,6 +287,68 @@ except ImportError:
                                            getLoop)
 
 
+# Cost factor for intersectAtomSelectionInto(): a hashed index is O(N+M) to build but each
+# frozenset key costs roughly an order of magnitude more than a bare dict comparison, so the
+# plain O(N*M) list scan stays faster until N*M exceeds ~K*(N+M) (measured crossover K~=13).
+# Gating on K*(N+M) rather than a flat product keeps the direct path for the very common small
+# selections and for lopsided cases (e.g. 100000 x 1) where the scan is still only O(max(N, M)).
+INTERSECTION_INDEX_FACTOR = 16
+
+
+def intersectAtomSelectionInto(left: List[dict], right: List[dict],
+                               stripLeftAuth: bool, stripRightAuth: bool,
+                               wildcard: List[dict]) -> List[dict]:
+    """ Return the atoms of 'left' (original objects, in order) that also occur in 'right',
+        comparing atom dicts by equality with 'auth_atom_id' ignored on the side(s) flagged, plus
+        the legacy hydrogen_not_instantiated (chain_id, seq_id) fallback. Return 'wildcard' on the
+        first '*' in 'left'. Size-adaptive: O(N*M) list scan for small inputs, O(N+M) hashed index
+        for large ones (see INTERSECTION_INDEX_FACTOR).
+    """
+
+    lenL = len(left)
+    lenR = len(right)
+    useIndex = lenL * lenR > INTERSECTION_INDEX_FACTOR * (lenL + lenR)
+
+    if useIndex:
+        if stripRightAuth:
+            rightKeys = {frozenset((k, v) for k, v in _r.items() if k != 'auth_atom_id')
+                         for _r in right if isinstance(_r, dict)}
+        else:
+            rightKeys = {frozenset(_r.items()) for _r in right if isinstance(_r, dict)}
+    elif stripRightAuth:
+        rightView = [{k: v for k, v in _r.items() if k != 'auth_atom_id'} if isinstance(_r, dict) else _r
+                     for _r in right]
+    else:
+        rightView = right
+
+    _atomSelection = []
+    rightSeq = None
+
+    for _atom in left:
+        if isinstance(_atom, str) and _atom == '*':
+            return wildcard
+        if useIndex:
+            if stripLeftAuth:
+                _key = frozenset((k, v) for k, v in _atom.items() if k != 'auth_atom_id')
+            else:
+                _key = frozenset(_atom.items())
+            hit = _key in rightKeys
+        elif stripLeftAuth:
+            hit = {k: v for k, v in _atom.items() if k != 'auth_atom_id'} in rightView
+        else:
+            hit = _atom in rightView
+        if hit:
+            _atomSelection.append(_atom)
+        elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
+            if rightSeq is None:
+                rightSeq = {(_r['chain_id'], _r['seq_id']) for _r in right
+                            if isinstance(_r, dict) and 'chain_id' in _r and 'seq_id' in _r}
+            if (_atom['chain_id'], _atom['seq_id']) in rightSeq:
+                _atomSelection.append(_atom)
+
+    return _atomSelection
+
+
 class BaseStackedMRParserListener():
     """ ParserLister base class for generic stacked MR files.
     """
@@ -4584,8 +4646,6 @@ class BaseStackedMRParserListener():
         hasSegmentId1 = any(True for _atom in slice1 if 'segment_id' in _atom)
         hasSegmentId2 = any(True for _atom in slice2 if 'segment_id' in _atom)
 
-        _atomSelection = []
-
         if hasSegmentId1 != hasSegmentId2:
             if hasSegmentId1:
                 segmentId = next(_atom['segment_id'] for _atom in _selection1 if 'segment_id' in _atom)
@@ -4596,71 +4656,20 @@ class BaseStackedMRParserListener():
                 for _atom in _selection1:
                     _atom['segment_id'] = segmentId
 
+        # Delegate to a size-adaptive helper: a plain O(N*M) list scan for the common small
+        # selections, an O(N+M) hashed index once the inputs are large (these can reach ~1e5
+        # atoms). 'auth_atom_id' is ignored on the side(s) whose sampled atoms carried it,
+        # reproducing the former deepcopy()+pop() comparison without copying.
         if not hasAuthAtomId1 and not hasAuthAtomId2:
-            for _atom in _selection1:
-                if isinstance(_atom, str) and _atom == '*':
-                    return _selection2
-                if _atom in _selection2:
-                    _atomSelection.append(_atom)
-                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
-                    chain_id = _atom['chain_id']
-                    seq_id = _atom['seq_id']
-                    if any(True for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
-                        _atomSelection.append(_atom)
+            return intersectAtomSelectionInto(_selection1, _selection2, False, False, _selection2)
 
-        elif hasAuthAtomId1 and not hasAuthAtomId2:
-            __selection1 = deepcopy(_selection1)
-            for _atom in __selection1:
-                if 'auth_atom_id' in _atom:
-                    _atom.pop('auth_atom_id')
-            for idx, _atom in enumerate(__selection1):
-                if isinstance(_atom, str) and _atom == '*':
-                    return _selection2
-                if _atom in _selection2:
-                    _atomSelection.append(_selection1[idx])
-                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
-                    chain_id = _atom['chain_id']
-                    seq_id = _atom['seq_id']
-                    if any(True for _atom2 in _selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
-                        _atomSelection.append(_selection1[idx])
+        if hasAuthAtomId1 and not hasAuthAtomId2:
+            return intersectAtomSelectionInto(_selection1, _selection2, True, False, _selection2)
 
-        elif not hasAuthAtomId1 and hasAuthAtomId2:
-            __selection2 = deepcopy(_selection2)
-            for idx, _atom in enumerate(__selection2):
-                if 'auth_atom_id' in _atom:
-                    _atom.pop('auth_atom_id')
-            for idx, _atom in enumerate(__selection2):
-                if isinstance(_atom, str) and _atom == '*':
-                    return _selection1
-                if _atom in _selection1:
-                    _atomSelection.append(_selection2[idx])
-                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
-                    chain_id = _atom['chain_id']
-                    seq_id = _atom['seq_id']
-                    if any(True for _atom1 in _selection1 if _atom1['chain_id'] == chain_id and _atom1['seq_id'] == seq_id):
-                        _atomSelection.append(_selection2[idx])
+        if not hasAuthAtomId1 and hasAuthAtomId2:
+            return intersectAtomSelectionInto(_selection2, _selection1, True, False, _selection1)
 
-        else:
-            __selection1 = deepcopy(_selection1)
-            for _atom in __selection1:
-                if 'auth_atom_id' in _atom:
-                    _atom.pop('auth_atom_id')
-            __selection2 = deepcopy(_selection2)
-            for _atom in __selection2:
-                if 'auth_atom_id' in _atom:
-                    _atom.pop('auth_atom_id')
-            for idx, _atom in enumerate(__selection1):
-                if isinstance(_atom, str) and _atom == '*':
-                    return _selection2
-                if _atom in __selection2:
-                    _atomSelection.append(_selection1[idx])
-                elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
-                    chain_id = _atom['chain_id']
-                    seq_id = _atom['seq_id']
-                    if any(True for _atom2 in __selection2 if _atom2['chain_id'] == chain_id and _atom2['seq_id'] == seq_id):
-                        _atomSelection.append(_selection1[idx])
-
-        return _atomSelection
+        return intersectAtomSelectionInto(_selection1, _selection2, True, True, _selection2)
 
     def consumeFactor_expressions(self, clauseName: str = 'atom selection expression', cifCheck: bool = True) -> None:
         """ Consume factor expressions as atom selection if possible.

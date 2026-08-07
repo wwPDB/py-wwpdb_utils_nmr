@@ -121,6 +121,53 @@ CPP_PATCHES = [
 # tokenVocab: NmrViewNPKParser uses NmrViewPKLexer, and SparkyNPKParser and
 # SparkyRPKParser use SparkyPKLexer. Without this the generated C++ fails to
 # compile on a missing '<X>Lexer.h'.
+# speedy-antlr-tool 1.4.3's shared support library leaks the whole translated parse
+# tree on every parse. Translator::convert_ctx() reassigns its `stop` pointer once
+# per child but releases it only once at the end, so every token except the last
+# keeps a stray reference; in the rule branch the new reference returned by
+# PyObject_GetAttrString() is dropped on the floor as well. Measured on a 2 MB
+# input: RSS grew ~115 MB per parse without bound (272 MB -> 861 MB over six
+# parses) until the kernel killed the process. With this patch RSS is flat.
+#
+# generate() re-emits speedy_antlr.cpp from the tool's template, so the fix has to
+# live here rather than as an edit to the generated file.
+SUPPORT_LIBRARY_PATCHES = [
+    ('convert_ctx() releases the previous `stop` (terminal branch)', [
+        ('            if(token->getType() != antlr4::IntStream::EOF) {\n'
+         '                // Always set stop to current token\n'
+         '                stop = py_token;\n'
+         '                Py_INCREF(stop);\n'
+         '            }',
+         '            if(token->getType() != antlr4::IntStream::EOF) {\n'
+         '                // Always set stop to current token\n'
+         '                Py_XDECREF(stop);  // wwPDB: release the previous stop, else every\n'
+         '                                   // token but the last leaks one reference\n'
+         '                stop = py_token;\n'
+         '                Py_INCREF(stop);\n'
+         '            }'),
+    ]),
+    ('convert_ctx() releases the previous `stop` and unused lookups (rule branch)', [
+        ('            if(!start || start==Py_None) {\n'
+         '                start = PyObject_GetAttrString(py_child, "start");\n'
+         '            }\n'
+         '            PyObject *tmp_stop = PyObject_GetAttrString(py_child, "stop");\n'
+         '            if (tmp_stop && tmp_stop!=Py_None) stop = tmp_stop;',
+         '            if(!start || start==Py_None) {\n'
+         '                Py_XDECREF(start);  // wwPDB: start may hold a reference to None\n'
+         '                start = PyObject_GetAttrString(py_child, "start");\n'
+         '                if (!start) PyErr_Clear();\n'
+         '            }\n'
+         '            PyObject *tmp_stop = PyObject_GetAttrString(py_child, "stop");\n'
+         '            if (tmp_stop && tmp_stop!=Py_None) {\n'
+         '                Py_XDECREF(stop);  // wwPDB: release the previous stop\n'
+         '                stop = tmp_stop;\n'
+         '            } else {\n'
+         '                Py_XDECREF(tmp_stop);  // wwPDB: unused new reference\n'
+         '                if (!tmp_stop) PyErr_Clear();\n'
+         '            }'),
+    ]),
+]
+
 BORROWED_LEXER_CPP_PATCHES = [
     ('the generated C++ references the borrowed lexer', [
         ('#include "%(assumedLexer)s.h"', '#include "%(lexer)s.h"'),
@@ -359,6 +406,15 @@ def generate(spec: GrammarSpec) -> dict:
             'sources': generatedSources(spec)}
 
 
+def patchSupportLibrary() -> None:
+    """ Fix the reference leaks in the shared speedy_antlr.cpp support library.
+        Applied once per run; every accelerator links the same copy.
+    """
+
+    applyPatches(os.path.join(CPP_SRC_DIR, 'speedy_antlr.cpp'), SUPPORT_LIBRARY_PATCHES, {})
+    print('\nspeedy_antlr.cpp: parse-tree reference leaks patched')
+
+
 def writeManifest(entries: list) -> None:
     """ Record the built accelerators for setup.py, which must not depend on this
         script (the container deletes tools/ after building).
@@ -418,7 +474,9 @@ def main() -> int:
                      f'known: {", ".join(sorted(grammars))}')
 
     fetchCppRuntime()
-    writeManifest([generate(grammars[name]) for name in names])
+    entries = [generate(grammars[name]) for name in names]
+    patchSupportLibrary()
+    writeManifest(entries)
 
     print('\nNow build the accelerators:\n'
           '  WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python setup.py build_clib build_ext --inplace -j $(nproc)')

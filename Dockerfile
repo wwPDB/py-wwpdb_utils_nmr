@@ -65,13 +65,27 @@ RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install 
         --target=/install \
         -r standalone_runtime_requirements.txt
 
+# Compile the speedy-antlr-tool C++ parser accelerators, which run the ANTLR4
+# lexer/parser via the C++ target instead of the (much slower) Python runtime.
+# The generated C++ and the bundled ANTLR4 C++ runtime are tracked in the repo,
+# so this needs only the C++ toolchain installed above - no Java, no network, no
+# .g4 grammars. Stripping matters: it takes each accelerator from ~25 MB to ~2 MB.
+# If this step is removed the readers still work, falling back to the ANTLR
+# Python runtime (see wwpdb/utils/nmr/AntlrParseUtil.py).
+RUN WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python setup.py build_clib build_ext --inplace -j "$(nproc)" \
+    && find wwpdb/utils/nmr -name 'sa_*_cpp_parser*.so' -exec strip --strip-unneeded {} + \
+    && rm -rf build
+
 # Remove micellaneous files to reduce image size
 RUN rm -f .dockerignore \
           Dockerfile \
           *.txt \
+          setup.py \
           wwpdb/utils/nmr/components.cif.gz \
           wwpdb/utils/nmr/ChemCompUpdater.py \
-          wwpdb/utils/nmr/BmrbCsStatUpdater.py
+          wwpdb/utils/nmr/BmrbCsStatUpdater.py \
+    && rm -rf tools \
+    && rm -rf wwpdb/utils/nmr/cpp_src
 
 # ============================================================
 # Stage 2: Runtime (minimal, non-root)

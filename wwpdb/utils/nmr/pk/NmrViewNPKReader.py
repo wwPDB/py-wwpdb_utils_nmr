@@ -15,7 +15,7 @@ import os
 import sys
 from typing import IO, List, Optional, Tuple
 
-from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker
+from antlr4 import ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -25,6 +25,8 @@ try:
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.AntlrParseUtil import parseAntlr
+    from wwpdb.utils.nmr.pk import sa_nmrviewnpk
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import coordAssemblyChecker
@@ -39,6 +41,8 @@ except ImportError:
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
+    from nmr.AntlrParseUtil import parseAntlr
+    from nmr.pk import sa_nmrviewnpk
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.ParserListenerUtil import coordAssemblyChecker
@@ -164,7 +168,7 @@ class NmrViewNPKReader:
                     return None, None, None
 
                 ifh = open(pkFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
+                pkText = ifh.read()
 
             else:
                 pkFilePath, pkString = None, pkFilePath
@@ -174,7 +178,7 @@ class NmrViewNPKReader:
                         self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
-                input = InputStream(pkString)
+                pkText = pkString
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
@@ -189,11 +193,12 @@ class NmrViewNPKReader:
                             self.__log.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
-            lexer = NmrViewPKLexer(input)
-            lexer.removeErrorListeners()
-
-            lexer_error_listener = LexerErrorListener(pkFilePath, maxErrorReport=self.__maxLexerErrorReport, ignoreCodicError=True)
-            lexer.addErrorListener(lexer_error_listener)
+            tree, parser_error_listener, lexer_error_listener =\
+                parseAntlr(NmrViewPKLexer, NmrViewNPKParser, 'nmrview_npk', pkText,
+                           filePath=pkFilePath, saModule=sa_nmrviewnpk,
+                           maxLexerErrorReport=self.__maxLexerErrorReport,
+                           maxParserErrorReport=self.__maxParserErrorReport,
+                           ignoreCodicError=True)
 
             messageList = lexer_error_listener.getMessageList()
 
@@ -204,16 +209,6 @@ class NmrViewNPKReader:
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
-
-            stream = CommonTokenStream(lexer)
-            parser = NmrViewNPKParser(stream)
-            # try with simpler/faster SLL prediction mode
-            # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
-            parser.removeErrorListeners()
-            parser_error_listener =\
-                ParserErrorListener(pkFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
-            parser.addErrorListener(parser_error_listener)
-            tree = parser.nmrview_npk()
 
             walker = ParseTreeWalker()
             listener = NmrViewNPKParserListener(self.__verbose, self.__log,

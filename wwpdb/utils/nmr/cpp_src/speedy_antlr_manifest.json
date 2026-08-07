@@ -1,0 +1,769 @@
+{
+  "antlr_version": "4.13.0",
+  "generated_by": "tools/gen_speedy_antlr.py",
+  "shared_sources": [
+    "speedy_antlr.cpp"
+  ],
+  "extensions": [
+    {
+      "module": "sa_ambermr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_ambermr",
+      "grammar": "AmberMR",
+      "entry_rule": "amber_mr",
+      "readers": [
+        "AmberMRReader"
+      ],
+      "sources": [
+        "AmberMRLexer.cpp",
+        "AmberMRParser.cpp",
+        "AmberMRParserBaseVisitor.cpp",
+        "AmberMRParserVisitor.cpp",
+        "sa_ambermr_translator.cpp",
+        "sa_ambermr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_amberpt_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_amberpt",
+      "grammar": "AmberPT",
+      "entry_rule": "amber_pt",
+      "readers": [
+        "AmberPTReader"
+      ],
+      "sources": [
+        "AmberPTLexer.cpp",
+        "AmberPTParser.cpp",
+        "AmberPTParserBaseVisitor.cpp",
+        "AmberPTParserVisitor.cpp",
+        "sa_amberpt_translator.cpp",
+        "sa_amberpt_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_ariamr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_ariamr",
+      "grammar": "AriaMR",
+      "entry_rule": "aria_mr",
+      "readers": [
+        "AriaMRReader"
+      ],
+      "sources": [
+        "AriaMRLexer.cpp",
+        "AriaMRParser.cpp",
+        "AriaMRParserBaseVisitor.cpp",
+        "AriaMRParserVisitor.cpp",
+        "sa_ariamr_translator.cpp",
+        "sa_ariamr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_barecs_cpp_parser",
+      "subpackage": "cs",
+      "shim": "sa_barecs",
+      "grammar": "BareCS",
+      "entry_rule": "bare_cs",
+      "readers": [
+        "BareCSReader"
+      ],
+      "sources": [
+        "BareCSLexer.cpp",
+        "BareCSParser.cpp",
+        "BareCSParserBaseVisitor.cpp",
+        "BareCSParserVisitor.cpp",
+        "sa_barecs_translator.cpp",
+        "sa_barecs_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_baremr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_baremr",
+      "grammar": "BareMR",
+      "entry_rule": "bare_mr",
+      "readers": [
+        "BareMRReader"
+      ],
+      "sources": [
+        "BareMRLexer.cpp",
+        "BareMRParser.cpp",
+        "BareMRParserBaseVisitor.cpp",
+        "BareMRParserVisitor.cpp",
+        "sa_baremr_translator.cpp",
+        "sa_baremr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_barepdb_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_barepdb",
+      "grammar": "BarePDB",
+      "entry_rule": "bare_pdb",
+      "readers": [
+        "BarePDBReader"
+      ],
+      "sources": [
+        "BarePDBLexer.cpp",
+        "BarePDBParser.cpp",
+        "BarePDBParserBaseVisitor.cpp",
+        "BarePDBParserVisitor.cpp",
+        "sa_barepdb_translator.cpp",
+        "sa_barepdb_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_barepk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_barepk",
+      "grammar": "BarePK",
+      "entry_rule": "bare_pk",
+      "readers": [
+        "BarePKReader"
+      ],
+      "sources": [
+        "BarePKLexer.cpp",
+        "BarePKParser.cpp",
+        "BarePKParserBaseVisitor.cpp",
+        "BarePKParserVisitor.cpp",
+        "sa_barepk_translator.cpp",
+        "sa_barepk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_biosymmr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_biosymmr",
+      "grammar": "BiosymMR",
+      "entry_rule": "biosym_mr",
+      "readers": [
+        "BiosymMRReader"
+      ],
+      "sources": [
+        "BiosymMRLexer.cpp",
+        "BiosymMRParser.cpp",
+        "BiosymMRParserBaseVisitor.cpp",
+        "BiosymMRParserVisitor.cpp",
+        "sa_biosymmr_translator.cpp",
+        "sa_biosymmr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_ccpnpk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_ccpnpk",
+      "grammar": "CcpnPK",
+      "entry_rule": "ccpn_pk",
+      "readers": [
+        "CcpnPKReader"
+      ],
+      "sources": [
+        "CcpnPKLexer.cpp",
+        "CcpnPKParser.cpp",
+        "CcpnPKParserBaseVisitor.cpp",
+        "CcpnPKParserVisitor.cpp",
+        "sa_ccpnpk_translator.cpp",
+        "sa_ccpnpk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_charmmcrd_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_charmmcrd",
+      "grammar": "CharmmCRD",
+      "entry_rule": "charmm_crd",
+      "readers": [
+        "CharmmCRDReader"
+      ],
+      "sources": [
+        "CharmmCRDLexer.cpp",
+        "CharmmCRDParser.cpp",
+        "CharmmCRDParserBaseVisitor.cpp",
+        "CharmmCRDParserVisitor.cpp",
+        "sa_charmmcrd_translator.cpp",
+        "sa_charmmcrd_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_charmmmr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_charmmmr",
+      "grammar": "CharmmMR",
+      "entry_rule": "charmm_mr",
+      "readers": [
+        "CharmmMRReader"
+      ],
+      "sources": [
+        "CharmmMRLexer.cpp",
+        "CharmmMRParser.cpp",
+        "CharmmMRParserBaseVisitor.cpp",
+        "CharmmMRParserVisitor.cpp",
+        "sa_charmmmr_translator.cpp",
+        "sa_charmmmr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_cnsmr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_cnsmr",
+      "grammar": "CnsMR",
+      "entry_rule": "cns_mr",
+      "readers": [
+        "CnsMRReader"
+      ],
+      "sources": [
+        "CnsMRLexer.cpp",
+        "CnsMRParser.cpp",
+        "CnsMRParserBaseVisitor.cpp",
+        "CnsMRParserVisitor.cpp",
+        "sa_cnsmr_translator.cpp",
+        "sa_cnsmr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_cyanamr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_cyanamr",
+      "grammar": "CyanaMR",
+      "entry_rule": "cyana_mr",
+      "readers": [
+        "CyanaMRReader"
+      ],
+      "sources": [
+        "CyanaMRLexer.cpp",
+        "CyanaMRParser.cpp",
+        "CyanaMRParserBaseVisitor.cpp",
+        "CyanaMRParserVisitor.cpp",
+        "sa_cyanamr_translator.cpp",
+        "sa_cyanamr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_cyananoa_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_cyananoa",
+      "grammar": "CyanaNOA",
+      "entry_rule": "cyana_noa",
+      "readers": [
+        "CyanaNOAReader"
+      ],
+      "sources": [
+        "CyanaNOALexer.cpp",
+        "CyanaNOAParser.cpp",
+        "CyanaNOAParserBaseVisitor.cpp",
+        "CyanaNOAParserVisitor.cpp",
+        "sa_cyananoa_translator.cpp",
+        "sa_cyananoa_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_dynamomr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_dynamomr",
+      "grammar": "DynamoMR",
+      "entry_rule": "dynamo_mr",
+      "readers": [
+        "DynamoMRReader"
+      ],
+      "sources": [
+        "DynamoMRLexer.cpp",
+        "DynamoMRParser.cpp",
+        "DynamoMRParserBaseVisitor.cpp",
+        "DynamoMRParserVisitor.cpp",
+        "sa_dynamomr_translator.cpp",
+        "sa_dynamomr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_garretcs_cpp_parser",
+      "subpackage": "cs",
+      "shim": "sa_garretcs",
+      "grammar": "GarretCS",
+      "entry_rule": "garret_cs",
+      "readers": [
+        "GarretCSReader"
+      ],
+      "sources": [
+        "GarretCSLexer.cpp",
+        "GarretCSParser.cpp",
+        "GarretCSParserBaseVisitor.cpp",
+        "GarretCSParserVisitor.cpp",
+        "sa_garretcs_translator.cpp",
+        "sa_garretcs_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_gromacsmr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_gromacsmr",
+      "grammar": "GromacsMR",
+      "entry_rule": "gromacs_mr",
+      "readers": [
+        "GromacsMRReader"
+      ],
+      "sources": [
+        "GromacsMRLexer.cpp",
+        "GromacsMRParser.cpp",
+        "GromacsMRParserBaseVisitor.cpp",
+        "GromacsMRParserVisitor.cpp",
+        "sa_gromacsmr_translator.cpp",
+        "sa_gromacsmr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_gromacspt_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_gromacspt",
+      "grammar": "GromacsPT",
+      "entry_rule": "gromacs_pt",
+      "readers": [
+        "GromacsPTReader"
+      ],
+      "sources": [
+        "GromacsPTLexer.cpp",
+        "GromacsPTParser.cpp",
+        "GromacsPTParserBaseVisitor.cpp",
+        "GromacsPTParserVisitor.cpp",
+        "sa_gromacspt_translator.cpp",
+        "sa_gromacspt_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_isdmr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_isdmr",
+      "grammar": "IsdMR",
+      "entry_rule": "isd_mr",
+      "readers": [
+        "IsdMRReader"
+      ],
+      "sources": [
+        "IsdMRLexer.cpp",
+        "IsdMRParser.cpp",
+        "IsdMRParserBaseVisitor.cpp",
+        "IsdMRParserVisitor.cpp",
+        "sa_isdmr_translator.cpp",
+        "sa_isdmr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_nmrpipecs_cpp_parser",
+      "subpackage": "cs",
+      "shim": "sa_nmrpipecs",
+      "grammar": "NmrPipeCS",
+      "entry_rule": "nmrpipe_cs",
+      "readers": [
+        "NmrPipeCSReader"
+      ],
+      "sources": [
+        "NmrPipeCSLexer.cpp",
+        "NmrPipeCSParser.cpp",
+        "NmrPipeCSParserBaseVisitor.cpp",
+        "NmrPipeCSParserVisitor.cpp",
+        "sa_nmrpipecs_translator.cpp",
+        "sa_nmrpipecs_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_nmrpipepk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_nmrpipepk",
+      "grammar": "NmrPipePK",
+      "entry_rule": "nmrpipe_pk",
+      "readers": [
+        "NmrPipePKReader"
+      ],
+      "sources": [
+        "NmrPipePKLexer.cpp",
+        "NmrPipePKParser.cpp",
+        "NmrPipePKParserBaseVisitor.cpp",
+        "NmrPipePKParserVisitor.cpp",
+        "sa_nmrpipepk_translator.cpp",
+        "sa_nmrpipepk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_nmrstar2cs_cpp_parser",
+      "subpackage": "cs",
+      "shim": "sa_nmrstar2cs",
+      "grammar": "NmrStar2CS",
+      "entry_rule": "nmrstar2_cs",
+      "readers": [
+        "NmrStar2CSReader"
+      ],
+      "sources": [
+        "NmrStar2CSLexer.cpp",
+        "NmrStar2CSParser.cpp",
+        "NmrStar2CSParserBaseVisitor.cpp",
+        "NmrStar2CSParserVisitor.cpp",
+        "sa_nmrstar2cs_translator.cpp",
+        "sa_nmrstar2cs_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_nmrviewnpk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_nmrviewnpk",
+      "grammar": "NmrViewNPK",
+      "entry_rule": "nmrview_npk",
+      "readers": [
+        "NmrViewNPKReader"
+      ],
+      "sources": [
+        "NmrViewPKLexer.cpp",
+        "NmrViewNPKParser.cpp",
+        "NmrViewNPKParserBaseVisitor.cpp",
+        "NmrViewNPKParserVisitor.cpp",
+        "sa_nmrviewnpk_translator.cpp",
+        "sa_nmrviewnpk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_nmrviewpk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_nmrviewpk",
+      "grammar": "NmrViewPK",
+      "entry_rule": "nmrview_pk",
+      "readers": [
+        "NmrViewPKReader"
+      ],
+      "sources": [
+        "NmrViewPKLexer.cpp",
+        "NmrViewPKParser.cpp",
+        "NmrViewPKParserBaseVisitor.cpp",
+        "NmrViewPKParserVisitor.cpp",
+        "sa_nmrviewpk_translator.cpp",
+        "sa_nmrviewpk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_oliviacs_cpp_parser",
+      "subpackage": "cs",
+      "shim": "sa_oliviacs",
+      "grammar": "OliviaCS",
+      "entry_rule": "olivia_cs",
+      "readers": [
+        "OliviaCSReader"
+      ],
+      "sources": [
+        "OliviaCSLexer.cpp",
+        "OliviaCSParser.cpp",
+        "OliviaCSParserBaseVisitor.cpp",
+        "OliviaCSParserVisitor.cpp",
+        "sa_oliviacs_translator.cpp",
+        "sa_oliviacs_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_oliviapk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_oliviapk",
+      "grammar": "OliviaPK",
+      "entry_rule": "olivia_pk",
+      "readers": [
+        "OliviaPKReader"
+      ],
+      "sources": [
+        "OliviaPKLexer.cpp",
+        "OliviaPKParser.cpp",
+        "OliviaPKParserBaseVisitor.cpp",
+        "OliviaPKParserVisitor.cpp",
+        "sa_oliviapk_translator.cpp",
+        "sa_oliviapk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_pippcs_cpp_parser",
+      "subpackage": "cs",
+      "shim": "sa_pippcs",
+      "grammar": "PippCS",
+      "entry_rule": "pipp_cs",
+      "readers": [
+        "PippCSReader"
+      ],
+      "sources": [
+        "PippCSLexer.cpp",
+        "PippCSParser.cpp",
+        "PippCSParserBaseVisitor.cpp",
+        "PippCSParserVisitor.cpp",
+        "sa_pippcs_translator.cpp",
+        "sa_pippcs_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_ponderosapk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_ponderosapk",
+      "grammar": "PonderosaPK",
+      "entry_rule": "ponderosa_pk",
+      "readers": [
+        "PonderosaPKReader"
+      ],
+      "sources": [
+        "PonderosaPKLexer.cpp",
+        "PonderosaPKParser.cpp",
+        "PonderosaPKParserBaseVisitor.cpp",
+        "PonderosaPKParserVisitor.cpp",
+        "sa_ponderosapk_translator.cpp",
+        "sa_ponderosapk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_ppmcs_cpp_parser",
+      "subpackage": "cs",
+      "shim": "sa_ppmcs",
+      "grammar": "PpmCS",
+      "entry_rule": "ppm_cs",
+      "readers": [
+        "PpmCSReader"
+      ],
+      "sources": [
+        "PpmCSLexer.cpp",
+        "PpmCSParser.cpp",
+        "PpmCSParserBaseVisitor.cpp",
+        "PpmCSParserVisitor.cpp",
+        "sa_ppmcs_translator.cpp",
+        "sa_ppmcs_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_rosettamr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_rosettamr",
+      "grammar": "RosettaMR",
+      "entry_rule": "rosetta_mr",
+      "readers": [
+        "RosettaMRReader"
+      ],
+      "sources": [
+        "RosettaMRLexer.cpp",
+        "RosettaMRParser.cpp",
+        "RosettaMRParserBaseVisitor.cpp",
+        "RosettaMRParserVisitor.cpp",
+        "sa_rosettamr_translator.cpp",
+        "sa_rosettamr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_schrodingermr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_schrodingermr",
+      "grammar": "SchrodingerMR",
+      "entry_rule": "schrodinger_mr",
+      "readers": [
+        "SchrodingerMRReader"
+      ],
+      "sources": [
+        "SchrodingerMRLexer.cpp",
+        "SchrodingerMRParser.cpp",
+        "SchrodingerMRParserBaseVisitor.cpp",
+        "SchrodingerMRParserVisitor.cpp",
+        "sa_schrodingermr_translator.cpp",
+        "sa_schrodingermr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_sparkynpk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_sparkynpk",
+      "grammar": "SparkyNPK",
+      "entry_rule": "sparky_npk",
+      "readers": [
+        "SparkyNPKReader"
+      ],
+      "sources": [
+        "SparkyPKLexer.cpp",
+        "SparkyNPKParser.cpp",
+        "SparkyNPKParserBaseVisitor.cpp",
+        "SparkyNPKParserVisitor.cpp",
+        "sa_sparkynpk_translator.cpp",
+        "sa_sparkynpk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_sparkypk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_sparkypk",
+      "grammar": "SparkyPK",
+      "entry_rule": "sparky_pk",
+      "readers": [
+        "SparkyPKReader"
+      ],
+      "sources": [
+        "SparkyPKLexer.cpp",
+        "SparkyPKParser.cpp",
+        "SparkyPKParserBaseVisitor.cpp",
+        "SparkyPKParserVisitor.cpp",
+        "sa_sparkypk_translator.cpp",
+        "sa_sparkypk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_sparkyrpk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_sparkyrpk",
+      "grammar": "SparkyRPK",
+      "entry_rule": "sparky_rpk",
+      "readers": [
+        "SparkyRPKReader"
+      ],
+      "sources": [
+        "SparkyPKLexer.cpp",
+        "SparkyRPKParser.cpp",
+        "SparkyRPKParserBaseVisitor.cpp",
+        "SparkyRPKParserVisitor.cpp",
+        "sa_sparkyrpk_translator.cpp",
+        "sa_sparkyrpk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_sparkyspk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_sparkyspk",
+      "grammar": "SparkySPK",
+      "entry_rule": "sparky_spk",
+      "readers": [
+        "SparkySPKReader"
+      ],
+      "sources": [
+        "SparkySPKLexer.cpp",
+        "SparkySPKParser.cpp",
+        "SparkySPKParserBaseVisitor.cpp",
+        "SparkySPKParserVisitor.cpp",
+        "sa_sparkyspk_translator.cpp",
+        "sa_sparkyspk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_sybylmr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_sybylmr",
+      "grammar": "SybylMR",
+      "entry_rule": "sybyl_mr",
+      "readers": [
+        "SybylMRReader"
+      ],
+      "sources": [
+        "SybylMRLexer.cpp",
+        "SybylMRParser.cpp",
+        "SybylMRParserBaseVisitor.cpp",
+        "SybylMRParserVisitor.cpp",
+        "sa_sybylmr_translator.cpp",
+        "sa_sybylmr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_vnmrpk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_vnmrpk",
+      "grammar": "VnmrPK",
+      "entry_rule": "vnmr_pk",
+      "readers": [
+        "VnmrPKReader"
+      ],
+      "sources": [
+        "VnmrPKLexer.cpp",
+        "VnmrPKParser.cpp",
+        "VnmrPKParserBaseVisitor.cpp",
+        "VnmrPKParserVisitor.cpp",
+        "sa_vnmrpk_translator.cpp",
+        "sa_vnmrpk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_xeasypk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_xeasypk",
+      "grammar": "XeasyPK",
+      "entry_rule": "xeasy_pk",
+      "readers": [
+        "XeasyPKReader"
+      ],
+      "sources": [
+        "XeasyPKLexer.cpp",
+        "XeasyPKParser.cpp",
+        "XeasyPKParserBaseVisitor.cpp",
+        "XeasyPKParserVisitor.cpp",
+        "sa_xeasypk_translator.cpp",
+        "sa_xeasypk_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_xeasyprot_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_xeasyprot",
+      "grammar": "XeasyPROT",
+      "entry_rule": "xeasy_prot",
+      "readers": [
+        "XeasyPROTReader",
+        "XeasyCSReader"
+      ],
+      "sources": [
+        "XeasyPROTLexer.cpp",
+        "XeasyPROTParser.cpp",
+        "XeasyPROTParserBaseVisitor.cpp",
+        "XeasyPROTParserVisitor.cpp",
+        "sa_xeasyprot_translator.cpp",
+        "sa_xeasyprot_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_xml_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_xml",
+      "grammar": "XML",
+      "entry_rule": "document",
+      "readers": [
+        "AriaMRXReader",
+        "AriaPKReader",
+        "TopSpinPKReader",
+        "AriaCSReader"
+      ],
+      "sources": [
+        "XMLLexer.cpp",
+        "XMLParser.cpp",
+        "XMLParserBaseVisitor.cpp",
+        "XMLParserVisitor.cpp",
+        "sa_xml_translator.cpp",
+        "sa_xml_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_xplormr_cpp_parser",
+      "subpackage": "mr",
+      "shim": "sa_xplormr",
+      "grammar": "XplorMR",
+      "entry_rule": "xplor_nih_mr",
+      "readers": [
+        "XplorMRReader"
+      ],
+      "sources": [
+        "XplorMRLexer.cpp",
+        "XplorMRParser.cpp",
+        "XplorMRParserBaseVisitor.cpp",
+        "XplorMRParserVisitor.cpp",
+        "sa_xplormr_translator.cpp",
+        "sa_xplormr_cpp_parser.cpp"
+      ]
+    },
+    {
+      "module": "sa_xwinnmrpk_cpp_parser",
+      "subpackage": "pk",
+      "shim": "sa_xwinnmrpk",
+      "grammar": "XwinNmrPK",
+      "entry_rule": "xwinnmr_pk",
+      "readers": [
+        "XwinNmrPKReader"
+      ],
+      "sources": [
+        "XwinNmrPKLexer.cpp",
+        "XwinNmrPKParser.cpp",
+        "XwinNmrPKParserBaseVisitor.cpp",
+        "XwinNmrPKParserVisitor.cpp",
+        "sa_xwinnmrpk_translator.cpp",
+        "sa_xwinnmrpk_cpp_parser.cpp"
+      ]
+    }
+  ]
+}

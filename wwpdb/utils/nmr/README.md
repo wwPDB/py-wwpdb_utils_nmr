@@ -327,6 +327,127 @@ CS_STAT_REL=2026-06-24    # BMRB chemical shift statistics release date
 
 For more information, see [Docker image in forked repository](https://github.com/yokochi47/py-wwpdb_utils_nmr/blob/main/Dockerfile)
 
+## ANTLR4 C++ parser accelerators
+
+Parsing dominates the cost of NMR data conversion, and the ANTLR4 *Python*
+runtime is slow. [speedy-antlr-tool](https://github.com/amykyta3/speedy-antlr-tool)
+runs the ANTLR4 lexer and parser via the **C++** target and translates the result
+back into ordinary `antlr4-python3-runtime` node objects, so every hand-written
+`*ParserListener` class is reused unchanged.
+
+Measured on `test_daother_7871` (four XPLOR-NIH restraint files, full
+`nmr-cs-str-consistency-check`): **65.2 s → 11.7 s**, with a byte-identical
+processing report.
+
+All **42 grammars**, driven by all 46 `*Reader` classes, are bridged.
+
+### Regenerating
+
+Requires the `antlr4-tools` and `speedy-antlr-tool` pip packages, plus Java
+(`antlr4-tools` provisions a JRE on first use):
+
+```bash
+    python3 tools/gen_speedy_antlr.py --list          # show bridged grammars
+    python3 tools/gen_speedy_antlr.py XplorMR         # regenerate one
+    python3 tools/gen_speedy_antlr.py --all
+```
+
+Grammars are **discovered from the `*Reader.py` classes** rather than listed in a
+table: each Reader names its lexer/parser in its imports, its entry rule in the
+`parseAntlr()` call, and whether it wants the SLL prediction mode. So a new
+grammar needs no edit to the script, and an accelerator cannot drift away from
+the Python path. `--list` shows what was discovered.
+
+Generation emits the `sa_<grammar>.py` shim next to its generated parser, C++
+sources under `wwpdb/utils/nmr/cpp_src`, and `cpp_src/speedy_antlr_manifest.json`
+which `setup.py` reads to declare the extensions. All are tracked in git,
+together with the bundled ANTLR4 C++ runtime source, so building the container
+needs only a C++17 compiler - no Java, no network, and no `.g4` grammars.
+
+The generated Python lexer/parser are **not** regenerated: they are already
+byte-identical to a fresh `antlr4 -Dlanguage=Python3 -no-visitor` run with ANTLR
+4.13.0, and regenerating in place would overwrite the hand-written
+`<Grammar>ParserListener.py`, which deliberately shadows ANTLR's generated
+listener base of the same name. (Note that the `-no-listener` flag used by
+speedy-antlr-tool's own example would strip the `enterRule`/`exitRule` hooks that
+`ParseTreeWalker` needs - all 42 committed parsers carry them.)
+
+Two classes of generated code are patched, both with exact-match assertions so a
+speedy-antlr-tool upgrade fails loudly rather than silently dropping a patch:
+
+1. **Prediction mode**, made a per-call argument of `do_parse()` and the shim's
+   `parse()`. It cannot be a compile-time constant: six `mr/` Readers choose it
+   at runtime via `if not isFilePath or self.__sll_pred`, `NmrDpMrSplitter`
+   escalates it on retry, and the XML accelerator is shared by `AriaMRXReader`
+   (SLL) and `AriaCSReader`/`AriaPKReader`/`TopSpinPKReader` (LL).
+2. **Borrowed lexers.** speedy-antlr-tool names the lexer after the parser, which
+   breaks the three grammars that reuse another grammar's lexer via `tokenVocab`
+   (`NmrViewNPKParser` → `NmrViewPKLexer`, `SparkyNPKParser` and
+   `SparkyRPKParser` → `SparkyPKLexer`). Left alone the C++ fails to compile, and
+   the shim raises `ModuleNotFoundError` at import - taking the Reader down
+   rather than degrading to the Python parser.
+
+### Building
+
+Off by default, so the sdist and source wheel published to PyPI stay pure Python:
+
+```bash
+    WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python setup.py build_clib build_ext --inplace -j $(nproc)
+    find wwpdb/utils/nmr -name 'sa_*_cpp_parser*.so' -exec strip --strip-unneeded {} +
+```
+
+`build_clib` compiles the ANTLR4 C++ runtime once into a static library shared by
+every accelerator, so build time stays flat as grammars are added. Stripping
+matters - it takes each accelerator from ~25 MB to ~2 MB. The Dockerfile builder
+stage runs both steps.
+
+### Fallback
+
+If an accelerator is missing (any pip install, or an unsupported platform),
+`sa_<grammar>.py` sets `USE_CPP_IMPLEMENTATION = False` and
+[AntlrParseUtil.parseAntlr()](AntlrParseUtil.py) transparently runs the ANTLR
+Python runtime. `parseAntlr()` is the single parse driver for all `*Reader`
+classes; it also honours the SLL prediction mode on both paths, which matters
+because `XplorMRReader`, `CnsMRReader`, `CyanaMRReader`, `CharmmMRReader`,
+`SchrodingerMRReader` and `CyanaNOAReader` choose it per call.
+
+### Known differences
+
+Verified by A/B running all 42 grammars through both paths over six inputs x both
+prediction modes - 504 comparisons, each in its own process - checking parse trees
+field-for-field (token type, channel, line, column, start/stop, tokenIndex, text)
+plus both syntax-error reports. **502 of 504 were identical**; the two exceptions
+are case 2 below. Both known differences are confined to error recovery on
+malformed input:
+
+1. **Error-recovery nodes** are materialized as `TerminalNodeImpl` rather than
+   `ErrorNodeImpl`. Invisible here: `ErrorNodeImpl` subclasses `TerminalNodeImpl`
+   (so every `ctx.SomeToken()` accessor behaves identically), and no listener in
+   this package implements `visitErrorNode`/`visitTerminal`.
+
+2. **Tokens the parser inserts during error recovery** are named differently. For
+   a missing `Integer`, the C++ runtime yields `<missing Integer>` while the
+   Python runtime yields `<missing <INVALID>>`. This is an ANTLR *Python* runtime
+   defect: `DefaultErrorStrategy.getMissingSymbol()` reads
+   `literalNames[tokenType]`, which is the literal string `'<INVALID>'` rather
+   than `None`, so it never falls through to `symbolicNames`; the C++
+   `Vocabulary::getDisplayName()` resolves it correctly. The C++ text is the more
+   accurate one, and the syntax-error messages users see are unaffected.
+
+[SpeedyAntlrErrorListener.py](mr/SpeedyAntlrErrorListener.py) also undoes the C++
+target's `?` escaping of `?`, so error messages match byte for byte.
+
+### Note on the ANTLR Python runtime's shared DFA cache
+
+Unrelated to the accelerators, but worth knowing when comparing runs: a generated
+Python parser keeps `decisionsToDFA` and `sharedContextCache` as **class**
+attributes, shared by every instance in the process. An SLL parse therefore
+pollutes what a later LL parse of the same input reports - e.g. `missing RETURN at
+'55.123'` instead of `extraneous input '55.123' expecting {...}`. Since
+`NmrDpMrSplitter` escalates `sll_pred` across retries, Python-path error reports
+can depend on what was parsed earlier in the same process. The C++ accelerators
+are order-independent, so they are the more reproducible of the two paths.
+
 ## Appendix
 
 The codes used for specifying each file type in NmrDpUtility are compatible with OneDep system as follows:

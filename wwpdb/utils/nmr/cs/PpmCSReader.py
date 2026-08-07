@@ -15,13 +15,15 @@ import os
 import sys
 from typing import IO, List, Optional, Tuple
 
-from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker
+from antlr4 import ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
+    from wwpdb.utils.nmr.AntlrParseUtil import parseAntlr
+    from wwpdb.utils.nmr.cs import sa_ppmcs
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.cs.PpmCSLexer import PpmCSLexer
@@ -32,6 +34,8 @@ except ImportError:
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.nef.NefTranslator import NefTranslator
+    from nmr.AntlrParseUtil import parseAntlr
+    from nmr.cs import sa_ppmcs
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.cs.PpmCSLexer import PpmCSLexer
@@ -146,7 +150,7 @@ class PpmCSReader:
                     return None, None, None
 
                 ifh = open(csFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
+                csText = ifh.read()
 
             else:
                 csFilePath, csString = None, csFilePath
@@ -156,13 +160,14 @@ class PpmCSReader:
                         self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
-                input = InputStream(csString)
+                csText = csString
 
-            lexer = PpmCSLexer(input)
-            lexer.removeErrorListeners()
-
-            lexer_error_listener = LexerErrorListener(csFilePath, maxErrorReport=self.__maxLexerErrorReport, ignoreCodicError=True)
-            lexer.addErrorListener(lexer_error_listener)
+            tree, parser_error_listener, lexer_error_listener =\
+                parseAntlr(PpmCSLexer, PpmCSParser, 'ppm_cs', csText,
+                           filePath=csFilePath, saModule=sa_ppmcs,
+                           maxLexerErrorReport=self.__maxLexerErrorReport,
+                           maxParserErrorReport=self.__maxParserErrorReport,
+                           ignoreCodicError=True)
 
             messageList = lexer_error_listener.getMessageList()
 
@@ -173,16 +178,6 @@ class PpmCSReader:
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
-
-            stream = CommonTokenStream(lexer)
-            parser = PpmCSParser(stream)
-            # try with simpler/faster SLL prediction mode
-            # parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
-            parser.removeErrorListeners()
-            parser_error_listener =\
-                ParserErrorListener(csFilePath, maxErrorReport=self.__maxParserErrorReport, ignoreCodicError=True)
-            parser.addErrorListener(parser_error_listener)
-            tree = parser.ppm_cs()
 
             walker = ParseTreeWalker()
             listener = PpmCSParserListener(self.__verbose, self.__log,

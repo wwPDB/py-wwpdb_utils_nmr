@@ -11,7 +11,7 @@ ignore=wwpdb/utils/tests-nmr/test-output,wwpdb/utils/nmr/obsolete,wwpdb/utils/te
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=^wwpdb/utils/nmr/mr/.*(Parser|Lexer)\.py$,^wwpdb/utils/nmr/pk/.*(Parser|Lexer)\.py$,^wwpdb/utils/nmr/cs/.*(Parser|Lexer)\.py$
+ignore-patterns=^wwpdb/utils/nmr/mr/.*(Parser|Lexer)\.py$,^wwpdb/utils/nmr/pk/.*(Parser|Lexer)\.py$,^wwpdb/utils/nmr/cs/.*(Parser|Lexer)\.py$,^wwpdb/utils/nmr/(mr|pk|cs)/sa_.*\.py$
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().

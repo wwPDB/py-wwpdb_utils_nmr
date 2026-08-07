@@ -102,6 +102,7 @@ except ImportError:
                                    WEIGHT_RANGE_MAX,
                                    ASSIGNMENT_SEPARATOR_PAT,
                                    ASSIGNMENT_RESID_PAT,
+                                   ASSIGNMENT_HALF_SPIN_NUCLEUS,
                                    INSTRUCTION_FOR_FULL_SEQUENCE)
     from nmr.AlignUtil import (deepcopy,
                                getOneLetterCode,

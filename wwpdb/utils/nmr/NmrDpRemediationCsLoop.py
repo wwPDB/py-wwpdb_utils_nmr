@@ -86,6 +86,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
+        def peripheral_loop_rows():
+            """ Yield rows of loop at increasing distance from _idx, forward then
+                backward, so a scan can inspect the neighbourhood of the current row.
+            """
+            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
+                if _idx + offset < len(loop):
+                    yield loop.data[_idx + offset]
+                if _idx - offset >= 0:
+                    yield loop.data[_idx - offset]
+
         has_coordinate = self._reg.report.getInputSourceIdOfCoord() >= 0
 
         input_source = self._reg.report.input_sources[file_list_id]
@@ -695,6 +705,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
             copied_auth_asym_id_mapping = {}
 
             def fill_cs_row(lp, index, _row, prefer_auth_atom_name, coord_atom_site, _seq_key, comp_id, atom_id, src_lp, src_idx):
+                def peripheral_src_rows():
+                    """ Yield rows of src_lp at increasing distance from src_idx, forward then
+                        backward, so a scan can inspect the neighbourhood of the current row.
+                    """
+                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
+                        if src_idx + offset < len(src_lp):
+                            yield src_lp.data[src_idx + offset]
+                        if src_idx - offset >= 0:
+                            yield src_lp.data[src_idx - offset]
+
                 reparse = False
                 _src_idx = src_idx
                 if src_idx > 0:
@@ -729,27 +749,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         row_src = src_lp.data[src_idx]
                         seq_id_src = row_src[seq_id_col]
                         if 0 <= src_idx < len(src_lp):
-                            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                if src_idx + offset < len(src_lp):
-                                    row = src_lp.data[src_idx + offset]
-                                    if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src))\
-                                       and row[comp_id_col].upper() == comp_id\
-                                       and row[atom_id_col] in missing_ch3:
-                                        valid = True
-                                        missing_ch3.remove(row[atom_id_col])
-                                        if len(missing_ch3) == 0:
-                                            break
-                                if src_idx - offset >= 0:
-                                    row = src_lp.data[src_idx - offset]
-                                    if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src))\
-                                       and row[comp_id_col].upper() == comp_id\
-                                       and row[atom_id_col] in missing_ch3:
-                                        valid = True
-                                        missing_ch3.remove(row[atom_id_col])
-                                        if len(missing_ch3) == 0:
-                                            break
+                            for row in peripheral_src_rows():
+                                if (row[seq_id_col] == str(_row[3])
+                                    or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src))\
+                                   and row[comp_id_col].upper() == comp_id\
+                                   and row[atom_id_col] in missing_ch3:
+                                    valid = True
+                                    missing_ch3.remove(row[atom_id_col])
+                                    if len(missing_ch3) == 0:
+                                        break
                     if atom_id in _atom_site_atom_id and valid and len(missing_ch3) == 0\
                        and (not self._reg.annotation_mode or comp_id not in incomplete_comp_id_annotation):
                         _row[6] = atom_id
@@ -888,27 +896,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                             atom_type = row_src[atom_id_col][0]
                                             val = float(row_src[val_col])
                                             sig = self._reg.ccU.getBondSignature(comp_id, atom_id)
-                                            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                                if src_idx + offset < len(src_lp):
-                                                    row = src_lp.data[src_idx + offset]
-                                                    if row[chain_id_col] == chain_id_src\
-                                                       and row[seq_id_col] == seq_id_src\
-                                                       and row[comp_id_col] == comp_id\
-                                                       and row[atom_id_col][0] == atom_type\
-                                                       and abs(float(row[val_col]) - val) < 1.0\
-                                                       and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
-                                                        src_lp.data[src_idx + offset][ambig_code_col] = '4'
-                                                        reparse = True
-                                                if src_idx - offset >= 0:
-                                                    row = src_lp.data[src_idx - offset]
-                                                    if row[chain_id_col] == chain_id_src\
-                                                       and row[seq_id_col] == seq_id_src\
-                                                       and row[comp_id_col] == comp_id\
-                                                       and row[atom_id_col][0] == atom_type\
-                                                       and abs(float(row[val_col]) - val) < 1.0\
-                                                       and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
-                                                        src_lp.data[src_idx - offset][ambig_code_col] = '4'
-                                                        reparse = True
+                                            for row in peripheral_src_rows():
+                                                if row[chain_id_col] == chain_id_src\
+                                                   and row[seq_id_col] == seq_id_src\
+                                                   and row[comp_id_col] == comp_id\
+                                                   and row[atom_id_col][0] == atom_type\
+                                                   and abs(float(row[val_col]) - val) < 1.0\
+                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                    src_lp.data[src_idx + offset][ambig_code_col] = '4'
+                                                    reparse = True
 
                             elif ambig_code == 4:
                                 if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
@@ -920,96 +916,48 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     atom_ids_in_group_src = self._reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
                                         if atom_type in PROTON_BEGIN_CODE else []
                                     ambig_code_4_test = hetero_group_test = False
-                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                        if src_idx + offset < len(src_lp):
-                                            row = src_lp.data[src_idx + offset]
-                                            if row[comp_id_col] == comp_id\
-                                               and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                    for row in peripheral_src_rows():
+                                        if row[comp_id_col] == comp_id\
+                                           and row[atom_id_col][0] == atom_type\
+                                           and row[ambig_code_col] == str(_row[12])\
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                            if not (row[chain_id_col] == str(_row[1])
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                                break
+                                            _seq_id =\
+                                                row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                            if _seq_id in (_row[3], _row[17]):
+                                                ambig_code_4_test = True
+                                                if row[atom_id_col] not in atom_ids_in_group_src:
+                                                    hetero_group_test = True
                                                     break
-                                                _seq_id =\
-                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id in (_row[3], _row[17]):
-                                                    ambig_code_4_test = True
-                                                    if row[atom_id_col] not in atom_ids_in_group_src:
-                                                        hetero_group_test = True
-                                                        break
-                                        if src_idx - offset >= 0:
-                                            row = src_lp.data[src_idx - offset]
-                                            if row[comp_id_col] == comp_id\
-                                               and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                    break
-                                                _seq_id =\
-                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id in (_row[3], _row[17]):
-                                                    ambig_code_4_test = True
-                                                    if row[atom_id_col] not in atom_ids_in_group_src:
-                                                        hetero_group_test = True
-                                                        break
                                     if not ambig_code_4_test:
                                         ambig_code_5_test = False
-                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                            if src_idx + offset < len(src_lp):
-                                                row = src_lp.data[src_idx + offset]
-                                                if row[comp_id_col] == comp_id\
-                                                   and row[atom_id_col][0] == atom_type\
-                                                   and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                    if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                        break
-                                                    _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int)\
-                                                        else int(row[seq_id_col])
-                                                    if _seq_id in (_row[3], _row[17]):
-                                                        break
-                                                    _row[12] = ambig_code = 5
-                                                    ambig_code_5_test = True
+                                        for row in peripheral_src_rows():
+                                            if row[comp_id_col] == comp_id\
+                                               and row[atom_id_col][0] == atom_type\
+                                               and row[ambig_code_col] == str(_row[12])\
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                                if not (row[chain_id_col] == str(_row[1])
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                     break
-                                            if src_idx - offset >= 0:
-                                                row = src_lp.data[src_idx - offset]
-                                                if row[comp_id_col] == comp_id\
-                                                   and row[atom_id_col][0] == atom_type\
-                                                   and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                    if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                        break
-                                                    _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int)\
-                                                        else int(row[seq_id_col])
-                                                    if _seq_id in (_row[3], _row[17]):
-                                                        break
-                                                    _row[12] = ambig_code = 5
-                                                    ambig_code_5_test = True
+                                                _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int)\
+                                                    else int(row[seq_id_col])
+                                                if _seq_id in (_row[3], _row[17]):
                                                     break
+                                                _row[12] = ambig_code = 5
+                                                ambig_code_5_test = True
+                                                break
                                         if not ambig_code_5_test:
-                                            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                                if src_idx + offset < len(src_lp):
-                                                    row = src_lp.data[src_idx + offset]
-                                                    if row[comp_id_col] == comp_id\
-                                                       and row[atom_id_col][0] == atom_type\
-                                                       and row[ambig_code_col] == str(_row[12])\
-                                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                        if not (row[chain_id_col] == str(_row[1])
-                                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                            _row[12] = ambig_code = 6
-                                                            break
-                                                if src_idx - offset >= 0:
-                                                    row = src_lp.data[src_idx - offset]
-                                                    if row[comp_id_col] == comp_id\
-                                                       and row[atom_id_col][0] == atom_type\
-                                                       and row[ambig_code_col] == str(_row[12])\
-                                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                        if not (row[chain_id_col] == str(_row[1])
-                                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                            _row[12] = ambig_code = 6
-                                                            break
+                                            for row in peripheral_src_rows():
+                                                if row[comp_id_col] == comp_id\
+                                                   and row[atom_id_col][0] == atom_type\
+                                                   and row[ambig_code_col] == str(_row[12])\
+                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                                    if not (row[chain_id_col] == str(_row[1])
+                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                                        _row[12] = ambig_code = 6
+                                                        break
                                             if ambig_code == 4:
                                                 _row[12] = ambig_code = 1
                                     elif not hetero_group_test:
@@ -1022,61 +970,31 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     atom_type = row_src[atom_id_col][0]
                                     ambig_code_src = row_src[ambig_code_col]
                                     ambig_code_5_test = False
-                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                        if src_idx + offset < len(src_lp):
-                                            row = src_lp.data[src_idx + offset]
-                                            if row[comp_id_col] == comp_id\
-                                               and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                    break
-                                                _seq_id =\
-                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id in (_row[3], _row[17]):
-                                                    break
-                                                _row[12] = ambig_code = 5
-                                                ambig_code_5_test = True
+                                    for row in peripheral_src_rows():
+                                        if row[comp_id_col] == comp_id\
+                                           and row[atom_id_col][0] == atom_type\
+                                           and row[ambig_code_col] == str(_row[12])\
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                            if not (row[chain_id_col] == str(_row[1])
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
                                                 break
-                                        if src_idx - offset >= 0:
-                                            row = src_lp.data[src_idx - offset]
-                                            if row[comp_id_col] == comp_id\
-                                               and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                    break
-                                                _seq_id =\
-                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id in (_row[3], _row[17]):
-                                                    break
-                                                _row[12] = ambig_code = 5
-                                                ambig_code_5_test = True
+                                            _seq_id =\
+                                                row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                            if _seq_id in (_row[3], _row[17]):
                                                 break
+                                            _row[12] = ambig_code = 5
+                                            ambig_code_5_test = True
+                                            break
                                     if not ambig_code_5_test:
-                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                            if src_idx + offset < len(src_lp):
-                                                row = src_lp.data[src_idx + offset]
-                                                if row[comp_id_col] == comp_id\
-                                                   and row[atom_id_col][0] == atom_type\
-                                                   and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                    if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                        _row[12] = ambig_code = 6
-                                                        break
-                                            if src_idx - offset >= 0:
-                                                row = src_lp.data[src_idx - offset]
-                                                if row[comp_id_col] == comp_id\
-                                                   and row[atom_id_col][0] == atom_type\
-                                                   and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                    if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                        _row[12] = ambig_code = 6
-                                                        break
+                                        for row in peripheral_src_rows():
+                                            if row[comp_id_col] == comp_id\
+                                               and row[atom_id_col][0] == atom_type\
+                                               and row[ambig_code_col] == str(_row[12])\
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                                if not (row[chain_id_col] == str(_row[1])
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                                    _row[12] = ambig_code = 6
+                                                    break
 
                             elif ambig_code == 6:
                                 if len([item for item in entity_assembly
@@ -1142,29 +1060,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         if 0 <= src_idx < len(src_lp):
                             row_src = src_lp.data[src_idx]
                             seq_id_src = row_src[seq_id_col]
-                            for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                if src_idx + offset < len(src_lp):
-                                    row = src_lp.data[src_idx + offset]
-                                    if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src)
-                                        or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
-                                       and row[comp_id_col].upper() == comp_id\
-                                       and row[atom_id_col] in missing_ch3:
-                                        valid = True
-                                        missing_ch3.remove(row[atom_id_col])
-                                        if len(missing_ch3) == 0:
-                                            break
-                                if src_idx - offset >= 0:
-                                    row = src_lp.data[src_idx - offset]
-                                    if (row[seq_id_col] == str(_row[3])
-                                        or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src)
-                                        or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
-                                       and row[comp_id_col].upper() == comp_id\
-                                       and row[atom_id_col] in missing_ch3:
-                                        valid = True
-                                        missing_ch3.remove(row[atom_id_col])
-                                        if len(missing_ch3) == 0:
-                                            break
+                            for row in peripheral_src_rows():
+                                if (row[seq_id_col] == str(_row[3])
+                                    or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src)
+                                    or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
+                                   and row[comp_id_col].upper() == comp_id\
+                                   and row[atom_id_col] in missing_ch3:
+                                    valid = True
+                                    missing_ch3.remove(row[atom_id_col])
+                                    if len(missing_ch3) == 0:
+                                        break
                     if len(missing_ch3) > 0 and (_row[9] in EMPTY_VALUE or float(_row[9]) >= 4.0):
                         heme = False
                         if _row[9] not in EMPTY_VALUE:
@@ -1240,27 +1145,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         atom_type = row_src[atom_id_col][0]
                                         val = float(row_src[val_col])
                                         sig = self._reg.ccU.getBondSignature(comp_id, atom_id)
-                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                            if src_idx + offset < len(src_lp):
-                                                row = src_lp.data[src_idx + offset]
-                                                if row[chain_id_col] == chain_id_src\
-                                                   and row[seq_id_col] == seq_id_src\
-                                                   and row[comp_id_col] == comp_id\
-                                                   and row[atom_id_col][0] == atom_type\
-                                                   and abs(float(row[val_col]) - val) < 1.0\
-                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
-                                                    src_lp.data[src_idx + offset][ambig_code_col] = '4'
-                                                    reparse = True
-                                            if src_idx - offset >= 0:
-                                                row = src_lp.data[src_idx - offset]
-                                                if row[chain_id_col] == chain_id_src\
-                                                   and row[seq_id_col] == seq_id_src\
-                                                   and row[comp_id_col] == comp_id\
-                                                   and row[atom_id_col][0] == atom_type\
-                                                   and abs(float(row[val_col]) - val) < 1.0\
-                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
-                                                    src_lp.data[src_idx - offset][ambig_code_col] = '4'
-                                                    reparse = True
+                                        for row in peripheral_src_rows():
+                                            if row[chain_id_col] == chain_id_src\
+                                               and row[seq_id_col] == seq_id_src\
+                                               and row[comp_id_col] == comp_id\
+                                               and row[atom_id_col][0] == atom_type\
+                                               and abs(float(row[val_col]) - val) < 1.0\
+                                               and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                src_lp.data[src_idx + offset][ambig_code_col] = '4'
+                                                reparse = True
 
                         elif ambig_code == 4:
                             if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
@@ -1272,124 +1165,23 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 atom_ids_in_group = self._reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
                                     if atom_type in PROTON_BEGIN_CODE else []
                                 ambig_code_4_test = hetero_group_test = False
-                                for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                    if src_idx + offset < len(src_lp):
-                                        row = src_lp.data[src_idx + offset]
-                                        if row[comp_id_col] == comp_id\
-                                           and row[atom_id_col][0] == atom_type\
-                                           and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                            if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                for row in peripheral_src_rows():
+                                    if row[comp_id_col] == comp_id\
+                                       and row[atom_id_col][0] == atom_type\
+                                       and row[ambig_code_col] == str(_row[12])\
+                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                        if not (row[chain_id_col] == str(_row[1])
+                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                            break
+                                        _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                        if _seq_id in (_row[3], _row[17]):
+                                            ambig_code_4_test = True
+                                            if row[atom_id_col] not in atom_ids_in_group:
+                                                hetero_group_test = True
                                                 break
-                                            _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id in (_row[3], _row[17]):
-                                                ambig_code_4_test = True
-                                                if row[atom_id_col] not in atom_ids_in_group:
-                                                    hetero_group_test = True
-                                                    break
-                                    if src_idx - offset >= 0:
-                                        row = src_lp.data[src_idx - offset]
-                                        if row[comp_id_col] == comp_id\
-                                           and row[atom_id_col][0] == atom_type\
-                                           and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                            if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                break
-                                            _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id in (_row[3], _row[17]):
-                                                ambig_code_4_test = True
-                                                if row[atom_id_col] not in atom_ids_in_group:
-                                                    hetero_group_test = True
-                                                    break
                                 if not ambig_code_4_test:
                                     ambig_code_5_test = False
-                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                        if src_idx + offset < len(src_lp):
-                                            row = src_lp.data[src_idx + offset]
-                                            if row[comp_id_col] == comp_id\
-                                               and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                    break
-                                                _seq_id =\
-                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id in (_row[3], _row[17]):
-                                                    break
-                                                _row[12] = ambig_code = 5
-                                                ambig_code_5_test = True
-                                                break
-                                        if src_idx - offset >= 0:
-                                            row = src_lp.data[src_idx - offset]
-                                            if row[comp_id_col] == comp_id\
-                                               and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                    break
-                                                _seq_id =\
-                                                    row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                                if _seq_id in (_row[3], _row[17]):
-                                                    break
-                                                _row[12] = ambig_code = 5
-                                                ambig_code_5_test = True
-                                                break
-                                    if not ambig_code_5_test:
-                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                            if src_idx + offset < len(src_lp):
-                                                row = src_lp.data[src_idx + offset]
-                                                if row[comp_id_col] == comp_id\
-                                                   and row[atom_id_col][0] == atom_type\
-                                                   and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                    if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                        _row[12] = ambig_code = 6
-                                                        break
-                                            if src_idx - offset >= 0:
-                                                row = src_lp.data[src_idx - offset]
-                                                if row[comp_id_col] == comp_id\
-                                                   and row[atom_id_col][0] == atom_type\
-                                                   and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                    if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                        _row[12] = ambig_code = 6
-                                                        break
-                                        if ambig_code == 4:
-                                            _row[12] = ambig_code = 1
-                                elif not hetero_group_test:
-                                    _row[12] = ambig_code = 1
-
-                        elif ambig_code == 5:
-                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
-                                row_src = src_lp.data[_src_idx]
-                                chain_id_src = row_src[chain_id_col]
-                                atom_type = row_src[atom_id_col][0]
-                                ambig_code_src = row_src[ambig_code_col]
-                                ambig_code_5_test = False
-                                for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                    if src_idx + offset < len(src_lp):
-                                        row = src_lp.data[src_idx + offset]
-                                        if row[comp_id_col] == comp_id\
-                                           and row[atom_id_col][0] == atom_type\
-                                           and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                            if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                break
-                                            _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id in (_row[3], _row[17]):
-                                                break
-                                            _row[12] = ambig_code = 5
-                                            ambig_code_5_test = True
-                                            break
-                                    if src_idx - offset >= 0:
-                                        row = src_lp.data[src_idx - offset]
+                                    for row in peripheral_src_rows():
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
                                            and row[ambig_code_col] == str(_row[12])\
@@ -1404,28 +1196,52 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                             _row[12] = ambig_code = 5
                                             ambig_code_5_test = True
                                             break
+                                    if not ambig_code_5_test:
+                                        for row in peripheral_src_rows():
+                                            if row[comp_id_col] == comp_id\
+                                               and row[atom_id_col][0] == atom_type\
+                                               and row[ambig_code_col] == str(_row[12])\
+                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                                if not (row[chain_id_col] == str(_row[1])
+                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                                    _row[12] = ambig_code = 6
+                                                    break
+                                        if ambig_code == 4:
+                                            _row[12] = ambig_code = 1
+                                elif not hetero_group_test:
+                                    _row[12] = ambig_code = 1
+
+                        elif ambig_code == 5:
+                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
+                                row_src = src_lp.data[_src_idx]
+                                chain_id_src = row_src[chain_id_col]
+                                atom_type = row_src[atom_id_col][0]
+                                ambig_code_src = row_src[ambig_code_col]
+                                ambig_code_5_test = False
+                                for row in peripheral_src_rows():
+                                    if row[comp_id_col] == comp_id\
+                                       and row[atom_id_col][0] == atom_type\
+                                       and row[ambig_code_col] == str(_row[12])\
+                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                        if not (row[chain_id_col] == str(_row[1])
+                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                            break
+                                        _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
+                                        if _seq_id in (_row[3], _row[17]):
+                                            break
+                                        _row[12] = ambig_code = 5
+                                        ambig_code_5_test = True
+                                        break
                                 if not ambig_code_5_test:
-                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                        if src_idx + offset < len(src_lp):
-                                            row = src_lp.data[src_idx + offset]
-                                            if row[comp_id_col] == comp_id\
-                                               and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                    _row[12] = ambig_code = 6
-                                                    break
-                                        if src_idx - offset >= 0:
-                                            row = src_lp.data[src_idx - offset]
-                                            if row[comp_id_col] == comp_id\
-                                               and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
-                                                    _row[12] = ambig_code = 6
-                                                    break
+                                    for row in peripheral_src_rows():
+                                        if row[comp_id_col] == comp_id\
+                                           and row[atom_id_col][0] == atom_type\
+                                           and row[ambig_code_col] == str(_row[12])\
+                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
+                                            if not (row[chain_id_col] == str(_row[1])
+                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                                _row[12] = ambig_code = 6
+                                                break
 
                         elif ambig_code == 6:
                             if len([item for item in entity_assembly
@@ -3160,48 +2976,26 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     _atom_type = row[atom_id_col][0]
                                     _ambig_code = str(ambig_code)
                                     _idx = idx
-                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                        if _idx + offset < len(loop):
-                                            row_ = loop.data[_idx + offset]
-                                            if row_[comp_id_col] == comp_id\
-                                               and row_[atom_id_col][0] == _atom_type\
-                                               and str(row_[ambig_code_col]) == _ambig_code:
-                                                if row_[chain_id_col] != _chain_id:
-                                                    continue
-                                                if row_[seq_id_col] == _seq_id:
-                                                    ambig_code_4_test = True
-                                                    break
-                                        if _idx - offset >= 0:
-                                            row_ = loop.data[_idx - offset]
-                                            if row_[comp_id_col] == comp_id\
-                                               and row_[atom_id_col][0] == _atom_type\
-                                               and str(row_[ambig_code_col]) == _ambig_code:
-                                                if row_[chain_id_col] != _chain_id:
-                                                    continue
-                                                if row_[seq_id_col] == _seq_id:
-                                                    ambig_code_4_test = True
-                                                    break
+                                    for row_ in peripheral_loop_rows():
+                                        if row_[comp_id_col] == comp_id\
+                                           and row_[atom_id_col][0] == _atom_type\
+                                           and str(row_[ambig_code_col]) == _ambig_code:
+                                            if row_[chain_id_col] != _chain_id:
+                                                continue
+                                            if row_[seq_id_col] == _seq_id:
+                                                ambig_code_4_test = True
+                                                break
                                     if ambig_code_4_test:
                                         _row[12] = ambig_code = 4
                                         val = float(row[val_col])
                                         sig = self._reg.ccU.getBondSignature(comp_id, atom_id)
-                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                            if _idx + offset < len(loop):
-                                                row_ = loop.data[_idx + offset]
-                                                if row_[chain_id_col] == _chain_id and row_[seq_id_col] == _seq_id\
-                                                   and row_[comp_id_col] == comp_id and row_[atom_id_col][0] == _atom_type\
-                                                   and abs(float(row_[val_col]) - val) < 1.0\
-                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
-                                                    row[ambig_code_col] = 4
-                                                    reparse_request = True
-                                            if _idx - offset >= 0:
-                                                row_ = loop.data[_idx - offset]
-                                                if row_[chain_id_col] == _chain_id and row_[seq_id_col] == _seq_id\
-                                                   and row_[comp_id_col] == comp_id and row_[atom_id_col][0] == _atom_type\
-                                                   and abs(float(row_[val_col]) - val) < 1.0\
-                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
-                                                    row[ambig_code_col] = 4
-                                                    reparse_request = True
+                                        for row_ in peripheral_loop_rows():
+                                            if row_[chain_id_col] == _chain_id and row_[seq_id_col] == _seq_id\
+                                               and row_[comp_id_col] == comp_id and row_[atom_id_col][0] == _atom_type\
+                                               and abs(float(row_[val_col]) - val) < 1.0\
+                                               and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                row[ambig_code_col] = 4
+                                                reparse_request = True
                                     else:
                                         _row[12] = ambig_code = 1
 
@@ -3244,49 +3038,25 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                     break
                                 if not ambig_code_4_test:
                                     ambig_code_5_test = False
-                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                        if _idx + offset < len(loop):
-                                            row_ = loop.data[_idx + offset]
-                                            if row_[comp_id_col] == comp_id\
-                                               and row_[atom_id_col][0] == _atom_type\
-                                               and str(row_[ambig_code_col]) == _ambig_code:
-                                                if row_[chain_id_col] != _chain_id:
-                                                    break
-                                                if row_[seq_id_col] == _seq_id:
-                                                    break
-                                                _row[12] = ambig_code = 5
-                                                ambig_code_5_test = True
+                                    for row_ in peripheral_loop_rows():
+                                        if row_[comp_id_col] == comp_id\
+                                           and row_[atom_id_col][0] == _atom_type\
+                                           and str(row_[ambig_code_col]) == _ambig_code:
+                                            if row_[chain_id_col] != _chain_id:
                                                 break
-                                        if _idx - offset >= 0:
-                                            row_ = loop.data[_idx - offset]
-                                            if row_[comp_id_col] == comp_id\
-                                               and row_[atom_id_col][0] == _atom_type\
-                                               and str(row_[ambig_code_col]) == _ambig_code:
-                                                if row_[chain_id_col] != _chain_id:
-                                                    break
-                                                if row_[seq_id_col] == _seq_id:
-                                                    break
-                                                _row[12] = ambig_code = 5
-                                                ambig_code_5_test = True
+                                            if row_[seq_id_col] == _seq_id:
                                                 break
+                                            _row[12] = ambig_code = 5
+                                            ambig_code_5_test = True
+                                            break
                                     if not ambig_code_5_test:
-                                        for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                            if _idx + offset < len(loop):
-                                                row_ = loop.data[_idx + offset]
-                                                if row_[comp_id_col] == comp_id\
-                                                   and row_[atom_id_col][0] == _atom_type\
-                                                   and str(row_[ambig_code_col]) == _ambig_code:
-                                                    if row_[chain_id_col] != _chain_id:
-                                                        _row[12] = ambig_code = 6
-                                                        break
-                                            if _idx - offset >= 0:
-                                                row_ = loop.data[_idx - offset]
-                                                if row_[comp_id_col] == comp_id\
-                                                   and row_[atom_id_col][0] == _atom_type\
-                                                   and str(row_[ambig_code_col]) == _ambig_code:
-                                                    if row_[chain_id_col] != _chain_id:
-                                                        _row[12] = ambig_code = 6
-                                                        break
+                                        for row_ in peripheral_loop_rows():
+                                            if row_[comp_id_col] == comp_id\
+                                               and row_[atom_id_col][0] == _atom_type\
+                                               and str(row_[ambig_code_col]) == _ambig_code:
+                                                if row_[chain_id_col] != _chain_id:
+                                                    _row[12] = ambig_code = 6
+                                                    break
                                         if ambig_code == 4:
                                             _row[12] = ambig_code = 1
                                 elif not hetero_group_test:
@@ -3300,47 +3070,24 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 _ambig_code = str(ambig_code)
                                 _idx = idx
                                 ambig_code_5_test = False
-                                for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                    if _idx + offset < len(loop):
-                                        row_ = loop.data[_idx + offset]
-                                        if row_[comp_id_col] == comp_id\
-                                           and row_[atom_id_col][0] == _atom_type\
-                                           and str(row_[ambig_code_col]) == _ambig_code:
-                                            if row_[chain_id_col] != _chain_id:
-                                                continue
-                                            if row_[seq_id_col] == _seq_id:
-                                                break
-                                            ambig_code_5_test = True
+                                for row_ in peripheral_loop_rows():
+                                    if row_[comp_id_col] == comp_id\
+                                       and row_[atom_id_col][0] == _atom_type\
+                                       and str(row_[ambig_code_col]) == _ambig_code:
+                                        if row_[chain_id_col] != _chain_id:
+                                            continue
+                                        if row_[seq_id_col] == _seq_id:
                                             break
-                                    if _idx - offset >= 0:
-                                        row_ = loop.data[_idx - offset]
-                                        if row_[comp_id_col] == comp_id\
-                                           and row_[atom_id_col][0] == _atom_type\
-                                           and str(row_[ambig_code_col]) == _ambig_code:
-                                            if row_[chain_id_col] != _chain_id:
-                                                continue
-                                            if row_[seq_id_col] == _seq_id:
-                                                break
-                                            ambig_code_5_test = True
-                                            break
+                                        ambig_code_5_test = True
+                                        break
                                 if not ambig_code_5_test:
-                                    for offset in range(1, PERIPH_OFFSET_ATTEMPT):
-                                        if _idx + offset < len(loop):
-                                            row_ = loop.data[_idx + offset]
-                                            if row_[comp_id_col] == comp_id\
-                                               and row_[atom_id_col][0] == _atom_type\
-                                               and str(row_[ambig_code_col]) == _ambig_code:
-                                                if row_[chain_id_col] != _chain_id:
-                                                    _row[12] = ambig_code = 6
-                                                    break
-                                        if _idx - offset >= 0:
-                                            row_ = loop.data[_idx - offset]
-                                            if row_[comp_id_col] == comp_id\
-                                               and row_[atom_id_col][0] == _atom_type\
-                                               and str(row_[ambig_code_col]) == _ambig_code:
-                                                if row_[chain_id_col] != _chain_id:
-                                                    _row[12] = ambig_code = 6
-                                                    break
+                                    for row_ in peripheral_loop_rows():
+                                        if row_[comp_id_col] == comp_id\
+                                           and row_[atom_id_col][0] == _atom_type\
+                                           and str(row_[ambig_code_col]) == _ambig_code:
+                                            if row_[chain_id_col] != _chain_id:
+                                                _row[12] = ambig_code = 6
+                                                break
 
                         elif ambig_code == 6:
                             if len([item for item in entity_assembly

@@ -283,6 +283,10 @@
 # 13-Jul-2026  M. Yokochi - implement ensemble composition analysis including cluster analysis (DAOTHER-9785)
 # 24-Jul-2026  M. Yokochi - explain exact copy of the multimer's chemical shifts using comma-separated Auth_asym_IDs (DAOTHER-10898)
 # 07-Aug-2026  M. Yokochi - bridge ANTLR4 C++ lexer/parser into the Python listeners (speedy-antlr-tool, DAOTHER-9785)
+# 17-Aug-2026  M. Yokochi - code refactoring: split NmrDpValidation and NmrDpRemediation classes into topic modules
+#                           (NmrDpValidation{Base,Input,Coord,Loop,Nomencl,Cs,Mr,Pk,CoordChk,CsStats,MrStats,OutStats}
+#                           and NmrDpRemediation{Base,Enum,PolySeq,CsLoop,Cs,Mr,Pk,LegacyCs,LegacyMr,LegacyPk,Stats,Merge}),
+#                           no API change
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

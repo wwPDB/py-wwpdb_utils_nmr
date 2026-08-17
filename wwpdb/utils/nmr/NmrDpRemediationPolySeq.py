@@ -35,7 +35,8 @@ try:
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
     from wwpdb.utils.nmr.NmrVrptUtility import write_as_pickle
-    from wwpdb.utils.nmr.NmrDpRemediationBase import NmrDpRemediationBase
+    from wwpdb.utils.nmr.NmrDpRemediationBase import (NmrDpRemediationBase,
+                                                      CCA_TAGS)
 except ImportError:
     from nmr.NmrDpConstant import (SF_CATEGORIES,
                                    LP_CATEGORIES,
@@ -52,7 +53,8 @@ except ImportError:
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
     from nmr.NmrVrptUtility import write_as_pickle
-    from nmr.NmrDpRemediationBase import NmrDpRemediationBase
+    from nmr.NmrDpRemediationBase import (NmrDpRemediationBase,
+                                          CCA_TAGS)
 
 
 class NmrDpRemediationPolySeq(NmrDpRemediationBase):
@@ -955,9 +957,7 @@ class NmrDpRemediationPolySeq(NmrDpRemediationBase):
                     if 'touch' in d:
                         del d['touch']
 
-            self._reg.chem_comp_asm_dat =\
-                loop.get_tag(['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID',
-                              'Auth_asym_ID', 'Auth_seq_ID'])
+            self._reg.chem_comp_asm_dat = loop.get_tag(list(CCA_TAGS))
 
             # refresh _Bond loop
 

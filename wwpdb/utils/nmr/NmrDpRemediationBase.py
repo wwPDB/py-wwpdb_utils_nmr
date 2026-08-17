@@ -45,6 +45,25 @@ except ImportError:
     from nmr.CifToNmrStar import get_first_sf_tag
 
 
+# Column positions of self.__reg.chem_comp_asm_dat
+CCA_TAGS = ('Entity_assembly_ID',
+            'Entity_ID',
+            'Comp_index_ID',
+            'Seq_ID',
+            'Comp_ID',
+            'Auth_asym_ID',
+            'Auth_seq_ID')
+
+# positions within CCA_TAGS
+CCA_ENT_ASM_ID = 0  # Entity_assembly_ID
+CCA_ENTITY_ID = 1  # Entity_ID
+CCA_COMP_IDX = 2  # Comp_index_ID
+CCA_SEQ_ID = 3  # Seq_ID
+CCA_COMP_ID = 4  # Comp_ID
+CCA_AUTH_ASYM = 5  # Auth_asym_ID
+CCA_AUTH_SEQ = 6  # Auth_seq_ID
+
+
 def get_chem_shift_format(fPath: str
                           ) -> Optional[str]:
     """ Return chemical shift format for a input file.

@@ -15,6 +15,7 @@ __version__ = "5.3.0"
 
 import copy
 import os
+from typing import Optional, Tuple
 
 import pynmrstar
 
@@ -63,11 +64,88 @@ except ImportError:
     from nmr.cs.XeasyCSReader import XeasyCSReader
     from nmr.NmrDpRemediationBase import NmrDpRemediationBase
 
+# Reader dispatch for validateLegacyCs() and validateLegacyCsp(). Both run the
+# same nine-format sequence over the same readers and labels; only the CSP mode
+# flag and the reporting method name differ, so one table serves both.
+_CS_READERS = {
+    'ari': (AriaCSReader, 'ARIA'),
+    'bar': (BareCSReader, 'Bare WSV/TSV/CSV or Sparky resonance list'),
+    'gar': (GarretCSReader, 'GARRET'),
+    'npi': (NmrPipeCSReader, 'NMRPIPE'),
+    'oli': (OliviaCSReader, 'OLIVIA'),
+    'pip': (PippCSReader, 'PIPP'),
+    'ppm': (PpmCSReader, 'PPM'),
+    'st2': (NmrStar2CSReader, 'NMR-STAR V2.1'),
+    'xea': (XeasyCSReader, 'XEASY'),
+}
+
+LEGACY_CS_READERS = {f'nm-shi-{k}': v for k, v in _CS_READERS.items()}
+# an XEASY PROT file may arrive as an auxiliary file
+LEGACY_CS_READERS['nm-aux-xea'] = _CS_READERS['xea']
+
+LEGACY_CSP_READERS = {f'nm-csp-{k}': v for k, v in _CS_READERS.items()}
+
 
 class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
     """ Validation of legacy chemical shift files during NMR data remediation.
     """
     __slots__ = ()
+
+    def _parseLegacyCs(self, spec: tuple, file_path: str, file_name: str,
+                       original_file_name: str, create_sf_dict: bool,
+                       reserved_list_ids: dict, nmr_poly_seq, entity_assembly,
+                       a_cs_format_name: str, deal_lexer_or_parser_error,
+                       deal_warn_for_lazy_eval, csp_mode: bool = False, cs_loops=None
+                       ) -> Tuple[bool, bool, Optional[object]]:
+        """ Parse a legacy chemical shift file with the reader for a given file type,
+            re-parsing once if the parser listener asks for it. Lexer errors are ignored
+            throughout because these formats may be incomplete XML.
+            @param spec: the (reader class, label) entry for the file type
+            @param csp_mode: put the reader into chemical shift perturbation mode
+            @return: (whether to skip this file, whether the initial parse yielded a
+                     listener, the final listener). The second and third are reported
+                     separately because the caller's processing was gated on the
+                     *initial* parse, exactly as the per-format branches were.
+        """
+        reader_cls = spec[0]
+
+        def new_reader(*trailing):
+            reader = reader_cls(self._reg.verbose, self._reg.log,
+                                nmr_poly_seq, entity_assembly,
+                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
+                                *trailing)
+            if csp_mode:
+                reader.setCspMode(True)
+                reader.setCsloops(cs_loops)
+            return reader
+
+        def parse_with(reader, list_id_counter):
+            return reader.parse(file_path,
+                                createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                listIdCounter=list_id_counter, reservedListIds=reserved_list_ids,
+                                entryId=self._reg.entry_id)
+
+        _list_id_counter = copy.copy(self._reg.list_id_counter)
+
+        # ignore lexer error because of incomplete XML file format
+        listener, parser_err_listener, _ = parse_with(new_reader(), self._reg.list_id_counter)
+
+        if None not in (parser_err_listener, listener)\
+           and parser_err_listener.getMessageList() is None:
+            if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
+                return True, False, None
+
+        if listener is None:
+            return False, False, None
+
+        reasons = listener.getReasonsForReparsing()
+
+        if reasons is not None:
+            deal_warn_for_lazy_eval(file_name, listener)
+
+            listener = parse_with(new_reader(reasons), _list_id_counter)[0]
+
+        return False, True, listener
 
     def validateLegacyCs(self) -> bool:
         """ Validate data content of legacy NMR chemical shift files and merge them if possible.
@@ -385,41 +463,18 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
             suspended_errors_for_lazy_eval.clear()
 
-            if file_type == 'nm-shi-ari':
-                reader = AriaCSReader(self._reg.verbose, self._reg.log,
-                                      nmr_poly_seq, entity_assembly,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            spec = LEGACY_CS_READERS.get(file_type)
 
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
+            if spec is not None:
+                skip, parsed, listener = self._parseLegacyCs(
+                    spec, file_path, file_name, original_file_name, create_sf_dict,
+                    reserved_list_ids, nmr_poly_seq, entity_assembly, a_cs_format_name,
+                    deal_lexer_or_parser_error, deal_shi_warn_message_for_lazy_eval)
 
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
+                if skip:
+                    continue
 
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = AriaCSReader(self._reg.verbose, self._reg.log,
-                                              nmr_poly_seq, entity_assembly,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
+                if parsed:
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
@@ -428,504 +483,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (ARIA) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCs() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-shi-bar':
-                reader = BareCSReader(self._reg.verbose, self._reg.log,
-                                      nmr_poly_seq, entity_assembly,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = BareCSReader(self._reg.verbose, self._reg.log,
-                                              nmr_poly_seq, entity_assembly,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file "\
-                                f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCs() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-shi-gar':
-                reader = GarretCSReader(self._reg.verbose, self._reg.log,
-                                        nmr_poly_seq, entity_assembly,
-                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = GarretCSReader(self._reg.verbose, self._reg.log,
-                                                nmr_poly_seq, entity_assembly,
-                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (GARRET) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCs() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-shi-npi':
-                reader = NmrPipeCSReader(self._reg.verbose, self._reg.log,
-                                         nmr_poly_seq, entity_assembly,
-                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = NmrPipeCSReader(self._reg.verbose, self._reg.log,
-                                                 nmr_poly_seq, entity_assembly,
-                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                 reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCs() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-shi-oli':
-                reader = OliviaCSReader(self._reg.verbose, self._reg.log,
-                                        nmr_poly_seq, entity_assembly,
-                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = OliviaCSReader(self._reg.verbose, self._reg.log,
-                                                nmr_poly_seq, entity_assembly,
-                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCs() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-shi-pip':
-                reader = PippCSReader(self._reg.verbose, self._reg.log,
-                                      nmr_poly_seq, entity_assembly,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = PippCSReader(self._reg.verbose, self._reg.log,
-                                              nmr_poly_seq, entity_assembly,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (PIPP) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCs() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-shi-ppm':
-                reader = PpmCSReader(self._reg.verbose, self._reg.log,
-                                     nmr_poly_seq, entity_assembly,
-                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = PpmCSReader(self._reg.verbose, self._reg.log,
-                                             nmr_poly_seq, entity_assembly,
-                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                             reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCs() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-shi-st2':
-                reader = NmrStar2CSReader(self._reg.verbose, self._reg.log,
-                                          nmr_poly_seq, entity_assembly,
-                                          self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = NmrStar2CSReader(self._reg.verbose, self._reg.log,
-                                                  nmr_poly_seq, entity_assembly,
-                                                  self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                  reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCs() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type in ('nm-aux-xea', 'nm-shi-xea'):
-                reader = XeasyCSReader(self._reg.verbose, self._reg.log,
-                                       nmr_poly_seq, entity_assembly,
-                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = XeasyCSReader(self._reg.verbose, self._reg.log,
-                                               nmr_poly_seq, entity_assembly,
-                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                               reasons)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (XEASY) {file_name!r}."
+                            label = spec[1]
+                            err = f"Failed to validate assigned chemical shift file ({label}) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
                                                                      f"+{self.__class_name__}.validateLegacyCs() "
@@ -1295,45 +854,19 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
             suspended_errors_for_lazy_eval.clear()
 
-            if file_type == 'nm-csp-ari':
-                reader = AriaCSReader(self._reg.verbose, self._reg.log,
-                                      nmr_poly_seq, entity_assembly,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
+            spec = LEGACY_CSP_READERS.get(file_type)
 
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
+            if spec is not None:
+                skip, parsed, listener = self._parseLegacyCs(
+                    spec, file_path, file_name, original_file_name, create_sf_dict,
+                    reserved_list_ids, nmr_poly_seq, entity_assembly, a_cs_format_name,
+                    deal_lexer_or_parser_error, deal_shi_warn_message_for_lazy_eval,
+                    csp_mode=True, cs_loops=csLoops)
 
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
+                if skip:
+                    continue
 
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = AriaCSReader(self._reg.verbose, self._reg.log,
-                                              nmr_poly_seq, entity_assembly,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
+                if parsed:
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
@@ -1342,536 +875,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (ARIA) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-csp-bar':
-                reader = BareCSReader(self._reg.verbose, self._reg.log,
-                                      nmr_poly_seq, entity_assembly,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = BareCSReader(self._reg.verbose, self._reg.log,
-                                              nmr_poly_seq, entity_assembly,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file "\
-                                f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-csp-gar':
-                reader = GarretCSReader(self._reg.verbose, self._reg.log,
-                                        nmr_poly_seq, entity_assembly,
-                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = GarretCSReader(self._reg.verbose, self._reg.log,
-                                                nmr_poly_seq, entity_assembly,
-                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (GARRET) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-csp-npi':
-                reader = NmrPipeCSReader(self._reg.verbose, self._reg.log,
-                                         nmr_poly_seq, entity_assembly,
-                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = NmrPipeCSReader(self._reg.verbose, self._reg.log,
-                                                 nmr_poly_seq, entity_assembly,
-                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                 reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-csp-oli':
-                reader = OliviaCSReader(self._reg.verbose, self._reg.log,
-                                        nmr_poly_seq, entity_assembly,
-                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = OliviaCSReader(self._reg.verbose, self._reg.log,
-                                                nmr_poly_seq, entity_assembly,
-                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-csp-pip':
-                reader = PippCSReader(self._reg.verbose, self._reg.log,
-                                      nmr_poly_seq, entity_assembly,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = PippCSReader(self._reg.verbose, self._reg.log,
-                                              nmr_poly_seq, entity_assembly,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (PIPP) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-csp-ppm':
-                reader = PpmCSReader(self._reg.verbose, self._reg.log,
-                                     nmr_poly_seq, entity_assembly,
-                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = PpmCSReader(self._reg.verbose, self._reg.log,
-                                             nmr_poly_seq, entity_assembly,
-                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                             reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-csp-st2':
-                reader = NmrStar2CSReader(self._reg.verbose, self._reg.log,
-                                          nmr_poly_seq, entity_assembly,
-                                          self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = NmrStar2CSReader(self._reg.verbose, self._reg.log,
-                                                  nmr_poly_seq, entity_assembly,
-                                                  self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                  reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in cs_sf_dict_holder:
-                                    cs_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in cs_sf_dict_holder[content_subtype]:
-                                        cs_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-csp-xea':
-                reader = XeasyCSReader(self._reg.verbose, self._reg.log,
-                                       nmr_poly_seq, entity_assembly,
-                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.setCspMode(True)
-                reader.setCsloops(csLoops)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and parser_err_listener.getMessageList() is None:
-                    if deal_lexer_or_parser_error(a_cs_format_name, file_name, None, parser_err_listener):
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_shi_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = XeasyCSReader(self._reg.verbose, self._reg.log,
-                                               nmr_poly_seq, entity_assembly,
-                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                               reasons)
-                        reader.setCspMode(True)
-                        reader.setCsloops(csLoops)
-
-                        listener, _, _ = reader.parse(file_path,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_shi_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate assigned chemical shift file (XEASY) {file_name!r}."
+                            label = spec[1]
+                            err = f"Failed to validate assigned chemical shift file ({label}) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
                                                                      f"+{self.__class_name__}.validateLegacyCsp() "

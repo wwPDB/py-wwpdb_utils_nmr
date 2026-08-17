@@ -117,5 +117,13 @@ venv.bak/
 wwpdb/utils/tests-nmr/test-output/
 wwpdb/utils/tests-nmr-tox/test-output/
 
+# Artifacts the NMR test suites leave *next to their input data* rather than in
+# test-output/. The cache directory is SUB_DIR_NAME_FOR_CACHE in
+# NmrDpConstant.py; the log files come from setLog() in the fulltest_* scripts.
+# Without these, a `git add -A` after a test run sweeps in dozens of .pkl files.
+wwpdb/utils/tests-nmr/**/utils_nmr/
+wwpdb/utils/tests-nmr-tox/**/utils_nmr/
+wwpdb/utils/tests-nmr/**/*-log.json
+
 # emacs
 *~

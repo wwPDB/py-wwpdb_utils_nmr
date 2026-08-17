@@ -17,6 +17,7 @@ import copy
 import os
 import re
 from operator import itemgetter
+from typing import Optional, Tuple
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (AR_FILE_PATH_LIST_KEY,
@@ -99,11 +100,72 @@ except ImportError:
     from nmr.mr.XplorMRReader import XplorMRReader
     from nmr.NmrDpRemediationBase import NmrDpRemediationBase
 
+# Reader dispatch for the seven uniform branches of validateLegacyMr(). Every
+# other format needs extra reader configuration, a different source of re-parse
+# reasons, or its own bookkeeping, and keeps an explicit branch below.
+LEGACY_MR_READERS = {
+    'nm-res-ari': (AriaMRReader, 'ARIA'),
+    'nm-res-arx': (AriaMRXReader, 'ARIA'),
+    'nm-res-bar': (BareMRReader, 'Bare WSV/TSV/CSV'),
+    'nm-res-bio': (BiosymMRReader, 'BIOSYM'),
+    'nm-res-dyn': (DynamoMRReader, 'DYNAMO/PALES/TALOS'),
+    'nm-res-isd': (IsdMRReader, 'ISD'),
+    'nm-res-syb': (SybylMRReader, 'SYBYL'),
+}
+
 
 class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
     """ Validation of legacy restraint files during NMR data remediation.
     """
     __slots__ = ()
+
+    def _parseLegacyMr(self, spec: tuple, file_path: str, file_name: str,
+                       original_file_name: str, create_sf_dict: bool,
+                       deal_warn_for_lazy_eval) -> Tuple[bool, Optional[object]]:
+        """ Parse a legacy restraint file with the reader for a given file type,
+            re-parsing once if the parser listener asks for it.
+            @param spec: the LEGACY_MR_READERS entry for the file type
+            @return: (whether the initial parse yielded a listener, the final listener),
+                     reported separately because the caller's processing was gated on
+                     the *initial* parse, exactly as the per-format branches were.
+        """
+        reader_cls = spec[0]
+
+        def new_reader(*trailing):
+            return reader_cls(self._reg.verbose, self._reg.log,
+                              self._reg.representative_model_id,
+                              self._reg.representative_alt_id,
+                              self._reg.mr_atom_name_mapping,
+                              self._reg.cR, self._reg.caC,
+                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
+                              *trailing)
+
+        def parse_with(reader, list_id_counter):
+            return reader.parse(file_path, self._reg.cifPath,
+                                createSfDict=create_sf_dict, originalFileName=original_file_name,
+                                listIdCounter=list_id_counter,
+                                entryId=self._reg.entry_id)[0]
+
+        _list_id_counter = copy.copy(self._reg.list_id_counter)
+
+        listener = parse_with(new_reader(), self._reg.list_id_counter)
+
+        if listener is None:
+            return False, None
+
+        reasons = listener.getReasonsForReparsing()
+
+        if reasons is not None:
+            deal_warn_for_lazy_eval(file_name, listener)
+
+            if 'model_chain_id_ext' in reasons:
+                self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+            if 'chain_id_clone' in reasons:
+                self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+
+            listener = parse_with(new_reader(reasons), _list_id_counter)
+
+        return True, listener
 
     def validateLegacyMr(self) -> bool:
         """ Validate data content of legacy restraint files.
@@ -1143,45 +1205,14 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                                     if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
                                         self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
-            elif file_type == 'nm-res-ari':
-                reader = AriaMRReader(self._reg.verbose, self._reg.log,
-                                      self._reg.representative_model_id,
-                                      self._reg.representative_alt_id,
-                                      self._reg.mr_atom_name_mapping,
-                                      self._reg.cR, self._reg.caC,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            elif file_type in LEGACY_MR_READERS:
+                spec = LEGACY_MR_READERS[file_type]
 
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
+                parsed, listener = self._parseLegacyMr(
+                    spec, file_path, file_name, original_file_name, create_sf_dict,
+                    deal_res_warn_message_for_lazy_eval)
 
-                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self._reg.list_id_counter,
-                                              entryId=self._reg.entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(file_name, listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = AriaMRReader(self._reg.verbose, self._reg.log,
-                                              self._reg.representative_model_id,
-                                              self._reg.representative_alt_id,
-                                              self._reg.mr_atom_name_mapping,
-                                              self._reg.cR, self._reg.caC,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter,
-                                                      entryId=self._reg.entry_id)
-
+                if parsed:
                     deal_res_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
@@ -1195,220 +1226,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyMr() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self._reg.mr_sf_dict_holder:
-                                    self._reg.mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
-                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-arx':
-                reader = AriaMRXReader(self._reg.verbose, self._reg.log,
-                                       self._reg.representative_model_id,
-                                       self._reg.representative_alt_id,
-                                       self._reg.mr_atom_name_mapping,
-                                       self._reg.cR, self._reg.caC,
-                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self._reg.list_id_counter,
-                                              entryId=self._reg.entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(file_name, listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = AriaMRXReader(self._reg.verbose, self._reg.log,
-                                               self._reg.representative_model_id,
-                                               self._reg.representative_alt_id,
-                                               self._reg.mr_atom_name_mapping,
-                                               self._reg.cR, self._reg.caC,
-                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                               reasons)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_res_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyMr() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self._reg.mr_sf_dict_holder:
-                                    self._reg.mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
-                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-bar':
-                reader = BareMRReader(self._reg.verbose, self._reg.log,
-                                      self._reg.representative_model_id,
-                                      self._reg.representative_alt_id,
-                                      self._reg.mr_atom_name_mapping,
-                                      self._reg.cR, self._reg.caC,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self._reg.list_id_counter,
-                                              entryId=self._reg.entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(file_name, listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = BareMRReader(self._reg.verbose, self._reg.log,
-                                              self._reg.representative_model_id,
-                                              self._reg.representative_alt_id,
-                                              self._reg.mr_atom_name_mapping,
-                                              self._reg.cR, self._reg.caC,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_res_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate the restraint file (Bare WSV/TSV/CSV) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyMr() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self._reg.mr_sf_dict_holder:
-                                    self._reg.mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
-                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-bio':
-                reader = BiosymMRReader(self._reg.verbose, self._reg.log,
-                                        self._reg.representative_model_id,
-                                        self._reg.representative_alt_id,
-                                        self._reg.mr_atom_name_mapping,
-                                        self._reg.cR, self._reg.caC,
-                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self._reg.list_id_counter,
-                                              entryId=self._reg.entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(file_name, listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = BiosymMRReader(self._reg.verbose, self._reg.log,
-                                                self._reg.representative_model_id,
-                                                self._reg.representative_alt_id,
-                                                self._reg.mr_atom_name_mapping,
-                                                self._reg.cR, self._reg.caC,
-                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                reasons)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_res_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate the restraint file (BIOSYM) {file_name!r}."
+                            label = spec[1]
+                            err = f"Failed to validate the restraint file ({label}) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
                                                                      f"+{self.__class_name__}.validateLegacyMr() "
@@ -1760,148 +1579,6 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                                     if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
                                         self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
-            elif file_type == 'nm-res-dyn':
-                reader = DynamoMRReader(self._reg.verbose, self._reg.log,
-                                        self._reg.representative_model_id,
-                                        self._reg.representative_alt_id,
-                                        self._reg.mr_atom_name_mapping,
-                                        self._reg.cR, self._reg.caC,
-                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self._reg.list_id_counter,
-                                              entryId=self._reg.entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(file_name, listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = DynamoMRReader(self._reg.verbose, self._reg.log,
-                                                self._reg.representative_model_id,
-                                                self._reg.representative_alt_id,
-                                                self._reg.mr_atom_name_mapping,
-                                                self._reg.cR, self._reg.caC,
-                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                reasons)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_res_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate the restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyMr() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self._reg.mr_sf_dict_holder:
-                                    self._reg.mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
-                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-isd':
-                reader = IsdMRReader(self._reg.verbose, self._reg.log,
-                                     self._reg.representative_model_id,
-                                     self._reg.representative_alt_id,
-                                     self._reg.mr_atom_name_mapping,
-                                     self._reg.cR, self._reg.caC,
-                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self._reg.list_id_counter,
-                                              entryId=self._reg.entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(file_name, listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = IsdMRReader(self._reg.verbose, self._reg.log,
-                                             self._reg.representative_model_id,
-                                             self._reg.representative_alt_id,
-                                             self._reg.mr_atom_name_mapping,
-                                             self._reg.cR, self._reg.caC,
-                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                             reasons)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_res_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate the restraint file (ISD) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyMr() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self._reg.mr_sf_dict_holder:
-                                    self._reg.mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
-                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
-
             elif file_type == 'nm-res-gro':
                 reader = GromacsMRReader(self._reg.verbose, self._reg.log,
                                          self._reg.representative_model_id,
@@ -2225,77 +1902,6 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (SCHRODINGER/ASL) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyMr() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self._reg.mr_sf_dict_holder:
-                                    self._reg.mr_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
-                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-res-syb':
-                reader = SybylMRReader(self._reg.verbose, self._reg.log,
-                                       self._reg.representative_model_id,
-                                       self._reg.representative_alt_id,
-                                       self._reg.mr_atom_name_mapping,
-                                       self._reg.cR, self._reg.caC,
-                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                              createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self._reg.list_id_counter,
-                                              entryId=self._reg.entry_id)
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_res_warn_message_for_lazy_eval(file_name, listener)
-
-                        if 'model_chain_id_ext' in reasons:
-                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
-                        if 'chain_id_clone' in reasons:
-                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
-
-                        reader = SybylMRReader(self._reg.verbose, self._reg.log,
-                                               self._reg.representative_model_id,
-                                               self._reg.representative_alt_id,
-                                               self._reg.mr_atom_name_mapping,
-                                               self._reg.cR, self._reg.caC,
-                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                               reasons)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_res_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate the restraint file (SYBYL) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
                                                                      f"+{self.__class_name__}.validateLegacyMr() "

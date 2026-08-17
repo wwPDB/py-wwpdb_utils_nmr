@@ -16,6 +16,7 @@ __version__ = "5.3.0"
 import copy
 import os
 from operator import itemgetter
+from typing import Optional, Tuple
 
 import pynmrstar
 
@@ -96,11 +97,123 @@ except ImportError:
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
     from nmr.NmrDpRemediationBase import NmrDpRemediationBase
 
+# Reader dispatch for the collapsible branches of validateLegacyPk(). The keys
+# beyond 'reader' and 'label' record this format's deviations from the common
+# parse / re-parse sequence:
+#
+#   label=None             the failure message carries no format name
+#   cs_loops=False         parse() is not given csLoops
+#   xml_like               lexer errors are ignored (incomplete XML formats):
+#                          the lexer listener is discarded, the parse result is
+#                          not used to refine _content_subtype, and
+#                          deal_lexer_or_parser_error() is passed None for it
+#   lexer_var              name to unpack the lexer listener into when xml_like
+#   needs_xeasy_dict       the reader takes the XEASY atom number dictionary
+#   reparse_needs_warning  re-parse only if the listener also emitted warnings
+#
+# nm-pea-bar, nm-pea-spa and nm-pea-vie are deliberately absent: they keep their
+# own branches below because their control flow genuinely differs.
+LEGACY_PK_READERS = {
+    'nm-pea-ari': {'reader': AriaPKReader, 'label': 'ARIA', 'xml_like': True},
+    'nm-pea-ccp': {'reader': CcpnPKReader, 'label': 'CCPN'},
+    'nm-pea-oli': {'reader': OliviaPKReader, 'label': 'OLIVIA'},
+    'nm-pea-pip': {'reader': NmrPipePKReader, 'label': 'NMRPIPE'},
+    'nm-pea-pon': {'reader': PonderosaPKReader, 'label': 'PONDEROSA'},
+    'nm-pea-sps': {'reader': SparkySPKReader, 'label': 'SPARKY'},
+    'nm-pea-top': {'reader': TopSpinPKReader, 'label': 'TOPSPIN', 'xml_like': True,
+                   'cs_loops': False},
+    'nm-pea-vnm': {'reader': VnmrPKReader, 'label': 'VNMR'},
+    'nm-pea-xea': {'reader': XeasyPKReader, 'label': 'XEASY',
+                   'needs_xeasy_dict': True, 'reparse_needs_warning': True},
+    'nm-pea-xwi': {'reader': XwinNmrPKReader, 'label': 'XWINNMR', 'cs_loops': False},
+}
+
 
 class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
     """ Validation of legacy spectral peak list files during NMR data remediation.
     """
     __slots__ = ()
+
+    def _parseLegacyPk(self, spec: dict, extra_args: tuple, file_path: str, file_name: str,
+                       original_file_name: str, create_sf_dict: bool,
+                       reserved_list_ids: dict, content_subtype: Optional[dict],
+                       a_pk_format_name: str, deal_lexer_or_parser_error,
+                       deal_warn_for_lazy_eval) -> Tuple[bool, bool, Optional[object]]:
+        """ Parse a legacy spectral peak list file with the reader for a given file type,
+            re-parsing once if the parser listener asks for it.
+            @param spec: the LEGACY_PK_READERS entry for the file type
+            @param extra_args: extra positional arguments for the reader constructor
+            @param content_subtype: the content subtype declared by the input source,
+                                    used as-is for xml_like formats and otherwise
+                                    refined from the initial parse
+            @return: (whether to skip this file, whether the initial parse yielded a
+                     listener, the final listener). The second and third are reported
+                     separately because the caller's processing was gated on the
+                     *initial* parse, exactly as the per-format branches were.
+        """
+        reader_cls = spec['reader']
+        xml_like = spec.get('xml_like', False)
+        cs_loops = spec.get('cs_loops', True)
+
+        def new_reader(*trailing):
+            reader = reader_cls(self._reg.verbose, self._reg.log,
+                                self._reg.representative_model_id,
+                                self._reg.representative_alt_id,
+                                self._reg.mr_atom_name_mapping,
+                                self._reg.cR, self._reg.caC,
+                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
+                                *extra_args, *trailing)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
+            return reader
+
+        def parse_with(reader, list_id_counter):
+            kwargs = {'createSfDict': create_sf_dict, 'originalFileName': original_file_name,
+                      'listIdCounter': list_id_counter, 'reservedListIds': reserved_list_ids,
+                      'entryId': self._reg.entry_id}
+            if cs_loops:
+                kwargs['csLoops'] = self._reg.lp_data['chem_shift']
+            return reader.parse(file_path, self._reg.cifPath, **kwargs)
+
+        _list_id_counter = copy.copy(self._reg.list_id_counter)
+
+        listener, parser_err_listener, lexer_err_listener = parse_with(new_reader(),
+                                                                       self._reg.list_id_counter)
+
+        if not xml_like:
+            content_subtype = listener.getContentSubtype() if listener is not None else None
+            if content_subtype is not None and len(content_subtype) == 0:
+                content_subtype = None
+
+        if xml_like:
+            checked = None not in (parser_err_listener, listener)\
+                and (parser_err_listener.getMessageList() is None or content_subtype is not None)
+            lexer_arg = None
+        else:
+            checked = None not in (lexer_err_listener, parser_err_listener, listener)\
+                and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
+                     or content_subtype is not None)
+            lexer_arg = lexer_err_listener
+
+        if checked and deal_lexer_or_parser_error(a_pk_format_name, file_name,
+                                                  lexer_arg, parser_err_listener)[0]:
+            return True, False, None
+
+        if listener is None:
+            return False, False, None
+
+        reasons = listener.getReasonsForReparsing()
+
+        reparse = reasons is not None
+        if reparse and spec.get('reparse_needs_warning', False):
+            reparse = listener.warningMessage is not None and len(listener.warningMessage) > 0
+
+        if reparse:
+            deal_warn_for_lazy_eval(file_name, listener)
+
+            listener = parse_with(new_reader(reasons), _list_id_counter)[0]
+
+        return False, True, listener
 
     def validateLegacyPk(self) -> bool:
         """ Validate data content of legacy spectral peak files and merge them if possible.
@@ -667,53 +780,21 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
 
             suspended_errors_for_lazy_eval.clear()
 
-            if file_type == 'nm-pea-ari':
-                reader = AriaPKReader(self._reg.verbose, self._reg.log,
-                                      self._reg.representative_model_id,
-                                      self._reg.representative_alt_id,
-                                      self._reg.mr_atom_name_mapping,
-                                      self._reg.cR, self._reg.caC,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
+            spec = LEGACY_PK_READERS.get(file_type)
 
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
+            if spec is not None:
+                extra_args = (xeasyAtomNumberDict,) if spec.get('needs_xeasy_dict') else ()
 
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id,
-                                 csLoops=self._reg.lp_data['chem_shift'])
+                skip, parsed, listener = self._parseLegacyPk(
+                    spec, extra_args, file_path, file_name, original_file_name,
+                    create_sf_dict, reserved_list_ids, _content_subtype,
+                    a_pk_format_name, deal_lexer_or_parser_error,
+                    deal_pea_warn_message_for_lazy_eval)
 
-                if None not in (parser_err_listener, listener)\
-                   and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:
-                        continue
+                if skip:
+                    continue
 
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = AriaPKReader(self._reg.verbose, self._reg.log,
-                                              self._reg.representative_model_id,
-                                              self._reg.representative_alt_id,
-                                              self._reg.mr_atom_name_mapping,
-                                              self._reg.cR, self._reg.caC,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id,
-                                                      csLoops=self._reg.lp_data['chem_shift'])
-
+                if parsed:
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
                     poly_seq = listener.getPolymerSequence()
@@ -727,7 +808,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (ARIA) {file_name!r}."
+                            label = spec['label']
+                            err = f"Failed to validate spectral peak list file ({label}) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
                                                                      f"+{self.__class_name__}.validateLegacyPk() "
@@ -766,7 +848,7 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                                  entryId=self._reg.entry_id,
                                  csLoops=self._reg.lp_data['chem_shift'])
 
-                if None not in (parser_err_listener, listener)\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:
@@ -808,338 +890,6 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-pea-ccp':
-                reader = CcpnPKReader(self._reg.verbose, self._reg.log,
-                                      self._reg.representative_model_id,
-                                      self._reg.representative_alt_id,
-                                      self._reg.mr_atom_name_mapping,
-                                      self._reg.cR, self._reg.caC,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id,
-                                 csLoops=self._reg.lp_data['chem_shift'])
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = CcpnPKReader(self._reg.verbose, self._reg.log,
-                                              self._reg.representative_model_id,
-                                              self._reg.representative_alt_id,
-                                              self._reg.mr_atom_name_mapping,
-                                              self._reg.cR, self._reg.caC,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id,
-                                                      csLoops=self._reg.lp_data['chem_shift'])
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (CCPN) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-pea-oli':
-                reader = OliviaPKReader(self._reg.verbose, self._reg.log,
-                                        self._reg.representative_model_id,
-                                        self._reg.representative_alt_id,
-                                        self._reg.mr_atom_name_mapping,
-                                        self._reg.cR, self._reg.caC,
-                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id,
-                                 csLoops=self._reg.lp_data['chem_shift'])
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = OliviaPKReader(self._reg.verbose, self._reg.log,
-                                                self._reg.representative_model_id,
-                                                self._reg.representative_alt_id,
-                                                self._reg.mr_atom_name_mapping,
-                                                self._reg.cR, self._reg.caC,
-                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id,
-                                                      csLoops=self._reg.lp_data['chem_shift'])
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (OLIVIA) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-pea-pip':
-                reader = NmrPipePKReader(self._reg.verbose, self._reg.log,
-                                         self._reg.representative_model_id,
-                                         self._reg.representative_alt_id,
-                                         self._reg.mr_atom_name_mapping,
-                                         self._reg.cR, self._reg.caC,
-                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id,
-                                 csLoops=self._reg.lp_data['chem_shift'])
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = NmrPipePKReader(self._reg.verbose, self._reg.log,
-                                                 self._reg.representative_model_id,
-                                                 self._reg.representative_alt_id,
-                                                 self._reg.mr_atom_name_mapping,
-                                                 self._reg.cR, self._reg.caC,
-                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                 reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id,
-                                                      csLoops=self._reg.lp_data['chem_shift'])
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (NMRPIPE) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-pea-pon':
-                reader = PonderosaPKReader(self._reg.verbose, self._reg.log,
-                                           self._reg.representative_model_id,
-                                           self._reg.representative_alt_id,
-                                           self._reg.mr_atom_name_mapping,
-                                           self._reg.cR, self._reg.caC,
-                                           self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id,
-                                 csLoops=self._reg.lp_data['chem_shift'])
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = PonderosaPKReader(self._reg.verbose, self._reg.log,
-                                                   self._reg.representative_model_id,
-                                                   self._reg.representative_alt_id,
-                                                   self._reg.mr_atom_name_mapping,
-                                                   self._reg.cR, self._reg.caC,
-                                                   self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                   reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id,
-                                                      csLoops=self._reg.lp_data['chem_shift'])
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (PONDEROSA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
                                                                      f"+{self.__class_name__}.validateLegacyPk() "
@@ -1339,166 +1089,6 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                                     if sf not in pk_sf_dict_holder[content_subtype]:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
-            elif file_type == 'nm-pea-sps':
-                reader = SparkySPKReader(self._reg.verbose, self._reg.log,
-                                         self._reg.representative_model_id,
-                                         self._reg.representative_alt_id,
-                                         self._reg.mr_atom_name_mapping,
-                                         self._reg.cR, self._reg.caC,
-                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id,
-                                 csLoops=self._reg.lp_data['chem_shift'])
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = SparkySPKReader(self._reg.verbose, self._reg.log,
-                                                 self._reg.representative_model_id,
-                                                 self._reg.representative_alt_id,
-                                                 self._reg.mr_atom_name_mapping,
-                                                 self._reg.cR, self._reg.caC,
-                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                 reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id,
-                                                      csLoops=self._reg.lp_data['chem_shift'])
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-pea-top':
-                reader = TopSpinPKReader(self._reg.verbose, self._reg.log,
-                                         self._reg.representative_model_id,
-                                         self._reg.representative_alt_id,
-                                         self._reg.mr_atom_name_mapping,
-                                         self._reg.cR, self._reg.caC,
-                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                # ignore lexer error because of incomplete XML file format
-                listener, parser_err_listener, _ =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                if None not in (parser_err_listener, listener)\
-                   and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = TopSpinPKReader(self._reg.verbose, self._reg.log,
-                                                 self._reg.representative_model_id,
-                                                 self._reg.representative_alt_id,
-                                                 self._reg.mr_atom_name_mapping,
-                                                 self._reg.cR, self._reg.caC,
-                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                 reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (TOPSPIN) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
             elif file_type == 'nm-pea-vie':
                 __list_id_counter = copy.copy(self._reg.list_id_counter)
 
@@ -1610,255 +1200,6 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (NMRVIEW) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-pea-vnm':
-                reader = VnmrPKReader(self._reg.verbose, self._reg.log,
-                                      self._reg.representative_model_id,
-                                      self._reg.representative_alt_id,
-                                      self._reg.mr_atom_name_mapping,
-                                      self._reg.cR, self._reg.caC,
-                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id,
-                                 csLoops=self._reg.lp_data['chem_shift'])
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = VnmrPKReader(self._reg.verbose, self._reg.log,
-                                              self._reg.representative_model_id,
-                                              self._reg.representative_alt_id,
-                                              self._reg.mr_atom_name_mapping,
-                                              self._reg.cR, self._reg.caC,
-                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                              reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id,
-                                                      csLoops=self._reg.lp_data['chem_shift'])
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (VNMR) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-pea-xea':
-                reader = XeasyPKReader(self._reg.verbose, self._reg.log,
-                                       self._reg.representative_model_id,
-                                       self._reg.representative_alt_id,
-                                       self._reg.mr_atom_name_mapping,
-                                       self._reg.cR, self._reg.caC,
-                                       self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                       xeasyAtomNumberDict)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id,
-                                 csLoops=self._reg.lp_data['chem_shift'])
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = XeasyPKReader(self._reg.verbose, self._reg.log,
-                                               self._reg.representative_model_id,
-                                               self._reg.representative_alt_id,
-                                               self._reg.mr_atom_name_mapping,
-                                               self._reg.cR, self._reg.caC,
-                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                               xeasyAtomNumberDict,
-                                               reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id,
-                                                      csLoops=self._reg.lp_data['chem_shift'])
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (XEASY) {file_name!r}."
-
-                            self._reg.report.error.appendDescription('internal_error',
-                                                                     f"+{self.__class_name__}.validateLegacyPk() "
-                                                                     "++ Error  - " + err)
-
-                            if self._reg.verbose:
-                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
-
-                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
-                        if sf_dict is not None:
-                            for k, v in sf_dict.items():
-                                content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in pk_sf_dict_holder:
-                                    pk_sf_dict_holder[content_subtype] = []
-                                for sf in v:
-                                    if sf not in pk_sf_dict_holder[content_subtype]:
-                                        pk_sf_dict_holder[content_subtype].append(sf)
-
-            elif file_type == 'nm-pea-xwi':
-                reader = XwinNmrPKReader(self._reg.verbose, self._reg.log,
-                                         self._reg.representative_model_id,
-                                         self._reg.representative_alt_id,
-                                         self._reg.mr_atom_name_mapping,
-                                         self._reg.cR, self._reg.caC,
-                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
-                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                reader.setInternalMode(self._reg.internal_mode)
-
-                _list_id_counter = copy.copy(self._reg.list_id_counter)
-
-                listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self._reg.cifPath,
-                                 createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self._reg.entry_id)
-
-                _content_subtype = listener.getContentSubtype() if listener is not None else None
-                if _content_subtype is not None and len(_content_subtype) == 0:
-                    _content_subtype = None
-
-                if None not in (lexer_err_listener, parser_err_listener, listener)\
-                   and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
-                        or _content_subtype is not None):
-                    if deal_lexer_or_parser_error(a_pk_format_name, file_name, lexer_err_listener, parser_err_listener)[0]:
-                        continue
-
-                if listener is not None:
-                    reasons = listener.getReasonsForReparsing()
-
-                    if reasons is not None:
-                        deal_pea_warn_message_for_lazy_eval(file_name, listener)
-
-                        reader = XwinNmrPKReader(self._reg.verbose, self._reg.log,
-                                                 self._reg.representative_model_id,
-                                                 self._reg.representative_alt_id,
-                                                 self._reg.mr_atom_name_mapping,
-                                                 self._reg.cR, self._reg.caC,
-                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
-                                                 reasons)
-                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
-                        reader.setInternalMode(self._reg.internal_mode)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
-                                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                                      listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self._reg.entry_id)
-
-                    deal_pea_warn_message(file_name, listener, ignore_error)
-
-                    poly_seq = listener.getPolymerSequence()
-                    if poly_seq is not None:
-                        input_source.setItemValue('polymer_sequence', poly_seq)
-                        poly_seq_set.append(poly_seq)
-
-                    seq_align = listener.getSequenceAlignment()
-                    if seq_align is not None:
-                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
-
-                    if create_sf_dict:
-                        if len(listener.getContentSubtype()) == 0 and not ignore_error:
-                            err = f"Failed to validate spectral peak list file (XWINNMR) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
                                                                      f"+{self.__class_name__}.validateLegacyPk() "

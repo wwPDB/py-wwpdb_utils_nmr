@@ -97,8 +97,6 @@ except ImportError:
 #   extra_args             extra positional arguments appended after nefT
 #                          (XEASY takes an additional None)
 #   cs_loops               whether parse() is given csLoops (default True)
-#   reserved_on_reparse    whether the *re-parse* is given reservedListIds
-#                          (default True; the first parse always is)
 #   reparse_needs_warning  whether re-parsing additionally requires the
 #                          listener to have emitted warning messages
 PK_READERS = {
@@ -108,15 +106,12 @@ PK_READERS = {
     'nm-pea-oli': {'reader': OliviaPKReader, 'label': 'OLIVIA'},
     'nm-pea-pip': {'reader': NmrPipePKReader, 'label': 'NMRPIPE'},
     'nm-pea-pon': {'reader': PonderosaPKReader, 'label': 'PONDEROSA'},
-    'nm-pea-spa': {'reader': SparkyPKReader, 'label': 'SPARKY',
-                   'reserved_on_reparse': False},
-    'nm-pea-sps': {'reader': SparkySPKReader, 'label': 'SPARKY',
-                   'reserved_on_reparse': False},
+    'nm-pea-spa': {'reader': SparkyPKReader, 'label': 'SPARKY'},
+    'nm-pea-sps': {'reader': SparkySPKReader, 'label': 'SPARKY'},
     'nm-pea-top': {'reader': TopSpinPKReader, 'label': 'TOPSPIN',
                    'cs_loops': False},
     'nm-pea-vie': {'reader': NmrViewPKReader, 'label': 'NMRVIEW'},
-    'nm-pea-vnm': {'reader': VnmrPKReader, 'label': 'VNMR',
-                   'reserved_on_reparse': False},
+    'nm-pea-vnm': {'reader': VnmrPKReader, 'label': 'VNMR'},
     'nm-pea-xea': {'reader': XeasyPKReader, 'label': 'XEASY',
                    'extra_args': (None,), 'reparse_needs_warning': True},
     'nm-pea-xwi': {'reader': XwinNmrPKReader, 'label': 'XWINNMR',
@@ -155,11 +150,10 @@ class NmrDpRemediationPk(NmrDpRemediationBase):
             reader.setInternalMode(self._reg.internal_mode)
             return reader
 
-        def parse_with(reader, list_id_counter, pass_reserved):
-            kwargs = {'listIdCounter': list_id_counter}
-            if pass_reserved:
-                kwargs['reservedListIds'] = reserved_list_ids
-            kwargs['entryId'] = self._reg.entry_id
+        def parse_with(reader, list_id_counter):
+            kwargs = {'listIdCounter': list_id_counter,
+                      'reservedListIds': reserved_list_ids,
+                      'entryId': self._reg.entry_id}
             if spec.get('cs_loops', True):
                 kwargs['csLoops'] = self._reg.lp_data['chem_shift']
             return reader.parse(text_data, self._reg.cifPath, isFilePath=False,
@@ -168,7 +162,7 @@ class NmrDpRemediationPk(NmrDpRemediationBase):
 
         _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-        listener = parse_with(new_reader(), self._reg.list_id_counter, True)
+        listener = parse_with(new_reader(), self._reg.list_id_counter)
 
         if listener is None:
             return False, None
@@ -182,8 +176,7 @@ class NmrDpRemediationPk(NmrDpRemediationBase):
         if reparse:
             deal_warn_for_lazy_eval(data_file_name, listener)
 
-            listener = parse_with(new_reader(reasons), _list_id_counter,
-                                  spec.get('reserved_on_reparse', True))
+            listener = parse_with(new_reader(reasons), _list_id_counter)
 
         return True, listener
 

@@ -47,7 +47,13 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import write_as_pickle
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
                                                        translateToStdAtomName)
-    from wwpdb.utils.nmr.NmrDpRemediationBase import NmrDpRemediationBase
+    from wwpdb.utils.nmr.NmrDpRemediationBase import (NmrDpRemediationBase,
+                                                      CCA_ENT_ASM_ID,
+                                                      CCA_ENTITY_ID,
+                                                      CCA_COMP_IDX,
+                                                      CCA_SEQ_ID,
+                                                      CCA_COMP_ID,
+                                                      CCA_AUTH_ASYM)
 except ImportError:
     from nmr.NmrDpConstant import (DATA_ITEMS,
                                    AUX_LP_CATEGORIES,
@@ -72,7 +78,13 @@ except ImportError:
     from nmr.NmrVrptUtility import write_as_pickle
     from nmr.mr.ParserListenerUtil import (translateToStdResName,
                                            translateToStdAtomName)
-    from nmr.NmrDpRemediationBase import NmrDpRemediationBase
+    from nmr.NmrDpRemediationBase import (NmrDpRemediationBase,
+                                          CCA_ENT_ASM_ID,
+                                          CCA_ENTITY_ID,
+                                          CCA_COMP_IDX,
+                                          CCA_SEQ_ID,
+                                          CCA_COMP_ID,
+                                          CCA_AUTH_ASYM)
 
 
 # Column positions of the rows remediateCsLoop() builds. They are named so that a
@@ -484,7 +496,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                 _row[NEF_VAL] = row[val_col]
 
                 try:
-                    float(_row[4])
+                    float(_row[NEF_VAL])
                 except ValueError:
                     continue
 
@@ -500,9 +512,9 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         except ValueError:
                             pass
 
-                _row[NEF_ELEM] = 'H' if _row[3][0] in PROTON_BEGIN_CODE else atom_id[0]
-                if _row[6] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                    _row[NEF_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[6]][0]
+                _row[NEF_ELEM] = 'H' if _row[NEF_ATOM][0] in PROTON_BEGIN_CODE else atom_id[0]
+                if _row[NEF_ELEM] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                    _row[NEF_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[NEF_ELEM]][0]
 
                 lp.add_data(_row)
 
@@ -800,16 +812,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     _row[CS_INS_CODE] = auth_to_ins_code[seq_key]
 
                 if seq_key in auth_to_orig_seq:
-                    if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
+                    if _row[CS_ORIG_ASYM] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                         __seq_key = (_seq_key[0], orig_seq_id, comp_id)
                         if self._reg.csStat.getTypeOfCompId(comp_id)[2]\
                            and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                             _seq_key = __seq_key
-                            if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
+                            if _row[CS_ORIG_SEQ] in EMPTY_VALUE or _row[CS_ORIG_COMP] in EMPTY_VALUE:
                                 _row[CS_ORIG_SEQ], _row[CS_ORIG_COMP] = orig_seq_id, orig_comp_id
                         else:
-                            _auth_to_orig_seq[seq_key] = (_row[20], orig_seq_id, orig_comp_id)
+                            _auth_to_orig_seq[seq_key] = (_row[CS_ORIG_ASYM], orig_seq_id, orig_comp_id)
                     if not has_orig_seq:
                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                         if orig_seq_id in EMPTY_VALUE:
@@ -825,7 +837,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 and translateToStdResName(comp_id, ccU=self._reg.ccU) == auth_comp_id:
                             _row[CS_ORIG_ASYM], _row[CS_ORIG_SEQ], _row[CS_ORIG_COMP] = auth_asym_id, auth_seq_id, comp_id
                             _row[CS_COMP_ID] = comp_id = auth_comp_id
-                        if _row[23] in EMPTY_VALUE:
+                        if _row[CS_ORIG_ATOM] in EMPTY_VALUE:
                             _row[CS_ORIG_ATOM] = atom_id
                         ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                         if ambig_code > 0:
@@ -848,7 +860,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         if ch3_name_in_xplor and atom_id[0] == 'H'\
                                         and atom_id[-1] in ('1', '2', '3')\
                                         else atom_id
-                                elif _row[23] in EMPTY_VALUE:
+                                elif _row[CS_ORIG_ATOM] in EMPTY_VALUE:
                                     _row[CS_ORIG_ATOM] = atom_id
 
                 else:
@@ -893,11 +905,12 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                 _src_idx = src_idx
                 if src_idx > 0:
                     src_idx -= 1
-                fill_auth_atom_id = self._reg.annotation_mode or (_row[19] in EMPTY_VALUE and _row[18] not in EMPTY_VALUE)
-                fill_orig_atom_id = _row[23] not in EMPTY_VALUE
+                fill_auth_atom_id = self._reg.annotation_mode\
+                    or (_row[CS_AUTH_ATOM] in EMPTY_VALUE and _row[CS_AUTH_COMP] not in EMPTY_VALUE)
+                fill_orig_atom_id = _row[CS_ORIG_ATOM] not in EMPTY_VALUE
 
                 if _seq_key is not None:
-                    if _seq_key in truncated_loop_sequence and _row[24] in EMPTY_VALUE:
+                    if _seq_key in truncated_loop_sequence and _row[CS_DETAILS] in EMPTY_VALUE:
                         _row[CS_DETAILS] = 'UNMAPPED'
                     seq_key = (_seq_key[0], _seq_key[1], comp_id)
                     _seq_key = seq_key if seq_key in coord_atom_site else _seq_key
@@ -912,8 +925,8 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     if 'chain_id' in _coord_atom_site:
                         _row[CS_AUTH_ASYM] = _coord_atom_site['chain_id']
                         # DAOTHER-10898
-                        if _row[16] in copied_auth_asym_id_mapping:
-                            _row[CS_AUTH_ASYM] = _row[CS_ORIG_ASYM] = copied_auth_asym_id_mapping[_row[16]]
+                        if _row[CS_AUTH_ASYM] in copied_auth_asym_id_mapping:
+                            _row[CS_AUTH_ASYM] = _row[CS_ORIG_ASYM] = copied_auth_asym_id_mapping[_row[CS_AUTH_ASYM]]
                     _row[CS_COMP_ID] = _row[CS_AUTH_COMP] = comp_id = _coord_atom_site['comp_id']
                     valid = True
                     missing_ch3 = []
@@ -924,8 +937,8 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         seq_id_src = row_src[seq_id_col]
                         if 0 <= src_idx < len(src_lp):
                             for row in peripheral_src_rows():
-                                if (row[seq_id_col] == str(_row[3])
-                                    or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src))\
+                                if (row[seq_id_col] == str(_row[CS_COMP_IDX])
+                                    or (_row[CS_COMP_IDX] != seq_id_src and row[seq_id_col] == seq_id_src))\
                                    and row[comp_id_col].upper() == comp_id\
                                    and row[atom_id_col] in missing_ch3:
                                     valid = True
@@ -935,15 +948,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     if atom_id in _atom_site_atom_id and valid and len(missing_ch3) == 0\
                        and (not self._reg.annotation_mode or comp_id not in incomplete_comp_id_annotation):
                         _row[CS_ATOM_ID] = atom_id
-                        if fill_auth_atom_id or _row[6] != _row[19]:
-                            _row[CS_AUTH_ATOM] = _row[6]
+                        if fill_auth_atom_id or _row[CS_ATOM_ID] != _row[CS_AUTH_ATOM]:
+                            _row[CS_AUTH_ATOM] = _row[CS_ATOM_ID]
                         _row[CS_ATOM_TYPE] = _coord_atom_site['type_symbol'][_atom_site_atom_id.index(atom_id)]
-                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                            _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                        if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                            _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                         # """ need to preserve Original_PDB_atom_name for atom name mapping history
-                        # if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _atom_site_atom_id:
-                        #     if _row[23] in self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True):
-                        #         _row[23] = copy.copy(atom_id)
+                        # if fill_orig_atom_id and _row[CS_ATOM_ID] != _row[CS_ORIG_ATOM] and _row[CS_ORIG_ATOM] in _atom_site_atom_id:  # noqa: E501, pylint: disable=line-too-long
+                        #     if _row[CS_ORIG_ATOM] in self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True):
+                        #         _row[CS_ORIG_ATOM] = copy.copy(atom_id)
                         # """
                     else:
                         if atom_id in ('H1', 'HT1') and 'H' in _atom_site_atom_id\
@@ -980,9 +993,9 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 atom_id = bonded[0]
                                 if fill_auth_atom_id:
                                     _row[CS_AUTH_ATOM] = atom_id
-                        if len(missing_ch3) > 0 and (_row[9] in EMPTY_VALUE or float(_row[9]) >= 4.0):
+                        if len(missing_ch3) > 0 and (_row[CS_VAL] in EMPTY_VALUE or float(_row[CS_VAL]) >= 4.0):
                             heme = False
-                            if _row[9] not in EMPTY_VALUE:
+                            if _row[CS_VAL] not in EMPTY_VALUE:
                                 if self._reg.ccU.updateChemCompDict(comp_id):
                                     heme = comp_id == 'HEM' or 'HEME' in self._reg.ccU.lastChemCompDict['name']
                             if not heme:
@@ -993,13 +1006,14 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                             if _atom_id in self._reg.csStat.getRepMethylProtons(comp_id):
                                 atom_id = _atom_id
                         if (valid and atom_id in _atom_site_atom_id)\
-                           or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
+                           or ((prefer_auth_atom_name or _row[CS_DETAILS] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
                             # DAOTHER-9286
                             if self._reg.annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:
                                 atom_ids =\
                                     self._reg.dpV.getAtomIdListInXplorForLigandRemap(comp_id,
-                                                                                     _row[23] if fill_orig_atom_id else atom_id,
+                                                                                     _row[CS_ORIG_ATOM] if fill_orig_atom_id
+                                                                                     else atom_id,
                                                                                      _coord_atom_site)
                         else:
                             atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
@@ -1016,9 +1030,10 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 if comp_id not in incomplete_comp_id_annotation:
                                     incomplete_comp_id_annotation.append(comp_id)
                         if valid and len(missing_ch3) > 0:
-                            if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
-                               and len(self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
-                                atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])
+                            if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[CS_ORIG_ATOM])\
+                               and len(self._reg.dpV.getAtomIdListInXplor(comp_id, _row[CS_ORIG_ATOM])) > 1\
+                               and _row[CS_DETAILS] != 'UNMAPPED':
+                                atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, _row[CS_ORIG_ATOM])
                             else:
                                 missing_ch3.clear()
                         if not valid and len(missing_ch3) > 0 and atom_id in _atom_site_atom_id:
@@ -1027,37 +1042,38 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         if len_atom_ids == 0:
                             _row[CS_ATOM_ID] = atom_id
                             if fill_auth_atom_id:
-                                _row[CS_AUTH_ATOM] = _row[6]
+                                _row[CS_AUTH_ATOM] = _row[CS_ATOM_ID]
                             _row[CS_ATOM_TYPE] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
-                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                            if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                         else:
                             methyl_atoms = self._reg.csStat.getMethylAtoms(comp_id)
                             atom_ids = sorted(atom_ids)
                             _row[CS_ATOM_ID] = atom_ids[0]
                             _row[CS_AUTH_ATOM] = None
-                            fill_auth_atom_id = _row[18] not in EMPTY_VALUE
+                            fill_auth_atom_id = _row[CS_AUTH_COMP] not in EMPTY_VALUE
                             if self._reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self._reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
+                                cca = next((cca for cca in self._reg.ccU.lastAtomDictList
+                                            if cca['atom_id'] == _row[CS_ATOM_ID]), None)
                                 if cca is not None:
                                     _row[CS_ATOM_TYPE] = cca['type_symbol']
-                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                        _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                    if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                        _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                                 else:
-                                    _row[CS_ATOM_TYPE] = 'H' if _row[6][0] in PROTON_BEGIN_CODE else atom_id[0]
-                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                        _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                    _row[CS_ATOM_TYPE] = 'H' if _row[CS_ATOM_ID][0] in PROTON_BEGIN_CODE else atom_id[0]
+                                    if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                        _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                             else:
                                 _row[CS_ATOM_TYPE] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
-                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                    _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
 
-                            ambig_code = _row[12]
+                            ambig_code = _row[CS_AMBIG_CODE]
                             if ambig_code == 0:
                                 _row[CS_AMBIG_CODE] = None
 
                             elif ambig_code in (2, 3):
-                                _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[CS_ATOM_ID])
                                 if _ambig_code not in (0, ambig_code):
                                     if _ambig_code != 1:
                                         _row[CS_AMBIG_CODE] = _ambig_code
@@ -1081,7 +1097,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                     reparse = True
 
                             elif ambig_code == 4:
-                                if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
+                                if not self._reg.annotation_mode and _row[CS_DETAILS] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     chain_id_src = row_src[chain_id_col]
                                     atom_id_src = row_src[atom_id_col]
@@ -1093,14 +1109,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     for row in peripheral_src_rows():
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
-                                           and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                            if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                           and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                           or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                               and row[ambig_code_col] == ambig_code_src):
+                                            if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                    or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                        and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id =\
                                                 row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id in (_row[3], _row[17]):
+                                            if _seq_id in (_row[CS_COMP_IDX], _row[CS_AUTH_SEQ]):
                                                 ambig_code_4_test = True
                                                 if row[atom_id_col] not in atom_ids_in_group_src:
                                                     hetero_group_test = True
@@ -1110,14 +1128,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         for row in peripheral_src_rows():
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                               and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                               or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                                   and row[ambig_code_col] == ambig_code_src):
+                                                if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                        or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                            and row[chain_id_col] == chain_id_src)):
                                                     break
                                                 _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int)\
                                                     else int(row[seq_id_col])
-                                                if _seq_id in (_row[3], _row[17]):
+                                                if _seq_id in (_row[CS_COMP_IDX], _row[CS_AUTH_SEQ]):
                                                     break
                                                 _row[CS_AMBIG_CODE] = ambig_code = 5
                                                 ambig_code_5_test = True
@@ -1126,10 +1146,12 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                             for row in peripheral_src_rows():
                                                 if row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
-                                                   and row[ambig_code_col] == str(_row[12])\
-                                                   or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                    if not (row[chain_id_col] == str(_row[1])
-                                                            or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                                   and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                                   or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                                       and row[ambig_code_col] == ambig_code_src):
+                                                    if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                            or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                                and row[chain_id_col] == chain_id_src)):
                                                         _row[CS_AMBIG_CODE] = ambig_code = 6
                                                         break
                                             if ambig_code == 4:
@@ -1138,7 +1160,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         _row[CS_AMBIG_CODE] = ambig_code = 1
 
                             elif ambig_code == 5:
-                                if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
+                                if not self._reg.annotation_mode and _row[CS_DETAILS] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     chain_id_src = row_src[chain_id_col]
                                     atom_type = row_src[atom_id_col][0]
@@ -1147,14 +1169,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     for row in peripheral_src_rows():
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
-                                           and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                            if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                           and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                           or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                               and row[ambig_code_col] == ambig_code_src):
+                                            if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                    or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                        and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id =\
                                                 row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id in (_row[3], _row[17]):
+                                            if _seq_id in (_row[CS_COMP_IDX], _row[CS_AUTH_SEQ]):
                                                 break
                                             _row[CS_AMBIG_CODE] = ambig_code = 5
                                             ambig_code_5_test = True
@@ -1163,10 +1187,12 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         for row in peripheral_src_rows():
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                               and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                               or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                                   and row[ambig_code_col] == ambig_code_src):
+                                                if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                        or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                            and row[chain_id_col] == chain_id_src)):
                                                     _row[CS_AMBIG_CODE] = ambig_code = 6
                                                     break
 
@@ -1177,19 +1203,20 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     _row[CS_AMBIG_CODE] = ambig_code = 5
 
                             if ambig_code in (1, 2, 3):
-                                if _row[13] is not None:
+                                if _row[CS_AMBIG_SET] is not None:
                                     _row[CS_AMBIG_SET] = None
 
                             if len_atom_ids > 1:
-                                if _row[12] == 1 or _row[12] in EMPTY_VALUE:
-                                    if _row[6] not in methyl_atoms\
-                                       or (_row[6] in methyl_atoms
-                                           and ((_row[7][0] == 'H' and len_atom_ids == 6)
-                                                or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                        _row[CS_AMBIG_CODE] = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
+                                if _row[CS_AMBIG_CODE] == 1 or _row[CS_AMBIG_CODE] in EMPTY_VALUE:
+                                    if _row[CS_ATOM_ID] not in methyl_atoms\
+                                       or (_row[CS_ATOM_ID] in methyl_atoms
+                                           and ((_row[CS_ATOM_TYPE][0] == 'H' and len_atom_ids == 6)
+                                                or (_row[CS_ATOM_TYPE][0] == 'C' and len_atom_ids == 2))):
+                                        _row[CS_AMBIG_CODE] =\
+                                            self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[CS_ATOM_ID], None)
                                 __row = copy.copy(_row)
                                 if fill_auth_atom_id:
-                                    __row[19] = __row[6]
+                                    __row[CS_AUTH_ATOM] = __row[CS_ATOM_ID]
 
                                 lp.add_data(__row)
 
@@ -1198,16 +1225,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                                     index += 1
 
-                                    __row[0] = index
-                                    __row[6] = _atom_id
+                                    __row[CS_ID] = index
+                                    __row[CS_ATOM_ID] = _atom_id
                                     if fill_auth_atom_id:
-                                        __row[19] = __row[6]
-                                    if fill_orig_atom_id and len(missing_ch3) > 0 and __row[23] in EMPTY_VALUE:
+                                        __row[CS_AUTH_ATOM] = __row[CS_ATOM_ID]
+                                    if fill_orig_atom_id and len(missing_ch3) > 0 and __row[CS_ORIG_ATOM] in EMPTY_VALUE:
                                         if _atom_id in methyl_atoms:
                                             if ch3_name_in_xplor and _atom_id[0] in PROTON_BEGIN_CODE:
-                                                __row[23] = __row[6][-1] + __row[6][:-1]
+                                                __row[CS_ORIG_ATOM] = __row[CS_ATOM_ID][-1] + __row[CS_ATOM_ID][:-1]
                                             else:
-                                                __row[23] = copy.copy(__row[6])
+                                                __row[CS_ORIG_ATOM] = copy.copy(__row[CS_ATOM_ID])
 
                                     lp.add_data(__row)
 
@@ -1216,13 +1243,13 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 _row[CS_ATOM_ID] = atom_ids[-1]
 
                             if fill_auth_atom_id:
-                                _row[CS_AUTH_ATOM] = _row[6]
-                            if fill_orig_atom_id and len(missing_ch3) > 0 and _row[23] in EMPTY_VALUE:
-                                if _row[6] in methyl_atoms:
-                                    if ch3_name_in_xplor and _row[6][0] in PROTON_BEGIN_CODE:
-                                        _row[CS_ORIG_ATOM] = _row[6][-1] + _row[6][:-1]
+                                _row[CS_AUTH_ATOM] = _row[CS_ATOM_ID]
+                            if fill_orig_atom_id and len(missing_ch3) > 0 and _row[CS_ORIG_ATOM] in EMPTY_VALUE:
+                                if _row[CS_ATOM_ID] in methyl_atoms:
+                                    if ch3_name_in_xplor and _row[CS_ATOM_ID][0] in PROTON_BEGIN_CODE:
+                                        _row[CS_ORIG_ATOM] = _row[CS_ATOM_ID][-1] + _row[CS_ATOM_ID][:-1]
                                     else:
-                                        _row[CS_ORIG_ATOM] = copy.copy(_row[6])
+                                        _row[CS_ORIG_ATOM] = copy.copy(_row[CS_ATOM_ID])
 
                 else:
                     _row[CS_COMP_ID] = comp_id
@@ -1235,18 +1262,18 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                             row_src = src_lp.data[src_idx]
                             seq_id_src = row_src[seq_id_col]
                             for row in peripheral_src_rows():
-                                if (row[seq_id_col] == str(_row[3])
-                                    or (_row[3] != seq_id_src and row[seq_id_col] == seq_id_src)
-                                    or (_row[24] == 'UNMAPPED' and row[seq_id_col] == str(_row[17])))\
+                                if (row[seq_id_col] == str(_row[CS_COMP_IDX])
+                                    or (_row[CS_COMP_IDX] != seq_id_src and row[seq_id_col] == seq_id_src)
+                                    or (_row[CS_DETAILS] == 'UNMAPPED' and row[seq_id_col] == str(_row[CS_AUTH_SEQ])))\
                                    and row[comp_id_col].upper() == comp_id\
                                    and row[atom_id_col] in missing_ch3:
                                     valid = True
                                     missing_ch3.remove(row[atom_id_col])
                                     if len(missing_ch3) == 0:
                                         break
-                    if len(missing_ch3) > 0 and (_row[9] in EMPTY_VALUE or float(_row[9]) >= 4.0):
+                    if len(missing_ch3) > 0 and (_row[CS_VAL] in EMPTY_VALUE or float(_row[CS_VAL]) >= 4.0):
                         heme = False
-                        if _row[9] not in EMPTY_VALUE:
+                        if _row[CS_VAL] not in EMPTY_VALUE:
                             if self._reg.ccU.updateChemCompDict(comp_id):
                                 heme = comp_id == 'HEM' or 'HEME' in self._reg.ccU.lastChemCompDict['name']
                         if not heme:
@@ -1256,7 +1283,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         atom_id = atom_id[:-1]
                         if _atom_id in self._reg.csStat.getRepMethylProtons(comp_id):
                             atom_id = _atom_id
-                    if (valid or prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M'):
+                    if (valid or prefer_auth_atom_name or _row[CS_DETAILS] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M'):
                         atom_ids = [atom_id]
                     else:
                         atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
@@ -1265,9 +1292,10 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                                           translateToStdAtomName(atom_id, comp_id,
                                                                                                  ccU=self._reg.ccU))
                     if valid and len(missing_ch3) > 0:
-                        if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
-                           and len(self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
-                            atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])
+                        if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[CS_ORIG_ATOM])\
+                           and len(self._reg.dpV.getAtomIdListInXplor(comp_id, _row[CS_ORIG_ATOM])) > 1\
+                           and _row[CS_DETAILS] != 'UNMAPPED':
+                            atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, _row[CS_ORIG_ATOM])
                         else:
                             missing_ch3.clear()
                     if not valid and len(missing_ch3) > 0:
@@ -1275,38 +1303,39 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     len_atom_ids = len(atom_ids)
                     if len_atom_ids == 0:
                         _row[CS_ATOM_ID] = atom_id
-                        if fill_auth_atom_id or _row[6] != _row[19]:
-                            _row[CS_AUTH_ATOM] = _row[6]
+                        if fill_auth_atom_id or _row[CS_ATOM_ID] != _row[CS_AUTH_ATOM]:
+                            _row[CS_AUTH_ATOM] = _row[CS_ATOM_ID]
                         _row[CS_ATOM_TYPE] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
-                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                            _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                        if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                            _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                     else:
                         methyl_atoms = self._reg.csStat.getMethylAtoms(comp_id)
                         atom_ids = sorted(atom_ids)
                         _row[CS_ATOM_ID] = atom_ids[0]
                         _row[CS_AUTH_ATOM] = None
-                        fill_auth_atom_id = _row[18] not in EMPTY_VALUE
+                        fill_auth_atom_id = _row[CS_AUTH_COMP] not in EMPTY_VALUE
                         if self._reg.ccU.updateChemCompDict(comp_id):
-                            cca = next((cca for cca in self._reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
+                            cca = next((cca for cca in self._reg.ccU.lastAtomDictList
+                                        if cca['atom_id'] == _row[CS_ATOM_ID]), None)
                             if cca is not None:
                                 _row[CS_ATOM_TYPE] = cca['type_symbol']
-                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                    _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                             else:
-                                _row[CS_ATOM_TYPE] = 'H' if _row[6][0] in PROTON_BEGIN_CODE else atom_id[0]
-                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                    _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                _row[CS_ATOM_TYPE] = 'H' if _row[CS_ATOM_ID][0] in PROTON_BEGIN_CODE else atom_id[0]
+                                if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                         else:
                             _row[CS_ATOM_TYPE] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
-                            if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                            if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
 
-                        ambig_code = _row[12]
+                        ambig_code = _row[CS_AMBIG_CODE]
                         if ambig_code == 0:
                             _row[CS_AMBIG_CODE] = None
 
                         elif ambig_code in (2, 3):
-                            _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                            _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[CS_ATOM_ID])
                             if _ambig_code not in (0, ambig_code):
                                 if _ambig_code != 1:
                                     _row[CS_AMBIG_CODE] = _ambig_code
@@ -1330,7 +1359,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                 reparse = True
 
                         elif ambig_code == 4:
-                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
+                            if not self._reg.annotation_mode and _row[CS_DETAILS] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 chain_id_src = row_src[chain_id_col]
                                 atom_id_src = row_src[atom_id_col]
@@ -1342,13 +1371,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 for row in peripheral_src_rows():
                                     if row[comp_id_col] == comp_id\
                                        and row[atom_id_col][0] == atom_type\
-                                       and row[ambig_code_col] == str(_row[12])\
-                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                        if not (row[chain_id_col] == str(_row[1])
-                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                       and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                       or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                           and row[ambig_code_col] == ambig_code_src):
+                                        if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                    and row[chain_id_col] == chain_id_src)):
                                             break
                                         _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                        if _seq_id in (_row[3], _row[17]):
+                                        if _seq_id in (_row[CS_COMP_IDX], _row[CS_AUTH_SEQ]):
                                             ambig_code_4_test = True
                                             if row[atom_id_col] not in atom_ids_in_group:
                                                 hetero_group_test = True
@@ -1358,14 +1389,16 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     for row in peripheral_src_rows():
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
-                                           and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                            if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                           and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                           or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                               and row[ambig_code_col] == ambig_code_src):
+                                            if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                    or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                        and row[chain_id_col] == chain_id_src)):
                                                 break
                                             _seq_id =\
                                                 row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                            if _seq_id in (_row[3], _row[17]):
+                                            if _seq_id in (_row[CS_COMP_IDX], _row[CS_AUTH_SEQ]):
                                                 break
                                             _row[CS_AMBIG_CODE] = ambig_code = 5
                                             ambig_code_5_test = True
@@ -1374,10 +1407,12 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         for row in peripheral_src_rows():
                                             if row[comp_id_col] == comp_id\
                                                and row[atom_id_col][0] == atom_type\
-                                               and row[ambig_code_col] == str(_row[12])\
-                                               or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                                if not (row[chain_id_col] == str(_row[1])
-                                                        or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                               and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                               or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                                   and row[ambig_code_col] == ambig_code_src):
+                                                if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                        or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                            and row[chain_id_col] == chain_id_src)):
                                                     _row[CS_AMBIG_CODE] = ambig_code = 6
                                                     break
                                         if ambig_code == 4:
@@ -1386,7 +1421,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     _row[CS_AMBIG_CODE] = ambig_code = 1
 
                         elif ambig_code == 5:
-                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
+                            if not self._reg.annotation_mode and _row[CS_DETAILS] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 chain_id_src = row_src[chain_id_col]
                                 atom_type = row_src[atom_id_col][0]
@@ -1395,13 +1430,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 for row in peripheral_src_rows():
                                     if row[comp_id_col] == comp_id\
                                        and row[atom_id_col][0] == atom_type\
-                                       and row[ambig_code_col] == str(_row[12])\
-                                       or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                        if not (row[chain_id_col] == str(_row[1])
-                                                or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                       and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                       or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                           and row[ambig_code_col] == ambig_code_src):
+                                        if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                    and row[chain_id_col] == chain_id_src)):
                                             break
                                         _seq_id = row[seq_id_col] if isinstance(row[seq_id_col], int) else int(row[seq_id_col])
-                                        if _seq_id in (_row[3], _row[17]):
+                                        if _seq_id in (_row[CS_COMP_IDX], _row[CS_AUTH_SEQ]):
                                             break
                                         _row[CS_AMBIG_CODE] = ambig_code = 5
                                         ambig_code_5_test = True
@@ -1410,10 +1447,12 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     for row in peripheral_src_rows():
                                         if row[comp_id_col] == comp_id\
                                            and row[atom_id_col][0] == atom_type\
-                                           and row[ambig_code_col] == str(_row[12])\
-                                           or (_row[12] != ambig_code_src and row[ambig_code_col] == ambig_code_src):
-                                            if not (row[chain_id_col] == str(_row[1])
-                                                    or (_row[1] != chain_id_src and row[chain_id_col] == chain_id_src)):
+                                           and row[ambig_code_col] == str(_row[CS_AMBIG_CODE])\
+                                           or (_row[CS_AMBIG_CODE] != ambig_code_src
+                                               and row[ambig_code_col] == ambig_code_src):
+                                            if not (row[chain_id_col] == str(_row[CS_ENT_ASM_ID])
+                                                    or (_row[CS_ENT_ASM_ID] != chain_id_src
+                                                        and row[chain_id_col] == chain_id_src)):
                                                 _row[CS_AMBIG_CODE] = ambig_code = 6
                                                 break
 
@@ -1424,19 +1463,19 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 _row[CS_AMBIG_CODE] = ambig_code = 5
 
                         if ambig_code in (1, 2, 3):
-                            if _row[13] is not None:
+                            if _row[CS_AMBIG_SET] is not None:
                                 _row[CS_AMBIG_SET] = None
 
                         if len_atom_ids > 1:
-                            if _row[12] == 1 or _row[12] in EMPTY_VALUE:
-                                if _row[6] not in methyl_atoms\
-                                   or (_row[6] in methyl_atoms
-                                       and ((_row[7][0] == 'H' and len_atom_ids == 6)
-                                            or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                    _row[CS_AMBIG_CODE] = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
+                            if _row[CS_AMBIG_CODE] == 1 or _row[CS_AMBIG_CODE] in EMPTY_VALUE:
+                                if _row[CS_ATOM_ID] not in methyl_atoms\
+                                   or (_row[CS_ATOM_ID] in methyl_atoms
+                                       and ((_row[CS_ATOM_TYPE][0] == 'H' and len_atom_ids == 6)
+                                            or (_row[CS_ATOM_TYPE][0] == 'C' and len_atom_ids == 2))):
+                                    _row[CS_AMBIG_CODE] = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[CS_ATOM_ID], None)
                             __row = copy.copy(_row)
                             if fill_auth_atom_id:
-                                __row[19] = __row[6]
+                                __row[CS_AUTH_ATOM] = __row[CS_ATOM_ID]
                             lp.add_data(__row)
 
                             for _atom_id in atom_ids[1:]:
@@ -1444,17 +1483,17 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                                 index += 1
 
-                                __row[0] = index
-                                __row[6] = _atom_id
+                                __row[CS_ID] = index
+                                __row[CS_ATOM_ID] = _atom_id
                                 if fill_auth_atom_id:
-                                    __row[19] = __row[6]
+                                    __row[CS_AUTH_ATOM] = __row[CS_ATOM_ID]
                                 if fill_orig_atom_id and len(missing_ch3) > 0\
-                                   and __row[23] in EMPTY_VALUE:
+                                   and __row[CS_ORIG_ATOM] in EMPTY_VALUE:
                                     if _atom_id in methyl_atoms:
                                         if ch3_name_in_xplor and _atom_id[0] in PROTON_BEGIN_CODE:
-                                            __row[23] = __row[6][-1] + __row[6][:-1]
+                                            __row[CS_ORIG_ATOM] = __row[CS_ATOM_ID][-1] + __row[CS_ATOM_ID][:-1]
                                         else:
-                                            __row[23] = copy.copy(__row[6])
+                                            __row[CS_ORIG_ATOM] = copy.copy(__row[CS_ATOM_ID])
 
                                 lp.add_data(__row)
 
@@ -1463,14 +1502,14 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                             _row[CS_ATOM_ID] = atom_ids[-1]
 
                         if fill_auth_atom_id:
-                            _row[CS_AUTH_ATOM] = _row[6]
+                            _row[CS_AUTH_ATOM] = _row[CS_ATOM_ID]
                         if fill_orig_atom_id and len(missing_ch3) > 0\
-                           and _row[23] in EMPTY_VALUE:
-                            if _row[6] in methyl_atoms:
-                                if ch3_name_in_xplor and _row[6][0] in PROTON_BEGIN_CODE:
-                                    _row[CS_ORIG_ATOM] = _row[6][-1] + _row[6][:-1]
+                           and _row[CS_ORIG_ATOM] in EMPTY_VALUE:
+                            if _row[CS_ATOM_ID] in methyl_atoms:
+                                if ch3_name_in_xplor and _row[CS_ATOM_ID][0] in PROTON_BEGIN_CODE:
+                                    _row[CS_ORIG_ATOM] = _row[CS_ATOM_ID][-1] + _row[CS_ATOM_ID][:-1]
                                 else:
-                                    _row[CS_ORIG_ATOM] = copy.copy(_row[6])
+                                    _row[CS_ORIG_ATOM] = copy.copy(_row[CS_ATOM_ID])
 
                 return index, _row, reparse
 
@@ -1666,7 +1705,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     _row[CS_VAL] = row[val_col]
 
                     try:
-                        float(_row[9])
+                        float(_row[CS_VAL])
                     except ValueError:
                         continue
 
@@ -1767,7 +1806,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                             _seq_key = (seq_key[0], seq_key[1])
                             try:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                                if atom_id != _row[19]:
+                                if atom_id != _row[CS_AUTH_ATOM]:
                                     if _seq_key in coord_atom_site:
                                         _coord_atom_site = coord_atom_site[_seq_key]
                                         if atom_id in _coord_atom_site['atom_id']:
@@ -1822,7 +1861,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                             if prefer_auth_atom_name:
                                 if has_orig_seq:
-                                    orig_atom_id = _row[23]
+                                    orig_atom_id = _row[CS_ORIG_ATOM]
                                 _atom_id = atom_id
                                 _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                                 if _seq_key in coord_atom_site:
@@ -1844,12 +1883,14 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                          and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:  # noqa: E501, pylint: disable=line-too-long
                                         _row[CS_AUTH_COMP] = comp_id
                                         # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                        cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
-                                                        if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
-                                                        and cca_row[6] == _seq_key[1]), None)
+                                        cca_row =\
+                                            next((cca_row for cca_row in self._reg.chem_comp_asm_dat
+                                                  if cca_row[CCA_COMP_ID] == comp_id and cca_row[CCA_SEQ_ID] == _seq_key[0]
+                                                  and cca_row[CCA_AUTH_ASYM] == _seq_key[1]), None)
                                         if cca_row is not None:
                                             _row[CS_ENT_ASM_ID], _row[CS_ENTITY_ID], _row[CS_COMP_IDX], _row[CS_SEQ_ID] =\
-                                                cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                                cca_row[CCA_ENT_ASM_ID], cca_row[CCA_ENTITY_ID], \
+                                                cca_row[CCA_COMP_IDX], cca_row[CCA_SEQ_ID]
                                         if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
                                            and len(set(_coord_atom_site['alt_comp_id'])) > 1:
                                             _row[CS_AUTH_ATOM] = atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
@@ -1870,13 +1911,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                 _row[CS_AUTH_COMP] = comp_id
                                                 # Entity_assembly_ID, Entity_ID, Comp_index_ID,
                                                 # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                                cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
-                                                                if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
-                                                                and cca_row[6] == _seq_key[1]), None)
+                                                cca_row =\
+                                                    next((cca_row for cca_row in self._reg.chem_comp_asm_dat
+                                                          if cca_row[CCA_COMP_ID] == comp_id and cca_row[CCA_SEQ_ID] == _seq_key[0]
+                                                          and cca_row[CCA_AUTH_ASYM] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     _row[CS_ENT_ASM_ID], _row[CS_ENTITY_ID], _row[CS_COMP_IDX], _row[CS_SEQ_ID] =\
-                                                        cca_row[0], cca_row[1], cca_row[2], cca_row[3]
-                                                row[19] = atom_id =\
+                                                        cca_row[CCA_ENT_ASM_ID], cca_row[CCA_ENTITY_ID], \
+                                                        cca_row[CCA_COMP_IDX], cca_row[CCA_SEQ_ID]
+                                                _row[CS_AUTH_ATOM] = atom_id =\
                                                     __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
                                                 _seq_key = __seq_key
                                                 break
@@ -1885,12 +1928,14 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                 _row[CS_AUTH_COMP] = comp_id
                                                 # Entity_assembly_ID, Entity_ID, Comp_index_ID,
                                                 # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                                cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
-                                                                if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
-                                                                and cca_row[6] == _seq_key[1]), None)
+                                                cca_row =\
+                                                    next((cca_row for cca_row in self._reg.chem_comp_asm_dat
+                                                          if cca_row[CCA_COMP_ID] == comp_id and cca_row[CCA_SEQ_ID] == _seq_key[0]
+                                                          and cca_row[CCA_AUTH_ASYM] == _seq_key[1]), None)
                                                 if cca_row is not None:
                                                     _row[CS_ENT_ASM_ID], _row[CS_ENTITY_ID], _row[CS_COMP_IDX], _row[CS_SEQ_ID] =\
-                                                        cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                                        cca_row[CCA_ENT_ASM_ID], cca_row[CCA_ENTITY_ID], \
+                                                        cca_row[CCA_COMP_IDX], cca_row[CCA_SEQ_ID]
                                                 _seq_key = __seq_key
                                                 break
 
@@ -1932,7 +1977,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         _seq_key = (seq_key[0], seq_key[1])
                         try:
                             entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                            if atom_id != _row[19]:
+                            if atom_id != _row[CS_AUTH_ATOM]:
                                 if _seq_key in coord_atom_site:
                                     _coord_atom_site = coord_atom_site[_seq_key]
                                     if atom_id in _coord_atom_site['atom_id']:
@@ -1987,7 +2032,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                         if prefer_auth_atom_name:
                             if has_orig_seq:
-                                orig_atom_id = _row[23]
+                                orig_atom_id = _row[CS_ORIG_ATOM]
                             _atom_id = atom_id
                             _seq_key = seq_key if seq_key in coord_atom_site else (seq_key[0], seq_key[1])
                             if _seq_key in coord_atom_site:
@@ -2009,12 +2054,14 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                      and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:  # noqa: E501, pylint: disable=line-too-long
                                     _row[CS_AUTH_COMP] = comp_id
                                     # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                    cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
-                                                    if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
-                                                    and cca_row[6] == _seq_key[1]), None)
+                                    cca_row =\
+                                        next((cca_row for cca_row in self._reg.chem_comp_asm_dat
+                                              if cca_row[CCA_COMP_ID] == comp_id and cca_row[CCA_SEQ_ID] == _seq_key[0]
+                                              and cca_row[CCA_AUTH_ASYM] == _seq_key[1]), None)
                                     if cca_row is not None:
                                         _row[CS_ENT_ASM_ID], _row[CS_ENTITY_ID], _row[CS_COMP_IDX], _row[CS_SEQ_ID] =\
-                                            cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                            cca_row[CCA_ENT_ASM_ID], cca_row[CCA_ENTITY_ID], \
+                                            cca_row[CCA_COMP_IDX], cca_row[CCA_SEQ_ID]
                                     if comp_id in auth_atom_name_to_id_ext and _atom_id in auth_atom_name_to_id_ext[comp_id]\
                                        and len(set(_coord_atom_site['alt_comp_id'])) > 1:
                                         _row[CS_AUTH_ATOM] = atom_id = auth_atom_name_to_id_ext[comp_id][_atom_id]
@@ -2035,13 +2082,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                             _row[CS_AUTH_COMP] = comp_id
                                             # Entity_assembly_ID, Entity_ID, Comp_index_ID,
                                             # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                            cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
-                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
-                                                            and cca_row[6] == _seq_key[1]), None)
+                                            cca_row =\
+                                                next((cca_row for cca_row in self._reg.chem_comp_asm_dat
+                                                      if cca_row[CCA_COMP_ID] == comp_id and cca_row[CCA_SEQ_ID] == _seq_key[0]
+                                                      and cca_row[CCA_AUTH_ASYM] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 _row[CS_ENT_ASM_ID], _row[CS_ENTITY_ID], _row[CS_COMP_IDX], _row[CS_SEQ_ID] =\
-                                                    cca_row[0], cca_row[1], cca_row[2], cca_row[3]
-                                            row[19] = atom_id =\
+                                                    cca_row[CCA_ENT_ASM_ID], cca_row[CCA_ENTITY_ID], \
+                                                    cca_row[CCA_COMP_IDX], cca_row[CCA_SEQ_ID]
+                                            _row[CS_AUTH_ATOM] = atom_id =\
                                                 __coord_atom_site['atom_id'][__coord_atom_site['alt_atom_id'].index(_atom_id)]
                                             _seq_key = __seq_key
                                             break
@@ -2050,12 +2099,14 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                             _row[CS_AUTH_COMP] = comp_id
                                             # Entity_assembly_ID, Entity_ID, Comp_index_ID,
                                             # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                            cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
-                                                            if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
-                                                            and cca_row[6] == _seq_key[1]), None)
+                                            cca_row =\
+                                                next((cca_row for cca_row in self._reg.chem_comp_asm_dat
+                                                      if cca_row[CCA_COMP_ID] == comp_id and cca_row[CCA_SEQ_ID] == _seq_key[0]
+                                                      and cca_row[CCA_AUTH_ASYM] == _seq_key[1]), None)
                                             if cca_row is not None:
                                                 _row[CS_ENT_ASM_ID], _row[CS_ENTITY_ID], _row[CS_COMP_IDX], _row[CS_SEQ_ID] =\
-                                                    cca_row[0], cca_row[1], cca_row[2], cca_row[3]
+                                                    cca_row[CCA_ENT_ASM_ID], cca_row[CCA_ENTITY_ID], \
+                                                    cca_row[CCA_COMP_IDX], cca_row[CCA_SEQ_ID]
                                             _seq_key = __seq_key
                                             break
 
@@ -2413,7 +2464,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                 row[auth_comp_id_col], row[auth_atom_id_col]
                                         else:
                                             _row[CS_ORIG_ASYM], _row[CS_ORIG_SEQ], _row[CS_ORIG_COMP], _row[CS_ORIG_ATOM] =\
-                                                _row[16], _row[17], _row[18], _row[19]
+                                                _row[CS_AUTH_ASYM], _row[CS_AUTH_SEQ], _row[CS_AUTH_COMP], _row[CS_AUTH_ATOM]
 
                                         if _resolved:
                                             _index, _row, _reparse = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
@@ -2479,13 +2530,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                             row[auth_comp_id_col], row[auth_atom_id_col]
                                     else:
                                         _row[CS_ORIG_ASYM], _row[CS_ORIG_SEQ], _row[CS_ORIG_COMP], _row[CS_ORIG_ATOM] =\
-                                            _row[16], _row[17], _row[18], _row[19]
+                                            _row[CS_AUTH_ASYM], _row[CS_AUTH_SEQ], _row[CS_AUTH_COMP], _row[CS_AUTH_ATOM]
 
                                     # DAOTHER-9281
-                                    if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
-                                        __offset = seq_id_offset_for_unmapped[str(_row[1])]
-                                    elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
-                                        __offset = seq_id_offset_for_unmapped[_row[1]]
+                                    if isinstance(_row[CS_ENT_ASM_ID], int)\
+                                       and str(_row[CS_ENT_ASM_ID]) in seq_id_offset_for_unmapped:
+                                        __offset = seq_id_offset_for_unmapped[str(_row[CS_ENT_ASM_ID])]
+                                    elif isinstance(_row[CS_ENT_ASM_ID], str)\
+                                            and _row[CS_ENT_ASM_ID] in seq_id_offset_for_unmapped:
+                                        __offset = seq_id_offset_for_unmapped[_row[CS_ENT_ASM_ID]]
                                     else:
                                         __offset = 0
 
@@ -2564,7 +2617,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         # DAOTHER-9065
                                         if __offset != 0:
                                             _row[CS_COMP_IDX] += __offset
-                                            _row[CS_SEQ_ID] = _row[3]
+                                            _row[CS_SEQ_ID] = _row[CS_COMP_IDX]
                                         elif trial == 0:
                                             reparse_request = True
 
@@ -2614,21 +2667,21 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                     _row[CS_ENT_ASM_ID], _row[CS_ENTITY_ID] = entity_assembly_id, entity_id
                                                     _row[CS_COMP_IDX] = _row[CS_SEQ_ID] = seq_id
 
-                                                    if _row[17] in EMPTY_VALUE:
+                                                    if _row[CS_AUTH_SEQ] in EMPTY_VALUE:
                                                         _row[CS_AUTH_SEQ] = _seq_id
-                                                    if _row[18] in EMPTY_VALUE:
+                                                    if _row[CS_AUTH_COMP] in EMPTY_VALUE:
                                                         _row[CS_AUTH_COMP] = comp_id
-                                                    if _row[19] in EMPTY_VALUE:
+                                                    if _row[CS_AUTH_ATOM] in EMPTY_VALUE:
                                                         _row[CS_AUTH_ATOM] = atom_id
 
                                                     _row[CS_AUTH_ASYM] = _row[CS_ORIG_ASYM] = auth_asym_id
-                                                    if _row[21] in EMPTY_VALUE:
-                                                        _row[CS_ORIG_SEQ] = _row[17]
-                                                    if _row[22] in EMPTY_VALUE:
-                                                        _row[CS_ORIG_COMP] = _row[18]
-                                                    if _row[23] in EMPTY_VALUE:
-                                                        _row[CS_ORIG_ATOM] = _row[19]
-                                                    if _row[24] in EMPTY_VALUE:
+                                                    if _row[CS_ORIG_SEQ] in EMPTY_VALUE:
+                                                        _row[CS_ORIG_SEQ] = _row[CS_AUTH_SEQ]
+                                                    if _row[CS_ORIG_COMP] in EMPTY_VALUE:
+                                                        _row[CS_ORIG_COMP] = _row[CS_AUTH_COMP]
+                                                    if _row[CS_ORIG_ATOM] in EMPTY_VALUE:
+                                                        _row[CS_ORIG_ATOM] = _row[CS_AUTH_ATOM]
+                                                    if _row[CS_DETAILS] in EMPTY_VALUE:
                                                         _row[CS_DETAILS] = 'UNMAPPED'
 
                                                     _index, _row, reparse = fill_cs_row(lp, index, _row, prefer_auth_atom_name,
@@ -2683,26 +2736,28 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                             # DAOTHER-9065
                             if details_col != -1 and row[details_col] == 'UNMAPPED':
-                                if isinstance(_row[1], int) and str(_row[1]) in seq_id_offset_for_unmapped:
-                                    __offset = seq_id_offset_for_unmapped[str(_row[1])]
-                                elif isinstance(_row[1], str) and _row[1] in seq_id_offset_for_unmapped:
-                                    __offset = seq_id_offset_for_unmapped[_row[1]]
+                                if isinstance(_row[CS_ENT_ASM_ID], int)\
+                                   and str(_row[CS_ENT_ASM_ID]) in seq_id_offset_for_unmapped:
+                                    __offset = seq_id_offset_for_unmapped[str(_row[CS_ENT_ASM_ID])]
+                                elif isinstance(_row[CS_ENT_ASM_ID], str)\
+                                        and _row[CS_ENT_ASM_ID] in seq_id_offset_for_unmapped:
+                                    __offset = seq_id_offset_for_unmapped[_row[CS_ENT_ASM_ID]]
                                 else:
                                     __offset = None
 
                                 if __offset is not None:
                                     offset = None
-                                    if isinstance(_row[17], int):
-                                        offset = _row[3] - _row[17]
-                                    elif isinstance(_row[17], str) and _row[17].isdigit():
-                                        offset = _row[3] - int(_row[17])
+                                    if isinstance(_row[CS_AUTH_SEQ], int):
+                                        offset = _row[CS_COMP_IDX] - _row[CS_AUTH_SEQ]
+                                    elif isinstance(_row[CS_AUTH_SEQ], str) and _row[CS_AUTH_SEQ].isdigit():
+                                        offset = _row[CS_COMP_IDX] - int(_row[CS_AUTH_SEQ])
                                     if offset is not None and offset != __offset:
-                                        if isinstance(_row[17], int):
-                                            _row[CS_COMP_IDX] = _row[17] + __offset
-                                            _row[CS_SEQ_ID] = _row[3]
+                                        if isinstance(_row[CS_AUTH_SEQ], int):
+                                            _row[CS_COMP_IDX] = _row[CS_AUTH_SEQ] + __offset
+                                            _row[CS_SEQ_ID] = _row[CS_COMP_IDX]
                                         else:
-                                            _row[CS_COMP_IDX] = int(_row[17]) + __offset
-                                            _row[CS_SEQ_ID] = _row[3]
+                                            _row[CS_COMP_IDX] = int(_row[CS_AUTH_SEQ]) + __offset
+                                            _row[CS_SEQ_ID] = _row[CS_COMP_IDX]
                                 elif trial == 0:
                                     reparse_request = True
 
@@ -2712,30 +2767,30 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                                               translateToStdAtomName(atom_id, comp_id,
                                                                                                      ccU=self._reg.ccU))
                             len_atom_ids = len(atom_ids)
-                            if len_atom_ids == 0 or comp_id_bmrb_only or _row[24] == 'UNMAPPED':
+                            if len_atom_ids == 0 or comp_id_bmrb_only or _row[CS_DETAILS] == 'UNMAPPED':
                                 _row[CS_ATOM_ID] = atom_id
                                 _row[CS_ATOM_TYPE] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
-                                if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                    _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                             else:
                                 _row[CS_ATOM_ID] = atom_ids[0]
                                 _row[CS_AUTH_ATOM] = None
-                                fill_auth_atom_id = _row[18] not in EMPTY_VALUE
+                                fill_auth_atom_id = _row[CS_AUTH_COMP] not in EMPTY_VALUE
                                 if self._reg.ccU.updateChemCompDict(comp_id):
                                     cca = next((cca for cca in self._reg.ccU.lastAtomDictList
-                                                if cca['atom_id'] == _row[6]), None)
+                                                if cca['atom_id'] == _row[CS_ATOM_ID]), None)
                                     if cca is not None:
                                         _row[CS_ATOM_TYPE] = cca['type_symbol']
-                                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                            _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                        if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                            _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                                     else:
-                                        _row[CS_ATOM_TYPE] = 'H' if _row[6][0] in PROTON_BEGIN_CODE else atom_id[0]
-                                        if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                            _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                        _row[CS_ATOM_TYPE] = 'H' if _row[CS_ATOM_ID][0] in PROTON_BEGIN_CODE else atom_id[0]
+                                        if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                            _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
                                 else:
                                     _row[CS_ATOM_TYPE] = 'H' if atom_id[0] in PSE_PRO_BEGIN_CODE else atom_id[0]
-                                    if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                        _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
+                                    if _row[CS_ATOM_TYPE] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                        _row[CS_ISOTOPE] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[CS_ATOM_TYPE]][0]
 
                                 if len_atom_ids > 1:
                                     __row = copy.copy(_row)
@@ -2746,8 +2801,8 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                                         index += 1
 
-                                        __row[0] = index
-                                        __row[6] = _atom_id
+                                        __row[CS_ID] = index
+                                        __row[CS_ATOM_ID] = _atom_id
 
                                         lp.add_data(__row)
 
@@ -2757,32 +2812,36 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                                 if fill_auth_atom_id:
                                     _row[CS_AUTH_ATOM] =\
-                                        _row[6] if self._reg.caC is not None or row[auth_atom_id_col] in EMPTY_VALUE\
+                                        _row[CS_ATOM_ID] if self._reg.caC is not None or row[auth_atom_id_col] in EMPTY_VALUE\
                                         else row[auth_atom_id_col]
 
                     # DAOTHER-9065
-                    if isinstance(_row[1], int) and str(_row[1]) not in seq_id_offset_for_unmapped and _row[24] in EMPTY_VALUE:
-                        if isinstance(_row[3], int):
-                            if isinstance(_row[17], int):
-                                seq_id_offset_for_unmapped[str(_row[1])] = _row[3] - _row[17]
-                            elif isinstance(_row[17], str) and _row[17].isdigit():
-                                seq_id_offset_for_unmapped[str(_row[1])] = _row[3] - int(_row[17])
-                    elif isinstance(_row[1], str) and _row[1] not in seq_id_offset_for_unmapped and _row[24] in EMPTY_VALUE:
-                        if isinstance(_row[3], int):
-                            if isinstance(_row[17], int):
-                                seq_id_offset_for_unmapped[_row[1]] = _row[3] - _row[17]
-                            elif isinstance(_row[17], str) and _row[17].isdigit():
-                                seq_id_offset_for_unmapped[_row[1]] = _row[3] - int(_row[17])
+                    if isinstance(_row[CS_ENT_ASM_ID], int) and str(_row[CS_ENT_ASM_ID]) not in seq_id_offset_for_unmapped\
+                       and _row[CS_DETAILS] in EMPTY_VALUE:
+                        if isinstance(_row[CS_COMP_IDX], int):
+                            if isinstance(_row[CS_AUTH_SEQ], int):
+                                seq_id_offset_for_unmapped[str(_row[CS_ENT_ASM_ID])] = _row[CS_COMP_IDX] - _row[CS_AUTH_SEQ]
+                            elif isinstance(_row[CS_AUTH_SEQ], str) and _row[CS_AUTH_SEQ].isdigit():
+                                seq_id_offset_for_unmapped[str(_row[CS_ENT_ASM_ID])] = _row[CS_COMP_IDX] - int(_row[CS_AUTH_SEQ])
+                    elif isinstance(_row[CS_ENT_ASM_ID], str) and _row[CS_ENT_ASM_ID] not in seq_id_offset_for_unmapped\
+                            and _row[CS_DETAILS] in EMPTY_VALUE:
+                        if isinstance(_row[CS_COMP_IDX], int):
+                            if isinstance(_row[CS_AUTH_SEQ], int):
+                                seq_id_offset_for_unmapped[_row[CS_ENT_ASM_ID]] = _row[CS_COMP_IDX] - _row[CS_AUTH_SEQ]
+                            elif isinstance(_row[CS_AUTH_SEQ], str) and _row[CS_AUTH_SEQ].isdigit():
+                                seq_id_offset_for_unmapped[_row[CS_ENT_ASM_ID]] = _row[CS_COMP_IDX] - int(_row[CS_AUTH_SEQ])
 
-                    if self._reg.bmrb_only and self._reg.internal_mode and _row[1] not in EMPTY_VALUE and _row[2] in EMPTY_VALUE:
-                        entity_assembly_id = _row[1] if isinstance(_row[1], str) else str(_row[1])
+                    if self._reg.bmrb_only and self._reg.internal_mode and _row[CS_ENT_ASM_ID] not in EMPTY_VALUE\
+                       and _row[CS_ENTITY_ID] in EMPTY_VALUE:
+                        entity_assembly_id =\
+                            _row[CS_ENT_ASM_ID] if isinstance(_row[CS_ENT_ASM_ID], str) else str(_row[CS_ENT_ASM_ID])
                         if entity_assembly_id in entity_assembly_mappping:
                             _row[CS_ENTITY_ID] = entity_assembly_mappping[entity_assembly_id]
 
-                    if isinstance(_row[12], int):
-                        comp_id = _row[5]
-                        atom_id = _row[6]
-                        ambig_code = _row[12]
+                    if isinstance(_row[CS_AMBIG_CODE], int):
+                        comp_id = _row[CS_COMP_ID]
+                        atom_id = _row[CS_ATOM_ID]
+                        ambig_code = _row[CS_AMBIG_CODE]
 
                         if ambig_code == 0:
                             _row[CS_AMBIG_CODE] = None
@@ -2823,7 +2882,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         _row[CS_AMBIG_CODE] = ambig_code = 1
 
                         elif ambig_code == 4:
-                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
+                            if not self._reg.annotation_mode and _row[CS_DETAILS] != 'UNMAPPED':
                                 _chain_id = row[chain_id_col]
                                 _seq_id = row[seq_id_col]
                                 _atom_id = row[atom_id_col]
@@ -2886,7 +2945,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     _row[CS_AMBIG_CODE] = ambig_code = 1
 
                         elif ambig_code == 5:
-                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
+                            if not self._reg.annotation_mode and _row[CS_DETAILS] != 'UNMAPPED':
                                 _chain_id = row[chain_id_col]
                                 _seq_id = row[seq_id_col]
                                 _atom_type = row[atom_id_col][0]
@@ -2919,13 +2978,13 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 _row[CS_AMBIG_CODE] = ambig_code = 5
 
                         if ambig_code in (1, 2, 3):
-                            if _row[13] is not None:
+                            if _row[CS_AMBIG_SET] is not None:
                                 _row[CS_AMBIG_SET] = None
 
                         elif ambig_code in (4, 5, 6, 9):
                             has_genuine_ambig_code = True
 
-                    if _row[8] not in EMPTY_VALUE:  # DAOTHER-9520: Atom_isotppe_number is mandatory
+                    if _row[CS_ISOTOPE] not in EMPTY_VALUE:  # DAOTHER-9520: Atom_isotppe_number is mandatory
                         lp.add_data(_row)
 
                         index += 1
@@ -2972,7 +3031,8 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                 for _id in conflict_id:
                     del lp.data[_id]
 
-            if not any(True for _row in lp if _row[1] in EMPTY_VALUE or (isinstance(_row[1], str) and not _row[1].isdigit())):
+            if not any(True for _row in lp if _row[CS_ENT_ASM_ID] in EMPTY_VALUE
+                       or (isinstance(_row[CS_ENT_ASM_ID], str) and not _row[CS_ENT_ASM_ID].isdigit())):
                 try:
                     lp.sort_rows(['Atom_ID', 'Atom_isotope_number', 'Comp_index_ID', 'Entity_assembly_ID'])
                 except (TypeError, ValueError):
@@ -2984,31 +3044,32 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                 for _row in lp:
 
-                    if _row[12] not in (4, 5):
+                    if _row[CS_AMBIG_CODE] not in (4, 5):
                         continue
 
-                    ambig_code = _row[12]
+                    ambig_code = _row[CS_AMBIG_CODE]
 
-                    if _row[13] not in EMPTY_VALUE:
-                        ambig_code = copy.copy(_row[12])
-                        ambig_set_id = copy.copy(_row[13])
-                        chain_id = _row[1]
-                        seq_id = _row[3]
-                        comp_id = _row[5]
-                        atom_id = _row[6]
-                        atom_type = _row[7]
+                    if _row[CS_AMBIG_SET] not in EMPTY_VALUE:
+                        ambig_code = copy.copy(_row[CS_AMBIG_CODE])
+                        ambig_set_id = copy.copy(_row[CS_AMBIG_SET])
+                        chain_id = _row[CS_ENT_ASM_ID]
+                        seq_id = _row[CS_COMP_IDX]
+                        comp_id = _row[CS_COMP_ID]
+                        atom_id = _row[CS_ATOM_ID]
+                        atom_type = _row[CS_ATOM_TYPE]
 
                         if atom_type == 'H':
                             atom_in_same_group = self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id)
 
-                            if not any(((ambig_code == 5 and (__row[1] != chain_id or __row[3] != seq_id))
-                                        or (ambig_code == 4 and __row[6] not in atom_in_same_group))
-                                       for __row in lp if __row[12] == ambig_code and __row[13] == ambig_set_id):
+                            if not any(((ambig_code == 5 and (__row[CS_ENT_ASM_ID] != chain_id or __row[CS_COMP_IDX] != seq_id))
+                                        or (ambig_code == 4 and __row[CS_ATOM_ID] not in atom_in_same_group))
+                                       for __row in lp
+                                       if __row[CS_AMBIG_CODE] == ambig_code and __row[CS_AMBIG_SET] == ambig_set_id):
 
                                 for __row in lp:
-                                    if __row[12] == ambig_code and __row[13] == ambig_set_id:
-                                        __row[12] = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
-                                        __row[13] = None
+                                    if __row[CS_AMBIG_CODE] == ambig_code and __row[CS_AMBIG_SET] == ambig_set_id:
+                                        __row[CS_AMBIG_CODE] = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
+                                        __row[CS_AMBIG_SET] = None
 
                                 if not isinstance(sf, pynmrstar.Loop)\
                                    and any(True for aux_loop in sf if aux_loop.category == aux_lp_category):
@@ -3035,22 +3096,23 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                 for _row in lp:
 
-                    if _row[12] not in (4, 5, 6, 9):
+                    if _row[CS_AMBIG_CODE] not in (4, 5, 6, 9):
                         continue
 
-                    ambig_code = _row[12]
+                    ambig_code = _row[CS_AMBIG_CODE]
                     _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
-                    chain_id = _row[1]
-                    seq_id = _row[3]
-                    comp_id = _row[5]
-                    atom_id = _row[6]
-                    atom_type = _row[7]
+                    chain_id = _row[CS_ENT_ASM_ID]
+                    seq_id = _row[CS_COMP_IDX]
+                    comp_id = _row[CS_COMP_ID]
+                    atom_id = _row[CS_ATOM_ID]
+                    atom_type = _row[CS_ATOM_TYPE]
 
                     if ambig_code == 4:
-                        _atom_id_set_w_same_ambig_code = set(_row_[6] for _row_ in lp
-                                                             if _row != _row_ and _row_[1] == chain_id and _row_[3] == seq_id
-                                                             and _row_[7] == atom_type and _row_[12] == ambig_code)
+                        _atom_id_set_w_same_ambig_code =\
+                            set(_row_[CS_ATOM_ID] for _row_ in lp
+                                if _row != _row_ and _row_[CS_ENT_ASM_ID] == chain_id and _row_[CS_COMP_IDX] == seq_id
+                                and _row_[CS_ATOM_TYPE] == atom_type and _row_[CS_AMBIG_CODE] == ambig_code)
 
                         if atom_type == 'H':
                             atom_in_same_group = self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
@@ -3069,9 +3131,10 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                     _row[CS_AMBIG_SET] = None
 
                     elif ambig_code == 5:
-                        _atom_id_set_w_same_ambig_code = set(_row_[6] for _row_ in lp
-                                                             if _row != _row_ and _row_[1] == chain_id and _row_[3] != seq_id
-                                                             and _row_[7] == atom_type and _row_[12] == ambig_code)
+                        _atom_id_set_w_same_ambig_code =\
+                            set(_row_[CS_ATOM_ID] for _row_ in lp
+                                if _row != _row_ and _row_[CS_ENT_ASM_ID] == chain_id and _row_[CS_COMP_IDX] != seq_id
+                                and _row_[CS_ATOM_TYPE] == atom_type and _row_[CS_AMBIG_CODE] == ambig_code)
 
                         if len(_atom_id_set_w_same_ambig_code) == 0 and _ambig_code != 0:
                             _row[CS_AMBIG_CODE] = _ambig_code
@@ -3080,7 +3143,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     else:
                         _row[CS_AMBIG_SET] = None
 
-                    if _row[12] in (4, 5):
+                    if _row[CS_AMBIG_CODE] in (4, 5):
                         has_genuine_ambig_code = True
 
                 if has_genuine_ambig_code:
@@ -3097,11 +3160,11 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                     for _row in lp:
 
-                        if _row[12] != 5:
+                        if _row[CS_AMBIG_CODE] != 5:
                             continue
 
-                        chain_id = _row[1]
-                        seq_id = _row[3]
+                        chain_id = _row[CS_ENT_ASM_ID]
+                        seq_id = _row[CS_COMP_IDX]
 
                         if chain_id not in inter_residue_seq_id:
                             inter_residue_seq_id[chain_id] = set()
@@ -3117,10 +3180,10 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                                 for _row in lp:
 
-                                    if _row[12] != 5:
+                                    if _row[CS_AMBIG_CODE] != 5:
                                         continue
 
-                                    if _row[1] == chain_id and _row[3] == seq_id:
+                                    if _row[CS_ENT_ASM_ID] == chain_id and _row[CS_COMP_IDX] == seq_id:
                                         _row[CS_AMBIG_CODE] = 4
 
                     aux_index_id = 0
@@ -3128,14 +3191,14 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                     for _idx, _row in enumerate(lp):
 
-                        if _row[12] not in (4, 5):
+                        if _row[CS_AMBIG_CODE] not in (4, 5):
                             continue
 
-                        ambig_code = _row[12]
+                        ambig_code = _row[CS_AMBIG_CODE]
 
-                        chain_id = _row[1]
-                        seq_id = _row[3]
-                        atom_type = _row[7]
+                        chain_id = _row[CS_ENT_ASM_ID]
+                        seq_id = _row[CS_COMP_IDX]
+                        atom_type = _row[CS_ATOM_TYPE]
 
                         if ambig_code == 4:
                             key = (chain_id, str(seq_id), atom_type, ambig_code)
@@ -3146,11 +3209,11 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                             aux_index_id += 1
                             ambig_shift_set_id[key] = aux_index_id
 
-                        lp.data[_idx][13] = ambig_shift_set_id[key]
+                        lp.data[_idx][CS_AMBIG_SET] = ambig_shift_set_id[key]
 
                         _aux_row = [None] * 4
                         _aux_row[0], _aux_row[1], _aux_row[2], _aux_row[3] =\
-                            ambig_shift_set_id[key], _row[0], self._reg.entry_id, list_id
+                            ambig_shift_set_id[key], _row[CS_ID], self._reg.entry_id, list_id
 
                         aux_lp.add_data(_aux_row)
 

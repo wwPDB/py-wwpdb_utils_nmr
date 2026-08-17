@@ -3601,8 +3601,8 @@ class NmrDpMrSplitter:
 
                             if _file_type != file_type:
 
-                                err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                    f"but recognized as {self.readable_file_type[_file_type]} file."
+                                err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                                    f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                                 # DAOTHER-5673
                                 err += " Please re-upload the NEF file as an NMR unified data file."\
                                     if _file_type == 'nef' else " Please re-upload the file."
@@ -3789,8 +3789,8 @@ class NmrDpMrSplitter:
 
                             if _file_type != file_type:
 
-                                err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                    f"but recognized as {self.readable_file_type[_file_type]} file."
+                                err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                                    f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                                 # DAOTHER-5673
                                 err += " Please re-upload the NEF file as an NMR unified data file."\
                                     if _file_type == 'nef' else " Please re-upload the file."
@@ -3949,8 +3949,8 @@ class NmrDpMrSplitter:
 
                     if _file_type != file_type:
 
-                        err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                            f"but recognized as {self.readable_file_type[_file_type]} file."
+                        err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                            f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                         # DAOTHER-5673
                         err += " Please re-upload the NEF file as an NMR unified data file."\
                             if _file_type == 'nef' else " Please re-upload the file."
@@ -4761,8 +4761,8 @@ class NmrDpMrSplitter:
 
                                 if _file_type != file_type:
 
-                                    err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                        f"but recognized as {self.readable_file_type[_file_type]} file."
+                                    err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                                        f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                                     # DAOTHER-5673
                                     err += " Please re-upload the NEF file as an NMR unified data file."\
                                         if _file_type == 'nef' else " Please re-upload the file."
@@ -4903,8 +4903,8 @@ class NmrDpMrSplitter:
 
                                 if _file_type != file_type:
 
-                                    err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                        f"but recognized as {self.readable_file_type[_file_type]} file."
+                                    err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                                        f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                                     # DAOTHER-5673
                                     err += " Please re-upload the NEF file as an NMR unified data file."\
                                         if _file_type == 'nef' else " Please re-upload the file."

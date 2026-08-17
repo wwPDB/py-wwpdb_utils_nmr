@@ -8299,17 +8299,17 @@ class AmberMRParserListener(ParseTreeListener):
                 for ipeak in range(1, self.npeak[imix] + 1):
 
                     if ipeak not in self.ihp[imix]:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                         f"The atom number involved in the NOESY peak ihp({imix},{ipeak}) was not set.")
                         continue
 
                     if ipeak not in self.jhp[imix]:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                         f"The atom number involved in the NOESY peak jhp({imix},{ipeak}) was not set.")
                         continue
 
                     if ipeak not in self.aexp[imix]:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                         f"The NOESY peak volume aexp({imix},{ipeak}) was not set.")
                         continue
 
@@ -8317,13 +8317,13 @@ class AmberMRParserListener(ParseTreeListener):
                     _jprot = self.jhp[imix][ipeak]
 
                     if _iprot <= 0:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                         f"The atom number involved in the NOESY peak 'ihp({imix},{ipeak})={_iprot}' "
                                         f"should be a positive integer.")
                         continue
 
                     if _jprot <= 0:
-                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                        self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                         f"The atom number involved in the NOESY peak 'jhp({imix},{ipeak})={_jprot}' "
                                         f"should be a positive integer.")
                         continue
@@ -8351,7 +8351,7 @@ class AmberMRParserListener(ParseTreeListener):
                             warn_title =\
                                 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
                                 else 'Unsupported data'
-                            self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(imix,ipeak)}"
+                            self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(imix, ipeak)}"
                                             f"'ihp({imix},{ipeak})={_iprot}' is not defined in the AMBER parameter/topology file.")
                             continue
 
@@ -8367,7 +8367,7 @@ class AmberMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
 
                         if atom_id[0] not in PROTON_BEGIN_CODE:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                             f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.")
                             continue
 
@@ -8379,7 +8379,7 @@ class AmberMRParserListener(ParseTreeListener):
                             warn_title =\
                                 'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
                                 else 'Unsupported data'
-                            self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(imix,ipeak)}"
+                            self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint(imix, ipeak)}"
                                             f"'jhp({imix},{ipeak})={_jprot}' is not defined in the AMBER parameter/topology file.")
                             continue
 
@@ -8395,7 +8395,7 @@ class AmberMRParserListener(ParseTreeListener):
                         self.atomSelectionSet.append(atomSelection)
 
                         if atom_id[0] not in PROTON_BEGIN_CODE:
-                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                            self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                             f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.")
                             continue
 
@@ -8474,7 +8474,7 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                     f"The second argument value of '{varName}({imix},{ipeak})' "
                                     f"must be in the range 1-{self.npeak[imix]}, "
                                     f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
@@ -8490,7 +8490,7 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                     f"The second argument value of '{varName}({imix},{ipeak})' "
                                     f"must be in the range 1-{self.npeak[imix]}, "
                                     f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
@@ -8506,7 +8506,7 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                     f"The second argument value of '{varName}({imix},{ipeak})' "
                                     f"must be in the range 1-{self.npeak[imix]}, "
                                     f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
@@ -8522,7 +8522,7 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                     f"The second argument value of '{varName}({imix},{ipeak})' "
                                     f"must be in the range 1-{self.npeak[imix]}, "
                                     f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
@@ -8531,7 +8531,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.arange[imix] = {}
                 val = float(str(ctx.Real()))
                 if val < 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                     f"The uncertainty of peak volume '{varName}({imix},{ipeak})={val}' "
                                     "must not be a negative value.")
                     return
@@ -8544,7 +8544,7 @@ class AmberMRParserListener(ParseTreeListener):
                 imix = int(str(ctx.Decimal(0)))
                 ipeak = int(str(ctx.Decimal(1)))
                 if imix in self.npeak and ipeak > self.npeak[imix]:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                     f"The second argument value of '{varName}({imix},{ipeak})' "
                                     f"must be in the range 1-{self.npeak[imix]}, "
                                     f"regulated by 'npeak({imix})={self.npeak[imix]}'.")
@@ -8553,7 +8553,7 @@ class AmberMRParserListener(ParseTreeListener):
                     self.awt[imix] = {}
                 val = float(str(ctx.Real()))
                 if val <= 0.0:
-                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix,ipeak)}"
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
                                     f"The relative weight value '{varName}({imix},{ipeak})={val}' "
                                     "must not be a negative value.")
                     return

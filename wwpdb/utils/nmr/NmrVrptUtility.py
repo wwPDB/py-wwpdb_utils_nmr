@@ -4343,9 +4343,10 @@ class NmrVrptUtility:
                     total_sum_of_square = ((rdc_exp_array - rdc_exp_mean) ** 2).sum()
                     sum_of_squared_errors = ((rdc_exp_array - rdc_calc_array) ** 2).sum()
                     sum_of_squared_values = (rdc_exp_array ** 2).sum()
-                    q_scores[k]['r2'] = round(1.0 - sum_of_squared_errors / total_sum_of_square, 2)
-                    q_scores[k]['Cornilescu_Q'] = round(math.sqrt(sum_of_squared_errors / sum_of_squared_values), 2)
-                    q_scores[k]['Clore_Q'] = round(math.sqrt(sum_of_squared_errors
+                    q_scores[k]['r2'] =\
+                        round(1.0 - sum_of_squared_errors / total_sum_of_square, 2) if total_sum_of_square > 0 else 1.0
+                    q_scores[k]['cornilescu_q'] = round(math.sqrt(sum_of_squared_errors / sum_of_squared_values), 2)
+                    q_scores[k]['clore_q'] = round(math.sqrt(sum_of_squared_errors
                                                              / (rdc_exp_array.shape[0] * denominator_unit)), 2)
                     del q_scores[k]['rdc_exp']
                     del q_scores[k]['rdc_calc']

@@ -25,10 +25,10 @@ try:
     from wwpdb.utils.nmr.NmrDpValidationCsStats import NmrDpValidationCsStats
     from wwpdb.utils.nmr.NmrDpValidationMrStats import NmrDpValidationMrStats
     from wwpdb.utils.nmr.NmrDpValidationOutStats import NmrDpValidationOutStats
-    from wwpdb.utils.nmr.NmrDpValidationBase import (is_non_metal_element,  # noqa: F401
+    from wwpdb.utils.nmr.NmrDpValidationBase import (is_non_metal_element,  # noqa: F401 pylint: disable=unused-import
                                                      is_like_planality_boundary,
                                                      get_atom_name_mapping)
-    from wwpdb.utils.nmr.NmrVrptUtility import predict_redox_state_of_cystein  # noqa: F401
+    from wwpdb.utils.nmr.NmrVrptUtility import predict_redox_state_of_cystein  # noqa: F401 pylint: disable=unused-import
 except ImportError:
     from nmr.NmrDpValidationInput import NmrDpValidationInput
     from nmr.NmrDpValidationCoord import NmrDpValidationCoord
@@ -41,10 +41,10 @@ except ImportError:
     from nmr.NmrDpValidationCsStats import NmrDpValidationCsStats
     from nmr.NmrDpValidationMrStats import NmrDpValidationMrStats
     from nmr.NmrDpValidationOutStats import NmrDpValidationOutStats
-    from nmr.NmrDpValidationBase import (is_non_metal_element,  # noqa: F401
+    from nmr.NmrDpValidationBase import (is_non_metal_element,  # noqa: F401 pylint: disable=unused-import
                                          is_like_planality_boundary,
                                          get_atom_name_mapping)
-    from nmr.NmrVrptUtility import predict_redox_state_of_cystein  # noqa: F401
+    from nmr.NmrVrptUtility import predict_redox_state_of_cystein  # noqa: F401 pylint: disable=unused-import
 
 
 class NmrDpValidation(NmrDpValidationInput,

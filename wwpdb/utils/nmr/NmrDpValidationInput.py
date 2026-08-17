@@ -122,12 +122,12 @@ class NmrDpValidationInput(NmrDpValidationBase):
                         except Exception as e:  # pylint: disable=broad-exception-caught
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateInputSource() "
-                                                                      "++ Error  - " + str(e))
+                                                                     f"+{self.__class_name__}.validateInputSource() "
+                                                                     "++ Error  - " + str(e))
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                                     f"++ Error  - {str(e)}\n")
+                                                    f"++ Error  - {str(e)}\n")
 
                             return False
 
@@ -137,7 +137,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
 
                     _csPath = self.getNextPath(csPath, '.cif2str')
                     if not self._reg.c2S.convert(csPath, _csPath,
-                                                  originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):
+                                                 originalFileName=cs.get('original_file_name') if isinstance(cs, dict) else None):
                         _csPath = csPath
 
                     csPath = _csPath
@@ -232,9 +232,9 @@ class NmrDpValidationInput(NmrDpValidationBase):
                                         self._reg.has_legacy_sf_issue = True
 
                                         self._reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath,
-                                                                                   'S', message,
-                                                                                   allowEmpty=allow_empty,
-                                                                                   hasLegacySfIssue=self._reg.has_legacy_sf_issue)
+                                                                                  'S', message,
+                                                                                  allowEmpty=allow_empty,
+                                                                                  hasLegacySfIssue=self._reg.has_legacy_sf_issue)
 
                                         _is_done, star_data_type, star_data = self._reg.nefT.read_input_file(csPath)
 
@@ -266,10 +266,10 @@ class NmrDpValidationInput(NmrDpValidationBase):
                                     err += ' ' + re.sub('not in list', 'unknown item.', str(e))
 
                                 self._reg.report.error.appendDescription('format_issue',
-                                                                          {'file_name': file_name, 'description': err})
+                                                                         {'file_name': file_name, 'description': err})
 
                                 self._reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                                     f"++ Error  - {file_name} {err}\n")
+                                                    f"++ Error  - {file_name} {err}\n")
 
                         else:
 
@@ -285,11 +285,11 @@ class NmrDpValidationInput(NmrDpValidationBase):
                                         err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                             self._reg.report.error.appendDescription('content_mismatch',
-                                                                      {'file_name': file_name, 'description': err})
+                                                                     {'file_name': file_name, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                                     f"++ Error  - {err}\n")
+                                                    f"++ Error  - {err}\n")
 
                             return False
 
@@ -303,8 +303,8 @@ class NmrDpValidationInput(NmrDpValidationBase):
                             self._reg.has_legacy_sf_issue = True
 
                             self._reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                       allowEmpty=allow_empty,
-                                                                       hasLegacySfIssue=self._reg.has_legacy_sf_issue)
+                                                                      allowEmpty=allow_empty,
+                                                                      hasLegacySfIssue=self._reg.has_legacy_sf_issue)
 
                             _is_done, star_data_type, star_data = self._reg.nefT.read_input_file(csPath)
 
@@ -331,8 +331,8 @@ class NmrDpValidationInput(NmrDpValidationBase):
                 else:
 
                     if not self._reg.dpA.fixFormatIssueOfInputSource(csListId, file_name, file_type, csPath, 'S', message,
-                                                                      allowEmpty=allow_empty,
-                                                                      hasLegacySfIssue=self._reg.has_legacy_sf_issue):
+                                                                     allowEmpty=allow_empty,
+                                                                     hasLegacySfIssue=self._reg.has_legacy_sf_issue):
                         pass
 
                 if _csPath is not None:
@@ -408,7 +408,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
 
                         _mrPath = self.getNextPath(mrPath, '.cif2str')
                         if not self._reg.c2S.convert(mrPath, _mrPath,
-                                                      originalFileName=mr.get('original_file_name') if isinstance(mr, dict) else None):  # noqa: E501, pylint: disable=line-too-long
+                                                     originalFileName=mr.get('original_file_name') if isinstance(mr, dict) else None):  # noqa: E501, pylint: disable=line-too-long
                             mrPath = _mrPath
 
                     codec = detect_bom(mrPath, 'utf-8')
@@ -461,11 +461,11 @@ class NmrDpValidationInput(NmrDpValidationBase):
                                         err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                             self._reg.report.error.appendDescription('content_mismatch',
-                                                                      {'file_name': file_name, 'description': err})
+                                                                     {'file_name': file_name, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                                     f"++ Error  - {err}\n")
+                                                    f"++ Error  - {err}\n")
 
                             return False
 
@@ -477,8 +477,8 @@ class NmrDpValidationInput(NmrDpValidationBase):
                             self._reg.has_legacy_sf_issue = True
 
                             self._reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type,
-                                                                       mrPath, file_subtype, message,
-                                                                       hasLegacySfIssue=self._reg.has_legacy_sf_issue)
+                                                                      mrPath, file_subtype, message,
+                                                                      hasLegacySfIssue=self._reg.has_legacy_sf_issue)
 
                             _is_done, star_data_type, star_data = self._reg.nefT.read_input_file(mrPath)
 
@@ -500,8 +500,8 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     else:
 
                         if not self._reg.dpA.fixFormatIssueOfInputSource(file_path_list_len, file_name, file_type,
-                                                                          mrPath, file_subtype, message,
-                                                                          hasLegacySfIssue=self._reg.has_legacy_sf_issue):
+                                                                         mrPath, file_subtype, message,
+                                                                         hasLegacySfIssue=self._reg.has_legacy_sf_issue):
                             pass
 
                     file_path_list_len += 1
@@ -534,12 +534,12 @@ class NmrDpValidationInput(NmrDpValidationBase):
                             except Exception as e:  # pylint: disable=broad-exception-caught
 
                                 self._reg.report.error.appendDescription('internal_error',
-                                                                          f"+{self.__class_name__}.validateInputSource() "
-                                                                          "++ Error  - " + str(e))
+                                                                         f"+{self.__class_name__}.validateInputSource() "
+                                                                         "++ Error  - " + str(e))
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                                         f"++ Error  - {str(e)}\n")
+                                                        f"++ Error  - {str(e)}\n")
 
                                 return False
 
@@ -737,11 +737,11 @@ class NmrDpValidationInput(NmrDpValidationBase):
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
 
                     self._reg.report.error.appendDescription('content_mismatch',
-                                                              {'file_name': file_name, 'description': err})
+                                                             {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateInputSource() "
-                                             f"++ Error  - {err}\n")
+                                            f"++ Error  - {err}\n")
 
                     is_done = False
 
@@ -844,8 +844,8 @@ class NmrDpValidationInput(NmrDpValidationBase):
         return is_done
 
     def _convertCsToEntry(self, src_data: Optional[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]] = None,
-                           list_id: int = 1
-                           ) -> Optional[pynmrstar.Entry]:
+                          list_id: int = 1
+                          ) -> Optional[pynmrstar.Entry]:
         """ Convert NMR-STAR CS loop/saveframe to pynmrstar Entry object.
         """
 
@@ -971,7 +971,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
 
             for warn in messages:
                 self._reg.report.warning.appendDescription('corrected_saveframe_name',
-                                                            {'file_name': file_name, 'description': warn})
+                                                           {'file_name': file_name, 'description': warn})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
@@ -995,7 +995,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
             warn = f"Empty strings for {tags_with_null_str} are not allowed as values. Use a '.' or a '?' if needed."
 
             self._reg.report.warning.appendDescription('corrected_format_issue',
-                                                        {'file_name': file_name, 'description': warn})
+                                                       {'file_name': file_name, 'description': warn})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
@@ -1019,8 +1019,8 @@ class NmrDpValidationInput(NmrDpValidationBase):
                         warn = f"Ignored saveframe category {sf_category!r}."
 
                     self._reg.report.warning.appendDescription('skipped_saveframe_category',
-                                                                {'file_name': file_name, 'sf_category': sf_category,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_category': sf_category,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
@@ -1049,7 +1049,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     warn = f"A saveframe with a category {lp_category!r} is missing in the NMR data."
 
                     self._reg.report.warning.appendDescription('missing_saveframe',
-                                                                {'file_name': file_name, 'description': warn})
+                                                               {'file_name': file_name, 'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
@@ -1063,7 +1063,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                             f"Please re-upload the file as an usual assigned chemical shift file."
 
                     self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                              {'file_name': file_name, 'description': err})
+                                                             {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
@@ -1072,7 +1072,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                 err = f"A saveframe with a category {lp_category!r} is missing. Please re-upload the {file_type.upper()} file."
 
                 self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                          {'file_name': file_name, 'description': err})
+                                                         {'file_name': file_name, 'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
@@ -1082,10 +1082,10 @@ class NmrDpValidationInput(NmrDpValidationBase):
             err = f"Unexpectedly, multiple saveframes having {lp_category!r} category exist."
 
             self._reg.report.error.appendDescription('format_issue',
-                                                      {'file_name': file_name, 'description': err})
+                                                     {'file_name': file_name, 'description': err})
 
             self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - "
-                                 f"{file_name} {err}\n")
+                                f"{file_name} {err}\n")
 
         if self._reg.remediation_mode and not self._reg.bmrb_only:
 
@@ -1151,9 +1151,9 @@ class NmrDpValidationInput(NmrDpValidationBase):
 
                             if not os.path.exists(cs_file_path):
                                 self._reg.star_data[0].write_to_file(cs_file_path,
-                                                                      show_comments=False,
-                                                                      skip_empty_loops=True,
-                                                                      skip_empty_tags=False)
+                                                                     show_comments=False,
+                                                                     skip_empty_loops=True,
+                                                                     skip_empty_tags=False)
 
                                 compress_as_gzip_file(cs_file_path, f'{cs_file_path}.gz')
 
@@ -1208,7 +1208,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
 
                 self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                          {'file_name': file_name, 'description': err})
+                                                         {'file_name': file_name, 'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
@@ -1228,7 +1228,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     "which will be ignored during remediation."
 
                 self._reg.report.warning.appendDescription('corrected_format_issue',
-                                                            {'file_name': file_name, 'description': warn})
+                                                           {'file_name': file_name, 'description': warn})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
@@ -1239,7 +1239,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
 
                 self._reg.report.error.appendDescription('content_mismatch',
-                                                          {'file_name': file_name, 'description': err})
+                                                         {'file_name': file_name, 'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
@@ -1282,7 +1282,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                             "that OneDep supports, if possible."
 
                 self._reg.report.warning.appendDescription('missing_content',
-                                                            {'file_name': file_name, 'description': warn})
+                                                           {'file_name': file_name, 'description': warn})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
@@ -1293,7 +1293,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     f"Deposition of distance restraints is mandatory. Please re-upload the {file_type.upper()} file."
 
                 self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                          {'file_name': file_name, 'description': err})
+                                                         {'file_name': file_name, 'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
@@ -1305,7 +1305,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                 f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
 
             self._reg.report.error.appendDescription('content_mismatch',
-                                                      {'file_name': file_name, 'description': err})
+                                                     {'file_name': file_name, 'description': err})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
@@ -1325,7 +1325,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                 f"in particular those generated from the {primary_spectra_for_structure_determination} spectra."
 
             self._reg.report.warning.appendDescription('encouragement',
-                                                        {'file_name': file_name, 'description': warn})
+                                                       {'file_name': file_name, 'description': warn})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
@@ -1337,7 +1337,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                 f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
 
             self._reg.report.error.appendDescription('content_mismatch',
-                                                      {'file_name': file_name, 'description': err})
+                                                     {'file_name': file_name, 'description': err})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
@@ -1364,7 +1364,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                         f"Please re-upload the {file_type.upper()} file."
 
                     self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                              {'file_name': file_name, 'description': err})
+                                                             {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")

@@ -84,9 +84,9 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                     filter_items.append({'name': 'pdbx_leaving_atom_flag', 'type': 'str', 'value': 'both'})
 
                 struct_conn = self._reg.cR.getDictListWithFilter('struct_conn',
-                                                                  [{'name': 'conn_type_id', 'type': 'str'}
-                                                                   ],
-                                                                  filter_items)
+                                                                 [{'name': 'conn_type_id', 'type': 'str'}
+                                                                  ],
+                                                                 filter_items)
 
             else:
                 struct_conn = []
@@ -94,7 +94,7 @@ class NmrDpValidationCoord(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - {str(e)}\n")
@@ -117,28 +117,28 @@ class NmrDpValidationCoord(NmrDpValidationBase):
 
                     if self._reg.cR.hasCategory('pdbx_validate_close_contact'):
                         close_contact = self._reg.cR.getDictListWithFilter('pdbx_validate_close_contact',
-                                                                            [{'name': 'dist', 'type': 'float'}
-                                                                             ],
-                                                                            [{'name': 'PDB_model_num', 'type': 'int',
-                                                                              'value': self._reg.representative_model_id},
-                                                                             {'name': 'auth_asym_id_1', 'type': 'str',
-                                                                              'value': auth_cif_chain_id},
-                                                                             {'name': 'auth_seq_id_1', 'type': 'int',
-                                                                              'value': auth_beg_cif_seq_id},
-                                                                             {'name': 'auth_atom_id_1', 'type': 'str',
-                                                                              'value': 'N'},
-                                                                             {'name': 'auth_asym_id_2', 'type': 'str',
-                                                                              'value': auth_cif_chain_id},
-                                                                             {'name': 'auth_seq_id_2', 'type': 'int',
-                                                                              'value': auth_end_cif_seq_id},
-                                                                             {'name': 'auth_atom_id_2', 'type': 'str',
-                                                                              'value': 'C'}
-                                                                             ])
+                                                                           [{'name': 'dist', 'type': 'float'}
+                                                                            ],
+                                                                           [{'name': 'PDB_model_num', 'type': 'int',
+                                                                             'value': self._reg.representative_model_id},
+                                                                            {'name': 'auth_asym_id_1', 'type': 'str',
+                                                                             'value': auth_cif_chain_id},
+                                                                            {'name': 'auth_seq_id_1', 'type': 'int',
+                                                                             'value': auth_beg_cif_seq_id},
+                                                                            {'name': 'auth_atom_id_1', 'type': 'str',
+                                                                             'value': 'N'},
+                                                                            {'name': 'auth_asym_id_2', 'type': 'str',
+                                                                             'value': auth_cif_chain_id},
+                                                                            {'name': 'auth_seq_id_2', 'type': 'int',
+                                                                             'value': auth_end_cif_seq_id},
+                                                                            {'name': 'auth_atom_id_2', 'type': 'str',
+                                                                             'value': 'C'}
+                                                                            ])
 
                 except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - " + str(e))
+                                                             f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - " + str(e))
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__isCyclicPolymer__() ++ Error  - {str(e)}\n")
@@ -202,13 +202,13 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                     label_seq_id_2_name = 'ndb_label_seq_id_2' if alias else 'pdbx_label_seq_id_2'
 
                     prot_cis = self._reg.cR.getDictListWithFilter('struct_mon_prot_cis',
-                                                                   [{'name': model_num_name, 'type': 'int'}
-                                                                    ],
-                                                                   [{'name': label_asym_id_2_name, 'type': 'str',
-                                                                     'value': cif_chain_id},
-                                                                    {'name': label_seq_id_2_name, 'type': 'int',
-                                                                     'value': cif_seq_id}
-                                                                    ])
+                                                                  [{'name': model_num_name, 'type': 'int'}
+                                                                   ],
+                                                                  [{'name': label_asym_id_2_name, 'type': 'str',
+                                                                    'value': cif_chain_id},
+                                                                   {'name': label_seq_id_2_name, 'type': 'int',
+                                                                    'value': cif_seq_id}
+                                                                   ])
 
                 else:
                     prot_cis = []
@@ -216,7 +216,7 @@ class NmrDpValidationCoord(NmrDpValidationBase):
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.isProtCis() ++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.isProtCis() ++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.isProtCis() ++ Error  - {str(e)}\n")
@@ -274,22 +274,22 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                     if self._reg.internal_mode:  # and not self._reg.conversion_server:
 
                         self._reg.report.warning.appendDescription('coordinate_issue',
-                                                                    {'file_name': file_name, 'category': 'atom_site',
-                                                                     'description': err})
+                                                                   {'file_name': file_name, 'category': 'atom_site',
+                                                                    'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testTautomerOfHistidinePerModel() "
-                                                 f"++ Warning  - {err}\n")
+                                                f"++ Warning  - {err}\n")
 
                     else:
 
                         self._reg.report.error.appendDescription('coordinate_issue',
-                                                                  {'file_name': file_name, 'category': 'atom_site',
-                                                                   'description': err})
+                                                                 {'file_name': file_name, 'category': 'atom_site',
+                                                                  'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testTautomerOfHistidinePerModel() "
-                                                 f"++ Error  - {err}\n")
+                                                f"++ Error  - {err}\n")
 
             return True
 
@@ -330,27 +330,27 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                 try:
 
                     protons = self._reg.cR.getDictListWithFilter('atom_site',
-                                                                  [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                                    'alt_name': 'atom_id'},
-                                                                   {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
-                                                                   ],
-                                                                  [{'name': 'label_asym_id', 'type': 'str', 'value': chain_id},
-                                                                   {'name': 'label_seq_id', 'type': 'int', 'value': seq_id},
-                                                                   {'name': 'label_comp_id', 'type': 'str', 'value': comp_id},
-                                                                   {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                                   {'name': 'label_alt_id', 'type': 'enum',
-                                                                    'enum': (self._reg.representative_alt_id,)}
-                                                                   ])
+                                                                 [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                                   'alt_name': 'atom_id'},
+                                                                  {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'},
+                                                                  ],
+                                                                 [{'name': 'label_asym_id', 'type': 'str', 'value': chain_id},
+                                                                  {'name': 'label_seq_id', 'type': 'int', 'value': seq_id},
+                                                                  {'name': 'label_comp_id', 'type': 'str', 'value': comp_id},
+                                                                  {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
+                                                                  {'name': 'label_alt_id', 'type': 'enum',
+                                                                   'enum': (self._reg.representative_alt_id,)}
+                                                                  ])
 
                 except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.testTautomerOfHistidinePerModel() "
-                                                              "++ Error  - " + str(e))
+                                                             f"+{self.__class_name__}.testTautomerOfHistidinePerModel() "
+                                                             "++ Error  - " + str(e))
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.testTautomerOfHistidinePerModel() "
-                                             f"++ Error  - {str(e)}\n")
+                                            f"++ Error  - {str(e)}\n")
 
                     return False
 
@@ -391,8 +391,8 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                             continue
 
                     self._reg.cpC['tautomer_per_model'].append({'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id,
-                                                                 'auth_chain_id': auth_chain_id, 'auth_seq_id': auth_seq_id,
-                                                                 'tautomer_per_model': tautomer_per_model})
+                                                                'auth_chain_id': auth_chain_id, 'auth_seq_id': auth_seq_id,
+                                                                'tautomer_per_model': tautomer_per_model})
 
                     if any(tautomer != rep_tautomer for tautomer in tautomer_per_model.values()):
                         cif_seq_code = f"{chain_id}:{seq_id}:{comp_id}"
@@ -405,22 +405,22 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                         if self._reg.internal_mode:  # and not self._reg.conversion_server:
 
                             self._reg.report.warning.appendDescription('coordinate_issue',
-                                                                        {'file_name': file_name, 'category': 'atom_site',
-                                                                         'description': err})
+                                                                       {'file_name': file_name, 'category': 'atom_site',
+                                                                        'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testTautomerOfHistidinePerModel() "
-                                                     f"++ Warning  - {err}\n")
+                                                    f"++ Warning  - {err}\n")
 
                         else:
 
                             self._reg.report.error.appendDescription('coordinate_issue',
-                                                                      {'file_name': file_name, 'category': 'atom_site',
-                                                                       'description': err})
+                                                                     {'file_name': file_name, 'category': 'atom_site',
+                                                                      'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testTautomerOfHistidinePerModel() "
-                                                     f"++ Error  - {err}\n")
+                                                    f"++ Error  - {err}\n")
 
         if self._reg.coordPropCachePath is not None:
             hash_value = hash(str(self._reg.cpC))
@@ -470,23 +470,23 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
 
                 protons = self._reg.cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                                'alt_name': 'atom_id'}
-                                                               ],
-                                                              [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                               {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                               {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
-                                                               {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                               {'name': model_num_name, 'type': 'int',
-                                                                'value': self._reg.representative_model_id},
-                                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                                'enum': (self._reg.representative_alt_id,)}
-                                                               ])
+                                                             [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                               'alt_name': 'atom_id'}
+                                                              ],
+                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                              {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                              {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
+                                                              {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
+                                                              {'name': model_num_name, 'type': 'int',
+                                                               'value': self._reg.representative_model_id},
+                                                              {'name': 'label_alt_id', 'type': 'enum',
+                                                               'enum': (self._reg.representative_alt_id,)}
+                                                              ])
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.getTautomerOfHistidine() ++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.getTautomerOfHistidine() ++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.getTautomerOfHistidine() ++ Error  - {str(e)}\n")
@@ -561,24 +561,24 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
 
                 atoms = self._reg.cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                              'alt_name': 'atom_id'},
-                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                             {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                             ],
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                             {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'},
-                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': (self._reg.representative_alt_id,)}
-                                                             ])
+                                                           [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                             'alt_name': 'atom_id'},
+                                                            {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                            {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                            {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                            {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                            ],
+                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'},
+                                                            {'name': 'label_alt_id', 'type': 'enum',
+                                                             'enum': (self._reg.representative_alt_id,)}
+                                                            ])
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.getRotamerOfValine() ++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.getRotamerOfValine() ++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.getRotamerOfValine() ++ Error  - {str(e)}\n")
@@ -673,24 +673,24 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
 
                 atoms = self._reg.cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                              'alt_name': 'atom_id'},
-                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                             {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                             ],
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                             {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'},
-                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': (self._reg.representative_alt_id,)}
-                                                             ])
+                                                           [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                             'alt_name': 'atom_id'},
+                                                            {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                            {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                            {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                            {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                            ],
+                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'},
+                                                            {'name': 'label_alt_id', 'type': 'enum',
+                                                             'enum': (self._reg.representative_alt_id,)}
+                                                            ])
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.getRotamerOfLeucine() ++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.getRotamerOfLeucine() ++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.getRotamerOfLeucine() ++ Error  - {str(e)}\n")
@@ -806,24 +806,24 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
 
                 atoms = self._reg.cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                              'alt_name': 'atom_id'},
-                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                             {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                             ],
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                             {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'},
-                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': (self._reg.representative_alt_id,)}
-                                                             ])
+                                                           [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                             'alt_name': 'atom_id'},
+                                                            {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                            {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                            {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                            {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                            ],
+                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'},
+                                                            {'name': 'label_alt_id', 'type': 'enum',
+                                                             'enum': (self._reg.representative_alt_id,)}
+                                                            ])
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.getRotamerOfIsoleucine() ++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.getRotamerOfIsoleucine() ++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.getRotamerOfIsoleucine() ++ Error  - {str(e)}\n")

@@ -98,8 +98,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
     __slots__ = ()
 
     def _calculateStatsOfDistanceRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
-                                            conflict_id_set: Optional[List[int]], inconsistent: Set[int],
-                                            redundant: Set[int], ent: dict) -> None:
+                                           conflict_id_set: Optional[List[int]], inconsistent: Set[int],
+                                           redundant: Set[int], ent: dict) -> None:
         """ Calculate statistics of distance restraints.
         """
 
@@ -283,8 +283,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                 min_val = min(min_val, target_value)
 
                 data_type = self._getTypeOfDistanceRestraint(file_type, lp_data, idx, target_value, upper_limit, lower_limit,
-                                                              member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                              chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                             member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                             chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -305,8 +305,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         f"is too {'close each other' if 'close' in data_type else 'far apart'} ({values[:-2]})."
 
                     self._reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
@@ -330,8 +330,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         f"is too {'close each other' if 'close' in data_type else 'far apart'} ({values[:-2]})."
 
                     self._reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
@@ -355,8 +355,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         f"is too {'close each other' if 'close' in data_type else 'far apart'} ({values[:-2]})."
 
                     self._reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
@@ -380,8 +380,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         f"is too {'close each other' if 'close' in data_type else 'far apart'} ({values[:-2]})."
 
                     self._reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() ++ Warning  - {warn}\n")
@@ -572,8 +572,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         continue
 
                     data_type = self._getTypeOfDistanceRestraint(file_type, lp_data, idx, target_value, upper_limit, lower_limit,
-                                                                  member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                                  chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                 member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                                 chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                     if data_type in _count:
                         _count[data_type] += 1
@@ -728,10 +728,10 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                                         comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row_1)
 
                                     data_type = self._getTypeOfDistanceRestraint(file_type, lp_data, row_id_1,
-                                                                                  target_value, upper_limit, lower_limit,
-                                                                                  member_id,
-                                                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                                                  chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                                 target_value, upper_limit, lower_limit,
+                                                                                 member_id,
+                                                                                 chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                                                 chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                     if data_type in _count:
                                         _count[data_type] += 1
@@ -751,10 +751,10 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                                     comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row_1)
 
                                 data_type = self._getTypeOfDistanceRestraint(file_type, lp_data, row_id_1,
-                                                                              target_value, upper_limit, lower_limit,
-                                                                              member_id,
-                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                                              chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                             target_value, upper_limit, lower_limit,
+                                                                             member_id,
+                                                                             chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                                             chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                                 if data_type in _count:
                                     _count[data_type] += 1
@@ -790,15 +790,15 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfDistanceRestraint() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")
 
     def _calculateStatsOfCovalentBond(self, file_list_id: int, sf_framecode: str, lp_category: str, lp_data: List[dict], ent: dict
-                                       ) -> None:
+                                      ) -> None:
         """ Calculate statistics of covalent bonds.
         """
 
@@ -864,8 +864,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                     dist = bond[0]['distance']
 
                 data_type = self._getTypeOfCovalentBond(file_type, lp_data, idx, dist,
-                                                         chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                         chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                        chain_id_1, seq_id_1, comp_id_1, atom_id_1,
+                                                        chain_id_2, seq_id_2, comp_id_2, atom_id_2)
 
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -874,8 +874,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         f"is too {'close each other' if 'close' in data_type else 'far apart'} ({dist}Å)."
 
                     self._reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'category': lp_category, 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'category': lp_category, 'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
@@ -887,8 +887,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         f"is too {'close each other' if 'close' in data_type else 'far apart'} ({dist}Å)."
 
                     self._reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'category': lp_category, 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'category': lp_category, 'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
@@ -900,8 +900,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         f"is too {'close each other' if 'close' in data_type else 'far apart'} ({dist}Å)."
 
                     self._reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'category': lp_category, 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'category': lp_category, 'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
@@ -913,8 +913,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                         f"is too {'close each other' if 'close' in data_type else 'far apart'} ({dist}Å)."
 
                     self._reg.report.warning.appendDescription('unusual_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'category': lp_category, 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'category': lp_category, 'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Warning  - {warn}\n")
@@ -975,16 +975,16 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__calculateStatsOfCovalentBond() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__calculateStatsOfCovalentBond() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Error  - {str(e)}\n")
 
     def _getTypeOfDistanceRestraint(self, file_type: str, lp_data: List[dict], row_id: int,
-                                     target_value: float, upper_limit: float, lower_limit: float, member_id: Optional[int],
-                                     chain_id_1: str, seq_id_1: int, comp_id_1: str, atom_id_1: str,
-                                     chain_id_2: str, seq_id_2: int, comp_id_2: str, atom_id_2: str) -> str:
+                                    target_value: float, upper_limit: float, lower_limit: float, member_id: Optional[int],
+                                    chain_id_1: str, seq_id_1: int, comp_id_1: str, atom_id_1: str,
+                                    chain_id_2: str, seq_id_2: int, comp_id_2: str, atom_id_2: str) -> str:
         """ Return type of distance restraint.
         """
 
@@ -1342,8 +1342,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         return data_type
 
     def _getTypeOfCovalentBond(self, file_type: str, lp_data: List[dict], row_id: int, target_value: float,
-                                chain_id_1: str, seq_id_1: int, comp_id_1: str, atom_id_1: str,
-                                chain_id_2: str, seq_id_2: int, comp_id_2: str, atom_id_2: str) -> str:
+                               chain_id_1: str, seq_id_1: int, comp_id_1: str, atom_id_1: str,
+                               chain_id_2: str, seq_id_2: int, comp_id_2: str, atom_id_2: str) -> str:
         """ Return type of covalent bond.
         """
 
@@ -1678,8 +1678,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         return data_type
 
     def _calculateStatsOfDihedralRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
-                                            conflict_id_set: Optional[List[int]], inconsistent: Set[int],
-                                            redundant: Set[int], ent: dict) -> None:
+                                           conflict_id_set: Optional[List[int]], inconsistent: Set[int],
+                                           redundant: Set[int], ent: dict) -> None:
         """ Calculate statistics of dihedral angle restraints.
         """
 
@@ -2312,16 +2312,16 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__calculateStatsOfDihedralRestraint() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__calculateStatsOfDihedralRestraint() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfDihedralRestraint() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")
 
     def _calculateStatsOfRdcRestraint(self, file_list_id: int, sf_framecode: str, lp_data: List[dict],
-                                       conflict_id_set: List[int], inconsistent: Set[int], redundant: Set[int], ent: dict
-                                       ) -> None:
+                                      conflict_id_set: List[int], inconsistent: Set[int], redundant: Set[int], ent: dict
+                                      ) -> None:
         """ Calculate statistics of RDC restraints.
         """
 
@@ -2757,8 +2757,8 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__calculateStatsOfRdcRestraint() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__calculateStatsOfRdcRestraint() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfRdcRestraint() ++ Error  - {str(e)}\n")
@@ -2784,7 +2784,7 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         return f'{vector_type}_bond_vectors'
 
     def _calculateStatsOfSpectralPeak(self, file_list_id: int, sf_framecode: str,
-                                       num_dim: int, lp_data: Optional[List[dict]], ent: dict) -> None:
+                                      num_dim: int, lp_data: Optional[List[dict]], ent: dict) -> None:
         """ Calculate statistics of spectral peaks.
         """
 
@@ -3099,14 +3099,14 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__calculateStatsOfSpectralPeak() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__calculateStatsOfSpectralPeak() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfSpectralPeak() ++ Error  - {str(e)}\n")
 
     def _calculateStatsOfSpectralPeakAlt(self, file_list_id: int, sf_framecode: str, num_dim: int, lp_data: List[dict], ent: dict
-                                          ) -> None:
+                                         ) -> None:
         """ Calculate statistics of spectral peaks.
         """
 
@@ -3381,9 +3381,9 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__calculateStatsOfSpectralPeakAlt() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__calculateStatsOfSpectralPeakAlt() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfSpectralPeakAlt() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")

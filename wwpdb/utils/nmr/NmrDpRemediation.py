@@ -25,7 +25,7 @@ try:
     from wwpdb.utils.nmr.NmrDpRemediationLegacyPk import NmrDpRemediationLegacyPk
     from wwpdb.utils.nmr.NmrDpRemediationStats import NmrDpRemediationStats
     from wwpdb.utils.nmr.NmrDpRemediationMerge import NmrDpRemediationMerge
-    from wwpdb.utils.nmr.NmrDpRemediationBase import (get_chem_shift_format,  # noqa: F401
+    from wwpdb.utils.nmr.NmrDpRemediationBase import (get_chem_shift_format,  # noqa: F401 pylint: disable=unused-import
                                                       get_chem_shift_format_from_string)
 except ImportError:
     from nmr.NmrDpRemediationEnum import NmrDpRemediationEnum
@@ -39,7 +39,7 @@ except ImportError:
     from nmr.NmrDpRemediationLegacyPk import NmrDpRemediationLegacyPk
     from nmr.NmrDpRemediationStats import NmrDpRemediationStats
     from nmr.NmrDpRemediationMerge import NmrDpRemediationMerge
-    from nmr.NmrDpRemediationBase import (get_chem_shift_format,  # noqa: F401
+    from nmr.NmrDpRemediationBase import (get_chem_shift_format,  # noqa: F401 pylint: disable=unused-import
                                           get_chem_shift_format_from_string)
 
 

@@ -299,12 +299,12 @@ class NmrDpValidationMr(NmrDpValidationBase):
                         f"in {sf_framecode} saveframe of {original_file_name} file."
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.validateStrMr() "
-                                                              f"++ KeyError  - " + err)
+                                                             f"+{self.__class_name__}.validateStrMr() "
+                                                             f"++ KeyError  - " + err)
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                             f"++ KeyError  - {err}\n")
+                                            f"++ KeyError  - {err}\n")
 
                     return False
 
@@ -577,14 +577,14 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                     if warn.startswith('[Atom not found]'):
                                         if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                                             self._reg.report.error.appendDescription('atom_not_found',
-                                                                                      {'file_name': original_file_name,
-                                                                                       'sf_framecode': sf_framecode,
-                                                                                       'category': lp_category,
-                                                                                       'description': idx_msg + warn})
+                                                                                     {'file_name': original_file_name,
+                                                                                      'sf_framecode': sf_framecode,
+                                                                                      'category': lp_category,
+                                                                                      'description': idx_msg + warn})
 
                                             if self._reg.verbose:
                                                 self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                     f"++ Error  - {idx_msg + warn}\n")
+                                                                    f"++ Error  - {idx_msg + warn}\n")
 
                                     if content_subtype != 'dihed_restraint' or not self._reg.remediation_mode:
                                         continue
@@ -666,47 +666,47 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                     if warn.startswith('[Atom not found]'):
                                         if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                                             self._reg.report.error.appendDescription('atom_not_found',
-                                                                                      {'file_name': original_file_name,
-                                                                                       'sf_framecode': sf_framecode,
-                                                                                       'category': lp_category,
-                                                                                       'description': idx_msg + warn})
+                                                                                     {'file_name': original_file_name,
+                                                                                      'sf_framecode': sf_framecode,
+                                                                                      'category': lp_category,
+                                                                                      'description': idx_msg + warn})
 
                                             if self._reg.verbose:
                                                 self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                     f"++ Error  - {idx_msg + warn}\n")
+                                                                    f"++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Hydrogen not instantiated]'):
                                         self._reg.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                    {'file_name': original_file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category,
-                                                                                     'description': idx_msg + warn})
+                                                                                   {'file_name': original_file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category,
+                                                                                    'description': idx_msg + warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                 f"++ Warning  - {idx_msg + warn}\n")
+                                                                f"++ Warning  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom nomenclature]'):
                                         self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                                  {'file_name': original_file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category,
-                                                                                   'description': idx_msg + warn})
+                                                                                 {'file_name': original_file_name,
+                                                                                  'sf_framecode': sf_framecode,
+                                                                                  'category': lp_category,
+                                                                                  'description': idx_msg + warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                 f"++ Error  - {idx_msg + warn}\n")
+                                                                f"++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                                         self._reg.report.error.appendDescription('invalid_data',
-                                                                                  {'file_name': original_file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category,
-                                                                                   'description': idx_msg + warn})
+                                                                                 {'file_name': original_file_name,
+                                                                                  'sf_framecode': sf_framecode,
+                                                                                  'category': lp_category,
+                                                                                  'description': idx_msg + warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                 f"++ ValueError  - {idx_msg + warn}\n")
+                                                                f"++ ValueError  - {idx_msg + warn}\n")
 
                                     continue
 
@@ -1082,14 +1082,14 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                     if warn.startswith('[Atom not found]'):
                                         if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                                             self._reg.report.error.appendDescription('atom_not_found',
-                                                                                      {'file_name': original_file_name,
-                                                                                       'sf_framecode': sf_framecode,
-                                                                                       'category': lp_category,
-                                                                                       'description': idx_msg + warn})
+                                                                                     {'file_name': original_file_name,
+                                                                                      'sf_framecode': sf_framecode,
+                                                                                      'category': lp_category,
+                                                                                      'description': idx_msg + warn})
 
                                             if self._reg.verbose:
                                                 self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                     f"++ Error  - {idx_msg + warn}\n")
+                                                                    f"++ Error  - {idx_msg + warn}\n")
 
                                     continue
 
@@ -1130,47 +1130,47 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                     if warn.startswith('[Atom not found]'):
                                         if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                                             self._reg.report.error.appendDescription('atom_not_found',
-                                                                                      {'file_name': original_file_name,
-                                                                                       'sf_framecode': sf_framecode,
-                                                                                       'category': lp_category,
-                                                                                       'description': idx_msg + warn})
+                                                                                     {'file_name': original_file_name,
+                                                                                      'sf_framecode': sf_framecode,
+                                                                                      'category': lp_category,
+                                                                                      'description': idx_msg + warn})
 
                                             if self._reg.verbose:
                                                 self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                     f"++ Error  - {idx_msg + warn}\n")
+                                                                    f"++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Hydrogen not instantiated]'):
                                         self._reg.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                    {'file_name': original_file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category,
-                                                                                     'description': idx_msg + warn})
+                                                                                   {'file_name': original_file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category,
+                                                                                    'description': idx_msg + warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                 f"++ Warning  - {idx_msg + warn}\n")
+                                                                f"++ Warning  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom nomenclature]'):
                                         self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                                  {'file_name': original_file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category,
-                                                                                   'description': idx_msg + warn})
+                                                                                 {'file_name': original_file_name,
+                                                                                  'sf_framecode': sf_framecode,
+                                                                                  'category': lp_category,
+                                                                                  'description': idx_msg + warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                 f"++ Error  - {idx_msg + warn}\n")
+                                                                f"++ Error  - {idx_msg + warn}\n")
 
                                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                                         self._reg.report.error.appendDescription('invalid_data',
-                                                                                  {'file_name': original_file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category,
-                                                                                   'description': idx_msg + warn})
+                                                                                 {'file_name': original_file_name,
+                                                                                  'sf_framecode': sf_framecode,
+                                                                                  'category': lp_category,
+                                                                                  'description': idx_msg + warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                 f"++ ValueError  - {idx_msg + warn}\n")
+                                                                f"++ ValueError  - {idx_msg + warn}\n")
 
                                     continue
 
@@ -1324,12 +1324,12 @@ class NmrDpValidationMr(NmrDpValidationBase):
                         f"in {sf_framecode} saveframe of {original_file_name} file."
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.validateStrMr() "
-                                                              f"++ KeyError  - " + err)
+                                                             f"+{self.__class_name__}.validateStrMr() "
+                                                             f"++ KeyError  - " + err)
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                             f"++ KeyError  - {err}\n")
+                                            f"++ KeyError  - {err}\n")
 
                     return False
 
@@ -1501,14 +1501,14 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                 if warn.startswith('[Atom not found]'):
                                     if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                                         self._reg.report.error.appendDescription('atom_not_found',
-                                                                                  {'file_name': original_file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category,
-                                                                                   'description': idx_msg + warn})
+                                                                                 {'file_name': original_file_name,
+                                                                                  'sf_framecode': sf_framecode,
+                                                                                  'category': lp_category,
+                                                                                  'description': idx_msg + warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                 f"++ Error  - {idx_msg + warn}\n")
+                                                                f"++ Error  - {idx_msg + warn}\n")
 
                                 continue
 
@@ -1549,47 +1549,47 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                 if warn.startswith('[Atom not found]'):
                                     if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                                         self._reg.report.error.appendDescription('atom_not_found',
-                                                                                  {'file_name': original_file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category,
-                                                                                   'description': idx_msg + warn})
+                                                                                 {'file_name': original_file_name,
+                                                                                  'sf_framecode': sf_framecode,
+                                                                                  'category': lp_category,
+                                                                                  'description': idx_msg + warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                 f"++ Error  - {idx_msg + warn}\n")
+                                                                f"++ Error  - {idx_msg + warn}\n")
 
                                 elif warn.startswith('[Hydrogen not instantiated]'):
                                     self._reg.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                {'file_name': original_file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category,
-                                                                                 'description': idx_msg + warn})
+                                                                               {'file_name': original_file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category,
+                                                                                'description': idx_msg + warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                             f"++ Warning  - {idx_msg + warn}\n")
+                                                            f"++ Warning  - {idx_msg + warn}\n")
 
                                 elif warn.startswith('[Invalid atom nomenclature]'):
                                     self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                              {'file_name': original_file_name,
-                                                                               'sf_framecode': sf_framecode,
-                                                                               'category': lp_category,
-                                                                               'description': idx_msg + warn})
+                                                                             {'file_name': original_file_name,
+                                                                              'sf_framecode': sf_framecode,
+                                                                              'category': lp_category,
+                                                                              'description': idx_msg + warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                             f"++ Error  - {idx_msg + warn}\n")
+                                                            f"++ Error  - {idx_msg + warn}\n")
 
                                 elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                                     self._reg.report.error.appendDescription('invalid_data',
-                                                                              {'file_name': original_file_name,
-                                                                               'sf_framecode': sf_framecode,
-                                                                               'category': lp_category,
-                                                                               'description': idx_msg + warn})
+                                                                             {'file_name': original_file_name,
+                                                                              'sf_framecode': sf_framecode,
+                                                                              'category': lp_category,
+                                                                              'description': idx_msg + warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                             f"++ ValueError  - {idx_msg + warn}\n")
+                                                            f"++ ValueError  - {idx_msg + warn}\n")
 
                                 continue
 
@@ -1725,10 +1725,10 @@ class NmrDpValidationMr(NmrDpValidationBase):
                     if not self.updateGenDistConstIdInMrStr(sf_item):
                         err = "Atoms in distance restraints can not be properly identified. Please re-upload the NMR-STAR file."
                         self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                                  {'file_name': original_file_name,
-                                                                   'sf_framecode': sf_framecode,
-                                                                   'category': lp_category,
-                                                                   'description': err})
+                                                                 {'file_name': original_file_name,
+                                                                  'sf_framecode': sf_framecode,
+                                                                  'category': lp_category,
+                                                                  'description': err})
 
                 sf_item['constraint_type'] = 'distance'
                 sf_item['constraint_subsubtype'] = 'simple'
@@ -2786,8 +2786,8 @@ class NmrDpValidationMr(NmrDpValidationBase):
                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
                         self._reg.report.error.appendDescription('invalid_data',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                   'category': lp_category, 'description': err})
+                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                  'category': lp_category, 'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testRdcVector() ++ Error  - {err}\n")
@@ -2828,8 +2828,8 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                 f"in a loop {lp_category}."
 
                             self._reg.report.error.appendDescription('invalid_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                       'category': lp_category, 'description': err})
+                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                      'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testRdcVector() ++ Error  - {err}\n")
@@ -2844,8 +2844,8 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                 "applied to symmetric samples such as fibrils.\n"
 
                             self._reg.report.warning.appendDescription('anomalous_rdc_vector',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                         'category': lp_category, 'description': err})
+                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                        'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testRdcVector() ++ Warning  - {err}\n")
@@ -2860,8 +2860,8 @@ class NmrDpValidationMr(NmrDpValidationBase):
                             f"in a loop {lp_category}."
 
                         self._reg.report.error.appendDescription('invalid_data',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                   'category': lp_category, 'description': err})
+                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                  'category': lp_category, 'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testRdcVector() ++ Error  - {err}\n")
@@ -2885,8 +2885,8 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                 f"in a loop {lp_category}."
 
                             self._reg.report.error.appendDescription('invalid_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                       'category': lp_category, 'description': err})
+                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                      'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testRdcVector() ++ Error  - {err}\n")
@@ -2900,8 +2900,8 @@ class NmrDpValidationMr(NmrDpValidationBase):
                             f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
                         self._reg.report.error.appendDescription('invalid_data',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                   'category': lp_category, 'description': err})
+                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                  'category': lp_category, 'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testRdcVector() ++ Error  - {err}\n")
@@ -2922,9 +2922,9 @@ class NmrDpValidationMr(NmrDpValidationBase):
                                         f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2})."
 
                                     self._reg.report.warning.appendDescription('unusual/rare_data',
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category, 'description': warn})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category, 'description': warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.testRdcVector() ++ Warning  - {warn}\n")
@@ -2938,7 +2938,7 @@ class NmrDpValidationMr(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.testRdcVector() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.testRdcVector() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testRdcVector() ++ Error  - {str(e)}\n")

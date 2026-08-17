@@ -217,7 +217,7 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                 "The following issues need to be fixed before re-upload.\n" + _err[:-1]
 
             self._reg.report.error.appendDescription('format_issue',
-                                                      {'file_name': file_name, 'description': err})
+                                                     {'file_name': file_name, 'description': err})
 
             self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {file_name} {err}\n")
 
@@ -257,8 +257,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
 
                     else:
                         self._reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyPk() "
-                                                                  "++ KeyError  - " + warn)
+                                                                 f"+{self.__class_name__}.validateLegacyPk() "
+                                                                 "++ KeyError  - " + warn)
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - {warn}\n")
@@ -412,8 +412,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                                     if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
                                         self._reg.nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
-                                                                            'auth_seq_id': cif_auth_seq_id,
-                                                                            'auth_comp_id': nmr_comp_id})
+                                                                           'auth_seq_id': cif_auth_seq_id,
+                                                                           'auth_comp_id': nmr_comp_id})
 
         suspended_errors_for_lazy_eval = []
 
@@ -556,8 +556,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
 
                     elif not ignore_error:
                         self._reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyPk() "
-                                                                  "++ KeyError  - " + warn)
+                                                                 f"+{self.__class_name__}.validateLegacyPk() "
+                                                                 "++ KeyError  - " + warn)
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - {warn}\n")
@@ -642,7 +642,7 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                     "and will be converted during future data remediation if the data matches a known peak list format."
 
                 self._reg.report.warning.appendDescription('unsupported_peak_list',
-                                                            {'file_name': file_name, 'description': warn, 'inheritable': True})
+                                                           {'file_name': file_name, 'description': warn, 'inheritable': True})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
@@ -730,8 +730,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (ARIA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -810,8 +810,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -893,8 +893,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (CCPN) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -976,8 +976,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (OLIVIA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1059,8 +1059,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (NMRPIPE) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1142,8 +1142,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (PONDEROSA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1323,8 +1323,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1406,8 +1406,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1483,8 +1483,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (TOPSPIN) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1612,8 +1612,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (NMRVIEW) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1695,8 +1695,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (VNMR) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1780,8 +1780,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (XEASY) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1861,8 +1861,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                             err = f"Failed to validate spectral peak list file (XWINNMR) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyPk() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyPk() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
@@ -1987,8 +1987,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                            and not any(True for d in self._reg.nmr_ext_poly_seq
                                        if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
                             self._reg.nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
-                                                                'auth_seq_id': auth_seq_id,
-                                                                'auth_comp_id': unknown_residue})
+                                                               'auth_seq_id': auth_seq_id,
+                                                               'auth_comp_id': unknown_residue})
 
             self._reg.nmr_ext_poly_seq = sorted(self._reg.nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
 

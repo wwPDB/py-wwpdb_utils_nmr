@@ -200,8 +200,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                     else:
                         if not dry_run:
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ KeyError  - " + warn)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ KeyError  - " + warn)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ KeyError  - {warn}\n")
@@ -670,8 +670,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                                     if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
                                         self._reg.nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
-                                                                            'auth_seq_id': cif_auth_seq_id,
-                                                                            'auth_comp_id': nmr_comp_id})
+                                                                           'auth_seq_id': cif_auth_seq_id,
+                                                                           'auth_comp_id': nmr_comp_id})
 
         reasons_dict = {}
 
@@ -884,8 +884,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
 
                     elif not ignore_error:
                         self._reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyMr() "
-                                                                  "++ KeyError  - " + warn)
+                                                                 f"+{self.__class_name__}.validateLegacyMr() "
+                                                                 "++ KeyError  - " + warn)
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ KeyError  - {warn}\n")
@@ -975,7 +975,7 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                 if self._reg.internal_mode:
 
                     self._reg.report.warning.appendDescription('missing_content',
-                                                                {'file_name': file_name, 'description': err})
+                                                               {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
@@ -983,7 +983,7 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                 else:
 
                     self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                              {'file_name': file_name, 'description': err})
+                                                             {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -998,7 +998,7 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                 if self._reg.internal_mode:
 
                     self._reg.report.warning.appendDescription('missing_content',
-                                                                {'file_name': file_name, 'description': err})
+                                                               {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
@@ -1006,7 +1006,7 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                 else:
 
                     self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                              {'file_name': file_name, 'description': err})
+                                                             {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1020,7 +1020,7 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                 if self._reg.internal_mode:
 
                     self._reg.report.warning.appendDescription('missing_content',
-                                                                {'file_name': file_name, 'description': err})
+                                                               {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
@@ -1028,7 +1028,7 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                 else:
 
                     self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                              {'file_name': file_name, 'description': err})
+                                                             {'file_name': file_name, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1127,8 +1127,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (AMBER) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1198,8 +1198,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1269,8 +1269,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1340,8 +1340,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (Bare WSV/TSV/CSV) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1411,8 +1411,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (BIOSYM) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1520,8 +1520,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (CHARMM) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1626,8 +1626,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (CNS) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1744,8 +1744,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (CYANA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1815,8 +1815,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1886,8 +1886,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (ISD) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -1933,8 +1933,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (GROMACS) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -2030,8 +2030,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (CYANA NOA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -2127,8 +2127,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (ROSETTA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -2227,8 +2227,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (SCHRODINGER/ASL) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -2298,8 +2298,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (SYBYL) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -2410,8 +2410,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                             err = f"Failed to validate the restraint file (XPLOR-NIH) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyMr() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyMr() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
@@ -2508,8 +2508,8 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                            and not any(True for d in self._reg.nmr_ext_poly_seq
                                        if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
                             self._reg.nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
-                                                                'auth_seq_id': auth_seq_id,
-                                                                'auth_comp_id': unknown_residue})
+                                                               'auth_seq_id': auth_seq_id,
+                                                               'auth_comp_id': unknown_residue})
 
             self._reg.nmr_ext_poly_seq = sorted(self._reg.nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
 

@@ -259,8 +259,8 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                             + low_seq_coverage[:-2] + f") in {sf_framecode!r} saveframe."
 
                         self._reg.report.warning.appendDescription('insufficient_data',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                     'category': lp_category, 'description': warn})
+                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                    'category': lp_category, 'description': warn})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.calculateStatsOfExptlData() ++ Warning  - {warn}\n")
@@ -358,8 +358,8 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                     except Exception as e:  # pylint: disable=broad-exception-caught
 
                         self._reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.calculateStatsOfExptlData() "
-                                                                  "++ Error  - " + str(e))
+                                                                 f"+{self.__class_name__}.calculateStatsOfExptlData() "
+                                                                 "++ Error  - " + str(e))
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.calculateStatsOfExptlData() ++ Error  - {str(e)}\n")
@@ -371,7 +371,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
 
                     conflict_id_set =\
                         self._reg.nefT.get_conflict_id_set(sf, lp_category,
-                                                            self._reg.consist_key_items[file_type][content_subtype])[0]
+                                                           self._reg.consist_key_items[file_type][content_subtype])[0]
 
                     conflict_warns = self._reg.report.warning.getValueListWithSf('conflicted_data', sf_framecode)
                     inconsist_warns = self._reg.report.warning.getValueListWithSf('inconsistent_data', sf_framecode)
@@ -403,15 +403,15 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
 
                     if content_subtype == 'dist_restraint':
                         self._calculateStatsOfDistanceRestraint(file_list_id, sf_framecode,
-                                                                 lp_data, conflict_id_set, inconsistent, redundant, ent)
+                                                                lp_data, conflict_id_set, inconsistent, redundant, ent)
 
                     elif content_subtype == 'dihed_restraint':
                         self._calculateStatsOfDihedralRestraint(file_list_id, sf_framecode,
-                                                                 lp_data, conflict_id_set, inconsistent, redundant, ent)
+                                                                lp_data, conflict_id_set, inconsistent, redundant, ent)
 
                     elif content_subtype == 'rdc_restraint':
                         self._calculateStatsOfRdcRestraint(file_list_id, sf_framecode,
-                                                            lp_data, conflict_id_set, inconsistent, redundant, ent)
+                                                           lp_data, conflict_id_set, inconsistent, redundant, ent)
 
             if content_subtype.startswith('spectral_peak'):
 
@@ -465,7 +465,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
         asm.append(ent)
 
     def _calculateStatsOfAssignedChemShift(self, file_list_id: int, sf_framecode: str,
-                                            lp_data: List[dict], cs_ann: List[dict], ent: dict) -> None:
+                                           lp_data: List[dict], cs_ann: List[dict], ent: dict) -> None:
         """ Calculate statistics of assigned chemical shifts.
         """
 
@@ -1103,7 +1103,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                             if self._reg.csStat.hasSufficientStat(comp_id, polypeptide_like):
 
                                 aro_atoms = self._reg.csStat.getAromaticAtoms(comp_id,
-                                                                               excl_minor_atom=True, primary=polypeptide_like)
+                                                                              excl_minor_atom=True, primary=polypeptide_like)
                                 non_rep_methyl_pros = self._reg.csStat.getNonRepMethylProtons(comp_id)
 
                                 for a in aro_atoms:
@@ -1519,13 +1519,13 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                                                 f"({shifts}cis_trans_pred {pro['cis_trans_pred']})."
 
                                             self._reg.report.warning.appendDescription(item,
-                                                                                        {'file_name': file_name,
-                                                                                         'sf_framecode': sf_framecode,
-                                                                                         'description': warn})
+                                                                                       {'file_name': file_name,
+                                                                                        'sf_framecode': sf_framecode,
+                                                                                        'description': warn})
 
                                             if self._reg.verbose:
                                                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "  # noqa: E501, pylint: disable=line-too-long
-                                                                     f"++ Warning  - {warn}\n")
+                                                                    f"++ Warning  - {warn}\n")
 
                             pro_cis_trans.append(pro)
 
@@ -1630,13 +1630,13 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                                         f"({shifts}tautomeric_state_pred {his['tautomeric_state_pred']})."
 
                                     self._reg.report.warning.appendDescription(item,
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'description': warn})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'description': warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
-                                                             f"++ Warning  - {warn}\n")
+                                                            f"++ Warning  - {warn}\n")
 
                             his_tautomeric_state.append(his)
 
@@ -1755,13 +1755,13 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                                             f"({shifts}rotameric_state_pred {ilv['rotameric_state_pred']})."
 
                                         self._reg.report.warning.appendDescription(item,
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'description': warn})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'description': warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
-                                                                 f"++ Warning  - {warn}\n")
+                                                                f"++ Warning  - {warn}\n")
 
                             elif comp_id == 'LEU':
 
@@ -1851,13 +1851,13 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                                             f"({shifts}rotameric_state_pred {ilv['rotameric_state_pred']})."
 
                                         self._reg.report.warning.appendDescription(item,
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'description': warn})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'description': warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
-                                                                 f"++ Warning  - {warn}\n")
+                                                                f"++ Warning  - {warn}\n")
 
                             else:
 
@@ -1935,13 +1935,13 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                                             f"({shifts}rotameric_state_pred {ilv['rotameric_state_pred']})."
 
                                         self._reg.report.warning.appendDescription(item,
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'description': warn})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'description': warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
-                                                                 f"++ Warning  - {warn}\n")
+                                                                f"++ Warning  - {warn}\n")
 
                             ilv_rotameric_state.append(ilv)
 
@@ -2132,12 +2132,12 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfAssignedChemShift() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")
 
     def _hasCoordSeq(self, nmr_chain_id: str, nmr_seq_id: str) -> bool:
         """ Return whether a given sequence is in the coordinates.
@@ -2170,7 +2170,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
         return False
 
     def _getCoordCompId(self, nmr_chain_id: str, nmr_seq_id: int
-                         ) -> Optional[str]:
+                        ) -> Optional[str]:
         """ Return comp ID of coordinate file for a given NMR sequence.
         """
 
@@ -2245,24 +2245,24 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
 
                 protons = self._reg.cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                                'alt_name': 'atom_id'}
-                                                               ],
-                                                              [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                               {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                               {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
-                                                               {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
-                                                               {'name': model_num_name, 'type': 'int',
-                                                                'value': self._reg.representative_model_id},
-                                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                                'enum': (self._reg.representative_alt_id,)}
-                                                               ])
+                                                             [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                               'alt_name': 'atom_id'}
+                                                              ],
+                                                             [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                              {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                              {'name': 'label_comp_id', 'type': 'str', 'value': 'HIS'},
+                                                              {'name': 'type_symbol', 'type': 'str', 'value': 'H'},
+                                                              {'name': model_num_name, 'type': 'int',
+                                                               'value': self._reg.representative_model_id},
+                                                              {'name': 'label_alt_id', 'type': 'enum',
+                                                               'enum': (self._reg.representative_alt_id,)}
+                                                              ])
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.__getTautomerOfHistidine() "
-                                                          "++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.__getTautomerOfHistidine() "
+                                                         "++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.__getTautomerOfHistidine() ++ Error  - {str(e)}\n")
@@ -2295,7 +2295,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
         return 'unknown'
 
     def _getRotamerOfValine(self, nmr_chain_id: str, nmr_seq_id: int
-                             ) -> List[dict]:
+                            ) -> List[dict]:
         """ Return rotameric state distribution of a given valine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -2337,25 +2337,25 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
 
                 atoms = self._reg.cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                              'alt_name': 'atom_id'},
-                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                             {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                             ],
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                             {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'},
-                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': (self._reg.representative_alt_id,)}
-                                                             ])
+                                                           [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                             'alt_name': 'atom_id'},
+                                                            {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                            {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                            {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                            {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                            ],
+                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'VAL'},
+                                                            {'name': 'label_alt_id', 'type': 'enum',
+                                                             'enum': (self._reg.representative_alt_id,)}
+                                                            ])
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.__getRotamerOfValine() "
-                                                          "++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.__getRotamerOfValine() "
+                                                         "++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.__getRotamerOfValine() ++ Error  - {str(e)}\n")
@@ -2408,7 +2408,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
         return none
 
     def _getRotamerOfLeucine(self, nmr_chain_id: str, nmr_seq_id: int
-                              ) -> List[dict]:
+                             ) -> List[dict]:
         """ Return rotameric state distribution of a given leucine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -2450,25 +2450,25 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
 
                 atoms = self._reg.cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                              'alt_name': 'atom_id'},
-                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                             {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                             ],
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                             {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'},
-                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': (self._reg.representative_alt_id,)}
-                                                             ])
+                                                           [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                             'alt_name': 'atom_id'},
+                                                            {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                            {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                            {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                            {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                            ],
+                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'LEU'},
+                                                            {'name': 'label_alt_id', 'type': 'enum',
+                                                             'enum': (self._reg.representative_alt_id,)}
+                                                            ])
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.__getRotamerOfLeucine() "
-                                                          "++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.__getRotamerOfLeucine() "
+                                                         "++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.__getRotamerOfLeucine() ++ Error  - {str(e)}\n")
@@ -2542,7 +2542,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
         return none
 
     def _getRotamerOfIsoleucine(self, nmr_chain_id: str, nmr_seq_id: int
-                                 ) -> List[dict]:
+                                ) -> List[dict]:
         """ Return rotameric state distribution of a given isoleucine.
             @return: One of 'gauche+', 'trans', 'gauche-', 'unknown'
         """
@@ -2584,25 +2584,25 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                 model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
 
                 atoms = self._reg.cR.getDictListWithFilter('atom_site',
-                                                            [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
-                                                              'alt_name': 'atom_id'},
-                                                             {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
-                                                             {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
-                                                             {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
-                                                             {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                             ],
-                                                            [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
-                                                             {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
-                                                             {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'},
-                                                             {'name': 'label_alt_id', 'type': 'enum',
-                                                              'enum': (self._reg.representative_alt_id,)}
-                                                             ])
+                                                           [{'name': 'label_atom_id', 'type': 'starts-with-alnum',
+                                                             'alt_name': 'atom_id'},
+                                                            {'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
+                                                            {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
+                                                            {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
+                                                            {'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
+                                                            ],
+                                                           [{'name': 'label_asym_id', 'type': 'str', 'value': cif_chain_id},
+                                                            {'name': 'label_seq_id', 'type': 'int', 'value': cif_seq_id},
+                                                            {'name': 'label_comp_id', 'type': 'str', 'value': 'ILE'},
+                                                            {'name': 'label_alt_id', 'type': 'enum',
+                                                             'enum': (self._reg.representative_alt_id,)}
+                                                            ])
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.__getRotamerOfIsoleucine() "
-                                                          "++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.__getRotamerOfIsoleucine() "
+                                                         "++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.__getRotamerOfIsoleucine() ++ Error  - {str(e)}\n")

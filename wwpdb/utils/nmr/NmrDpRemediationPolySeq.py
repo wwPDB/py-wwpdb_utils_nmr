@@ -114,8 +114,8 @@ class NmrDpRemediationPolySeq(NmrDpRemediationBase):
                 try:
 
                     orig_lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
-                                                              enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                              excl_missing_data=self._reg.excl_missing_data)[0]
+                                                             enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                             excl_missing_data=self._reg.excl_missing_data)[0]
 
                 except Exception:  # pylint: disable=broad-exception-caught
                     pass
@@ -555,10 +555,10 @@ class NmrDpRemediationPolySeq(NmrDpRemediationBase):
                 if entity_type == 'polymer':
                     ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self._reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id,
-                                                                                     label_scheme=False)
+                                                                                    label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
                         nmr_ps = self._reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0],
-                                                                                         label_scheme=False)
+                                                                                        label_scheme=False)
 
                     if nmr_ps is not None:
                         try:
@@ -827,10 +827,10 @@ class NmrDpRemediationPolySeq(NmrDpRemediationBase):
                 if entity_type == 'polymer':
                     ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == auth_asym_id)
                     nmr_ps = self._reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id,
-                                                                                     label_scheme=False)
+                                                                                    label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
                         nmr_ps = self._reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0],
-                                                                                         label_scheme=False)
+                                                                                        label_scheme=False)
 
                     if nmr_ps is not None:
                         try:

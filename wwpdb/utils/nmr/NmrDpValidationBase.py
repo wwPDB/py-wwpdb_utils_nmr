@@ -281,7 +281,7 @@ class NmrDpValidationBase:
         return self._reg.nefT.get_valid_star_atom(comp_id, atom_id, leave_unmatched=False)[0]
 
     def _getAtomIdListWithAmbigCode(self, comp_id: str, atom_id: str, leave_unmatched: bool = True
-                                     ) -> Tuple[List[str], Optional[int], Optional[str]]:
+                                    ) -> Tuple[List[str], Optional[int], Optional[str]]:
         """ Return lists of atom ID, ambiguity_code, details in IUPAC atom nomenclature for a given conventional NMR atom name.
             @see: NefTranslator.get_valid_star_atom()
         """
@@ -459,33 +459,33 @@ class NmrDpValidationBase:
                           ]
 
             atom_site_1 = self._reg.cR.getDictListWithFilter('atom_site',
-                                                              data_items,
-                                                              [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id',
-                                                                'type': 'str', 'value': cif_chain_id_1},
-                                                               {'name': 'label_seq_id' if label_scheme else 'auth_seq_id',
-                                                                'type': 'int', 'value': cif_seq_id_1},
-                                                               {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
-                                                                'type': 'str', 'value': cif_atom_id_1},
-                                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                                'enum': (self._reg.representative_alt_id,)}
-                                                               ])
+                                                             data_items,
+                                                             [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id',
+                                                               'type': 'str', 'value': cif_chain_id_1},
+                                                              {'name': 'label_seq_id' if label_scheme else 'auth_seq_id',
+                                                               'type': 'int', 'value': cif_seq_id_1},
+                                                              {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
+                                                               'type': 'str', 'value': cif_atom_id_1},
+                                                              {'name': 'label_alt_id', 'type': 'enum',
+                                                               'enum': (self._reg.representative_alt_id,)}
+                                                              ])
 
             atom_site_2 = self._reg.cR.getDictListWithFilter('atom_site',
-                                                              data_items,
-                                                              [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id',
-                                                                'type': 'str', 'value': cif_chain_id_2},
-                                                               {'name': 'label_seq_id' if label_scheme else 'auth_seq_id',
-                                                                'type': 'int', 'value': cif_seq_id_2},
-                                                               {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
-                                                                'type': 'str', 'value': cif_atom_id_2},
-                                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                                'enum': (self._reg.representative_alt_id,)}
-                                                               ])
+                                                             data_items,
+                                                             [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id',
+                                                               'type': 'str', 'value': cif_chain_id_2},
+                                                              {'name': 'label_seq_id' if label_scheme else 'auth_seq_id',
+                                                               'type': 'int', 'value': cif_seq_id_2},
+                                                              {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
+                                                               'type': 'str', 'value': cif_atom_id_2},
+                                                              {'name': 'label_alt_id', 'type': 'enum',
+                                                               'enum': (self._reg.representative_alt_id,)}
+                                                              ])
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.getCoordBondLength() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.getCoordBondLength() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.getCoordBondLength() ++ Error  - {str(e)}\n")
@@ -511,7 +511,7 @@ class NmrDpValidationBase:
         return None
 
     def _extractCoordStructConf(self, nmr_chain_id: str, nmr_seq_ids: List[int]
-                                 ) -> List[Optional[str]]:
+                                ) -> List[Optional[str]]:
         """ Extract conformational annotations of coordinate file.
         """
 

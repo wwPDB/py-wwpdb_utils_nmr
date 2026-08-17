@@ -110,7 +110,7 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - " + err)
+                                                             f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - " + err)
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
@@ -124,8 +124,8 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
                         self._reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.fixEnumerationFailure() "
-                                                                  "++ Error  - " + err)
+                                                                 f"+{self.__class_name__}.fixEnumerationFailure() "
+                                                                 "++ Error  - " + err)
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
@@ -141,8 +141,8 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
                             err = f"Could not find saveframe tag {itName} in {w['sf_framecode']!r} saveframe, {file_name!r} file."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.fixEnumerationFailure() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.fixEnumerationFailure() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
@@ -191,13 +191,13 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
 
                                                     lp_data =\
                                                         self._reg.nefT.check_data(sf, lp_category, key_items, data_items,
-                                                                                   None, None, None,
-                                                                                   enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                                                   excl_missing_data=self._reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
+                                                                                  None, None, None,
+                                                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                                                  excl_missing_data=self._reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
 
                                                     self._reg.lp_data[content_subtype].append({'file_name': file_name,
-                                                                                                'sf_framecode': w['sf_framecode'],
-                                                                                                'data': lp_data})
+                                                                                               'sf_framecode': w['sf_framecode'],
+                                                                                               'data': lp_data})
 
                                                 except Exception:  # pylint: disable=broad-exception-caught
                                                     pass
@@ -268,13 +268,13 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
 
                                                     lp_data =\
                                                         self._reg.nefT.check_data(sf, lp_category, key_items, data_items,
-                                                                                   None, None, None,
-                                                                                   enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                                                   excl_missing_data=self._reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
+                                                                                  None, None, None,
+                                                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                                                  excl_missing_data=self._reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
 
                                                     self._reg.lp_data[content_subtype].append({'file_name': file_name,
-                                                                                                'sf_framecode': w['sf_framecode'],
-                                                                                                'data': lp_data})
+                                                                                               'sf_framecode': w['sf_framecode'],
+                                                                                               'data': lp_data})
 
                                                 except Exception:  # pylint: disable=broad-exception-caught
                                                     pass
@@ -313,12 +313,12 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
                                         err = "Could not specify content_subtype in NMR data processing report."
 
                                         self._reg.report.error.appendDescription('internal_error',
-                                                                                  f"+{self.__class_name__}.fixEnumerationFailure() "
-                                                                                  "++ Error  - " + err)
+                                                                                 f"+{self.__class_name__}.fixEnumerationFailure() "
+                                                                                 "++ Error  - " + err)
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() "
-                                                                 f"++ Error  - {err}\n")
+                                                                f"++ Error  - {err}\n")
 
                     else:
 
@@ -330,8 +330,8 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
                                 f"{w['sf_framecode']!r} saveframe, {file_name!r} file."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.fixEnumerationFailure() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.fixEnumerationFailure() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
@@ -381,7 +381,7 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
                 err = f"Unexpected PyNMRSTAR object type {self._reg.star_data_type[0]} found about {file_name!r} file."
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - " + err)
+                                                         f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - " + err)
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
@@ -523,12 +523,12 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")
 
             return False
 
@@ -635,12 +635,12 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")
 
             return False
 
@@ -711,12 +711,12 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")
 
             return False
 
@@ -843,11 +843,11 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
                     try:
 
                         lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
-                                                             enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                             excl_missing_data=self._reg.excl_missing_data)[0]
+                                                            enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                            excl_missing_data=self._reg.excl_missing_data)[0]
 
                         self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                    'data': lp_data})
+                                                                   'data': lp_data})
 
                     except Exception:  # pylint: disable=broad-exception-caught
                         pass
@@ -878,12 +878,12 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")
 
             return False
 
@@ -924,7 +924,7 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - {str(e)}\n")
@@ -968,8 +968,8 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialSWPL() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testRestraintPotentialSWPL() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - {str(e)}\n")
@@ -1013,7 +1013,7 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - {str(e)}\n")
@@ -1057,7 +1057,7 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - {str(e)}\n")
@@ -1101,8 +1101,8 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialUBPL() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testRestraintPotentialUBPL() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - {str(e)}\n")
@@ -1146,8 +1146,8 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialLBPL() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testRestraintPotentialLBPL() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - {str(e)}\n")
@@ -1195,8 +1195,8 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.__testRestraintPotentialLHorP() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.__testRestraintPotentialLHorP() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - {str(e)}\n")

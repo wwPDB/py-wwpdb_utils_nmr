@@ -170,7 +170,7 @@ class NmrDpRemediationBase:
         return self._reg.report.getTotalErrors() == __errors
 
     def _cleanUpSf(self, file_type: str, content_subtype: str,  # pylint: disable=no-self-use
-                    sf: Union[pynmrstar.Saveframe, pynmrstar.Loop]) -> None:
+                   sf: Union[pynmrstar.Saveframe, pynmrstar.Loop]) -> None:
         """ Clean-up third-party saveframes.
         """
 
@@ -220,7 +220,7 @@ class NmrDpRemediationBase:
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.removeUnusedPdbInsCode() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.removeUnusedPdbInsCode() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.removeUnusedPdbInsCode() ++ Error  - {str(e)}\n")
@@ -263,8 +263,8 @@ class NmrDpRemediationBase:
                 self._fixChainIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
 
     def _fixChainIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
-                           sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
-                           chain_id: str, _chain_id: str) -> None:
+                          sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                          chain_id: str, _chain_id: str) -> None:
         """ Fix chain ID of interesting loop.
         """
 
@@ -379,8 +379,8 @@ class NmrDpRemediationBase:
                 self._fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
 
     def _fixSeqIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
-                         sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
-                         chain_id: str, seq_id_conv_dict: dict) -> None:
+                        sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                        chain_id: str, seq_id_conv_dict: dict) -> None:
         """ Fix sequence ID of interesting loop.
         """
 
@@ -493,14 +493,14 @@ class NmrDpRemediationBase:
 
             if sf_framecode == '':
                 self._fixCompIdInLoop(file_list_id, file_type, content_subtype,
-                                       sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
+                                      sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
         elif self._reg.star_data_type[file_list_id] == 'Saveframe':
             sf = self._reg.star_data[file_list_id]
 
             if get_first_sf_tag(sf, 'sf_framecode') == sf_framecode:
                 self._fixCompIdInLoop(file_list_id, file_type, content_subtype,
-                                       sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
+                                      sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
         else:
 
@@ -513,11 +513,11 @@ class NmrDpRemediationBase:
                     continue
 
                 self._fixCompIdInLoop(file_list_id, file_type, content_subtype,
-                                       sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
+                                      sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
     def _fixCompIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
-                          sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
-                          chain_id: str, seq_id: int, comp_id_conv_dict: dict) -> bool:
+                         sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                         chain_id: str, seq_id: int, comp_id_conv_dict: dict) -> bool:
         """ Fix sequence ID of interesting loop.
         """
 
@@ -636,13 +636,13 @@ class NmrDpRemediationBase:
                     sf = self._reg.star_data[fileListId]
 
                     self._fixAtomNomenclature(fileListId, file_type, content_subtype,
-                                               sf, lp_category, comp_id, atom_id_conv_dict)
+                                              sf, lp_category, comp_id, atom_id_conv_dict)
 
                 elif self._reg.star_data_type[fileListId] == 'Saveframe':
                     sf = self._reg.star_data[fileListId]
 
                     self._fixAtomNomenclature(fileListId, file_type, content_subtype,
-                                               sf, lp_category, comp_id, atom_id_conv_dict)
+                                              sf, lp_category, comp_id, atom_id_conv_dict)
 
                 else:
 
@@ -652,11 +652,11 @@ class NmrDpRemediationBase:
                             continue
 
                         self._fixAtomNomenclature(fileListId, file_type, content_subtype,
-                                                   sf, lp_category, comp_id, atom_id_conv_dict)
+                                                  sf, lp_category, comp_id, atom_id_conv_dict)
 
     def _fixAtomNomenclature(self, file_list_id: int, file_type: str, content_subtype: str,
-                              sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                              lp_category: str, comp_id: str, atom_id_conv_dict: dict) -> None:
+                             sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
+                             lp_category: str, comp_id: str, atom_id_conv_dict: dict) -> None:
         """ Fix atom nomenclature.
         """
 

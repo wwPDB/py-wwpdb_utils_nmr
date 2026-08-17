@@ -1584,7 +1584,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                             "@todo: It needs to be reviewed."
 
                         self._reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}")
+                                                                 f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}")
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}\n")
@@ -1602,8 +1602,8 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                                "if the data matches a known restraint format."
 
                         self._reg.report.warning.appendDescription('unsupported_mr_data',
-                                                                    {'file_name': file_name, 'description': warn,
-                                                                     'inheritable': True})
+                                                                   {'file_name': file_name, 'description': warn,
+                                                                    'inheritable': True})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Warning  - {warn}\n")
@@ -1787,10 +1787,10 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                                       f"and re-upload the {READABLE_FILE_TYPE[file_type]} file."
 
                                 self._reg.report.error.appendDescription('format_issue',
-                                                                          {'file_name': _data_file_name, 'description': err})
+                                                                         {'file_name': _data_file_name, 'description': err})
 
                                 self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - "
-                                                     f"{_data_file_name} {err}\n")
+                                                    f"{_data_file_name} {err}\n")
                                 continue
 
                         elif self._reg.internal_mode or self._reg.bmrb_only:
@@ -1889,7 +1889,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                             self._reg.lp_data[content_subtype].remove(_lp)
                             data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                             self._reg.dpV.testDataConsistencyInLoop(0, data_file_name, 'nmr-star', content_subtype,
-                                                                     sf, sf_framecode, lp_category, sf_item['list_id'])
+                                                                    sf, sf_framecode, lp_category, sf_item['list_id'])
 
                 else:
                     for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
@@ -1975,10 +1975,10 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                                       f"and re-upload the {READABLE_FILE_TYPE[file_type]} file."
 
                                 self._reg.report.error.appendDescription('format_issue',
-                                                                          {'file_name': _data_file_name, 'description': err})
+                                                                         {'file_name': _data_file_name, 'description': err})
 
                                 self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - "
-                                                     f"{_data_file_name} {err}\n")
+                                                    f"{_data_file_name} {err}\n")
                                 continue
 
                         master_entry.add_saveframe(sf)
@@ -2140,7 +2140,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
 
         except IndexError as e:
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.mergeLegacyData() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.mergeLegacyData() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {str(e)}\n")
@@ -2217,8 +2217,8 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                         f"Please verify {desc} and re-upload valid restraint file(s)."
 
                     self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                              {'file_name': os.path.basename(self._reg.dstPath),
-                                                               'description': err})
+                                                             {'file_name': os.path.basename(self._reg.dstPath),
+                                                              'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}\n")

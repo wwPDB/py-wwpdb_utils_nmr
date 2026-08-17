@@ -190,7 +190,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                 "The following issues need to be fixed before re-upload.\n" + _err[:-1]
 
             self._reg.report.error.appendDescription('format_issue',
-                                                      {'file_name': file_name, 'description': err})
+                                                     {'file_name': file_name, 'description': err})
 
             self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {file_name} {err}\n")
 
@@ -290,8 +290,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
                     elif not ignore_error:
                         self._reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyCs() "
-                                                                  "++ KeyError  - " + warn)
+                                                                 f"+{self.__class_name__}.validateLegacyCs() "
+                                                                 "++ KeyError  - " + warn)
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ KeyError  - {warn}\n")
@@ -431,8 +431,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (ARIA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -494,8 +494,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                                 f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -556,8 +556,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (GARRET) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -618,8 +618,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -680,8 +680,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -742,8 +742,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (PIPP) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -804,8 +804,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -866,8 +866,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -928,8 +928,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (XEASY) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCs() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCs() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
@@ -1098,7 +1098,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                 "The following issues need to be fixed before re-upload.\n" + _err[:-1]
 
             self._reg.report.error.appendDescription('format_issue',
-                                                      {'file_name': file_name, 'description': err})
+                                                     {'file_name': file_name, 'description': err})
 
             self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {file_name} {err}\n")
 
@@ -1198,8 +1198,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
                     elif not ignore_error:
                         self._reg.report.error.appendDescription('internal_error',
-                                                                  f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                  "++ KeyError  - " + warn)
+                                                                 f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                 "++ KeyError  - " + warn)
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ KeyError  - {warn}\n")
@@ -1345,8 +1345,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (ARIA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
@@ -1412,8 +1412,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                                 f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
@@ -1478,8 +1478,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (GARRET) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
@@ -1544,8 +1544,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
@@ -1610,8 +1610,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
@@ -1676,8 +1676,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (PIPP) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
@@ -1742,8 +1742,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
@@ -1808,8 +1808,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
@@ -1874,8 +1874,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                             err = f"Failed to validate assigned chemical shift file (XEASY) {file_name!r}."
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateLegacyCsp() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateLegacyCsp() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")

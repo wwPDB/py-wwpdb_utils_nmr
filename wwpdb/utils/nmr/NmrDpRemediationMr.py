@@ -91,7 +91,7 @@ class NmrDpRemediationMr(NmrDpRemediationBase):
             return self._reg.report.getTotalErrors() == __errors
 
     def _syncMrLoop(self, file_list_id: int, file_type: str, content_subtype: str,
-                     sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> None:
+                    sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> None:
         """ Synchronize sequence scheme of restraint loop based on coordinates.
         """
 

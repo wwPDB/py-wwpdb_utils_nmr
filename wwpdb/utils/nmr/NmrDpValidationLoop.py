@@ -90,8 +90,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                 warn = f"Index of loop, '{lp_category}.{index_tag}', should be ordinal numbers."
 
                 self._reg.report.warning.appendDescription('disordered_index',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                             'category': lp_category, 'description': warn})
+                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                            'category': lp_category, 'description': warn})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.testIndexConsistency() ++ Warning  - {warn}\n")
@@ -99,8 +99,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
         except KeyError as e:
 
             self._reg.report.error.appendDescription('duplicated_index',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testIndexConsistency() ++ KeyError  - {str(e)}\n")
@@ -119,8 +119,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
         except ValueError as e:
 
             self._reg.report.error.appendDescription('invalid_data',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testIndexConsistency() ++ ValueError  - {str(e)}\n")
@@ -140,8 +140,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                     err = err[p:]
 
                     self._reg.report.error.appendDescription('invalid_data',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                               'category': lp_category, 'description': err})
+                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                              'category': lp_category, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.testIndexConsistency() ++ ValueError  - {err}\n")
@@ -152,7 +152,7 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                 else:
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.testIndexConsistency() ++ Error  - " + err)
+                                                             f"+{self.__class_name__}.testIndexConsistency() ++ Error  - " + err)
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.testIndexConsistency() ++ Error  - {err}\n")
@@ -160,7 +160,7 @@ class NmrDpValidationLoop(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.testIndexConsistency() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.testIndexConsistency() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testIndexConsistency() ++ Error  - {str(e)}\n")
@@ -246,20 +246,20 @@ class NmrDpValidationLoop(NmrDpValidationBase):
         try:
 
             lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items,
-                                                 allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
-                                                 test_on_index=True, enforce_non_zero=True, enforce_sign=True,
-                                                 enforce_range=True, enforce_enum=True,
-                                                 enforce_allowed_tags=(file_type == 'nmr-star' and not self._reg.bmrb_only),
-                                                 excl_missing_data=self._reg.excl_missing_data)[0]
+                                                allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+                                                test_on_index=True, enforce_non_zero=True, enforce_sign=True,
+                                                enforce_range=True, enforce_enum=True,
+                                                enforce_allowed_tags=(file_type == 'nmr-star' and not self._reg.bmrb_only),
+                                                excl_missing_data=self._reg.excl_missing_data)[0]
 
             self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                        'category': lp_category, 'data': lp_data})
+                                                       'category': lp_category, 'data': lp_data})
 
         except KeyError as e:
 
             self._reg.report.error.appendDescription('multiple_data',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ KeyError  - {str(e)}\n")
@@ -269,17 +269,17 @@ class NmrDpValidationLoop(NmrDpValidationBase):
             item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
 
             self._reg.report.error.appendDescription(item,
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ LookupError  - "
-                                 f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
+                                f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
             self._reg.report.error.appendDescription('invalid_data',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ ValueError  - {str(e)}\n")
@@ -342,8 +342,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                     if zero or nega or rang or enum or remo or clea or self._reg.resolve_conflict:
 
                         self._reg.report.warning.appendDescription(item,
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                     'category': lp_category, 'description': warn})
+                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                    'category': lp_category, 'description': warn})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Warning  - {warn}\n")
@@ -351,8 +351,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                     else:
 
                         self._reg.report.error.appendDescription(item,
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                   'category': lp_category, 'description': warn})
+                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                  'category': lp_category, 'description': warn})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ KeyError  - {warn}\n")
@@ -360,8 +360,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                 else:
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.testDataConsistencyInLoop() "
-                                                              "++ Error  - " + warn)
+                                                             f"+{self.__class_name__}.testDataConsistencyInLoop() "
+                                                             "++ Error  - " + warn)
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Error  - {warn}\n")
@@ -403,11 +403,11 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                 try:
 
                     lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items,
-                                                         allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
-                                                         test_on_index=True,  # important
-                                                         enforce_allowed_tags=(file_type == 'nmr-star'
-                                                                               and not self._reg.bmrb_only),
-                                                         excl_missing_data=self._reg.excl_missing_data)[0]
+                                                        allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+                                                        test_on_index=True,  # important
+                                                        enforce_allowed_tags=(file_type == 'nmr-star'
+                                                                              and not self._reg.bmrb_only),
+                                                        excl_missing_data=self._reg.excl_missing_data)[0]
 
                 except UserWarning as e2:
 
@@ -422,8 +422,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                         warn = warn[p:]
 
                         self._reg.report.warning.appendDescription('redundant_data',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                     'category': lp_category, 'description': warn})
+                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                    'category': lp_category, 'description': warn})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Warning  - {warn}\n")
@@ -434,12 +434,12 @@ class NmrDpValidationLoop(NmrDpValidationBase):
             try:
 
                 lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items,
-                                                     allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
-                                                     enforce_allowed_tags=(file_type == 'nmr-star' and not self._reg.bmrb_only),
-                                                     excl_missing_data=self._reg.excl_missing_data)[0]
+                                                    allowed_tags, disallowed_tags, parent_pointer=parent_pointer,
+                                                    enforce_allowed_tags=(file_type == 'nmr-star' and not self._reg.bmrb_only),
+                                                    excl_missing_data=self._reg.excl_missing_data)[0]
 
                 self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                            'category': lp_category, 'data': lp_data})
+                                                           'category': lp_category, 'data': lp_data})
 
             except Exception:  # pylint: disable=broad-exception-caught
                 pass
@@ -447,7 +447,7 @@ class NmrDpValidationLoop(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInLoop() ++ Error  - {str(e)}\n")
@@ -644,9 +644,9 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                         warn += f"Found conflict on restraints ({discrepancy[:-2]}) for the same {data_unit_name} ({msg})."
 
                         self._reg.report.warning.appendDescription('conflicted_data',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                     'category': lp_category, 'description': warn,
-                                                                     'sigma': round(r / max_inclusive, 2)})
+                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                    'category': lp_category, 'description': warn,
+                                                                    'sigma': round(r / max_inclusive, 2)})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.detetConflictDataInLoop() ++ Warning  - {warn}\n")
@@ -665,9 +665,9 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                         warn += f"Found discrepancy in restraints ({discrepancy[:-2]}) for the same {data_unit_name} ({msg})."
 
                         self._reg.report.warning.appendDescription('inconsistent_data',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                     'category': lp_category, 'description': warn,
-                                                                     'sigma': round(r / max_inclusive, 2)})
+                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                    'category': lp_category, 'description': warn,
+                                                                    'sigma': round(r / max_inclusive, 2)})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.detetConflictDataInLoop() ++ Warning  - {warn}\n")
@@ -698,8 +698,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                 warn = f"[Check rows of {idx_msg[:-4]}] Found redundant restraints for the same {data_unit_name}."
 
                 self._reg.report.warning.appendDescription('redundant_data',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                             'category': lp_category, 'description': warn})
+                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                            'category': lp_category, 'description': warn})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detetConflictDataInLoop() ++ Warning  - {warn}\n")
@@ -732,8 +732,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                 err = f"{parent_key_name} {str(parent_key)!r} must be unique."
 
                 self._reg.report.error.appendDescription('duplicated_index',
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                           'description': err})
+                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                          'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.testParentChildRelation() ++ KeyError  - {err}\n")
@@ -760,8 +760,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                                 f"The pointer has been reserved for the {sf_framecode_dict[row[child_key_name]]!r} saveframe."
 
                         self._reg.report.error.appendDescription('invalid_data',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                   'category': lp_category, 'description': err})
+                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                  'category': lp_category, 'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testParentChildRelation() ++ ValueError  - {err}\n")
@@ -793,8 +793,8 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                                     f"The pointer has been reserved for the {sf_framecode_dict[row[child_key_name]]!r} saveframe."
 
                             self._reg.report.error.appendDescription('invalid_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                       'category': lp_category, 'description': err})
+                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                      'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testParentChildRelation() ++ ValueError  - {err}\n")
@@ -804,7 +804,7 @@ class NmrDpValidationLoop(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.testParentChildRelation() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.testParentChildRelation() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testParentChildRelation() ++ Error  - {str(e)}\n")
@@ -827,12 +827,12 @@ class NmrDpValidationLoop(NmrDpValidationBase):
 
             if len(aux_data) != num_dim:
                 self._reg.report.error.appendDescription('missing_data',
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                           'category': lp_category, 'description': err})
+                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                          'category': lp_category, 'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
-                                         f"++ Error  - {err}\n")
+                                        f"++ Error  - {err}\n")
 
             try:
 
@@ -981,12 +981,12 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                                     "Please check for reference frequency and spectral width."
 
                                 self._reg.report.warning.appendDescription('anomalous_data',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                             'category': lp_category, 'description': err})
+                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                            'category': lp_category, 'description': err})
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
-                                                         f"++ Warning  - {err}\n")
+                                                        f"++ Warning  - {err}\n")
 
                             if None in (min_limits[j], max_limits[j]):
                                 continue
@@ -1001,22 +1001,22 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                                     "Please check for reference frequency and spectral width."
 
                                 self._reg.report.error.appendDescription('invalid_data',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                           'category': lp_category, 'description': err})
+                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                          'category': lp_category, 'description': err})
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
-                                                         f"++ ValueError  - {err}\n")
+                                                        f"++ ValueError  - {err}\n")
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
-                                                          "++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
+                                                         "++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
-                                         f"++ Error  - {str(e)}\n")
+                                        f"++ Error  - {str(e)}\n")
 
         if (file_type == 'nef' and lp_category == '_nef_spectrum_dimension_transfer')\
            or (file_type == 'nmr-star' and lp_category == '_Spectral_dim_transfer'):
@@ -1028,12 +1028,12 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                         err = f"{name} {row[name]!r} must be one of {range(1, max_dim)}."
 
                         self._reg.report.error.appendDescription('invalid_data',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                   'category': lp_category, 'description': err})
+                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                  'category': lp_category, 'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeak() "
-                                                 f"++ ValueError  - {err}\n")
+                                                f"++ ValueError  - {err}\n")
 
     def testDataConsistencyInAuxLoopOfSpectralPeakAlt(self, file_name: str, file_type: str, sf_framecode: str,
                                                       num_dim: int, lp_category: str, aux_data: List[List[dict]],
@@ -1052,12 +1052,12 @@ class NmrDpValidationLoop(NmrDpValidationBase):
 
             if len(aux_data) != num_dim:
                 self._reg.report.error.appendDescription('missing_data',
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                           'category': lp_category, 'description': err})
+                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                          'category': lp_category, 'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
-                                         f"++ Error  - {err}\n")
+                                        f"++ Error  - {err}\n")
 
             try:
 
@@ -1149,9 +1149,9 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                     allowed_tags = AUX_ALLOWED_TAGS[file_type][content_subtype][_pk_char_category]
 
                     _pk_char_data = self._reg.nefT.check_data(sf, _pk_char_category, key_items, data_items,
-                                                               allowed_tags, None, parent_pointer=parent_pointer,
-                                                               enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                               excl_missing_data=self._reg.excl_missing_data)[0]
+                                                              allowed_tags, None, parent_pointer=parent_pointer,
+                                                              enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                              excl_missing_data=self._reg.excl_missing_data)[0]
 
                 pk_id_name = 'Peak_ID'
                 dim_id_name = 'Spectral_dim_ID'
@@ -1177,12 +1177,12 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                                 "Please check for reference frequency and spectral width."
 
                             self._reg.report.warning.appendDescription('anomalous_data',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                         'category': lp_category, 'description': warn})
+                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                        'category': lp_category, 'description': warn})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
-                                                     f"++ Warning  - {warn}\n")
+                                                    f"++ Warning  - {warn}\n")
 
                         if None in (min_limits[j], max_limits[j]):
                             continue
@@ -1197,43 +1197,43 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                                 "Please check for reference frequency and spectral width."
 
                             self._reg.report.error.appendDescription('invalid_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                       'category': lp_category, 'description': err})
+                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                      'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
-                                                     f"++ ValueError  - {err}\n")
+                                                    f"++ ValueError  - {err}\n")
 
             except LookupError as e:
 
                 item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
 
                 self._reg.report.error.appendDescription(item,
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                           'category': lp_category, 'description': str(e).strip("'")})
+                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                          'category': lp_category, 'description': str(e).strip("'")})
 
                 self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
-                                     f"++ LookupError  - {file_name} {sf_framecode} {lp_category} {str(e)}\n")
+                                    f"++ LookupError  - {file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
             except ValueError as e:
 
                 self._reg.report.error.appendDescription('invalid_data',
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                           'category': lp_category, 'description': str(e).strip("'")})
+                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                          'category': lp_category, 'description': str(e).strip("'")})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
-                                         f"++ ValueError  - {str(e)}\n")
+                                        f"++ ValueError  - {str(e)}\n")
 
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self._reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
-                                                          "++ Error  - " + str(e))
+                                                         f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
+                                                         "++ Error  - " + str(e))
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
-                                         f"++ Error  - {str(e)}\n")
+                                        f"++ Error  - {str(e)}\n")
 
         if lp_category == '_Spectral_dim_transfer':
 
@@ -1244,9 +1244,9 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                         err = f"{name} {row[name]!r} must be one of {range(1, max_dim)}."
 
                         self._reg.report.error.appendDescription('invalid_data',
-                                                                  {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                   'category': lp_category, 'description': err})
+                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                  'category': lp_category, 'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testDataConsistencyInAuxLoopOfSpectralPeakAlt() "
-                                                 f"++ ValueError  - {err}\n")
+                                                f"++ ValueError  - {err}\n")

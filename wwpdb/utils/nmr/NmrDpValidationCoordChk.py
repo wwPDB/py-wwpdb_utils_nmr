@@ -187,9 +187,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
                         self._mapCoordDisulfideBond2Nmr(file_name, file_type, content_subtype,
-                                                         sf, sf_framecode, lp_category,
-                                                         nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                         nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                                                        sf, sf_framecode, lp_category,
+                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self._reg.star_data_type[fileListId] == 'Saveframe':
                     sf = self._reg.star_data[fileListId]
@@ -197,9 +197,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
                         self._mapCoordDisulfideBond2Nmr(file_name, file_type, content_subtype,
-                                                         sf, sf_framecode, lp_category,
-                                                         nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                         nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                                                        sf, sf_framecode, lp_category,
+                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
                 else:
 
                     for sf in self._reg.star_data[fileListId].get_saveframes_by_category(sf_category):
@@ -210,9 +210,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
                             self._mapCoordDisulfideBond2Nmr(file_name, file_type, content_subtype,
-                                                             sf, sf_framecode, lp_category,
-                                                             nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                             nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                                                            sf, sf_framecode, lp_category,
+                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                         if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
                             pass
@@ -278,8 +278,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
 
                     self._reg.report.warning.appendDescription(item,
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.mapCoordDisulfideBond2Nmr() ++ Warning  - {warn}\n")
@@ -298,8 +298,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     item = 'anomalous_chemical_shift' if disulf['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
 
                     self._reg.report.warning.appendDescription(item,
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.mapCoordDisulfideBond2Nmr() ++ Warning  - {warn}\n")
@@ -315,11 +315,11 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
         return is_done
 
     def _mapCoordDisulfideBond2Nmr(self, file_name: str, file_type: str, content_subtype: str,
-                                    sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                    sf_framecode: str, lp_category: str,
-                                    nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
-                                    nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
-                                    ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
+                                   sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
+                                   sf_framecode: str, lp_category: str,
+                                   nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
+                                   nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
+                                   ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
         """ Map disulfide bond of coordinate file to NMR data.
         """
 
@@ -345,11 +345,11 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                 try:
 
                     lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
-                                                         enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                         excl_missing_data=self._reg.excl_missing_data)[0]
+                                                        enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                        excl_missing_data=self._reg.excl_missing_data)[0]
 
                     self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                'data': lp_data})
+                                                               'data': lp_data})
 
                 except Exception:  # pylint: disable=broad-exception-caught
                     pass
@@ -497,9 +497,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
                         self._mapCoordOtherBond2Nmr(file_name, file_type, content_subtype,
-                                                     sf, sf_framecode, lp_category,
-                                                     nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                     nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                                                    sf, sf_framecode, lp_category,
+                                                    nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                    nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self._reg.star_data_type[fileListId] == 'Saveframe':
                     sf = self._reg.star_data[fileListId]
@@ -507,9 +507,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
                         self._mapCoordOtherBond2Nmr(file_name, file_type, content_subtype,
-                                                     sf, sf_framecode, lp_category,
-                                                     nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                     nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                                                    sf, sf_framecode, lp_category,
+                                                    nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                    nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 else:
 
@@ -521,9 +521,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
                             self._mapCoordOtherBond2Nmr(file_name, file_type, content_subtype,
-                                                         sf, sf_framecode, lp_category,
-                                                         nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                         nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                                                        sf, sf_framecode, lp_category,
+                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                         if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
                             pass
@@ -589,8 +589,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_1'] == 'reduced' else 'unusual_chemical_shift'
 
                     self._reg.report.warning.appendDescription(item,
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.mapCoordOtherBond2Nmr() ++ Warning  - {warn}\n")
@@ -609,8 +609,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     item = 'anomalous_chemical_shift' if other['redox_state_pred_2'] == 'reduced' else 'unusual_chemical_shift'
 
                     self._reg.report.warning.appendDescription(item,
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.mapCoordOtherBond2Nmr() ++ Warning  - {warn}\n")
@@ -626,11 +626,11 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
         return is_done
 
     def _mapCoordOtherBond2Nmr(self, file_name: str, file_type: str, content_subtype: str,
-                                sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                sf_framecode: str, lp_category: str,
-                                nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
-                                nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
-                                ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
+                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
+                               sf_framecode: str, lp_category: str,
+                               nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
+                               nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
+                               ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
         """ Map other bond (neither disulfide nor covalent bond) of coordinate file to NMR data.
         """
 
@@ -656,11 +656,11 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                 try:
 
                     lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
-                                                         enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                         excl_missing_data=self._reg.excl_missing_data)[0]
+                                                        enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                        excl_missing_data=self._reg.excl_missing_data)[0]
 
                     self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                'data': lp_data})
+                                                               'data': lp_data})
 
                 except Exception:  # pylint: disable=broad-exception-caught
                     pass
@@ -748,8 +748,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                         + f") is out of acceptable range, {length_list[:-2]}Å."
 
                     self._reg.report.warning.appendDescription('anomalous_bond_length',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'category': lp_category, 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'category': lp_category, 'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.testCoordCovalentBond() ++ Warning  - {warn}\n")
@@ -757,7 +757,7 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.testCoordCovalentBond() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.testCoordCovalentBond() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testCoordCovalentBond() ++ Error  - {str(e)}\n")
@@ -782,9 +782,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
         try:
 
             aux_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items,
-                                                  allowed_tags, None, None,
-                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                  excl_missing_data=self._reg.excl_missing_data)[0]
+                                                 allowed_tags, None, None,
+                                                 enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                 excl_missing_data=self._reg.excl_missing_data)[0]
 
             if aux_data is not None:
 
@@ -842,8 +842,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                     "either '-' or '+' symbol according to the NEF sepcification."
 
                                 self._reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                             'category': lp_category, 'description': warn})
+                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                            'category': lp_category, 'description': warn})
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.textResidueVariant() ++ Warning  - {warn}\n")
@@ -895,13 +895,13 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                             "chemical component dictionary (CCD)."
 
                                         self._reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category, 'description': warn})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category, 'description': warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.textResidueVariant() "
-                                                                 f"++ Warning  - {warn}\n")
+                                                                f"++ Warning  - {warn}\n")
 
                                 if coord_atom_site_ is not None and coord_atom_site_['comp_id'] == cif_comp_id\
                                    and (atom_id_ in coord_atom_site_['atom_id']
@@ -914,8 +914,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                         + f", {variant_name} {_variant_!r}) is unexpectedly incorporated in the coordinates."
 
                                     self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                               'category': lp_category, 'description': err})
+                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                              'category': lp_category, 'description': err})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ Error  - {err}\n")
@@ -958,22 +958,22 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                     if content_subtype.startswith('spectral_peak'):
 
                                         self._reg.report.warning.appendDescription('hydrogen_not_instantiated' if checked
-                                                                                    else 'assigned_peak_atom_not_found',
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category, 'description': err})
+                                                                                   else 'assigned_peak_atom_not_found',
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category, 'description': err})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.testResidueVariant() "
-                                                                 f"++ Warning  - {err}\n")
+                                                                f"++ Warning  - {err}\n")
 
                                     else:
 
                                         self._reg.report.error.appendDescription('hydrogen_not_instantiated' if checked
-                                                                                  else 'atom_not_found',
-                                                                                  {'file_name': file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category, 'description': err})
+                                                                                 else 'atom_not_found',
+                                                                                 {'file_name': file_name,
+                                                                                  'sf_framecode': sf_framecode,
+                                                                                  'category': lp_category, 'description': err})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ Error  - {err}\n")
@@ -1022,9 +1022,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                         + ") did not match with chemical component dictionary (CCD)."
 
                                     self._reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category, 'description': warn})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category, 'description': warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.textResidueVariant() ++ Warning  - {warn}\n")
@@ -1041,8 +1041,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                     + ") is unexpectedly incorporated in the coordinates."
 
                                 self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                           'category': lp_category, 'description': err})
+                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                          'category': lp_category, 'description': err})
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ Error  - {err}\n")
@@ -1052,17 +1052,17 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
             item = 'format_issue' if 'Unauthorized' in str(e) else 'missing_mandatory_item'
 
             self._reg.report.error.appendDescription(item,
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             self._reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ LookupError  - "
-                                 f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
+                                f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
             self._reg.report.error.appendDescription('invalid_data',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ ValueError  - {str(e)}\n")
@@ -1070,7 +1070,7 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.testResidueVariant() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.testResidueVariant() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.testResidueVariant() ++ Error  - {str(e)}\n")
@@ -1149,8 +1149,8 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
             try:
 
                 lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
-                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                     excl_missing_data=self._reg.excl_missing_data)[0]
+                                                    enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                    excl_missing_data=self._reg.excl_missing_data)[0]
 
             except Exception:  # pylint: disable=broad-exception-caught
                 return False
@@ -1566,12 +1566,12 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                             err += "because polymer sequence starts with the residue in the coordinates."
 
                         self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                     'category': lp_category, 'description': err})
+                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                    'category': lp_category, 'description': err})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() "
-                                                 f"++ Warning  - {err}\n")
+                                                f"++ Warning  - {err}\n")
 
                         if cyclic and self._reg.bmrb_only and self._reg.leave_intl_note\
                            and file_type == 'nmr-star' and seq_id == 1 and details_col != -1:
@@ -1651,12 +1651,12 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                         else 'coordinate_issue' if coord_issue else 'atom_nomenclature_mismatch'
 
                                 self._reg.report.warning.appendDescription(item,
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                             'category': lp_category, 'description': err})
+                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                            'category': lp_category, 'description': err})
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() "
-                                                         f"++ Warning  - {err}\n")
+                                                        f"++ Warning  - {err}\n")
 
                             else:
 
@@ -1666,13 +1666,13 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                 if self._reg.internal_mode and item in ('hydrogen_not_instantiated', 'coordinate_issue'):
 
                                     self._reg.report.warning.appendDescription(item,
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category, 'description': err})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category, 'description': err})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() "
-                                                             f"++ Warning  - {err}\n")
+                                                            f"++ Warning  - {err}\n")
 
                                 else:
 
@@ -1686,23 +1686,23 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                         item = 'atom_nomenclature_mismatch'
 
                                         self._reg.report.warning.appendDescription(item,
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category, 'description': err})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category, 'description': err})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() "
-                                                                 f"++ Warning  - {err}\n")
+                                                                f"++ Warning  - {err}\n")
 
                                         continue
 
                                     self._reg.report.error.appendDescription(item,
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                               'category': lp_category, 'description': err})
+                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                              'category': lp_category, 'description': err})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() "
-                                                             f"++ Error  - {err}\n")
+                                                            f"++ Error  - {err}\n")
 
                         else:
 
@@ -1723,22 +1723,22 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                             + ") is not properly instantiated in the coordinates. Please re-upload the model file."
 
                                         self._reg.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category, 'description': err})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category, 'description': err})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() "
-                                                                 f"++ Warning  - {err}\n")
+                                                                f"++ Warning  - {err}\n")
 
                                         continue
 
                             self._reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                         'category': lp_category, 'description': err})
+                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                        'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.testCoordAtomIdConsistency() "
-                                                     f"++ Warning  - {err}\n")
+                                                    f"++ Warning  - {err}\n")
 
         return modified

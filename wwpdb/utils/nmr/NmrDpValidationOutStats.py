@@ -2010,8 +2010,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                             f"of {data_file_name!r}."
 
                         self._reg.report.error.appendDescription('unparsed_data',
-                                                                  {'file_name': data_file_name, 'sf_framecode': sf_framecode,
-                                                                   'description': err})
+                                                                 {'file_name': data_file_name, 'sf_framecode': sf_framecode,
+                                                                  'description': err})
 
                         self._reg.log.write(f"+{self.__class_name__}.calculateOutputStats() ++ Error  - {err}\n")
 

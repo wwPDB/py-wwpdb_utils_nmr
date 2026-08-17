@@ -141,8 +141,8 @@ class NmrDpRemediationCs(NmrDpRemediationBase):
         return modified
 
     def _updateCompIdInCsLoop(self, file_list_id: int,
-                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                               lp_category: str, cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool) -> bool:
+                              sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
+                              lp_category: str, cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool) -> bool:
         """ Update residue name in CS loop to follow CCD replacement.
         """
 
@@ -237,7 +237,7 @@ class NmrDpRemediationCs(NmrDpRemediationBase):
             allow_chain_id_mismatch = len(poly_seq) == 1
 
             modified |= self._resolveUnmappedAuthSequenceInCsLoop(file_list_id,
-                                                                   sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+                                                                  sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         elif self._reg.star_data_type[file_list_id] == 'Saveframe':
             sf = self._reg.star_data[file_list_id]
@@ -251,7 +251,7 @@ class NmrDpRemediationCs(NmrDpRemediationBase):
             allow_chain_id_mismatch = len(poly_seq) == 1
 
             modified |= self._resolveUnmappedAuthSequenceInCsLoop(file_list_id,
-                                                                   sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+                                                                  sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         else:
 
@@ -269,14 +269,14 @@ class NmrDpRemediationCs(NmrDpRemediationBase):
                 allow_chain_id_mismatch = len(poly_seq) == 1
 
                 modified |= self._resolveUnmappedAuthSequenceInCsLoop(file_list_id,
-                                                                       sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+                                                                      sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         return modified
 
     def _resolveUnmappedAuthSequenceInCsLoop(self, file_list_id: int,
-                                              sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
-                                              cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool
-                                              ) -> bool:
+                                             sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
+                                             cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool
+                                             ) -> bool:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
@@ -413,18 +413,18 @@ class NmrDpRemediationCs(NmrDpRemediationBase):
 
                 if lp_data is None:
                     lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, allowed_tags, None, None,
-                                                         enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                         excl_missing_data=self._reg.excl_missing_data)[0]
+                                                        enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                        excl_missing_data=self._reg.excl_missing_data)[0]
 
                     self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                'category': lp_category, 'data': lp_data})
+                                                               'category': lp_category, 'data': lp_data})
 
                 _key_items = copy.copy(key_items)
                 _key_items.append({'name': idx_name, 'type': 'positive-int'})
 
                 _lp_data = self._reg.nefT.check_data(sf, lp_category, _key_items, data_items, allowed_tags, None, None,
-                                                      enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                      excl_missing_data=self._reg.excl_missing_data)[0]
+                                                     enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                     excl_missing_data=self._reg.excl_missing_data)[0]
 
             except Exception:  # pylint: disable=broad-exception-caught
                 continue

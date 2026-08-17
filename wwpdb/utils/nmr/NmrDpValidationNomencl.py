@@ -58,10 +58,10 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
 
             if file_type == 'nef':  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self._reg.nefT.get_nef_comp_atom_pair(sf, lp_category,
-                                                               allow_empty=content_subtype in ('chem_shift', 'spectral_peak'))[0]
+                                                              allow_empty=content_subtype in ('chem_shift', 'spectral_peak'))[0]
             else:  # DAOTHER-7389, issue #3, allow empty for 'chem_shift'
                 pairs = self._reg.nefT.get_star_comp_atom_pair(sf, lp_category,
-                                                                allow_empty=content_subtype in ('chem_shift', 'spectral_peak'))[0]
+                                                               allow_empty=content_subtype in ('chem_shift', 'spectral_peak'))[0]
 
             for pair in pairs:
                 comp_id = pair['comp_id']
@@ -96,12 +96,12 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                 err = f"Invalid atom name {atom_id!r} (comp_id {comp_id!r}) in a loop {lp_category}."
 
                                 self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                           'category': lp_category, 'description': err})
+                                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                          'category': lp_category, 'description': err})
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                         f"++ Error  - {err}\n")
+                                                        f"++ Error  - {err}\n")
 
                             else:
                                 _atom_ids.extend(_atom_id)
@@ -125,8 +125,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                 continue
 
                             _atom_id = self._reg.nefT.get_star_atom(comp_id,
-                                                                     translateToStdAtomName(atom_id, comp_id, ccU=self._reg.ccU),
-                                                                     leave_unmatched=False)[0]
+                                                                    translateToStdAtomName(atom_id, comp_id, ccU=self._reg.ccU),
+                                                                    leave_unmatched=False)[0]
                             if len(_atom_id) == 1 and atom_id != _atom_id[0]:
                                 self._reg.dpR.fixAtomNomenclature(comp_id, {atom_id: _atom_id[0]})
                                 continue
@@ -149,12 +149,12 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                     "according to the IUPAC atom nomenclature."
 
                                 self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                             'category': lp_category, 'description': warn})
+                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                            'category': lp_category, 'description': warn})
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                         f"++ Warning  - {warn}\n")
+                                                        f"++ Warning  - {warn}\n")
 
                                 self._reg.dpR.fixAtomNomenclature(comp_id, {atom_id: atom_id_})
 
@@ -174,12 +174,12 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                     "according to the IUPAC atom nomenclature, respectively."
 
                                 self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                             'category': lp_category, 'description': warn})
+                                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                            'category': lp_category, 'description': warn})
 
                                 if self._reg.verbose:
                                     self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                         f"++ Warning  - {warn}\n")
+                                                        f"++ Warning  - {warn}\n")
 
                                 # @see: https://bmrb.io/ref_info/atom_nom.tbl
                                 self._reg.dpR.fixAtomNomenclature(comp_id, {_atom_id_1: _atom_id_3})
@@ -210,13 +210,13 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                     err = f"Unmatched atom name {atom_id!r} (comp_id {comp_id!r}{cc_name}) in a loop {lp_category}."
 
                                     self._reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category, 'description': err})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category, 'description': err})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                             f"++ Warning  - {err}\n")
+                                                            f"++ Warning  - {err}\n")
 
                                 else:
 
@@ -225,24 +225,24 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                     if self._reg.remediation_mode and len(self.getAtomIdListInXplor(comp_id, atom_id)) > 0:
 
                                         self._reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category, 'description': err})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category, 'description': err})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                                 f"++ Warning  - {err}\n")
+                                                                f"++ Warning  - {err}\n")
 
                                     else:
 
                                         self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                                  {'file_name': file_name,
-                                                                                   'sf_framecode': sf_framecode,
-                                                                                   'category': lp_category, 'description': err})
+                                                                                 {'file_name': file_name,
+                                                                                  'sf_framecode': sf_framecode,
+                                                                                  'category': lp_category, 'description': err})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                                 f"++ Error  - {err}\n")
+                                                                f"++ Error  - {err}\n")
 
                 # non-standard residue
                 else:
@@ -281,12 +281,12 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                             warn = f"Unknown atom_id {unk_atom_ids!r} (comp_id {comp_id!r}{cc_name})."
 
                             self._reg.report.warning.appendDescription('atom_nomenclature_mismatch',
-                                                                        {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                         'category': lp_category, 'description': warn})
+                                                                       {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                        'category': lp_category, 'description': warn})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                     f"++ Warning  - {warn}\n")
+                                                    f"++ Warning  - {warn}\n")
 
                         ref_elems = set(a['type_symbol'] for a in self._reg.ccU.lastAtomDictList
                                         if a['leaving_atom_flag'] != 'Y')
@@ -329,13 +329,13 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                         "according to the IUPAC atom nomenclature."
 
                                     self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category, 'description': warn})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category, 'description': warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                             f"++ Warning  - {warn}\n")
+                                                            f"++ Warning  - {warn}\n")
 
                                     self._reg.dpR.fixAtomNomenclature(comp_id, {atom_id: atom_id_})
 
@@ -401,13 +401,13 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                         warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
 
                                         self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category, 'description': warn})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category, 'description': warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                                 f"++ Warning  - {warn}\n")
+                                                                f"++ Warning  - {warn}\n")
 
                             auth_atom_ids = sorted(set(_auth_atom_ids))
 
@@ -417,9 +417,9 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                     continue
 
                                 if not self._reg.nefT.validate_comp_atom(comp_id,
-                                                                          translateToStdAtomName(auth_atom_id, comp_id,
-                                                                                                 ref_atom_ids,
-                                                                                                 ccU=self._reg.ccU)):
+                                                                         translateToStdAtomName(auth_atom_id, comp_id,
+                                                                                                ref_atom_ids,
+                                                                                                ccU=self._reg.ccU)):
 
                                     if self._reg.nonblk_bad_nterm and self._reg.csStat.peptideLike(comp_id)\
                                        and auth_atom_id in ('H1', 'H2', 'H3', 'HT1', 'HT2', 'HT3'):
@@ -435,13 +435,13 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                     warn = f"Unmatched Auth_atom_ID {auth_atom_id!r} (Auth_comp_ID {auth_comp_id})."
 
                                     self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category, 'description': warn})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category, 'description': warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                             f"++ Warning  - {warn}\n")
+                                                            f"++ Warning  - {warn}\n")
 
                         # non-standard residue
                         else:
@@ -478,13 +478,13 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                             f"(Auth_comp_ID {comp_id}, non-standard residue)."
 
                                         self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                    {'file_name': file_name,
-                                                                                     'sf_framecode': sf_framecode,
-                                                                                     'category': lp_category, 'description': warn})
+                                                                                   {'file_name': file_name,
+                                                                                    'sf_framecode': sf_framecode,
+                                                                                    'category': lp_category, 'description': warn})
 
                                         if self._reg.verbose:
                                             self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                                 f"++ Warning  - {warn}\n")
+                                                                f"++ Warning  - {warn}\n")
 
                                 break
 
@@ -510,13 +510,13 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                         f"(Auth_comp_ID {comp_id}, non-standard residue)."
 
                                     self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category, 'description': warn})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category, 'description': warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                             f"++ Warning  - {warn}\n")
+                                                            f"++ Warning  - {warn}\n")
 
                 except LookupError:
                     # """
@@ -532,12 +532,12 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                 except ValueError as e:
 
                     self._reg.report.error.appendDescription('invalid_data',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                               'category': lp_category, 'description': str(e).strip("'")})
+                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                              'category': lp_category, 'description': str(e).strip("'")})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                             f"++ ValueError  - {str(e)}\n")
+                                            f"++ ValueError  - {str(e)}\n")
 
                 except UserWarning as e:
 
@@ -554,51 +554,51 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                             err = err[p:]
 
                             self._reg.report.error.appendDescription('invalid_data',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                       'category': lp_category, 'description': err})
+                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                      'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                     f"++ ValueError  - {err}\n")
+                                                    f"++ ValueError  - {err}\n")
 
                         else:
 
                             self._reg.report.error.appendDescription('internal_error',
-                                                                      f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                                      "++ Error  - " + err)
+                                                                     f"+{self.__class_name__}.validateAtomNomenclature() "
+                                                                     "++ Error  - " + err)
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                     f"++ Error  - {err}\n")
+                                                    f"++ Error  - {err}\n")
 
                 except Exception as e:  # pylint: disable=broad-exception-caught
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                              "++ Error  - " + str(e))
+                                                             f"+{self.__class_name__}.validateAtomNomenclature() "
+                                                             "++ Error  - " + str(e))
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                             f"++ Error  - {str(e)}\n")
+                                            f"++ Error  - {str(e)}\n")
 
         except LookupError as e:
 
             self._reg.report.error.appendDescription('missing_mandatory_item',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                 f"++ LookupError  - {file_name} {sf_framecode} {lp_category} {str(e)}\n")
+                                f"++ LookupError  - {file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
             self._reg.report.error.appendDescription('invalid_data',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                     f"++ ValueError  - {str(e)}\n")
+                                    f"++ ValueError  - {str(e)}\n")
 
         except UserWarning as e:
 
@@ -615,32 +615,32 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                     err = err[p:]
 
                     self._reg.report.error.appendDescription('invalid_data',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                               'category': lp_category, 'description': err})
+                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                              'category': lp_category, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                             f"++ ValueError  - {err}\n")
+                                            f"++ ValueError  - {err}\n")
 
                 else:
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                              "++ Error  - " + err)
+                                                             f"+{self.__class_name__}.validateAtomNomenclature() "
+                                                             "++ Error  - " + err)
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                             f"++ Error  - {err}\n")
+                                            f"++ Error  - {err}\n")
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.validateAtomNomenclature() "
-                                                      "++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.validateAtomNomenclature() "
+                                                     "++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.validateAtomNomenclature() "
-                                     f"++ Error  - {str(e)}\n")
+                                    f"++ Error  - {str(e)}\n")
 
     def validateAtomTypeOfCsLoop(self, file_name: str, file_type: str,
                                  sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
@@ -669,8 +669,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                     err = f"Invalid atom_type {atom_type!r} in a loop {lp_category}."
 
                     self._reg.report.error.appendDescription('invalid_atom_type',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                               'category': lp_category, 'description': err})
+                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                              'category': lp_category, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
@@ -684,8 +684,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                 f"allowed isotope number {ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type]}) in a loop {lp_category}."
 
                             self._reg.report.error.appendDescription('invalid_isotope_number',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                       'category': lp_category, 'description': err})
+                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                      'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
@@ -700,8 +700,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                             err = f"Invalid atom name {atom_id!r} (atom_type {atom_type!r}) in a loop {lp_category}."
 
                             self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                       'category': lp_category, 'description': err})
+                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                      'category': lp_category, 'description': err})
 
                             if self._reg.verbose:
                                 self._reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
@@ -710,17 +710,17 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
 
             if not self._reg.resolve_conflict:
                 self._reg.report.error.appendDescription('missing_mandatory_item',
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                           'category': lp_category, 'description': str(e).strip("'")})
+                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                          'category': lp_category, 'description': str(e).strip("'")})
 
                 self._reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ LookupError  - "
-                                     f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
+                                    f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
             self._reg.report.error.appendDescription('invalid_data',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ ValueError  - {str(e)}\n")
@@ -740,8 +740,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                     err = err[p:]
 
                     self._reg.report.error.appendDescription('invalid_data',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                               'category': lp_category, 'description': err})
+                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                              'category': lp_category, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ ValueError  - {err}\n")
@@ -749,8 +749,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                 else:
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.validateAtomTypeOfCsLoop() "
-                                                              "++ Error  - " + err)
+                                                             f"+{self.__class_name__}.validateAtomTypeOfCsLoop() "
+                                                             "++ Error  - " + err)
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - {err}\n")
@@ -758,7 +758,7 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.validateAtomTypeOfCsLoop() ++ Error  - {str(e)}\n")
@@ -814,13 +814,13 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                         "should be '1' according to the BMRB definition."
 
                                     self._reg.report.warning.appendDescription('ambiguity_code_mismatch',
-                                                                                {'file_name': file_name,
-                                                                                 'sf_framecode': sf_framecode,
-                                                                                 'category': lp_category, 'description': warn})
+                                                                               {'file_name': file_name,
+                                                                                'sf_framecode': sf_framecode,
+                                                                                'category': lp_category, 'description': warn})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() "
-                                                             f"++ Warning  - {warn}\n")
+                                                            f"++ Warning  - {warn}\n")
 
                                     valid = False
 
@@ -835,12 +835,12 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                         f"allowed ambig_code {[1, allowed_ambig_code, 4, 5, 6, 9]}) in a loop {lp_category}."
 
                                     self._reg.report.error.appendDescription('invalid_ambiguity_code',
-                                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                               'category': lp_category, 'description': err})
+                                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                              'category': lp_category, 'description': err})
 
                                     if self._reg.verbose:
                                         self._reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() "
-                                                             f"++ Error  - {err}\n")
+                                                            f"++ Error  - {err}\n")
 
                                     valid = False
 
@@ -849,8 +849,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                 warn = f"Missing ambiguity code for the following residues {comp_ids_wo_ambig_code}."
 
                 self._reg.report.warning.appendDescription('missing_data',
-                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                             'category': lp_category, 'description': warn})
+                                                           {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                            'category': lp_category, 'description': warn})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ Warning  - {warn}\n")
@@ -960,17 +960,17 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
 
             if not self._reg.resolve_conflict:
                 self._reg.report.error.appendDescription('missing_mandatory_item',
-                                                          {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                           'category': lp_category, 'description': str(e).strip("'")})
+                                                         {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                          'category': lp_category, 'description': str(e).strip("'")})
 
                 self._reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ LookupError  - "
-                                     f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
+                                    f"{file_name} {sf_framecode} {lp_category} {str(e)}\n")
 
         except ValueError as e:
 
             self._reg.report.error.appendDescription('invalid_data',
-                                                      {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                       'category': lp_category, 'description': str(e).strip("'")})
+                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                      'category': lp_category, 'description': str(e).strip("'")})
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ ValueError  - {str(e)}\n")
@@ -990,8 +990,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                     err = err[p:]
 
                     self._reg.report.error.appendDescription('invalid_data',
-                                                              {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                               'category': lp_category, 'description': err})
+                                                             {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                              'category': lp_category, 'description': err})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ ValueError  - {err}\n")
@@ -999,8 +999,8 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                 else:
 
                     self._reg.report.error.appendDescription('internal_error',
-                                                              f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() "
-                                                              "++ Error  - " + err)
+                                                             f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() "
+                                                             "++ Error  - " + err)
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ Error  - {err}\n")
@@ -1008,7 +1008,7 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
         except Exception as e:  # pylint: disable=broad-exception-caught
 
             self._reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ Error  - " + str(e))
+                                                     f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ Error  - " + str(e))
 
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.validateAmbigCodeOfCsLoop() ++ Error  - {str(e)}\n")

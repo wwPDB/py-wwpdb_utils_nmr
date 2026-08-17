@@ -133,9 +133,9 @@ class NmrDpRemediationStats(NmrDpRemediationBase):
                     for parent_pointer, cst_sf in enumerate(cst_sfs, start=1):
 
                         self._reg.nefT.check_data(cst_sf, lp_category, key_items, data_items,
-                                                   allowed_tags, None, parent_pointer=parent_pointer,
-                                                   enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                   excl_missing_data=self._reg.excl_missing_data)
+                                                  allowed_tags, None, parent_pointer=parent_pointer,
+                                                  enforce_allowed_tags=(file_type == 'nmr-star'),
+                                                  excl_missing_data=self._reg.excl_missing_data)
 
                     return True
 

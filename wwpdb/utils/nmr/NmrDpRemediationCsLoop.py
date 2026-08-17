@@ -336,7 +336,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     "Please fix problems reported."
 
                 self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                          {'file_name': file_name, 'description': err})
+                                                         {'file_name': file_name, 'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Error  - {err}\n")
@@ -432,8 +432,8 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
 
                     self._reg.report.warning.appendDescription('redundant_data',
-                                                                {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                 'category': lp_category, 'description': warn})
+                                                               {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                'category': lp_category, 'description': warn})
 
                     if self._reg.verbose:
                         self._reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Warning  - {warn}\n")
@@ -467,7 +467,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                     "Please fix problems reported."
 
                 self._reg.report.error.appendDescription('missing_mandatory_content',
-                                                          {'file_name': file_name, 'description': err})
+                                                         {'file_name': file_name, 'description': err})
 
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Error  - {err}\n")
@@ -817,15 +817,15 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                             if self._reg.annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:
                                 atom_ids =\
                                     self._reg.dpV.getAtomIdListInXplorForLigandRemap(comp_id,
-                                                                                      _row[23] if fill_orig_atom_id else atom_id,
-                                                                                      _coord_atom_site)
+                                                                                     _row[23] if fill_orig_atom_id else atom_id,
+                                                                                     _coord_atom_site)
                         else:
                             atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
                             if len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id:
                                 atom_ids =\
                                     self._reg.dpV.getAtomIdListInXplor(comp_id,
-                                                                        translateToStdAtomName(atom_id, comp_id, _atom_site_atom_id,
-                                                                                               ccU=self._reg.ccU))
+                                                                       translateToStdAtomName(atom_id, comp_id, _atom_site_atom_id,
+                                                                                              ccU=self._reg.ccU))
                                 if len(atom_ids) == 1 and atom_ids[0] in _atom_site_atom_id and atom_id not in _atom_site_atom_id:
                                     atom_id = atom_ids[0]
                             # DAOTHER-9286
@@ -1183,8 +1183,8 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
                         if len(atom_ids) == 0:
                             atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id,
-                                                                           translateToStdAtomName(atom_id, comp_id,
-                                                                                                  ccU=self._reg.ccU))
+                                                                          translateToStdAtomName(atom_id, comp_id,
+                                                                                                 ccU=self._reg.ccU))
                     if valid and len(missing_ch3) > 0:
                         if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
                            and len(self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
@@ -3071,8 +3071,8 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                             atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
                             if len(atom_ids) == 0 or atom_ids[0] not in self._reg.csStat.getAllAtoms(comp_id):
                                 atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id,
-                                                                               translateToStdAtomName(atom_id, comp_id,
-                                                                                                      ccU=self._reg.ccU))
+                                                                              translateToStdAtomName(atom_id, comp_id,
+                                                                                                     ccU=self._reg.ccU))
                             len_atom_ids = len(atom_ids)
                             if len_atom_ids == 0 or comp_id_bmrb_only or _row[24] == 'UNMAPPED':
                                 _row[6] = atom_id
@@ -3393,8 +3393,8 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
 
                         self._reg.report.warning.appendDescription('redundant_data',
-                                                                    {'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                                     'category': lp_category, 'description': warn})
+                                                                   {'file_name': file_name, 'sf_framecode': sf_framecode,
+                                                                    'category': lp_category, 'description': warn})
 
                         if self._reg.verbose:
                             self._reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Warning  - {warn}\n")
@@ -3608,7 +3608,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
         if not self._reg.native_combined:
             self._reg.dpV.testDataConsistencyInLoop(file_list_id, file_name, file_type, content_subtype,
-                                                     sf, sf_framecode, lp_category, list_id)
+                                                    sf, sf_framecode, lp_category, list_id)
 
         get_auth_seq_scheme.cache_clear()
         get_label_seq_scheme.cache_clear()

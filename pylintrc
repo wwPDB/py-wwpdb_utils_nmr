@@ -38,7 +38,10 @@ persistent=yes
 
 # When enabled, pylint would attempt to guess common misconfiguration and emit
 # user-friendly hints instead of false-positive error messages.
-suggestion-mode=yes
+#
+# In Pylint 4.0, the suggestion-mode option was removed. The linter now emits
+# user-friendly hints by default
+# suggestion-mode=yes
 
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.

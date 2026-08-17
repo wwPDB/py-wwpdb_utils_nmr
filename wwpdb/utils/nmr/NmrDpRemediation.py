@@ -342,16 +342,16 @@ class NmrDpRemediation:
     """
     __slots__ = ('__class_name__',
                  '__version__',
-                 '__reg',
-                 '__paramag')
+                 '_reg',
+                 '_paramag')
 
     def __init__(self, registry: NmrDpRegistry) -> None:
         self.__class_name__ = self.__class__.__name__
         self.__version__ = __version__
 
-        self.__reg = registry
+        self._reg = registry
 
-        self.__paramag = False
+        self._paramag = False
 
     def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
         """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
@@ -363,10 +363,10 @@ class NmrDpRemediation:
         if os.path.exists(test_path):
             return test_path
 
-        if None in (self.__reg.dirPath, self.__reg.spareDirPath) or self.__reg.dirPath == self.__reg.spareDirPath:
+        if None in (self._reg.dirPath, self._reg.spareDirPath) or self._reg.dirPath == self._reg.spareDirPath:
             return test_path if defer_check else src_path
 
-        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
+        chk_path = os.path.join(self._reg.spareDirPath, os.path.basename(test_path))
 
         if not os.path.exists(chk_path):
             return test_path if defer_check else src_path
@@ -379,25 +379,25 @@ class NmrDpRemediation:
         """ Clean-up third-party saveframes.
         """
 
-        __errors = self.__reg.report.getTotalErrors()
+        __errors = self._reg.report.getTotalErrors()
 
-        for fileListId in range(self.__reg.file_path_list_len):
+        for fileListId in range(self._reg.file_path_list_len):
 
-            if fileListId >= len(self.__reg.star_data):
+            if fileListId >= len(self._reg.star_data):
                 break
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
-            category_order = self.__reg.c2S.category_order if file_type == 'nmr-star' else self.__reg.c2S.category_order_nef
+            category_order = self._reg.c2S.category_order if file_type == 'nmr-star' else self._reg.c2S.category_order_nef
 
-            if self.__reg.star_data_type[fileListId] == 'Entry':
+            if self._reg.star_data_type[fileListId] == 'Entry':
 
-                for sf in reversed(self.__reg.star_data[fileListId].frame_list):
+                for sf in reversed(self._reg.star_data[fileListId].frame_list):
 
                     if sf.tag_prefix not in category_order:
-                        del self.__reg.star_data[fileListId][sf]
+                        del self._reg.star_data[fileListId][sf]
 
             if input_source_dic['content_subtype'] is None:
                 continue
@@ -406,23 +406,23 @@ class NmrDpRemediation:
 
                 sf_category = SF_CATEGORIES[file_type][content_subtype]
 
-                if self.__reg.star_data_type[fileListId] == 'Loop':
+                if self._reg.star_data_type[fileListId] == 'Loop':
                     pass
 
-                elif self.__reg.star_data_type[fileListId] == 'Saveframe':
-                    sf = self.__reg.star_data[fileListId]
+                elif self._reg.star_data_type[fileListId] == 'Saveframe':
+                    sf = self._reg.star_data[fileListId]
 
-                    self.__cleanUpSf(file_type, content_subtype, sf)
+                    self._cleanUpSf(file_type, content_subtype, sf)
 
                 else:
 
-                    for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
+                    for sf in self._reg.star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        self.__cleanUpSf(file_type, content_subtype, sf)
+                        self._cleanUpSf(file_type, content_subtype, sf)
 
-        return self.__reg.report.getTotalErrors() == __errors
+        return self._reg.report.getTotalErrors() == __errors
 
-    def __cleanUpSf(self, file_type: str, content_subtype: str,  # pylint: disable=no-self-use
+    def _cleanUpSf(self, file_type: str, content_subtype: str,  # pylint: disable=no-self-use
                     sf: Union[pynmrstar.Saveframe, pynmrstar.Loop]) -> None:
         """ Clean-up third-party saveframes.
         """
@@ -439,7 +439,7 @@ class NmrDpRemediation:
         """ Remove unused PDB_ind_code tags from loops.
         """
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if loop is None:
             return False
@@ -472,11 +472,11 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.removeUnusedPdbInsCode() ++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.removeUnusedPdbInsCode() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.removeUnusedPdbInsCode() ++ Error  - {str(e)}\n")
 
         return False
 
@@ -491,21 +491,21 @@ class NmrDpRemediation:
         if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
             lp_category = '_Assigned_peak_chem_shift'
 
-        if self.__reg.star_data_type[file_list_id] == 'Loop':
-            sf = self.__reg.star_data[file_list_id]
+        if self._reg.star_data_type[file_list_id] == 'Loop':
+            sf = self._reg.star_data[file_list_id]
 
             if sf_framecode == '':
-                self.__fixChainIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
+                self._fixChainIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
 
-        elif self.__reg.star_data_type[file_list_id] == 'Saveframe':
-            sf = self.__reg.star_data[file_list_id]
+        elif self._reg.star_data_type[file_list_id] == 'Saveframe':
+            sf = self._reg.star_data[file_list_id]
 
             if get_first_sf_tag(sf, 'sf_framecode') == sf_framecode:
-                self.__fixChainIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
+                self._fixChainIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
 
         else:
 
-            for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
+            for sf in self._reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
 
                 if get_first_sf_tag(sf, 'sf_framecode') != sf_framecode:
                     continue
@@ -513,15 +513,15 @@ class NmrDpRemediation:
                 if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
-                self.__fixChainIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
+                self._fixChainIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, _chain_id)
 
-    def __fixChainIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
+    def _fixChainIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
                            sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
                            chain_id: str, _chain_id: str) -> None:
         """ Fix chain ID of interesting loop.
         """
 
-        uniq_chain_ids = self.__reg.report.getChainIdsForSameEntity() is None
+        uniq_chain_ids = self._reg.report.getChainIdsForSameEntity() is None
 
         chain_id_name = 'chain_code' if file_type == 'nef' else 'Entity_assembly_ID'
         entity_id_name = None if file_type == 'nef' else 'Entity_ID'
@@ -549,7 +549,7 @@ class NmrDpRemediation:
 
             max_dim = num_dim + 1
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if max_dim == 2:
 
@@ -607,21 +607,21 @@ class NmrDpRemediation:
         if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
             lp_category = '_Assigned_peak_chem_shift'
 
-        if self.__reg.star_data_type[file_list_id] == 'Loop':
-            sf = self.__reg.star_data[file_list_id]
+        if self._reg.star_data_type[file_list_id] == 'Loop':
+            sf = self._reg.star_data[file_list_id]
 
             if sf_framecode == '':
-                self.__fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
+                self._fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
 
-        elif self.__reg.star_data_type[file_list_id] == 'Saveframe':
-            sf = self.__reg.star_data[file_list_id]
+        elif self._reg.star_data_type[file_list_id] == 'Saveframe':
+            sf = self._reg.star_data[file_list_id]
 
             if get_first_sf_tag(sf, 'sf_framecode') == sf_framecode:
-                self.__fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
+                self._fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
 
         else:
 
-            for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
+            for sf in self._reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
 
                 if get_first_sf_tag(sf, 'sf_framecode') != sf_framecode:
                     continue
@@ -629,9 +629,9 @@ class NmrDpRemediation:
                 if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
-                self.__fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
+                self._fixSeqIdInLoop(file_list_id, file_type, content_subtype, sf, lp_category, chain_id, seq_id_conv_dict)
 
-    def __fixSeqIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
+    def _fixSeqIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
                          sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
                          chain_id: str, seq_id_conv_dict: dict) -> None:
         """ Fix sequence ID of interesting loop.
@@ -664,7 +664,7 @@ class NmrDpRemediation:
 
             max_dim = num_dim + 1
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if max_dim == 2:
 
@@ -741,23 +741,23 @@ class NmrDpRemediation:
         if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
             lp_category = '_Assigned_peak_chem_shift'
 
-        if self.__reg.star_data_type[file_list_id] == 'Loop':
-            sf = self.__reg.star_data[file_list_id]
+        if self._reg.star_data_type[file_list_id] == 'Loop':
+            sf = self._reg.star_data[file_list_id]
 
             if sf_framecode == '':
-                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype,
+                self._fixCompIdInLoop(file_list_id, file_type, content_subtype,
                                        sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
-        elif self.__reg.star_data_type[file_list_id] == 'Saveframe':
-            sf = self.__reg.star_data[file_list_id]
+        elif self._reg.star_data_type[file_list_id] == 'Saveframe':
+            sf = self._reg.star_data[file_list_id]
 
             if get_first_sf_tag(sf, 'sf_framecode') == sf_framecode:
-                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype,
+                self._fixCompIdInLoop(file_list_id, file_type, content_subtype,
                                        sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
         else:
 
-            for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
+            for sf in self._reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
 
                 if get_first_sf_tag(sf, 'sf_framecode') != sf_framecode:
                     continue
@@ -765,10 +765,10 @@ class NmrDpRemediation:
                 if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
 
-                self.__fixCompIdInLoop(file_list_id, file_type, content_subtype,
+                self._fixCompIdInLoop(file_list_id, file_type, content_subtype,
                                        sf, lp_category, chain_id, seq_id, comp_id_conv_dict)
 
-    def __fixCompIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
+    def _fixCompIdInLoop(self, file_list_id: int, file_type: str, content_subtype: str,
                           sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
                           chain_id: str, seq_id: int, comp_id_conv_dict: dict) -> bool:
         """ Fix sequence ID of interesting loop.
@@ -801,7 +801,7 @@ class NmrDpRemediation:
 
             max_dim = num_dim + 1
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if max_dim == 2:
 
@@ -861,9 +861,9 @@ class NmrDpRemediation:
         """ Fix atom nomenclature.
         """
 
-        for fileListId in range(self.__reg.file_path_list_len):
+        for fileListId in range(self._reg.file_path_list_len):
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -885,29 +885,29 @@ class NmrDpRemediation:
                 if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
                     lp_category = '_Assigned_peak_chem_shift'
 
-                if self.__reg.star_data_type[fileListId] == 'Loop':
-                    sf = self.__reg.star_data[fileListId]
+                if self._reg.star_data_type[fileListId] == 'Loop':
+                    sf = self._reg.star_data[fileListId]
 
-                    self.__fixAtomNomenclature(fileListId, file_type, content_subtype,
+                    self._fixAtomNomenclature(fileListId, file_type, content_subtype,
                                                sf, lp_category, comp_id, atom_id_conv_dict)
 
-                elif self.__reg.star_data_type[fileListId] == 'Saveframe':
-                    sf = self.__reg.star_data[fileListId]
+                elif self._reg.star_data_type[fileListId] == 'Saveframe':
+                    sf = self._reg.star_data[fileListId]
 
-                    self.__fixAtomNomenclature(fileListId, file_type, content_subtype,
+                    self._fixAtomNomenclature(fileListId, file_type, content_subtype,
                                                sf, lp_category, comp_id, atom_id_conv_dict)
 
                 else:
 
-                    for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
+                    for sf in self._reg.star_data[fileListId].get_saveframes_by_category(sf_category):
 
                         if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
-                        self.__fixAtomNomenclature(fileListId, file_type, content_subtype,
+                        self._fixAtomNomenclature(fileListId, file_type, content_subtype,
                                                    sf, lp_category, comp_id, atom_id_conv_dict)
 
-    def __fixAtomNomenclature(self, file_list_id: int, file_type: str, content_subtype: str,
+    def _fixAtomNomenclature(self, file_list_id: int, file_type: str, content_subtype: str,
                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                               lp_category: str, comp_id: str, atom_id_conv_dict: dict) -> None:
         """ Fix atom nomenclature.
@@ -939,7 +939,7 @@ class NmrDpRemediation:
 
             max_dim = num_dim + 1
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if max_dim == 2:
 
@@ -990,13 +990,13 @@ class NmrDpRemediation:
         """ Fix enumeration failures if possible.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
-        if len(self.__reg.star_data) == 0:
+        if len(self._reg.star_data) == 0:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
@@ -1027,32 +1027,32 @@ class NmrDpRemediation:
             itValue = None if g[1] in EMPTY_VALUE else g[1]
             itEnum = [str(e.strip("'")) for e in re.sub(r"\', \'", "\',\'", g[2]).split(',')]
 
-            if self.__reg.star_data_type[0] == 'Entry' or self.__reg.star_data_type[0] == 'Saveframe':
+            if self._reg.star_data_type[0] == 'Entry' or self._reg.star_data_type[0] == 'Saveframe':
 
                 if 'sf_framecode' not in w:
 
                     err = "Could not specify 'sf_framecode' in NMR data processing report."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
 
                 else:
 
-                    sf = self.__reg.dpA.getSaveframeByName(0, w['sf_framecode'])
+                    sf = self._reg.dpA.getSaveframeByName(0, w['sf_framecode'])
 
                     if sf is None:
 
                         err = f"Could not specify {w['sf_framecode']!r} saveframe unexpectedly in {file_name!r} file."
 
-                        self.__reg.report.error.appendDescription('internal_error',
+                        self._reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.fixEnumerationFailure() "
                                                                   "++ Error  - " + err)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
 
                         continue
 
@@ -1064,12 +1064,12 @@ class NmrDpRemediation:
 
                             err = f"Could not find saveframe tag {itName} in {w['sf_framecode']!r} saveframe, {file_name!r} file."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.fixEnumerationFailure() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
 
                         else:
 
@@ -1101,25 +1101,25 @@ class NmrDpRemediation:
                                         if (file_type == 'nef' and itName == 'restraint_origin')\
                                            or (file_type == 'nmr-star' and itName == 'Constraint_type'):
 
-                                            lp_data = next((lp['data'] for lp in self.__reg.lp_data[content_subtype]
+                                            lp_data = next((lp['data'] for lp in self._reg.lp_data[content_subtype]
                                                             if lp['file_name'] == file_name
                                                             and lp['sf_framecode'] == w['sf_framecode']), None)
 
                                             if lp_data is None:
                                                 lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-                                                key_items = self.__reg.key_items[file_type][content_subtype]
+                                                key_items = self._reg.key_items[file_type][content_subtype]
                                                 data_items = DATA_ITEMS[file_type][content_subtype]
 
                                                 try:
 
                                                     lp_data =\
-                                                        self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
+                                                        self._reg.nefT.check_data(sf, lp_category, key_items, data_items,
                                                                                    None, None, None,
                                                                                    enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                                                   excl_missing_data=self.__reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
+                                                                                   excl_missing_data=self._reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
 
-                                                    self.__reg.lp_data[content_subtype].append({'file_name': file_name,
+                                                    self._reg.lp_data[content_subtype].append({'file_name': file_name,
                                                                                                 'sf_framecode': w['sf_framecode'],
                                                                                                 'data': lp_data})
 
@@ -1137,14 +1137,14 @@ class NmrDpRemediation:
                                                     # 'NOE', 'NOE build-up', 'NOE not seen', 'ROE', 'ROE build-up', 'hydrogen bond',
                                                     # 'disulfide bond', 'paramagnetic relaxation', 'symmetry', 'general distance'
 
-                                                    elif self.__testDistRestraintAsHydrogenBond(lp_data):
+                                                    elif self._testDistRestraintAsHydrogenBond(lp_data):
                                                         sf.tags[itCol][1] = 'hbond' if file_type == 'nef' else 'hydrogen bond'
 
-                                                    elif self.__testDistRestraintAsDisulfideBond(lp_data):
+                                                    elif self._testDistRestraintAsDisulfideBond(lp_data):
                                                         sf.tags[itCol][1] = 'disulfide_bond' if file_type == 'nef'\
                                                             else 'disulfide bond'
 
-                                                    elif self.__testDistRestraintAsSymmetry(lp_data):
+                                                    elif self._testDistRestraintAsSymmetry(lp_data):
                                                         sf.tags[itCol][1] = 'symmetry'
 
                                                     else:
@@ -1158,7 +1158,7 @@ class NmrDpRemediation:
 
                                                     # 'J-couplings', 'backbone chemical shifts'
 
-                                                    elif self.__testDihedRestraintAsBackBoneChemShifts(lp_data):
+                                                    elif self._testDihedRestraintAsBackBoneChemShifts(lp_data):
                                                         sf.tags[itCol][1] = 'chemical_shift' if file_type == 'nef'\
                                                             else 'backbone chemical shifts'
 
@@ -1178,25 +1178,25 @@ class NmrDpRemediation:
                                         if (file_type == 'nef' and itName == 'potential_type')\
                                            or (file_type == 'nmr-star' and itName == 'Potential_type'):
 
-                                            lp_data = next((lp['data'] for lp in self.__reg.lp_data[content_subtype]
+                                            lp_data = next((lp['data'] for lp in self._reg.lp_data[content_subtype]
                                                             if lp['file_name'] == file_name
                                                             and lp['sf_framecode'] == w['sf_framecode']), None)
 
                                             if lp_data is None:
                                                 lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-                                                key_items = self.__reg.key_items[file_type][content_subtype]
+                                                key_items = self._reg.key_items[file_type][content_subtype]
                                                 data_items = DATA_ITEMS[file_type][content_subtype]
 
                                                 try:
 
                                                     lp_data =\
-                                                        self.__reg.nefT.check_data(sf, lp_category, key_items, data_items,
+                                                        self._reg.nefT.check_data(sf, lp_category, key_items, data_items,
                                                                                    None, None, None,
                                                                                    enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                                                   excl_missing_data=self.__reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
+                                                                                   excl_missing_data=self._reg.excl_missing_data)[0]  # noqa: E501, pylint: disable=line-too-long
 
-                                                    self.__reg.lp_data[content_subtype].append({'file_name': file_name,
+                                                    self._reg.lp_data[content_subtype].append({'file_name': file_name,
                                                                                                 'sf_framecode': w['sf_framecode'],
                                                                                                 'data': lp_data})
 
@@ -1212,19 +1212,19 @@ class NmrDpRemediation:
 
                                                 if mandatory_tag:
                                                     sf.tags[itCol][1] = 'undefined'
-                                                elif self.__testRestraintPotentialSWP(content_subtype, lp_data):
+                                                elif self._testRestraintPotentialSWP(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'square-well-parabolic'
-                                                elif self.__testRestraintPotentialSWPL(content_subtype, lp_data):
+                                                elif self._testRestraintPotentialSWPL(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'square-well-parabolic-linear'
-                                                elif self.__testRestraintPotentialUBP(content_subtype, lp_data):
+                                                elif self._testRestraintPotentialUBP(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'upper-bound-parabolic'
-                                                elif self.__testRestraintPotentialLBP(content_subtype, lp_data):
+                                                elif self._testRestraintPotentialLBP(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'lower-bound-parabolic'
-                                                elif self.__testRestraintPotentialUBPL(content_subtype, lp_data):
+                                                elif self._testRestraintPotentialUBPL(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'upper-bound-parabolic-linear'
-                                                elif self.__testRestraintPotentialLBPL(content_subtype, lp_data):
+                                                elif self._testRestraintPotentialLBPL(content_subtype, lp_data):
                                                     sf.tags[itCol][1] = 'lower-bound-parabolic-linear'
-                                                elif self.__testRestraintPonentialLHorP(content_subtype, lp_data):
+                                                elif self._testRestraintPonentialLHorP(content_subtype, lp_data):
                                                     if content_subtype == 'dist_restraint':
                                                         sf.tags[itCol][1] = 'log-harmonic'
                                                     else:
@@ -1236,12 +1236,12 @@ class NmrDpRemediation:
 
                                         err = "Could not specify content_subtype in NMR data processing report."
 
-                                        self.__reg.report.error.appendDescription('internal_error',
+                                        self._reg.report.error.appendDescription('internal_error',
                                                                                   f"+{self.__class_name__}.fixEnumerationFailure() "
                                                                                   "++ Error  - " + err)
 
-                                        if self.__reg.verbose:
-                                            self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() "
+                                        if self._reg.verbose:
+                                            self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() "
                                                                  f"++ Error  - {err}\n")
 
                     else:
@@ -1253,12 +1253,12 @@ class NmrDpRemediation:
                             err = f"Could not find loop tag {itName} in {w['category']} category, "\
                                 f"{w['sf_framecode']!r} saveframe, {file_name!r} file."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.fixEnumerationFailure() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
 
                         else:
 
@@ -1302,27 +1302,27 @@ class NmrDpRemediation:
 
             else:
 
-                err = f"Unexpected PyNMRSTAR object type {self.__reg.star_data_type[0]} found about {file_name!r} file."
+                err = f"Unexpected PyNMRSTAR object type {self._reg.star_data_type[0]} found about {file_name!r} file."
 
-                self.__reg.report.error.appendDescription('internal_error',
+                self._reg.report.error.appendDescription('internal_error',
                                                           f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - " + err)
 
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
+                if self._reg.verbose:
+                    self._reg.log.write(f"+{self.__class_name__}.fixEnumerationFailure() ++ Error  - {err}\n")
 
         return True
 
-    def __testDistRestraintAsHydrogenBond(self, lp_data: List[dict]) -> bool:
+    def _testDistRestraintAsHydrogenBond(self, lp_data: List[dict]) -> bool:
         """ Detect whether given distance restraints are derived from hydrogen bonds.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None or len(lp_data) == 0:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -1446,29 +1446,29 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
                                                       "++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsHydrogenBond() "
                                      f"++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testDistRestraintAsDisulfideBond(self, lp_data: List[dict]) -> bool:
+    def _testDistRestraintAsDisulfideBond(self, lp_data: List[dict]) -> bool:
         """ Detect whether given distance restraints are derived from disulfide bonds.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None or len(lp_data) == 0:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -1558,29 +1558,29 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
                                                       "++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsDisulfideBond() "
                                      f"++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testDistRestraintAsSymmetry(self, lp_data: List[dict]) -> bool:
+    def _testDistRestraintAsSymmetry(self, lp_data: List[dict]) -> bool:
         """ Detect whether given distance restraints are derived from symmetric assembly.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -1634,29 +1634,29 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
                                                       "++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testDistRestraintAsSymmetry() "
                                      f"++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testDihedRestraintAsBackBoneChemShifts(self, lp_data: List[dict]) -> bool:
+    def _testDihedRestraintAsBackBoneChemShifts(self, lp_data: List[dict]) -> bool:
         """ Detect whether given dihedral angle restraints are derived from backbone chemical shifts.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
@@ -1711,7 +1711,7 @@ class NmrDpRemediation:
                 if angle_type not in ('phi', 'psi'):
                     return False
 
-                peptide, nucleotide, carbohydrate = self.__reg.csStat.getTypeOfCompId(atom2['comp_id'])
+                peptide, nucleotide, carbohydrate = self._reg.csStat.getTypeOfCompId(atom2['comp_id'])
 
                 if not peptide:
                     return False
@@ -1745,7 +1745,7 @@ class NmrDpRemediation:
             sf_category = SF_CATEGORIES[file_type][content_subtype]
             lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-            key_items = self.__reg.key_items[file_type][content_subtype]
+            key_items = self._reg.key_items[file_type][content_subtype]
             data_items = DATA_ITEMS[file_type][content_subtype]
 
             item_names = ITEM_NAMES_IN_CS_LOOP[file_type]
@@ -1753,24 +1753,24 @@ class NmrDpRemediation:
             seq_id_name = item_names['seq_id']
             atom_id_name = item_names['atom_id']
 
-            for sf in self.__reg.star_data[0].get_saveframes_by_category(sf_category):
+            for sf in self._reg.star_data[0].get_saveframes_by_category(sf_category):
                 sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-                if self.__reg.report.error.exists(file_name, sf_framecode):
+                if self._reg.report.error.exists(file_name, sf_framecode):
                     continue
 
-                lp_data = next((lp['data'] for lp in self.__reg.lp_data[content_subtype]
+                lp_data = next((lp['data'] for lp in self._reg.lp_data[content_subtype]
                                 if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
 
                 if lp_data is None:
 
                     try:
 
-                        lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
+                        lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
                                                              enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                             excl_missing_data=self.__reg.excl_missing_data)[0]
+                                                             excl_missing_data=self._reg.excl_missing_data)[0]
 
-                        self.__reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
+                        self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                     'data': lp_data})
 
                     except Exception:  # pylint: disable=broad-exception-caught
@@ -1801,29 +1801,29 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
                                                       "++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testDihedRestraintAsBackBoneChemShifts() "
                                      f"++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testRestraintPotentialSWP(self, content_subtype: str, lp_data: List[dict]) -> bool:
+    def _testRestraintPotentialSWP(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect square-well-parabolic potential.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -1847,27 +1847,27 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWP() ++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testRestraintPotentialSWPL(self, content_subtype: str, lp_data: List[str]) -> bool:
+    def _testRestraintPotentialSWPL(self, content_subtype: str, lp_data: List[str]) -> bool:
         """ Detect square-well-parabolic-linear potential.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -1891,28 +1891,28 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialSWPL() "
                                                       "++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialSWPL() ++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testRestraintPotentialUBP(self, content_subtype: str, lp_data: List[dict]) -> bool:
+    def _testRestraintPotentialUBP(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect upper-bound-parabolic potential.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -1936,27 +1936,27 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBP() ++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testRestraintPotentialLBP(self, content_subtype: str, lp_data: List[str]) -> bool:
+    def _testRestraintPotentialLBP(self, content_subtype: str, lp_data: List[str]) -> bool:
         """ Detect lower-bound-parabolic potential.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -1980,27 +1980,27 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBP() ++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testRestraintPotentialUBPL(self, content_subtype: str, lp_data: List[dict]) -> bool:
+    def _testRestraintPotentialUBPL(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect upper-bound-parabolic-linear potential.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -2024,28 +2024,28 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialUBPL() "
                                                       "++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialUBPL() ++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testRestraintPotentialLBPL(self, content_subtype: str, lp_data: List[dict]) -> bool:
+    def _testRestraintPotentialLBPL(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect lower-bound-parabolic-linear potential.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -2069,28 +2069,28 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialLBPL() "
                                                       "++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLBPL() ++ Error  - {str(e)}\n")
 
             return False
 
         return True
 
-    def __testRestraintPonentialLHorP(self, content_subtype: str, lp_data: List[dict]) -> bool:
+    def _testRestraintPonentialLHorP(self, content_subtype: str, lp_data: List[dict]) -> bool:
         """ Detect log-harmonic or parabolic potential.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
         if lp_data is None or len(lp_data) == 0:
             return False
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -2118,12 +2118,12 @@ class NmrDpRemediation:
 
         except Exception as e:  # pylint: disable=broad-exception-caught
 
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.__testRestraintPotentialLHorP() "
                                                       "++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.__testRestraintPotentialLHorP() ++ Error  - {str(e)}\n")
 
             return False
 
@@ -2133,20 +2133,20 @@ class NmrDpRemediation:
         """ Update polymer sequence.
         """
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
         file_type = input_source_dic['file_type']
 
-        master_entry = self.__reg.star_data[0]
+        master_entry = self._reg.star_data[0]
 
         content_subtype = 'poly_seq'
 
         sf_category = SF_CATEGORIES[file_type][content_subtype]
         lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-        key_items = self.__reg.key_items[file_type][content_subtype]
+        key_items = self._reg.key_items[file_type][content_subtype]
         data_items = DATA_ITEMS[file_type][content_subtype]
 
         orig_lp_data = None
@@ -2175,16 +2175,16 @@ class NmrDpRemediation:
             except KeyError:
                 pass
 
-            orig_lp_data = next((lp['data'] for lp in self.__reg.lp_data[content_subtype]
+            orig_lp_data = next((lp['data'] for lp in self._reg.lp_data[content_subtype]
                                  if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
 
             if orig_lp_data is None:
 
                 try:
 
-                    orig_lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
+                    orig_lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
                                                               enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                              excl_missing_data=self.__reg.excl_missing_data)[0]
+                                                              excl_missing_data=self._reg.excl_missing_data)[0]
 
                 except Exception:  # pylint: disable=broad-exception-caught
                     pass
@@ -2208,7 +2208,7 @@ class NmrDpRemediation:
                     if 'Entry_ID' in orig_lp_data[0]:
                         has_entry_id = True
 
-            elif not self.__reg.has_star_entity and not self.__reg.update_poly_seq and file_type == 'nef':  # DAOTHER-6694, 8751
+            elif not self._reg.has_star_entity and not self._reg.update_poly_seq and file_type == 'nef':  # DAOTHER-6694, 8751
                 return False, None
 
         orig_asm_sf = None
@@ -2218,7 +2218,7 @@ class NmrDpRemediation:
         except IndexError:
             pass
 
-        entity_assembly = self.__reg.caC['entity_assembly']
+        entity_assembly = self._reg.caC['entity_assembly']
 
         if entity_assembly is None:
             return False, None
@@ -2237,25 +2237,25 @@ class NmrDpRemediation:
                         for item in entity_assembly
                         if item['entity_type'] == 'non-polymer' and 'ION' in item['entity_desc'])
 
-        self.__reg.sail_flag = False
+        self._reg.sail_flag = False
 
-        if self.__reg.cR.hasItem('struct_keywords', 'text'):
-            struct_keywords = self.__reg.cR.getDictList('struct_keywords')
+        if self._reg.cR.hasItem('struct_keywords', 'text'):
+            struct_keywords = self._reg.cR.getDictList('struct_keywords')
             text = struct_keywords[0]['text'].lower()
             if 'sail' in text or 'stereo-array isotope labeling' in text:
-                self.__reg.sail_flag = True
+                self._reg.sail_flag = True
 
-        if self.__reg.cR.hasItem('pdbx_nmr_exptl_sample', 'isotopic_labeling'):
-            exptl_sample = self.__reg.cR.getDictList('pdbx_nmr_exptl_sample')
+        if self._reg.cR.hasItem('pdbx_nmr_exptl_sample', 'isotopic_labeling'):
+            exptl_sample = self._reg.cR.getDictList('pdbx_nmr_exptl_sample')
             for item in exptl_sample:
                 text = item['isotopic_labeling'].lower()
                 if 'sail' in text or 'stereo-array isotope labeling' in text:
-                    self.__reg.sail_flag = True
+                    self._reg.sail_flag = True
                     break
 
-        chem_comp = self.__reg.cR.getDictList('chem_comp')
+        chem_comp = self._reg.cR.getDictList('chem_comp')
 
-        self.__paramag = len(chem_comp) > 0\
+        self._paramag = len(chem_comp) > 0\
             and any(True for cc in chem_comp if cc['type'] == 'non-poly' and cc['id'] in PARAMAGNETIC_ELEMENTS)
 
         has_cys = any(True for cc in chem_comp
@@ -2263,11 +2263,11 @@ class NmrDpRemediation:
                           or (cc['type'] == 'D-peptide linking' and cc['id'] == 'DCY')))
         if has_cys:
             cys_total = 0
-            for ps in self.__reg.caC['polymer_sequence']:
+            for ps in self._reg.caC['polymer_sequence']:
                 cys_total += ps['comp_id'].count('CYS') + ps['comp_id'].count('DCY')
             disul_cys = other_cys = 0
-            if self.__reg.cR.hasCategory('struct_conn'):
-                bonds = self.__reg.cR.getDictList('struct_conn')
+            if self._reg.cR.hasCategory('struct_conn'):
+                bonds = self._reg.cR.getDictList('struct_conn')
                 for bond in bonds:
                     auth_comp_id_1 = bond['ptnr1_auth_comp_id']
                     atom_id_1 = bond['ptnr1_label_atom_id']
@@ -2352,11 +2352,11 @@ class NmrDpRemediation:
         else:
             asm_sf.add_tag('Sf_category', SF_CATEGORIES[file_type][content_subtype])
             asm_sf.add_tag('Sf_framecode', sf_framecode)
-            asm_sf.add_tag('Entry_ID', self.__reg.entry_id)
+            asm_sf.add_tag('Entry_ID', self._reg.entry_id)
             asm_sf.add_tag('ID', 1)
-            assembly_name = self.__reg.assembly_name
-            if assembly_name in EMPTY_VALUE and self.__reg.cR.hasItem('struct', 'pdbx_descriptor'):
-                struct = self.__reg.cR.getDictList('struct')
+            assembly_name = self._reg.assembly_name
+            if assembly_name in EMPTY_VALUE and self._reg.cR.hasItem('struct', 'pdbx_descriptor'):
+                struct = self._reg.cR.getDictList('struct')
                 assembly_name = struct[0]['pdbx_descriptor']
             asm_sf.add_tag('Name', assembly_name)
             asm_sf.add_tag('BMRB_code', None)
@@ -2367,7 +2367,7 @@ class NmrDpRemediation:
             asm_sf.add_tag('Ambiguous_conformational_states', None)
             asm_sf.add_tag('Ambiguous_chem_comp_sites', None)
             asm_sf.add_tag('Molecules_in_chemical_exchange', None)  # filled 'yes' if conformational isomers exist
-            asm_sf.add_tag('Paramagnetic', 'yes' if self.__paramag else 'no')
+            asm_sf.add_tag('Paramagnetic', 'yes' if self._paramag else 'no')
             asm_sf.add_tag('Thiol_state', thiol_state)
             asm_sf.add_tag('Molecular_mass', f'{formula_weight:.3f}' if isinstance(formula_weight, float) else None)
             asm_sf.add_tag('Enzyme_commission_number', ec_number)
@@ -2435,38 +2435,38 @@ class NmrDpRemediation:
                 _auth_asym_id = 'auth_asym_id' if 'fixed_auth_asym_id' not in item else 'fixed_auth_asym_id'
                 row[4] = item[_label_asym_id]
                 row[5] = item[_auth_asym_id]
-                if len(self.__reg.label_asym_id_with_exptl_data) > 0:
+                if len(self._reg.label_asym_id_with_exptl_data) > 0:
                     if any(True for label_asym_id in item[_label_asym_id].split(',')
-                           if label_asym_id in self.__reg.label_asym_id_with_exptl_data):
+                           if label_asym_id in self._reg.label_asym_id_with_exptl_data):
                         row[6] = 'yes'
                 # Physical_state
                 # Conformational_isomer
-                if len(self.__reg.auth_asym_ids_with_chem_exch) > 0:
+                if len(self._reg.auth_asym_ids_with_chem_exch) > 0:
                     if any(True for auth_asym_id in item[_auth_asym_id].split(',')
-                           if auth_asym_id in self.__reg.auth_asym_ids_with_chem_exch.keys()):
+                           if auth_asym_id in self._reg.auth_asym_ids_with_chem_exch.keys()):
                         row[8] = row[9] = 'yes'
-                if entity_total[entity_id] > 0 and entity_type == 'polymer' and len(self.__reg.label_asym_id_with_exptl_data) > 0:
+                if entity_total[entity_id] > 0 and entity_type == 'polymer' and len(self._reg.label_asym_id_with_exptl_data) > 0:
                     equiv_entity_assemblies = [_item for _item in entity_assembly if _item['entity_id'] == entity_id]
                     _item = next((_item for _item in equiv_entity_assemblies
                                   if any(True for label_asym_id in _item[_label_asym_id].split(',')
-                                         if label_asym_id in self.__reg.label_asym_id_with_exptl_data)), None)
+                                         if label_asym_id in self._reg.label_asym_id_with_exptl_data)), None)
                     if _item is not None:
                         group_id = sorted(sorted(set(_item[_label_asym_id].split(','))), key=len)[0]
                         if any(True for __item in equiv_entity_assemblies
                                if not any(True for label_asym_id in __item[_label_asym_id].split(',')
-                                          if label_asym_id in self.__reg.label_asym_id_with_exptl_data)):
+                                          if label_asym_id in self._reg.label_asym_id_with_exptl_data)):
                             if _item == item or row[6] is None or row[6] == 'no':
                                 row[10] = group_id
                 row[11], row[12] = item['entity_role'], item['entity_details']
-                row[13], row[14] = 1, self.__reg.entry_id
+                row[13], row[14] = 1, self._reg.entry_id
 
-                if len(self.__reg.auth_asym_ids_with_chem_exch) > 0:
+                if len(self._reg.auth_asym_ids_with_chem_exch) > 0:
                     auth_asym_id = row[5]
-                    if auth_asym_id in self.__reg.auth_asym_ids_with_chem_exch.keys():
-                        conformational_states = len(self.__reg.auth_asym_ids_with_chem_exch[auth_asym_id]) + 1
+                    if auth_asym_id in self._reg.auth_asym_ids_with_chem_exch.keys():
+                        conformational_states = len(self._reg.auth_asym_ids_with_chem_exch[auth_asym_id]) + 1
                         beg_model_id = 1
-                        end_model_id = self.__reg.total_models // conformational_states
-                        seq_ids = [k for k, v in self.__reg.auth_seq_ids_with_chem_exch.items()
+                        end_model_id = self._reg.total_models // conformational_states
+                        seq_ids = [k for k, v in self._reg.auth_seq_ids_with_chem_exch.items()
                                    if v['chain_id'] == auth_asym_id]
                         if len(seq_ids) > 0:
                             row[12] = f'Conformational isomer 1, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
@@ -2475,26 +2475,26 @@ class NmrDpRemediation:
 
                 ea_loop.add_data(row)
 
-            if len(self.__reg.auth_asym_ids_with_chem_exch) > 0:
+            if len(self._reg.auth_asym_ids_with_chem_exch) > 0:
                 _entity_assembly_id = ea_loop.data[-1][0]
                 for idx, item in enumerate(entity_assembly):
                     entity_type = item['entity_type']
                     if entity_type in ('non-polymer', 'water'):
                         continue
                     auth_asym_id = item['auth_asym_id']
-                    if auth_asym_id in self.__reg.auth_asym_ids_with_chem_exch.keys():
-                        for offset, _auth_asym_id in enumerate(self.__reg.auth_asym_ids_with_chem_exch[auth_asym_id], start=2):
+                    if auth_asym_id in self._reg.auth_asym_ids_with_chem_exch.keys():
+                        for offset, _auth_asym_id in enumerate(self._reg.auth_asym_ids_with_chem_exch[auth_asym_id], start=2):
                             row = ea_loop.data[idx]
                             _row = copy.copy(row)
                             _entity_assembly_id += 1
                             _row[0] = _entity_assembly_id
                             _row[1] = f'entity_{entity_id}_{offset}'
                             _row[5] = _auth_asym_id
-                            conformational_states = len(self.__reg.auth_asym_ids_with_chem_exch[auth_asym_id]) + 1
-                            model_ids_per_state = self.__reg.total_models // conformational_states
+                            conformational_states = len(self._reg.auth_asym_ids_with_chem_exch[auth_asym_id]) + 1
+                            model_ids_per_state = self._reg.total_models // conformational_states
                             beg_model_id = 1 + model_ids_per_state * (offset - 1)
                             end_model_id = model_ids_per_state * offset
-                            seq_ids = [k for k, v in self.__reg.auth_seq_ids_with_chem_exch.items()
+                            seq_ids = [k for k, v in self._reg.auth_seq_ids_with_chem_exch.items()
                                        if v['chain_id'] == _auth_asym_id]
                             if len(seq_ids) > 0:
                                 _row[12] = f'Conformational isomer {offset}, PDB_model_num range: {beg_model_id}-{end_model_id}, '\
@@ -2526,23 +2526,23 @@ class NmrDpRemediation:
         if has_entry_id:
             loop.add_tag(f'{lp_category}.Entry_ID')
 
-        cif_poly_seq = self.__reg.caC['polymer_sequence']
-        entity_assembly = self.__reg.caC['entity_assembly']
-        auth_to_star_seq = self.__reg.caC['auth_to_star_seq']
-        auth_to_orig_seq = self.__reg.caC['auth_to_orig_seq']
+        cif_poly_seq = self._reg.caC['polymer_sequence']
+        entity_assembly = self._reg.caC['entity_assembly']
+        auth_to_star_seq = self._reg.caC['auth_to_star_seq']
+        auth_to_orig_seq = self._reg.caC['auth_to_orig_seq']
         asym_to_orig_seq = {}
-        if self.__reg.caC is not None:
-            if 'asym_to_orig_seq' in self.__reg.caC:
-                asym_to_orig_seq = self.__reg.caC['asym_to_orig_seq']
+        if self._reg.caC is not None:
+            if 'asym_to_orig_seq' in self._reg.caC:
+                asym_to_orig_seq = self._reg.caC['asym_to_orig_seq']
             else:
                 for _k, _v in auth_to_orig_seq.items():
                     auth_asym_id = _k[0]
                     if auth_asym_id not in asym_to_orig_seq:
                         asym_to_orig_seq[auth_asym_id] = {}
                     asym_to_orig_seq[auth_asym_id][(_k[1], _k[2])] = _v
-                self.__reg.caC['asym_to_orig_seq'] = asym_to_orig_seq
-                if self.__reg.asmChkCachePath is not None:
-                    write_as_pickle(self.__reg.caC, self.__reg.asmChkCachePath)
+                self._reg.caC['asym_to_orig_seq'] = asym_to_orig_seq
+                if self._reg.asmChkCachePath is not None:
+                    write_as_pickle(self._reg.caC, self._reg.asmChkCachePath)
 
         # DAOTHER-9644: sort by Entity_assembly_ID and Comp_index_ID due to inserted sequence for truncated loop
         _auth_to_star_seq = dict(sorted(auth_to_star_seq.items(), key=lambda item: item[1]))
@@ -2582,10 +2582,10 @@ class NmrDpRemediation:
 
                 seq_keys.add(seq_key)
 
-                if self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq
+                if self._reg.nmr_ext_poly_seq is not None and len(self._reg.nmr_ext_poly_seq) > 0\
+                   and any(True for d in self._reg.nmr_ext_poly_seq
                            if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
-                    for d in self.__reg.nmr_ext_poly_seq:
+                    for d in self._reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
                             _seq_key = (entity_assembly_id, _auth_seq_id)
@@ -2623,10 +2623,10 @@ class NmrDpRemediation:
 
                 if entity_type == 'polymer':
                     ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == auth_asym_id)
-                    nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id,
+                    nmr_ps = self._reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id,
                                                                                      label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
-                        nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0],
+                        nmr_ps = self._reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0],
                                                                                          label_scheme=False)
 
                     if nmr_ps is not None:
@@ -2634,7 +2634,7 @@ class NmrDpRemediation:
                             j = ps['auth_seq_id'].index(auth_seq_id)
                             label_seq_id = ps['seq_id'][j]
                             length = len(ps['seq_id'])
-                            cyclic = self.__reg.dpV.isCyclicPolymer(nmr_ps['chain_id'])
+                            cyclic = self._reg.dpV.isCyclicPolymer(nmr_ps['chain_id'])
                             if cyclic and label_seq_id in (1, length):
                                 row[seq_link_col] = 'cyclic'
                             elif label_seq_id == 1 and length == 1:
@@ -2653,7 +2653,7 @@ class NmrDpRemediation:
                             entity_poly_type = next((item['entity_poly_type'] for item in entity_assembly
                                                      if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
                             if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
-                                if self.__reg.dpV.isProtCis(nmr_ps['chain_id'], seq_id):
+                                if self._reg.dpV.isProtCis(nmr_ps['chain_id'], seq_id):
                                     row[cis_res_col] = 'true'
                                 elif auth_comp_id in ('PRO', 'GLY'):
                                     row[cis_res_col] = 'false'
@@ -2678,10 +2678,10 @@ class NmrDpRemediation:
                 nef_index += 1
                 index += 1
 
-                if row[seq_link_col] == 'end' and self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq
+                if row[seq_link_col] == 'end' and self._reg.nmr_ext_poly_seq is not None and len(self._reg.nmr_ext_poly_seq) > 0\
+                   and any(True for d in self._reg.nmr_ext_poly_seq
                            if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
-                    for d in self.__reg.nmr_ext_poly_seq:
+                    for d in self._reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
@@ -2702,14 +2702,14 @@ class NmrDpRemediation:
 
                             nef_index += 1
 
-            if len(self.__reg.auth_asym_ids_with_chem_exch) > 0:
+            if len(self._reg.auth_asym_ids_with_chem_exch) > 0:
                 for item in entity_assembly:
                     entity_type = item['entity_type']
                     if entity_type in ('non-polymer', 'water'):
                         continue
                     auth_asym_id = item['auth_asym_id']
-                    if auth_asym_id in self.__reg.auth_asym_ids_with_chem_exch.keys():
-                        for _auth_asym_id in self.__reg.auth_asym_ids_with_chem_exch[auth_asym_id]:
+                    if auth_asym_id in self._reg.auth_asym_ids_with_chem_exch.keys():
+                        for _auth_asym_id in self._reg.auth_asym_ids_with_chem_exch[auth_asym_id]:
                             for row in loop:
                                 if row[chain_id_col] == auth_asym_id:
                                     _row = copy.copy(row)
@@ -2722,14 +2722,14 @@ class NmrDpRemediation:
 
             asm_sf.add_loop(loop)
 
-            if self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0:
-                for d in self.__reg.nmr_ext_poly_seq:
+            if self._reg.nmr_ext_poly_seq is not None and len(self._reg.nmr_ext_poly_seq) > 0:
+                for d in self._reg.nmr_ext_poly_seq:
                     if 'touch' in d:
                         del d['touch']
 
             # refresh _nef_covalent_links loop
 
-            if self.__reg.cR.hasCategory('struct_conn'):
+            if self._reg.cR.hasCategory('struct_conn'):
 
                 lp_category = '_nef_covalent_links'
 
@@ -2749,7 +2749,7 @@ class NmrDpRemediation:
 
                 b_loop.add_tag(tags)
 
-                bonds = self.__reg.cR.getDictList('struct_conn')
+                bonds = self._reg.cR.getDictList('struct_conn')
 
                 for bond in bonds:
                     bond_type = bond['conn_type_id']
@@ -2842,10 +2842,10 @@ class NmrDpRemediation:
 
                 seq_keys.add(seq_key)
 
-                if self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq
+                if self._reg.nmr_ext_poly_seq is not None and len(self._reg.nmr_ext_poly_seq) > 0\
+                   and any(True for d in self._reg.nmr_ext_poly_seq
                            if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id):
-                    for d in self.__reg.nmr_ext_poly_seq:
+                    for d in self._reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id and 'touch' not in d:
                             _offset = seq_id - auth_seq_id
                             _auth_seq_id, _auth_comp_id = d['auth_seq_id'], d['auth_comp_id']
@@ -2867,7 +2867,7 @@ class NmrDpRemediation:
                             if idx_col != -1:
                                 row[idx_col] = nef_index
                             if entry_id_col != -1:
-                                row[entry_id_col] = self.__reg.entry_id
+                                row[entry_id_col] = self._reg.entry_id
 
                             loop.add_data(row)
 
@@ -2895,10 +2895,10 @@ class NmrDpRemediation:
 
                 if entity_type == 'polymer':
                     ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == auth_asym_id)
-                    nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id,
+                    nmr_ps = self._reg.report.getNmrPolymerSequenceWithModelChainId(auth_asym_id,
                                                                                      label_scheme=False)
                     if nmr_ps is None and 'identical_auth_chain_id' in ps:
-                        nmr_ps = self.__reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0],
+                        nmr_ps = self._reg.report.getNmrPolymerSequenceWithModelChainId(ps['identical_auth_chain_id'][0],
                                                                                          label_scheme=False)
 
                     if nmr_ps is not None:
@@ -2908,7 +2908,7 @@ class NmrDpRemediation:
                             if label_seq_id is not None:
                                 try:
                                     length = len(ps['seq_id'])
-                                    cyclic = self.__reg.dpV.isCyclicPolymer(nmr_ps['chain_id'])
+                                    cyclic = self._reg.dpV.isCyclicPolymer(nmr_ps['chain_id'])
                                     if cyclic and label_seq_id in (1, length):
                                         row[seq_link_col] = 'cyclic'
                                     elif label_seq_id == 1 and length == 1:
@@ -2929,7 +2929,7 @@ class NmrDpRemediation:
                             entity_poly_type = next((item['entity_poly_type'] for item in entity_assembly
                                                      if item['entity_id'] == entity_id and item['entity_type'] == 'polymer'), None)
                             if entity_poly_type is not None and entity_poly_type.startswith('polypeptide'):
-                                if self.__reg.dpV.isProtCis(nmr_ps['chain_id'], seq_id):
+                                if self._reg.dpV.isProtCis(nmr_ps['chain_id'], seq_id):
                                     row[cis_res_col] = 'yes'
                                 elif auth_comp_id in ('PRO', 'GLY'):
                                     row[cis_res_col] = 'no'
@@ -2952,7 +2952,7 @@ class NmrDpRemediation:
                         row[auth_var_id_col] = orig_row['Auth_variant_ID']
 
                 if entry_id_col != -1:
-                    row[entry_id_col] = self.__reg.entry_id
+                    row[entry_id_col] = self._reg.entry_id
 
                 if comp_id not in EMPTY_VALUE:
                     loop.add_data(row)
@@ -2960,10 +2960,10 @@ class NmrDpRemediation:
                 nef_index += 1
                 index += 1
 
-                if row[seq_link_col] == 'end' and self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq
+                if row[seq_link_col] == 'end' and self._reg.nmr_ext_poly_seq is not None and len(self._reg.nmr_ext_poly_seq) > 0\
+                   and any(True for d in self._reg.nmr_ext_poly_seq
                            if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id):
-                    for d in self.__reg.nmr_ext_poly_seq:
+                    for d in self._reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > auth_seq_id and 'touch' not in d:
                             if loop.data[-1][seq_link_col] == 'end':
                                 loop.data[-1][seq_link_col] = 'middle'
@@ -2985,7 +2985,7 @@ class NmrDpRemediation:
                             if idx_col != -1:
                                 row[idx_col] = nef_index
                             if entry_id_col != -1:
-                                row[entry_id_col] = self.__reg.entry_id
+                                row[entry_id_col] = self._reg.entry_id
 
                             loop.add_data(row)
 
@@ -2993,7 +2993,7 @@ class NmrDpRemediation:
 
                             nef_index += 1
 
-            if len(self.__reg.auth_asym_ids_with_chem_exch) > 0:
+            if len(self._reg.auth_asym_ids_with_chem_exch) > 0:
                 _entity_assembly_id = loop.data[-1][chain_id_col]
                 for item in entity_assembly:
                     entity_type = item['entity_type']
@@ -3001,8 +3001,8 @@ class NmrDpRemediation:
                         continue
                     entity_id = item['entity_id']
                     auth_asym_id = item['auth_asym_id']
-                    if auth_asym_id in self.__reg.auth_asym_ids_with_chem_exch.keys():
-                        for _auth_asym_id in self.__reg.auth_asym_ids_with_chem_exch[auth_asym_id]:
+                    if auth_asym_id in self._reg.auth_asym_ids_with_chem_exch.keys():
+                        for _auth_asym_id in self._reg.auth_asym_ids_with_chem_exch[auth_asym_id]:
                             _entity_assembly_id += 1
                             for row in loop:
                                 if row[ent_id_col] == entity_id and row[auth_asym_id_col] == auth_asym_id:
@@ -3019,18 +3019,18 @@ class NmrDpRemediation:
 
             asm_sf.add_loop(loop)
 
-            if self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0:
-                for d in self.__reg.nmr_ext_poly_seq:
+            if self._reg.nmr_ext_poly_seq is not None and len(self._reg.nmr_ext_poly_seq) > 0:
+                for d in self._reg.nmr_ext_poly_seq:
                     if 'touch' in d:
                         del d['touch']
 
-            self.__reg.chem_comp_asm_dat =\
+            self._reg.chem_comp_asm_dat =\
                 loop.get_tag(['Entity_assembly_ID', 'Entity_ID', 'Comp_index_ID', 'Seq_ID', 'Comp_ID',
                               'Auth_asym_ID', 'Auth_seq_ID'])
 
             # refresh _Bond loop
 
-            if self.__reg.cR.hasCategory('struct_conn'):
+            if self._reg.cR.hasCategory('struct_conn'):
 
                 lp_category = '_Bond'
 
@@ -3076,7 +3076,7 @@ class NmrDpRemediation:
 
                 b_loop.add_tag(tags)
 
-                bonds = self.__reg.cR.getDictList('struct_conn')
+                bonds = self._reg.cR.getDictList('struct_conn')
 
                 index = 1
 
@@ -3162,7 +3162,7 @@ class NmrDpRemediation:
                            and {atom_id_1, atom_id_2} == {'C', 'N'} and abs(auth_seq_id_1 - auth_seq_id_2) > 1:
                             row[1], row[2] = 'peptide', "sing"
 
-                    row[25], row[26] = 1, self.__reg.entry_id
+                    row[25], row[26] = 1, self._reg.entry_id
 
                     b_loop.add_data(row)
 
@@ -3236,12 +3236,12 @@ class NmrDpRemediation:
                             if auth_seq_id is None:
                                 continue
 
-                            if self.__reg.ccU.updateChemCompDict(comp_id):
-                                for b in self.__reg.ccU.lastBondDictList:
+                            if self._reg.ccU.updateChemCompDict(comp_id):
+                                for b in self._reg.ccU.lastBondDictList:
                                     if atom_id in (b['atom_id_1'], b['atom_id_2']):
                                         _atom_id = b['atom_id_1'] if b['atom_id_1'] != atom_id\
                                             else b['atom_id_2']
-                                        if any(True for a in self.__reg.ccU.lastAtomDictList
+                                        if any(True for a in self._reg.ccU.lastAtomDictList
                                                if _atom_id == a['atom_id'] and a['leaving_atom_flag'] == 'Y'):
                                             leaving_atom_id = _atom_id
                                             break
@@ -3270,7 +3270,7 @@ class NmrDpRemediation:
                                         row[6], row[7], row[8], row[9] =\
                                             auth_asym_id, auth_seq_id, auth_comp_id, leaving_atom_id
 
-                                        row[10], row[11] = 1, self.__reg.entry_id
+                                        row[10], row[11] = 1, self._reg.entry_id
 
                                         eda_loop.add_data(row)
 
@@ -3287,12 +3287,12 @@ class NmrDpRemediation:
                                 if auth_seq_id is None:
                                     continue
 
-                                if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    for b in self.__reg.ccU.lastBondDictList:
+                                if self._reg.ccU.updateChemCompDict(comp_id):
+                                    for b in self._reg.ccU.lastBondDictList:
                                         if atom_id in (b['atom_id_1'], b['atom_id_2']):
                                             _atom_id = b['atom_id_1'] if b['atom_id_1'] != atom_id\
                                                 else b['atom_id_2']
-                                            if any(True for a in self.__reg.ccU.lastAtomDictList
+                                            if any(True for a in self._reg.ccU.lastAtomDictList
                                                    if _atom_id == a['atom_id']
                                                    and a['leaving_atom_flag'] == 'Y'):
                                                 leaving_atom_id = _atom_id
@@ -3322,7 +3322,7 @@ class NmrDpRemediation:
                                             row[6], row[7], row[8], row[9] =\
                                                 auth_asym_id, auth_seq_id, auth_comp_id, leaving_atom_id
 
-                                            row[10], row[11] = 1, self.__reg.entry_id
+                                            row[10], row[11] = 1, self._reg.entry_id
 
                                             eda_loop.add_data(row)
 
@@ -3360,7 +3360,7 @@ class NmrDpRemediation:
                                     row[6], row[7], row[8], row[9] =\
                                         auth_asym_id, auth_seq_id, auth_comp_id, leaving_atom_id
 
-                                    row[10], row[11] = 1, self.__reg.entry_id
+                                    row[10], row[11] = 1, self._reg.entry_id
 
                                     eda_loop.add_data(row)
 
@@ -3399,7 +3399,7 @@ class NmrDpRemediation:
                                     row[6], row[7], row[8], row[9] =\
                                         auth_asym_id, auth_seq_id, auth_comp_id, leaving_atom_id
 
-                                    row[10], row[11] = 1, self.__reg.entry_id
+                                    row[10], row[11] = 1, self._reg.entry_id
 
                                     eda_loop.add_data(row)
 
@@ -3438,7 +3438,7 @@ class NmrDpRemediation:
                                     row[6], row[7], row[8], row[9] =\
                                         auth_asym_id, auth_seq_id, auth_comp_id, leaving_atom_id
 
-                                    row[10], row[11] = 1, self.__reg.entry_id
+                                    row[10], row[11] = 1, self._reg.entry_id
 
                                     eda_loop.add_data(row)
 
@@ -3477,7 +3477,7 @@ class NmrDpRemediation:
                                     row[6], row[7], row[8], row[9] =\
                                         auth_asym_id, auth_seq_id, auth_comp_id, leaving_atom_id
 
-                                    row[10], row[11] = 1, self.__reg.entry_id
+                                    row[10], row[11] = 1, self._reg.entry_id
 
                                     eda_loop.add_data(row)
 
@@ -3489,7 +3489,7 @@ class NmrDpRemediation:
 
             # append extra categories
 
-            if self.__reg.retain_original and file_type == 'nmr-star':
+            if self._reg.retain_original and file_type == 'nmr-star':
 
                 for loop in orig_asm_sf.loops:
 
@@ -3516,15 +3516,15 @@ class NmrDpRemediation:
         """ Update entity saveframe(s).
         """
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
 
-        master_entry = self.__reg.star_data[0]
+        master_entry = self._reg.star_data[0]
 
-        cif_poly_seq = self.__reg.caC['polymer_sequence']
-        entity_assembly = self.__reg.caC['entity_assembly']
+        cif_poly_seq = self._reg.caC['polymer_sequence']
+        entity_assembly = self._reg.caC['entity_assembly']
 
         # refresh _Entity saveframe
 
@@ -3553,7 +3553,7 @@ class NmrDpRemediation:
             ent_sf.set_tag_prefix(SF_TAG_PREFIXES[file_type][content_subtype])
             ent_sf.add_tag('Sf_category', SF_CATEGORIES[file_type][content_subtype])
             ent_sf.add_tag('Sf_framecode', sf_framecode)
-            ent_sf.add_tag('Entry_ID', self.__reg.entry_id)
+            ent_sf.add_tag('Entry_ID', self._reg.entry_id)
             ent_sf.add_tag('ID', entity_id)
             ent_sf.add_tag('BMRB_code', None if entity_type not in ('non-polymer', 'water') else item['comp_id'])
             ent_sf.add_tag('Name', item['entity_desc'])
@@ -3583,10 +3583,10 @@ class NmrDpRemediation:
                 if poly_type.startswith('polypeptide'):
                     _poly_type = poly_type
 
-                    if self.__reg.cR.hasCategory('struct_conn'):
+                    if self._reg.cR.hasCategory('struct_conn'):
                         auth_asym_ids = item['auth_asym_id'].split(',')
 
-                        bonds = self.__reg.cR.getDictList('struct_conn')
+                        bonds = self._reg.cR.getDictList('struct_conn')
 
                         for bond in bonds:
 
@@ -3643,26 +3643,26 @@ class NmrDpRemediation:
             if entity_type == 'polymer':
                 one_letter_code_can = item['one_letter_code_can']
                 one_letter_code = item['one_letter_code']
-                if self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-                   and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] in auth_asym_ids):
+                if self._reg.nmr_ext_poly_seq is not None and len(self._reg.nmr_ext_poly_seq) > 0\
+                   and any(True for d in self._reg.nmr_ext_poly_seq if d['auth_chain_id'] in auth_asym_ids):
                     ps = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] in auth_asym_ids)
                     auth_seq_ids = list(filter(None, ps['auth_seq_id']))
                     min_auth_seq_id = min(auth_seq_ids)
                     max_auth_seq_id = max(auth_seq_ids)
                     comp_ids = []
-                    for d in self.__reg.nmr_ext_poly_seq:
+                    for d in self._reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] in auth_asym_ids:
                             if d['auth_seq_id'] < min_auth_seq_id:
                                 comp_ids.append(d['auth_comp_id'])
                                 nmr_ext_monomers += 1
-                                nmr_ext_fw += self.__reg.ccU.getEffectiveFormulaWeight(d['auth_comp_id'])
+                                nmr_ext_fw += self._reg.ccU.getEffectiveFormulaWeight(d['auth_comp_id'])
                     comp_ids.extend(ps['comp_id'])
-                    for d in self.__reg.nmr_ext_poly_seq:
+                    for d in self._reg.nmr_ext_poly_seq:
                         if d['auth_chain_id'] in auth_asym_ids:
                             if d['auth_seq_id'] > max_auth_seq_id:
                                 comp_ids.append(d['auth_comp_id'])
                                 nmr_ext_monomers += 1
-                                nmr_ext_fw += self.__reg.ccU.getEffectiveFormulaWeight(d['auth_comp_id'])
+                                nmr_ext_fw += self._reg.ccU.getEffectiveFormulaWeight(d['auth_comp_id'])
                     one_letter_code_can = getOneLetterCodeCanSequence(comp_ids)
                     one_letter_code = getOneLetterCodeSequence(comp_ids)
 
@@ -3682,7 +3682,7 @@ class NmrDpRemediation:
                            None if entity_type in ('non-polymer', 'water') else item['num_of_monomers'] + nmr_ext_monomers)
             ent_sf.add_tag('Number_of_nonpolymer_components', None if entity_type not in ('non-polymer', 'water') else 1)
             ent_sf.add_tag('Paramagnetic',
-                           'no' if not self.__paramag or entity_type not in ('non-polymer', 'water')
+                           'no' if not self._paramag or entity_type not in ('non-polymer', 'water')
                            or item['comp_id'] not in PARAMAGNETIC_ELEMENTS else 'yes')
 
             _label_asym_id = 'label_asym_id' if 'fixed_label_asym_id' not in item else 'fixed_label_asym_id'
@@ -3696,8 +3696,8 @@ class NmrDpRemediation:
 
             if cys_total > 0:
                 disul_cys = other_cys = 0
-                if self.__reg.cR.hasCategory('struct_conn'):
-                    bonds = self.__reg.cR.getDictList('struct_conn')
+                if self._reg.cR.hasCategory('struct_conn'):
+                    bonds = self._reg.cR.getDictList('struct_conn')
                     for bond in bonds:
                         label_asym_id_1 = bond['ptnr1_label_asym_id']
                         auth_comp_id_1 = bond['ptnr1_auth_comp_id']
@@ -3755,7 +3755,7 @@ class NmrDpRemediation:
 
             # refresh _Entity_common_name loop
 
-            if self.__reg.cR.hasCategory('entity_name_com'):
+            if self._reg.cR.hasCategory('entity_name_com'):
                 lp_category = '_Entity_common_name'
                 ecn_loop = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -3773,13 +3773,13 @@ class NmrDpRemediation:
 
                 ecn_loop.add_tag(tags)
 
-                ent_name_coms = self.__reg.cR.getDictList('entity_name_com')
+                ent_name_coms = self._reg.cR.getDictList('entity_name_com')
                 for ent_name_com in ent_name_coms:
                     if int(ent_name_com['entity_id']) == entity_id:
                         row = [None] * len(tags)
 
                         row[0], row[1], row[2], row[3] =\
-                            ent_name_com['name'], 'common', entity_id, self.__reg.entry_id
+                            ent_name_com['name'], 'common', entity_id, self._reg.entry_id
 
                         ecn_loop.add_data(row)
 
@@ -3788,7 +3788,7 @@ class NmrDpRemediation:
 
             # refresh _Entity_systematic_name loop
 
-            if self.__reg.cR.hasCategory('entity_name_sys'):
+            if self._reg.cR.hasCategory('entity_name_sys'):
                 lp_category = '_Entity_systematic_name'
                 esn_loop = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -3807,13 +3807,13 @@ class NmrDpRemediation:
 
                 esn_loop.add_tag(tags)
 
-                ent_name_syss = self.__reg.cR.getDictList('entity_name_sys')
+                ent_name_syss = self._reg.cR.getDictList('entity_name_sys')
                 for ent_name_sys in ent_name_syss:
                     if int(ent_name_sys['entity_id']) == entity_id:
                         row = [None] * len(tags)
 
                         row[0], row[1], row[2], row[3] =\
-                            ent_name_sys['name'], ent_name_sys.get('system'), entity_id, self.__reg.entry_id
+                            ent_name_sys['name'], ent_name_sys.get('system'), entity_id, self._reg.entry_id
 
                         esn_loop.add_data(row)
 
@@ -3822,7 +3822,7 @@ class NmrDpRemediation:
 
             # refresh _Entity_keyword loop
 
-            if self.__reg.cR.hasCategory('entity_keywords'):
+            if self._reg.cR.hasCategory('entity_keywords'):
                 lp_category = '_Entity_keyword'
                 ek_loop = pynmrstar.Loop.from_scratch(lp_category)
 
@@ -3838,13 +3838,13 @@ class NmrDpRemediation:
 
                 ek_loop.add_tag(tags)
 
-                ent_keys = self.__reg.cR.getDictList('entity_keywords')
+                ent_keys = self._reg.cR.getDictList('entity_keywords')
                 for ent_key in ent_keys:
                     if int(ent_key['entity_id']) == entity_id and 'text' in ent_key and ent_key['text'] not in EMPTY_VALUE:
                         row = [None] * len(tags)
 
                         row[0], row[1], row[2] =\
-                            ent_key['text'], entity_id, self.__reg.entry_id
+                            ent_key['text'], entity_id, self._reg.entry_id
 
                         ek_loop.add_data(row)
 
@@ -3897,9 +3897,9 @@ class NmrDpRemediation:
                     max_auth_seq_id = max(auth_seq_ids)
                     max_seq_id = max(seq_ids)
                 elif entity_type == 'branched':
-                    ps = next(ps for ps in self.__reg.caC['branched'] if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in self._reg.caC['branched'] if ps['chain_id'] == chain_id)
                 else:
-                    ps = next(ps for ps in self.__reg.caC['non_polymer'] if ps['chain_id'] == chain_id)
+                    ps = next(ps for ps in self._reg.caC['non_polymer'] if ps['chain_id'] == chain_id)
 
                 seq_keys = set()
 
@@ -3915,11 +3915,11 @@ class NmrDpRemediation:
                             continue
                         auth_seq_id = seq_id
 
-                    if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None\
-                       and len(self.__reg.nmr_ext_poly_seq) > 0\
-                       and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
+                    if entity_type == 'polymer' and self._reg.nmr_ext_poly_seq is not None\
+                       and len(self._reg.nmr_ext_poly_seq) > 0\
+                       and any(True for d in self._reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                                and d['auth_seq_id'] < min_auth_seq_id):
-                        for d in self.__reg.nmr_ext_poly_seq:
+                        for d in self._reg.nmr_ext_poly_seq:
                             auth_asym_id = ps['auth_chain_id']
                             _auth_seq_id = ps['auth_seq_id'][ps['seq_id'].index(seq_id)]
                             if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < _auth_seq_id:
@@ -3933,7 +3933,7 @@ class NmrDpRemediation:
                                 row[0], row[1], row[2] = _seq_id, d['auth_seq_id'], d['auth_comp_id']
                                 if d['auth_comp_id'] not in STD_MON_DICT and d['auth_comp_id'] != 'HOH':
                                     row[3] = f"$chem_comp_{d['auth_comp_id']}"
-                                row[4], row[5] = entity_id, self.__reg.entry_id
+                                row[4], row[5] = entity_id, self._reg.entry_id
 
                                 eci_loop.add_data(row)
 
@@ -3946,18 +3946,18 @@ class NmrDpRemediation:
                     if comp_id not in STD_MON_DICT and comp_id != 'HOH':
                         row[3] = f"$chem_comp_{comp_id}"
 
-                    row[4], row[5] = entity_id, self.__reg.entry_id
+                    row[4], row[5] = entity_id, self._reg.entry_id
 
                     if comp_id not in EMPTY_VALUE:
                         eci_loop.add_data(row)
 
                     index += 1
 
-            if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None and len(self.__reg.nmr_ext_poly_seq) > 0\
-               and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
+            if entity_type == 'polymer' and self._reg.nmr_ext_poly_seq is not None and len(self._reg.nmr_ext_poly_seq) > 0\
+               and any(True for d in self._reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                        and d['auth_seq_id'] > max_auth_seq_id):
                 _offset = max_seq_id - max_auth_seq_id
-                for d in self.__reg.nmr_ext_poly_seq:
+                for d in self._reg.nmr_ext_poly_seq:
                     auth_asym_id = ps['auth_chain_id']
                     if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > max_auth_seq_id:
                         _seq_id = d['auth_seq_id'] + _offset
@@ -3965,7 +3965,7 @@ class NmrDpRemediation:
                         row[0], row[1], row[2] = _seq_id, d['auth_seq_id'], d['auth_comp_id']
                         if d['auth_comp_id'] not in STD_MON_DICT and d['auth_comp_id'] != 'HOH':
                             row[3] = f"$chem_comp_{d['auth_comp_id']}"
-                        row[4], row[5] = entity_id, self.__reg.entry_id
+                        row[4], row[5] = entity_id, self._reg.entry_id
 
                         eci_loop.add_data(row)
 
@@ -4004,7 +4004,7 @@ class NmrDpRemediation:
                         max_auth_seq_id = max(auth_seq_ids)
                         max_seq_id = max(seq_ids)
                     else:  # 'branched':
-                        ps = next(ps for ps in self.__reg.caC['branched'] if ps['chain_id'] == chain_id)
+                        ps = next(ps for ps in self._reg.caC['branched'] if ps['chain_id'] == chain_id)
 
                     for seq_id, comp_id in zip(ps['seq_id'], ps['auth_comp_id'] if 'auth_comp_id' in ps else ps['comp_id']):
                         seq_key = (ps['auth_chain_id'], seq_id)
@@ -4016,11 +4016,11 @@ class NmrDpRemediation:
                             if comp_id != item['comp_id']:
                                 continue
 
-                        if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None\
-                           and len(self.__reg.nmr_ext_poly_seq) > 0\
-                           and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
+                        if entity_type == 'polymer' and self._reg.nmr_ext_poly_seq is not None\
+                           and len(self._reg.nmr_ext_poly_seq) > 0\
+                           and any(True for d in self._reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                                    and d['auth_seq_id'] < min_auth_seq_id):
-                            for d in self.__reg.nmr_ext_poly_seq:
+                            for d in self._reg.nmr_ext_poly_seq:
                                 auth_asym_id = ps['auth_chain_id']
                                 auth_seq_id = ps['auth_seq_id'][ps['seq_id'].index(seq_id)]
                                 if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] < auth_seq_id:
@@ -4032,7 +4032,7 @@ class NmrDpRemediation:
                                     seq_keys.add(_seq_key)
                                     row = [None] * len(tags)
                                     row[1], row[2], row[3], row[4], row[5] =\
-                                        d['auth_comp_id'], _seq_id, _seq_id, entity_id, self.__reg.entry_id
+                                        d['auth_comp_id'], _seq_id, _seq_id, entity_id, self._reg.entry_id
 
                                     eps_loop.add_data(row)
 
@@ -4040,24 +4040,24 @@ class NmrDpRemediation:
 
                         seq_keys.add(seq_key)
 
-                        row[1], row[4], row[5] = comp_id, entity_id, self.__reg.entry_id
+                        row[1], row[4], row[5] = comp_id, entity_id, self._reg.entry_id
                         row[2] = row[3] = seq_id
 
                         if comp_id not in EMPTY_VALUE:
                             eps_loop.add_data(row)
 
-                    if entity_type == 'polymer' and self.__reg.nmr_ext_poly_seq is not None\
-                       and len(self.__reg.nmr_ext_poly_seq) > 0\
-                       and any(True for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
+                    if entity_type == 'polymer' and self._reg.nmr_ext_poly_seq is not None\
+                       and len(self._reg.nmr_ext_poly_seq) > 0\
+                       and any(True for d in self._reg.nmr_ext_poly_seq if d['auth_chain_id'] == ps['auth_chain_id']
                                and d['auth_seq_id'] > max_auth_seq_id):
                         _offset = max_seq_id - max_auth_seq_id
-                        for d in self.__reg.nmr_ext_poly_seq:
+                        for d in self._reg.nmr_ext_poly_seq:
                             auth_asym_id = ps['auth_chain_id']
                             if d['auth_chain_id'] == auth_asym_id and d['auth_seq_id'] > max_auth_seq_id:
                                 _seq_id = d['auth_seq_id'] + _offset
                                 row = [None] * len(tags)
                                 row[1], row[2], row[3], row[4], row[5] =\
-                                    d['auth_comp_id'], _seq_id, _seq_id, entity_id, self.__reg.entry_id
+                                    d['auth_comp_id'], _seq_id, _seq_id, entity_id, self._reg.entry_id
 
                                 eps_loop.add_data(row)
 
@@ -4072,12 +4072,12 @@ class NmrDpRemediation:
         if len(cif_ps['seq_id']) != len(nmr_ps['seq_id']) or cif_ps['comp_id'] == nmr_ps['comp_id']:
             return False
 
-        input_source = self.__reg.report.input_sources[file_list_id]
+        input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
 
-        if file_type == 'nef' or file_list_id >= len(self.__reg.star_data) or self.__reg.star_data[file_list_id] is None:
+        if file_type == 'nef' or file_list_id >= len(self._reg.star_data) or self._reg.star_data[file_list_id] is None:
             return False
 
         if input_source_dic['content_subtype'] is None:
@@ -4108,8 +4108,8 @@ class NmrDpRemediation:
 
         list_id = 1
 
-        if self.__reg.star_data_type[file_list_id] == 'Loop':
-            sf = self.__reg.star_data[file_list_id]
+        if self._reg.star_data_type[file_list_id] == 'Loop':
+            sf = self._reg.star_data[file_list_id]
 
             try:
                 poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
@@ -4119,10 +4119,10 @@ class NmrDpRemediation:
 
             allow_chain_id_mismatch = len(poly_seq) == 1
 
-            modified |= self.__updateCompIdInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+            modified |= self._updateCompIdInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
-        elif self.__reg.star_data_type[file_list_id] == 'Saveframe':
-            sf = self.__reg.star_data[file_list_id]
+        elif self._reg.star_data_type[file_list_id] == 'Saveframe':
+            sf = self._reg.star_data[file_list_id]
 
             try:
                 poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
@@ -4132,11 +4132,11 @@ class NmrDpRemediation:
 
             allow_chain_id_mismatch = len(poly_seq) == 1
 
-            modified |= self.__updateCompIdInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+            modified |= self._updateCompIdInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         else:
 
-            for list_id, sf in enumerate(self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category), start=1):
+            for list_id, sf in enumerate(self._reg.star_data[file_list_id].get_saveframes_by_category(sf_category), start=1):
 
                 if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
@@ -4149,17 +4149,17 @@ class NmrDpRemediation:
 
                 allow_chain_id_mismatch = len(poly_seq) == 1
 
-                modified |= self.__updateCompIdInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
+                modified |= self._updateCompIdInCsLoop(file_list_id, sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         return modified
 
-    def __updateCompIdInCsLoop(self, file_list_id: int,
+    def _updateCompIdInCsLoop(self, file_list_id: int,
                                sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
                                lp_category: str, cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool) -> bool:
         """ Update residue name in CS loop to follow CCD replacement.
         """
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         chain_id_col = loop.tags.index('Entity_assembly_ID')
         seq_id_col = loop.tags.index('Comp_index_ID')
@@ -4202,12 +4202,12 @@ class NmrDpRemediation:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
-        input_source = self.__reg.report.input_sources[file_list_id]
+        input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
 
-        if file_type == 'nef' or file_list_id >= len(self.__reg.star_data) or self.__reg.star_data[file_list_id] is None:
+        if file_type == 'nef' or file_list_id >= len(self._reg.star_data) or self._reg.star_data[file_list_id] is None:
             return False
 
         if input_source_dic['content_subtype'] is None:
@@ -4238,8 +4238,8 @@ class NmrDpRemediation:
 
         list_id = 1
 
-        if self.__reg.star_data_type[file_list_id] == 'Loop':
-            sf = self.__reg.star_data[file_list_id]
+        if self._reg.star_data_type[file_list_id] == 'Loop':
+            sf = self._reg.star_data[file_list_id]
 
             try:
                 poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
@@ -4249,11 +4249,11 @@ class NmrDpRemediation:
 
             allow_chain_id_mismatch = len(poly_seq) == 1
 
-            modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id,
+            modified |= self._resolveUnmappedAuthSequenceInCsLoop(file_list_id,
                                                                    sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
-        elif self.__reg.star_data_type[file_list_id] == 'Saveframe':
-            sf = self.__reg.star_data[file_list_id]
+        elif self._reg.star_data_type[file_list_id] == 'Saveframe':
+            sf = self._reg.star_data[file_list_id]
 
             try:
                 poly_seq = next(poly_seq['polymer_sequence'] for poly_seq in _poly_seq_in_lp if poly_seq['list_id'] == list_id)
@@ -4263,12 +4263,12 @@ class NmrDpRemediation:
 
             allow_chain_id_mismatch = len(poly_seq) == 1
 
-            modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id,
+            modified |= self._resolveUnmappedAuthSequenceInCsLoop(file_list_id,
                                                                    sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         else:
 
-            for list_id, sf in enumerate(self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category), start=1):
+            for list_id, sf in enumerate(self._reg.star_data[file_list_id].get_saveframes_by_category(sf_category), start=1):
 
                 if not any(True for loop in sf.loops if loop.category == lp_category):
                     continue
@@ -4281,19 +4281,19 @@ class NmrDpRemediation:
 
                 allow_chain_id_mismatch = len(poly_seq) == 1
 
-                modified |= self.__resolveUnmappedAuthSequenceInCsLoop(file_list_id,
+                modified |= self._resolveUnmappedAuthSequenceInCsLoop(file_list_id,
                                                                        sf, lp_category, cif_ps, nmr_ps, allow_chain_id_mismatch)
 
         return modified
 
-    def __resolveUnmappedAuthSequenceInCsLoop(self, file_list_id: int,
+    def _resolveUnmappedAuthSequenceInCsLoop(self, file_list_id: int,
                                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str,
                                               cif_ps: dict, nmr_ps: dict, allow_chain_id_mismatch: bool
                                               ) -> bool:
         """ Resolve unmapped author sequence in CS loop based on sequence alignment.
         """
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         chain_id_col = loop.tags.index('Entity_assembly_ID')
         seq_id_col = loop.tags.index('Comp_index_ID')
@@ -4305,11 +4305,11 @@ class NmrDpRemediation:
 
         chain_id = cif_ps['chain_id']
 
-        self.__reg.pA.setReferenceSequence(cif_ps['comp_id'], f'REF{chain_id}')
-        self.__reg.pA.addTestSequence(nmr_ps['comp_id'], chain_id)
-        self.__reg.pA.doAlign()
+        self._reg.pA.setReferenceSequence(cif_ps['comp_id'], f'REF{chain_id}')
+        self._reg.pA.addTestSequence(nmr_ps['comp_id'], chain_id)
+        self._reg.pA.doAlign()
 
-        myAlign = self.__reg.pA.getAlignment(chain_id)
+        myAlign = self._reg.pA.getAlignment(chain_id)
 
         length = len(myAlign)
 
@@ -4380,10 +4380,10 @@ class NmrDpRemediation:
         """ Sort assigned chemical shift loop if required.
         """
 
-        if not self.__reg.combined_mode:
+        if not self._reg.combined_mode:
             return True
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
@@ -4400,7 +4400,7 @@ class NmrDpRemediation:
         sf_category = SF_CATEGORIES[file_type][content_subtype]
         lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-        key_items = self.__reg.key_items[file_type][content_subtype]
+        key_items = self._reg.key_items[file_type][content_subtype]
         data_items = DATA_ITEMS[file_type][content_subtype]
         allowed_tags = ALLOWED_TAGS[file_type][content_subtype]
 
@@ -4413,31 +4413,31 @@ class NmrDpRemediation:
 
         # modified = False
 
-        for sf in self.__reg.star_data[0].get_saveframes_by_category(sf_category):
+        for sf in self._reg.star_data[0].get_saveframes_by_category(sf_category):
             sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
-            if self.__reg.report.error.exists(file_name, sf_framecode):
+            if self._reg.report.error.exists(file_name, sf_framecode):
                 continue
 
             try:
 
-                lp_data = next((lp['data'] for lp in self.__reg.lp_data[content_subtype]
+                lp_data = next((lp['data'] for lp in self._reg.lp_data[content_subtype]
                                 if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
 
                 if lp_data is None:
-                    lp_data = self.__reg.nefT.check_data(sf, lp_category, key_items, data_items, allowed_tags, None, None,
+                    lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, allowed_tags, None, None,
                                                          enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                         excl_missing_data=self.__reg.excl_missing_data)[0]
+                                                         excl_missing_data=self._reg.excl_missing_data)[0]
 
-                    self.__reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
+                    self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                 'category': lp_category, 'data': lp_data})
 
                 _key_items = copy.copy(key_items)
                 _key_items.append({'name': idx_name, 'type': 'positive-int'})
 
-                _lp_data = self.__reg.nefT.check_data(sf, lp_category, _key_items, data_items, allowed_tags, None, None,
+                _lp_data = self._reg.nefT.check_data(sf, lp_category, _key_items, data_items, allowed_tags, None, None,
                                                       enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                      excl_missing_data=self.__reg.excl_missing_data)[0]
+                                                      excl_missing_data=self._reg.excl_missing_data)[0]
 
             except Exception:  # pylint: disable=broad-exception-caught
                 continue
@@ -4505,9 +4505,9 @@ class NmrDpRemediation:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
-        has_coordinate = self.__reg.report.getInputSourceIdOfCoord() >= 0
+        has_coordinate = self._reg.report.getInputSourceIdOfCoord() >= 0
 
-        input_source = self.__reg.report.input_sources[file_list_id]
+        input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
         file_name = input_source_dic['file_name']
@@ -4532,15 +4532,15 @@ class NmrDpRemediation:
                             continue
                         text = _row[type_col].lower()
                         if 'sail' in text or 'stereo-array isotope labeling' in text:
-                            self.__reg.sail_flag = True
+                            self._reg.sail_flag = True
                             break
 
-                if 'sample' in self.__reg.sf_category_list\
-                   and '_Sample_component' in self.__reg.lp_category_list:
+                if 'sample' in self._reg.sf_category_list\
+                   and '_Sample_component' in self._reg.lp_category_list:
 
                     _lp_category = '_Sample_component'
 
-                    for _sf in self.__reg.star_data[file_list_id].get_saveframes_by_category('sample'):
+                    for _sf in self._reg.star_data[file_list_id].get_saveframes_by_category('sample'):
 
                         _loop = _sf.get_loop(_lp_category)
 
@@ -4551,7 +4551,7 @@ class NmrDpRemediation:
                                     continue
                                 text = _row[isotopic_labeling_col].lower()
                                 if 'sail' in text or 'stereo-array isotope labeling' in text:
-                                    self.__reg.sail_flag = True
+                                    self._reg.sail_flag = True
                                     break
 
         except KeyError:
@@ -4563,7 +4563,7 @@ class NmrDpRemediation:
 
         poly_seq = seq_align = chain_assign = br_seq_align = br_chain_assign = np_seq_align = np_chain_assign = None
 
-        if content_subtype in poly_seq_in_lp and self.__reg.caC is not None:
+        if content_subtype in poly_seq_in_lp and self._reg.caC is not None:
             _poly_seq_in_lp = next((_poly_seq_in_lp for _poly_seq_in_lp in poly_seq_in_lp[content_subtype]
                                     if _poly_seq_in_lp['sf_framecode'] == sf_framecode), None)
 
@@ -4572,23 +4572,23 @@ class NmrDpRemediation:
                 poly_seq = _poly_seq_in_lp['polymer_sequence']
 
                 seq_align, _ =\
-                    alignPolymerSequence(self.__reg.pA, self.__reg.caC['polymer_sequence'], poly_seq, conservative=False)
+                    alignPolymerSequence(self._reg.pA, self._reg.caC['polymer_sequence'], poly_seq, conservative=False)
                 chain_assign, _ =\
-                    assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['polymer_sequence'],
+                    assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type, self._reg.caC['polymer_sequence'],
                                           poly_seq, seq_align)
 
-                if self.__reg.caC['branched'] is not None:
+                if self._reg.caC['branched'] is not None:
                     br_seq_align, _ =\
-                        alignPolymerSequence(self.__reg.pA, self.__reg.caC['branched'], poly_seq, conservative=False)
+                        alignPolymerSequence(self._reg.pA, self._reg.caC['branched'], poly_seq, conservative=False)
                     br_chain_assign, _ =\
-                        assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['branched'],
+                        assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type, self._reg.caC['branched'],
                                               poly_seq, br_seq_align)
 
-                if self.__reg.caC['non_polymer'] is not None:
+                if self._reg.caC['non_polymer'] is not None:
                     np_seq_align, _ =\
-                        alignPolymerSequence(self.__reg.pA, self.__reg.caC['non_polymer'], poly_seq, conservative=False)
+                        alignPolymerSequence(self._reg.pA, self._reg.caC['non_polymer'], poly_seq, conservative=False)
                     np_chain_assign, _ =\
-                        assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type, self.__reg.caC['non_polymer'],
+                        assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type, self._reg.caC['non_polymer'],
                                               poly_seq, np_seq_align)
 
         @functools.lru_cache()
@@ -4696,25 +4696,25 @@ class NmrDpRemediation:
 
                 auth_asym_id, _ = get_auth_seq_scheme(ps['chain_id'], ps['seq_id'][0])
 
-                if self.__reg.caC['polymer_sequence'] is not None\
-                   and any(True for cif_ps in self.__reg.caC['polymer_sequence']
+                if self._reg.caC['polymer_sequence'] is not None\
+                   and any(True for cif_ps in self._reg.caC['polymer_sequence']
                            if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                     has_ins_code = True
 
-                if self.__reg.caC['branched'] is not None\
-                   and any(True for cif_ps in self.__reg.caC['branched']
+                if self._reg.caC['branched'] is not None\
+                   and any(True for cif_ps in self._reg.caC['branched']
                            if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                     has_ins_code = True
 
-                if self.__reg.caC['non_polymer'] is not None\
-                   and any(True for cif_ps in self.__reg.caC['non_polymer']
+                if self._reg.caC['non_polymer'] is not None\
+                   and any(True for cif_ps in self._reg.caC['non_polymer']
                            if cif_ps['auth_chain_id'] == auth_asym_id and 'ins_code' in cif_ps):
                     has_ins_code = True
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         # cleanup unnecessary '?'
-        item_names = [item['name'] for item in self.__reg.key_items[file_type][content_subtype]]
+        item_names = [item['name'] for item in self._reg.key_items[file_type][content_subtype]]
         item_names.extend([item['name'] for item in DATA_ITEMS[file_type][content_subtype]])
         first_row = loop.data[0]
         for item_name in set(loop.tags) - set(item_names):
@@ -4746,7 +4746,7 @@ class NmrDpRemediation:
             items = ['chain_code', 'sequence_code', 'residue_name', 'atom_name',
                      'value', 'value_uncertainty', 'element', 'isotope_number']
 
-            mandatory_items = [item['name'] for item in self.__reg.key_items[file_type][content_subtype]
+            mandatory_items = [item['name'] for item in self._reg.key_items[file_type][content_subtype]
                                if 'remove-bad-pattern' in item]
 
             if not all(tag in loop.tags for tag in mandatory_items):
@@ -4754,15 +4754,15 @@ class NmrDpRemediation:
                 err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. "\
                     "Please fix problems reported."
 
-                self.__reg.report.error.appendDescription('missing_mandatory_content',
+                self._reg.report.error.appendDescription('missing_mandatory_content',
                                                           {'file_name': file_name, 'description': err})
 
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Error  - {err}\n")
+                if self._reg.verbose:
+                    self._reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Error  - {err}\n")
 
                 return False
 
-            mandatory_items = [item['name'] for item in self.__reg.key_items[file_type][content_subtype]]
+            mandatory_items = [item['name'] for item in self._reg.key_items[file_type][content_subtype]]
             for item in DATA_ITEMS[file_type][content_subtype]:
                 if item['mandatory']:
                     mandatory_items.append(item['name'])
@@ -4770,7 +4770,7 @@ class NmrDpRemediation:
             if not all(tag for tag in mandatory_items if tag in loop.tags):
                 return False
 
-            coord_atom_site = self.__reg.caC['coord_atom_site'] if self.__reg.caC is not None else {}
+            coord_atom_site = self._reg.caC['coord_atom_site'] if self._reg.caC is not None else {}
 
             chain_id_col = loop.tags.index('chain_code')
             seq_id_col = loop.tags.index('sequence_code')
@@ -4794,8 +4794,8 @@ class NmrDpRemediation:
                 except (ValueError, TypeError):
                     continue
 
-                if seq_key in self.__reg.seq_id_map_for_remediation:
-                    seq_key = self.__reg.seq_id_map_for_remediation[seq_key]
+                if seq_key in self._reg.seq_id_map_for_remediation:
+                    seq_key = self._reg.seq_id_map_for_remediation[seq_key]
 
                 _row[0], _row[1] = seq_key
 
@@ -4832,12 +4832,12 @@ class NmrDpRemediation:
 
                 lp.add_data(_row)
 
-            key_items = self.__reg.key_items[file_type][content_subtype]
+            key_items = self._reg.key_items[file_type][content_subtype]
 
-            conflict_id = self.__reg.nefT.get_conflict_id(lp, lp_category, key_items)[0]
+            conflict_id = self._reg.nefT.get_conflict_id(lp, lp_category, key_items)[0]
 
             if len(conflict_id) > 0:
-                conflict_id_set = self.__reg.nefT.get_conflict_id_set(lp, lp_category, key_items)[0]
+                conflict_id_set = self._reg.nefT.get_conflict_id_set(lp, lp_category, key_items)[0]
 
                 for _id in conflict_id:
                     _id_set = next(id_set for id_set in conflict_id_set if _id in id_set)
@@ -4850,12 +4850,12 @@ class NmrDpRemediation:
 
                     warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
 
-                    self.__reg.report.warning.appendDescription('redundant_data',
+                    self._reg.report.warning.appendDescription('redundant_data',
                                                                 {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                  'category': lp_category, 'description': warn})
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Warning  - {warn}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Warning  - {warn}\n")
 
                 for _id in conflict_id:
                     del lp.data[_id]
@@ -4877,7 +4877,7 @@ class NmrDpRemediation:
             if has_ins_code:
                 items.append('PDB_ins_code')
 
-            mandatory_items = [item['name'] for item in self.__reg.key_items[file_type][content_subtype]
+            mandatory_items = [item['name'] for item in self._reg.key_items[file_type][content_subtype]
                                if 'remove-bad-pattern' in item]
 
             if not all(tag in loop.tags for tag in mandatory_items):
@@ -4885,15 +4885,15 @@ class NmrDpRemediation:
                 err = f"Assigned chemical shifts of {sf_framecode!r} saveframe was not parsed properly. "\
                     "Please fix problems reported."
 
-                self.__reg.report.error.appendDescription('missing_mandatory_content',
+                self._reg.report.error.appendDescription('missing_mandatory_content',
                                                           {'file_name': file_name, 'description': err})
 
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Error  - {err}\n")
+                if self._reg.verbose:
+                    self._reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Error  - {err}\n")
 
                 return False
 
-            mandatory_items = [item['name'] for item in self.__reg.key_items[file_type][content_subtype]]
+            mandatory_items = [item['name'] for item in self._reg.key_items[file_type][content_subtype]]
             for item in DATA_ITEMS[file_type][content_subtype]:
                 if item['mandatory']:
                     mandatory_items.append(item['name'])
@@ -4905,17 +4905,17 @@ class NmrDpRemediation:
             orig_pdb_tags = ['Original_PDB_strand_ID', 'Original_PDB_residue_no',
                              'Original_PDB_residue_name', 'Original_PDB_atom_name']
 
-            entity_assembly = self.__reg.caC['entity_assembly'] if self.__reg.caC is not None else []
-            auth_to_entity_type = self.__reg.caC['auth_to_entity_type'] if self.__reg.caC is not None else {}
-            auth_to_star_seq = self.__reg.caC['auth_to_star_seq'] if self.__reg.caC is not None else {}
-            auth_to_orig_seq = self.__reg.caC['auth_to_orig_seq'] if self.__reg.caC is not None else {}
-            auth_to_ins_code = self.__reg.caC['auth_to_ins_code'] if self.__reg.caC is not None else {}
-            auth_to_star_seq_ann = self.__reg.caC['auth_to_star_seq_ann'] if self.__reg.caC is not None else {}
-            coord_atom_site = self.__reg.caC['coord_atom_site'] if self.__reg.caC is not None else {}
-            coord_unobs_res = self.__reg.caC['coord_unobs_res'] if self.__reg.caC is not None else {}
-            auth_atom_name_to_id = self.__reg.caC['auth_atom_name_to_id'] if self.__reg.caC is not None else {}
-            auth_atom_name_to_id_ext = self.__reg.caC['auth_atom_name_to_id_ext'] if self.__reg.caC is not None else {}
-            mis_poly_link = self.__reg.caC['missing_polymer_linkage'] if self.__reg.caC is not None else []
+            entity_assembly = self._reg.caC['entity_assembly'] if self._reg.caC is not None else []
+            auth_to_entity_type = self._reg.caC['auth_to_entity_type'] if self._reg.caC is not None else {}
+            auth_to_star_seq = self._reg.caC['auth_to_star_seq'] if self._reg.caC is not None else {}
+            auth_to_orig_seq = self._reg.caC['auth_to_orig_seq'] if self._reg.caC is not None else {}
+            auth_to_ins_code = self._reg.caC['auth_to_ins_code'] if self._reg.caC is not None else {}
+            auth_to_star_seq_ann = self._reg.caC['auth_to_star_seq_ann'] if self._reg.caC is not None else {}
+            coord_atom_site = self._reg.caC['coord_atom_site'] if self._reg.caC is not None else {}
+            coord_unobs_res = self._reg.caC['coord_unobs_res'] if self._reg.caC is not None else {}
+            auth_atom_name_to_id = self._reg.caC['auth_atom_name_to_id'] if self._reg.caC is not None else {}
+            auth_atom_name_to_id_ext = self._reg.caC['auth_atom_name_to_id_ext'] if self._reg.caC is not None else {}
+            mis_poly_link = self._reg.caC['missing_polymer_linkage'] if self._reg.caC is not None else []
 
             _auth_to_orig_seq = {}
 
@@ -4953,7 +4953,7 @@ class NmrDpRemediation:
                 auth_dat = loop.get_tag(auth_pdb_tags)
                 if len(auth_dat) > 0:
                     has_auth_seq = valid_auth_seq = True
-                    if not self.__reg.annotation_mode or len(coord_unobs_res) > 0:
+                    if not self._reg.annotation_mode or len(coord_unobs_res) > 0:
                         for row in auth_dat:
                             try:
                                 seq_key = (row[0], int(row[1]), row[2])
@@ -4993,7 +4993,7 @@ class NmrDpRemediation:
                         aux_auth_atom_id_col = loop.tags.index(_auth_pdb_tags[3])
 
                         valid_auth_seq = True
-                        if not self.__reg.annotation_mode or len(coord_unobs_res) > 0:
+                        if not self._reg.annotation_mode or len(coord_unobs_res) > 0:
                             for row in auth_dat:
                                 try:
                                     seq_key = (row[0], int(row[1]), row[2])
@@ -5007,7 +5007,7 @@ class NmrDpRemediation:
                             for row in auth_dat:
                                 if row[0] not in valid_auth_seq_per_chain:
                                     valid_auth_seq_per_chain.append(row[0])
-                            if not self.__reg.annotation_mode or len(coord_unobs_res) > 0:
+                            if not self._reg.annotation_mode or len(coord_unobs_res) > 0:
                                 for row in auth_dat:
                                     try:
                                         seq_key = (row[0], int(row[1]), row[2])
@@ -5020,7 +5020,7 @@ class NmrDpRemediation:
 
             has_orig_seq = ch2_name_in_xplor = ch3_name_in_xplor = False
 
-            if self.__reg.remediation_mode:
+            if self._reg.remediation_mode:
                 if set(orig_pdb_tags) & set(loop.tags) == set(orig_pdb_tags):
                     orig_dat = loop.get_tag(orig_pdb_tags)
                     if len(orig_dat) > 0:
@@ -5040,10 +5040,10 @@ class NmrDpRemediation:
                                 atom_id = row[5]
                                 if orig_atom_id == atom_id:
                                     continue
-                                ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                 if ambig_code == 0 or atom_id[0] not in PROTON_BEGIN_CODE:
                                     continue
-                                len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                len_in_grp = len(self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                 if len_in_grp == 2 and ambig_code == 2:
                                     ch2_name_in_xplor = any(True for r, o in zip(atom_id, orig_atom_id) if r == '3' and o == '1')
                                 elif len_in_grp == 3 and atom_id[-1] == orig_atom_id[0]:
@@ -5058,9 +5058,9 @@ class NmrDpRemediation:
                                 break
 
             entity_assembly_mappping = {}
-            if self.__reg.bmrb_only and self.__reg.internal_mode:
-                if isinstance(self.__reg.star_data[file_list_id], pynmrstar.Entry):
-                    for asm_sf in self.__reg.star_data[file_list_id].get_saveframes_by_category('assembly'):
+            if self._reg.bmrb_only and self._reg.internal_mode:
+                if isinstance(self._reg.star_data[file_list_id], pynmrstar.Entry):
+                    for asm_sf in self._reg.star_data[file_list_id].get_saveframes_by_category('assembly'):
                         try:
                             ea_loop = asm_sf.get_loop('_Entity_assembly')
                             dat = ea_loop.get_tag(['ID', 'Entity_ID'])
@@ -5087,7 +5087,7 @@ class NmrDpRemediation:
             reson_id_col = loop.tags.index('Resonance_ID') if 'Resonance_ID' in loop.tags else -1
             details_col = loop.tags.index('Details') if 'Details' in loop.tags else -1
 
-            if self.__reg.annotation_mode and details_col != -1:
+            if self._reg.annotation_mode and details_col != -1:
                 for row in loop:
                     if row[details_col] == 'UNMAPPED':
                         row[details_col] = None
@@ -5101,7 +5101,7 @@ class NmrDpRemediation:
                 auth_seq_id_1 = mis['auth_seq_id_1']
                 auth_seq_id_2 = mis['auth_seq_id_2']
 
-                cif_ps = next((cif_ps for cif_ps in self.__reg.caC['polymer_sequence']
+                cif_ps = next((cif_ps for cif_ps in self._reg.caC['polymer_sequence']
                                if cif_ps['auth_chain_id'] == auth_chain_id), None)
 
                 if cif_ps is not None and auth_seq_id_1 in cif_ps['auth_seq_id'] and auth_seq_id_2 in cif_ps['auth_seq_id']\
@@ -5118,7 +5118,7 @@ class NmrDpRemediation:
                 _src_idx = src_idx
                 if src_idx > 0:
                     src_idx -= 1
-                fill_auth_atom_id = self.__reg.annotation_mode or (_row[19] in EMPTY_VALUE and _row[18] not in EMPTY_VALUE)
+                fill_auth_atom_id = self._reg.annotation_mode or (_row[19] in EMPTY_VALUE and _row[18] not in EMPTY_VALUE)
                 fill_orig_atom_id = _row[23] not in EMPTY_VALUE
 
                 if _seq_key is not None:
@@ -5142,9 +5142,9 @@ class NmrDpRemediation:
                     _row[5] = _row[18] = comp_id = _coord_atom_site['comp_id']
                     valid = True
                     missing_ch3 = []
-                    if not self.__reg.annotation_mode and atom_id in self.__reg.csStat.getMethylProtons(comp_id):
-                        missing_ch3 = self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
-                        valid = self.__reg.sail_flag
+                    if not self._reg.annotation_mode and atom_id in self._reg.csStat.getMethylProtons(comp_id):
+                        missing_ch3 = self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
+                        valid = self._reg.sail_flag
                         row_src = src_lp.data[src_idx]
                         seq_id_src = row_src[seq_id_col]
                         if 0 <= src_idx < len(src_lp):
@@ -5170,7 +5170,7 @@ class NmrDpRemediation:
                                         if len(missing_ch3) == 0:
                                             break
                     if atom_id in _atom_site_atom_id and valid and len(missing_ch3) == 0\
-                       and (not self.__reg.annotation_mode or comp_id not in incomplete_comp_id_annotation):
+                       and (not self._reg.annotation_mode or comp_id not in incomplete_comp_id_annotation):
                         _row[6] = atom_id
                         if fill_auth_atom_id or _row[6] != _row[19]:
                             _row[19] = _row[6]
@@ -5179,14 +5179,14 @@ class NmrDpRemediation:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                         # """ need to preserve Original_PDB_atom_name for atom name mapping history
                         # if fill_orig_atom_id and _row[6] != _row[23] and _row[23] in _atom_site_atom_id:
-                        #     if _row[23] in self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True):
+                        #     if _row[23] in self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True):
                         #         _row[23] = copy.copy(atom_id)
                         # """
                     else:
                         if atom_id in ('H1', 'HT1') and 'H' in _atom_site_atom_id\
                            and atom_id not in _atom_site_atom_id:
-                            if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                            if self._reg.ccU.updateChemCompDict(comp_id):
+                                cca = next((cca for cca in self._reg.ccU.lastAtomDictList
                                             if cca['atom_id'] == atom_id
                                             and cca['leaving_atom_flag'] == 'N'), None)
                                 if cca is None:
@@ -5199,8 +5199,8 @@ class NmrDpRemediation:
                                     _row[19] = atom_id
                         elif atom_id in ('H', 'HT1') and 'H1' in _atom_site_atom_id\
                                 and atom_id not in _atom_site_atom_id:
-                            if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                            if self._reg.ccU.updateChemCompDict(comp_id):
+                                cca = next((cca for cca in self._reg.ccU.lastAtomDictList
                                             if cca['atom_id'] == atom_id
                                             and cca['leaving_atom_flag'] == 'N'), None)
                                 if cca is None:
@@ -5212,7 +5212,7 @@ class NmrDpRemediation:
                                 if fill_auth_atom_id:
                                     _row[19] = atom_id
                         elif atom_id in AMINO_PROTON_CODE and f'C{atom_id[1:]}' in _atom_site_atom_id:
-                            bonded = self.__reg.ccU.getBondedAtoms(comp_id, f'C{atom_id[1:]}', onlyProton=True)
+                            bonded = self._reg.ccU.getBondedAtoms(comp_id, f'C{atom_id[1:]}', onlyProton=True)
                             if len(bonded) == 1 and bonded[0] in _atom_site_atom_id:
                                 atom_id = bonded[0]
                                 if fill_auth_atom_id:
@@ -5220,42 +5220,42 @@ class NmrDpRemediation:
                         if len(missing_ch3) > 0 and (_row[9] in EMPTY_VALUE or float(_row[9]) >= 4.0):
                             heme = False
                             if _row[9] not in EMPTY_VALUE:
-                                if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['name']
+                                if self._reg.ccU.updateChemCompDict(comp_id):
+                                    heme = comp_id == 'HEM' or 'HEME' in self._reg.ccU.lastChemCompDict['name']
                             if not heme:
                                 missing_ch3 = []
                         _atom_id = atom_id
                         if not valid and len(missing_ch3) > 0 and atom_id not in _atom_site_atom_id:
                             atom_id = atom_id[:-1]
-                            if _atom_id in self.__reg.csStat.getRepMethylProtons(comp_id):
+                            if _atom_id in self._reg.csStat.getRepMethylProtons(comp_id):
                                 atom_id = _atom_id
                         if (valid and atom_id in _atom_site_atom_id)\
                            or ((prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M')):
                             atom_ids = [atom_id]
                             # DAOTHER-9286
-                            if self.__reg.annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:
+                            if self._reg.annotation_mode and comp_id in incomplete_comp_id_annotation and trial > 0:
                                 atom_ids =\
-                                    self.__reg.dpV.getAtomIdListInXplorForLigandRemap(comp_id,
+                                    self._reg.dpV.getAtomIdListInXplorForLigandRemap(comp_id,
                                                                                       _row[23] if fill_orig_atom_id else atom_id,
                                                                                       _coord_atom_site)
                         else:
-                            atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
+                            atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
                             if len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id:
                                 atom_ids =\
-                                    self.__reg.dpV.getAtomIdListInXplor(comp_id,
+                                    self._reg.dpV.getAtomIdListInXplor(comp_id,
                                                                         translateToStdAtomName(atom_id, comp_id, _atom_site_atom_id,
-                                                                                               ccU=self.__reg.ccU))
+                                                                                               ccU=self._reg.ccU))
                                 if len(atom_ids) == 1 and atom_ids[0] in _atom_site_atom_id and atom_id not in _atom_site_atom_id:
                                     atom_id = atom_ids[0]
                             # DAOTHER-9286
-                            if self.__reg.annotation_mode and (len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id):
-                                atom_ids = self.__reg.dpV.getAtomIdListInXplorForLigandRemap(comp_id, atom_id, _coord_atom_site)
+                            if self._reg.annotation_mode and (len(atom_ids) == 0 or atom_ids[0] not in _atom_site_atom_id):
+                                atom_ids = self._reg.dpV.getAtomIdListInXplorForLigandRemap(comp_id, atom_id, _coord_atom_site)
                                 if comp_id not in incomplete_comp_id_annotation:
                                     incomplete_comp_id_annotation.append(comp_id)
                         if valid and len(missing_ch3) > 0:
                             if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
-                               and len(self.__reg.dpV.getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
-                                atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, _row[23])
+                               and len(self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
+                                atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])
                             else:
                                 missing_ch3.clear()
                         if not valid and len(missing_ch3) > 0 and atom_id in _atom_site_atom_id:
@@ -5269,13 +5269,13 @@ class NmrDpRemediation:
                             if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                                 _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                         else:
-                            methyl_atoms = self.__reg.csStat.getMethylAtoms(comp_id)
+                            methyl_atoms = self._reg.csStat.getMethylAtoms(comp_id)
                             atom_ids = sorted(atom_ids)
                             _row[6] = atom_ids[0]
                             _row[19] = None
                             fill_auth_atom_id = _row[18] not in EMPTY_VALUE
-                            if self.__reg.ccU.updateChemCompDict(comp_id):
-                                cca = next((cca for cca in self.__reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
+                            if self._reg.ccU.updateChemCompDict(comp_id):
+                                cca = next((cca for cca in self._reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
                                 if cca is not None:
                                     _row[7] = cca['type_symbol']
                                     if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -5294,7 +5294,7 @@ class NmrDpRemediation:
                                 _row[12] = None
 
                             elif ambig_code in (2, 3):
-                                _ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                                _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
                                 if _ambig_code not in (0, ambig_code):
                                     if _ambig_code != 1:
                                         _row[12] = _ambig_code
@@ -5306,7 +5306,7 @@ class NmrDpRemediation:
                                             seq_id_src = row_src[seq_id_col]
                                             atom_type = row_src[atom_id_col][0]
                                             val = float(row_src[val_col])
-                                            sig = self.__reg.ccU.getBondSignature(comp_id, atom_id)
+                                            sig = self._reg.ccU.getBondSignature(comp_id, atom_id)
                                             for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                                 if src_idx + offset < len(src_lp):
                                                     row = src_lp.data[src_idx + offset]
@@ -5315,7 +5315,7 @@ class NmrDpRemediation:
                                                        and row[comp_id_col] == comp_id\
                                                        and row[atom_id_col][0] == atom_type\
                                                        and abs(float(row[val_col]) - val) < 1.0\
-                                                       and self.__reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                       and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
                                                         src_lp.data[src_idx + offset][ambig_code_col] = '4'
                                                         reparse = True
                                                 if src_idx - offset >= 0:
@@ -5325,18 +5325,18 @@ class NmrDpRemediation:
                                                        and row[comp_id_col] == comp_id\
                                                        and row[atom_id_col][0] == atom_type\
                                                        and abs(float(row[val_col]) - val) < 1.0\
-                                                       and self.__reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                       and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
                                                         src_lp.data[src_idx - offset][ambig_code_col] = '4'
                                                         reparse = True
 
                             elif ambig_code == 4:
-                                if not self.__reg.annotation_mode and _row[24] != 'UNMAPPED':
+                                if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     chain_id_src = row_src[chain_id_col]
                                     atom_id_src = row_src[atom_id_col]
                                     atom_type = atom_id_src[0]
                                     ambig_code_src = row_src[ambig_code_col]
-                                    atom_ids_in_group_src = self.__reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
+                                    atom_ids_in_group_src = self._reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
                                         if atom_type in PROTON_BEGIN_CODE else []
                                     ambig_code_4_test = hetero_group_test = False
                                     for offset in range(1, PERIPH_OFFSET_ATTEMPT):
@@ -5435,7 +5435,7 @@ class NmrDpRemediation:
                                         _row[12] = ambig_code = 1
 
                             elif ambig_code == 5:
-                                if not self.__reg.annotation_mode and _row[24] != 'UNMAPPED':
+                                if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
                                     row_src = src_lp.data[_src_idx]
                                     chain_id_src = row_src[chain_id_col]
                                     atom_type = row_src[atom_id_col][0]
@@ -5513,7 +5513,7 @@ class NmrDpRemediation:
                                        or (_row[6] in methyl_atoms
                                            and ((_row[7][0] == 'H' and len_atom_ids == 6)
                                                 or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                        _row[12] = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
+                                        _row[12] = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
                                 __row = copy.copy(_row)
                                 if fill_auth_atom_id:
                                     __row[19] = __row[6]
@@ -5555,9 +5555,9 @@ class NmrDpRemediation:
                     _row[5] = comp_id
                     valid = True
                     missing_ch3 = []
-                    if atom_id in self.__reg.csStat.getMethylProtons(comp_id):
-                        missing_ch3 = self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
-                        valid = self.__reg.sail_flag
+                    if atom_id in self._reg.csStat.getMethylProtons(comp_id):
+                        missing_ch3 = self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
+                        valid = self._reg.sail_flag
                         if 0 <= src_idx < len(src_lp):
                             row_src = src_lp.data[src_idx]
                             seq_id_src = row_src[seq_id_col]
@@ -5587,27 +5587,27 @@ class NmrDpRemediation:
                     if len(missing_ch3) > 0 and (_row[9] in EMPTY_VALUE or float(_row[9]) >= 4.0):
                         heme = False
                         if _row[9] not in EMPTY_VALUE:
-                            if self.__reg.ccU.updateChemCompDict(comp_id):
-                                heme = comp_id == 'HEM' or 'HEME' in self.__reg.ccU.lastChemCompDict['name']
+                            if self._reg.ccU.updateChemCompDict(comp_id):
+                                heme = comp_id == 'HEM' or 'HEME' in self._reg.ccU.lastChemCompDict['name']
                         if not heme:
                             missing_ch3 = []
                     _atom_id = atom_id
                     if not valid and len(missing_ch3) > 0:
                         atom_id = atom_id[:-1]
-                        if _atom_id in self.__reg.csStat.getRepMethylProtons(comp_id):
+                        if _atom_id in self._reg.csStat.getRepMethylProtons(comp_id):
                             atom_id = _atom_id
                     if (valid or prefer_auth_atom_name or _row[24] == 'UNMAPPED') and atom_id[0] not in ('Q', 'M'):
                         atom_ids = [atom_id]
                     else:
-                        atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
+                        atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
                         if len(atom_ids) == 0:
-                            atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id,
+                            atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id,
                                                                            translateToStdAtomName(atom_id, comp_id,
-                                                                                                  ccU=self.__reg.ccU))
+                                                                                                  ccU=self._reg.ccU))
                     if valid and len(missing_ch3) > 0:
                         if not fill_orig_atom_id or not any(c in ('x', 'y', 'X', 'Y') for c in _row[23])\
-                           and len(self.__reg.dpV.getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
-                            atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, _row[23])
+                           and len(self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])) > 1 and _row[24] != 'UNMAPPED':
+                            atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, _row[23])
                         else:
                             missing_ch3.clear()
                     if not valid and len(missing_ch3) > 0:
@@ -5621,13 +5621,13 @@ class NmrDpRemediation:
                         if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
                             _row[8] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[_row[7]][0]
                     else:
-                        methyl_atoms = self.__reg.csStat.getMethylAtoms(comp_id)
+                        methyl_atoms = self._reg.csStat.getMethylAtoms(comp_id)
                         atom_ids = sorted(atom_ids)
                         _row[6] = atom_ids[0]
                         _row[19] = None
                         fill_auth_atom_id = _row[18] not in EMPTY_VALUE
-                        if self.__reg.ccU.updateChemCompDict(comp_id):
-                            cca = next((cca for cca in self.__reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
+                        if self._reg.ccU.updateChemCompDict(comp_id):
+                            cca = next((cca for cca in self._reg.ccU.lastAtomDictList if cca['atom_id'] == _row[6]), None)
                             if cca is not None:
                                 _row[7] = cca['type_symbol']
                                 if _row[7] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
@@ -5646,7 +5646,7 @@ class NmrDpRemediation:
                             _row[12] = None
 
                         elif ambig_code in (2, 3):
-                            _ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
+                            _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6])
                             if _ambig_code not in (0, ambig_code):
                                 if _ambig_code != 1:
                                     _row[12] = _ambig_code
@@ -5658,7 +5658,7 @@ class NmrDpRemediation:
                                         seq_id_src = row_src[seq_id_col]
                                         atom_type = row_src[atom_id_col][0]
                                         val = float(row_src[val_col])
-                                        sig = self.__reg.ccU.getBondSignature(comp_id, atom_id)
+                                        sig = self._reg.ccU.getBondSignature(comp_id, atom_id)
                                         for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                             if src_idx + offset < len(src_lp):
                                                 row = src_lp.data[src_idx + offset]
@@ -5667,7 +5667,7 @@ class NmrDpRemediation:
                                                    and row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and abs(float(row[val_col]) - val) < 1.0\
-                                                   and self.__reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
                                                     src_lp.data[src_idx + offset][ambig_code_col] = '4'
                                                     reparse = True
                                             if src_idx - offset >= 0:
@@ -5677,18 +5677,18 @@ class NmrDpRemediation:
                                                    and row[comp_id_col] == comp_id\
                                                    and row[atom_id_col][0] == atom_type\
                                                    and abs(float(row[val_col]) - val) < 1.0\
-                                                   and self.__reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
                                                     src_lp.data[src_idx - offset][ambig_code_col] = '4'
                                                     reparse = True
 
                         elif ambig_code == 4:
-                            if not self.__reg.annotation_mode and _row[24] != 'UNMAPPED':
+                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 chain_id_src = row_src[chain_id_col]
                                 atom_id_src = row_src[atom_id_col]
                                 atom_type = atom_id_src[0]
                                 ambig_code_src = row_src[ambig_code_col]
-                                atom_ids_in_group = self.__reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
+                                atom_ids_in_group = self._reg.ccU.getProtonsInSameGroup(comp_id, atom_id_src)\
                                     if atom_type in PROTON_BEGIN_CODE else []
                                 ambig_code_4_test = hetero_group_test = False
                                 for offset in range(1, PERIPH_OFFSET_ATTEMPT):
@@ -5785,7 +5785,7 @@ class NmrDpRemediation:
                                     _row[12] = ambig_code = 1
 
                         elif ambig_code == 5:
-                            if not self.__reg.annotation_mode and _row[24] != 'UNMAPPED':
+                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
                                 row_src = src_lp.data[_src_idx]
                                 chain_id_src = row_src[chain_id_col]
                                 atom_type = row_src[atom_id_col][0]
@@ -5862,7 +5862,7 @@ class NmrDpRemediation:
                                    or (_row[6] in methyl_atoms
                                        and ((_row[7][0] == 'H' and len_atom_ids == 6)
                                             or (_row[7][0] == 'C' and len_atom_ids == 2))):
-                                    _row[12] = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
+                                    _row[12] = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, _row[6], None)
                             __row = copy.copy(_row)
                             if fill_auth_atom_id:
                                 __row[19] = __row[6]
@@ -6002,7 +6002,7 @@ class NmrDpRemediation:
 
             prefer_auth_atom_name = False
 
-            if (self.__reg.annotation_mode or self.__reg.native_combined) and len(auth_atom_name_to_id) > 0:
+            if (self._reg.annotation_mode or self._reg.native_combined) and len(auth_atom_name_to_id) > 0:
 
                 def get_auth_seq_id(val):
                     if isinstance(val, int):
@@ -6168,7 +6168,7 @@ class NmrDpRemediation:
                             row[auth_asym_id_col], row[auth_seq_id_col], \
                             row[auth_comp_id_col], row[auth_atom_id_col]
 
-                    elif self.__reg.bmrb_only and self.__reg.internal_mode:
+                    elif self._reg.bmrb_only and self._reg.internal_mode:
                         if auth_seq_id_col != -1 and auth_comp_id_col != -1 and auth_atom_id_col != -1:
                             _row[17], _row[18], _row[19] =\
                                 row[auth_seq_id_col], row[auth_comp_id_col], row[auth_atom_id_col]
@@ -6181,7 +6181,7 @@ class NmrDpRemediation:
                     if details_col != -1:
                         _row[24] = row[details_col]
 
-                    _row[25], _row[26] = self.__reg.entry_id, list_id
+                    _row[25], _row[26] = self._reg.entry_id, list_id
 
                     resolved = True
 
@@ -6203,7 +6203,7 @@ class NmrDpRemediation:
                                             _row[19] = atom_id
                             except KeyError:
                                 entity_assembly_id = None
-                                if self.__reg.annotation_mode or self.__reg.native_combined:
+                                if self._reg.annotation_mode or self._reg.native_combined:
                                     auth_asym_id =\
                                         next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                               if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
@@ -6245,7 +6245,7 @@ class NmrDpRemediation:
                                         entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
 
                             if entity_assembly_id is not None:
-                                self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                                self._reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
                                 _row[1], _row[2] = entity_assembly_id, entity_id
                                 _row[3] = _row[4] = seq_id
 
@@ -6273,7 +6273,7 @@ class NmrDpRemediation:
                                          and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:  # noqa: E501, pylint: disable=line-too-long
                                         _row[18] = comp_id
                                         # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                        cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
+                                        cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
                                                         if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                         and cca_row[6] == _seq_key[1]), None)
                                         if cca_row is not None:
@@ -6298,7 +6298,7 @@ class NmrDpRemediation:
                                                 _row[18] = comp_id
                                                 # Entity_assembly_ID, Entity_ID, Comp_index_ID,
                                                 # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
+                                                cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                                 and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
@@ -6313,7 +6313,7 @@ class NmrDpRemediation:
                                                 _row[18] = comp_id
                                                 # Entity_assembly_ID, Entity_ID, Comp_index_ID,
                                                 # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                                cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
+                                                cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
                                                                 if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                                 and cca_row[6] == _seq_key[1]), None)
                                                 if cca_row is not None:
@@ -6329,7 +6329,7 @@ class NmrDpRemediation:
                                 if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                     __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                    if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
+                                    if self._reg.csStat.getTypeOfCompId(comp_id)[2]\
                                        and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                         _seq_key = __seq_key
                                         if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
@@ -6348,12 +6348,12 @@ class NmrDpRemediation:
                                     if seq_key in _auth_to_orig_seq:
                                         _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                     elif comp_id != auth_comp_id\
-                                            and translateToStdResName(comp_id, ccU=self.__reg.ccU) == auth_comp_id:
+                                            and translateToStdResName(comp_id, ccU=self._reg.ccU) == auth_comp_id:
                                         _row[20], _row[21], _row[22] = auth_asym_id, auth_seq_id, comp_id
                                         _row[5] = comp_id = auth_comp_id
                                     if _row[23] in EMPTY_VALUE:
                                         _row[23] = atom_id
-                                    ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                    ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                     if ambig_code > 0:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                         if orig_seq_id in EMPTY_VALUE:
@@ -6365,7 +6365,7 @@ class NmrDpRemediation:
                                         if atom_id[0] not in PROTON_BEGIN_CODE:
                                             _row[23] = atom_id
                                         else:
-                                            len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                            len_in_grp = len(self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                             if len_in_grp == 2:
                                                 _row[23] = f'{atom_id[0:-1]}1'\
                                                     if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
@@ -6404,7 +6404,7 @@ class NmrDpRemediation:
                                 _seq_key = (seq_key[0], seq_key[1])
                                 if seq_key in auth_to_star_seq:
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
-                                    self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                                    self._reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
                                     _row[1], _row[2] = entity_assembly_id, entity_id
                                     _row[3] = _row[4] = seq_id
 
@@ -6415,7 +6415,7 @@ class NmrDpRemediation:
                                         if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                             __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                            if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
+                                            if self._reg.csStat.getTypeOfCompId(comp_id)[2]\
                                                and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                                 _seq_key = __seq_key
                                                 if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
@@ -6435,7 +6435,7 @@ class NmrDpRemediation:
                                                 _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                             if _row[23] in EMPTY_VALUE:
                                                 _row[23] = atom_id
-                                            ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                            ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                             if ambig_code > 0:
                                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                                 if orig_seq_id in EMPTY_VALUE:
@@ -6447,7 +6447,7 @@ class NmrDpRemediation:
                                                 if atom_id[0] not in PROTON_BEGIN_CODE:
                                                     _row[23] = atom_id
                                                 else:
-                                                    len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                                    len_in_grp = len(self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                                     if len_in_grp == 2:
                                                         _row[23] = f'{atom_id[0:-1]}1'\
                                                             if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3'\
@@ -6510,7 +6510,7 @@ class NmrDpRemediation:
                                         _row[19] = atom_id
                         except KeyError:
                             entity_assembly_id = None
-                            if self.__reg.annotation_mode or self.__reg.native_combined:
+                            if self._reg.annotation_mode or self._reg.native_combined:
                                 auth_asym_id =\
                                     next((_auth_asym_id for _auth_asym_id, _auth_seq_id, _auth_comp_id in auth_to_star_seq
                                           if _auth_seq_id == auth_seq_id_ and _auth_comp_id == auth_comp_id), auth_asym_id)
@@ -6552,7 +6552,7 @@ class NmrDpRemediation:
                                     entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq_ann[seq_key]
 
                         if entity_assembly_id is not None:
-                            self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                            self._reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
                             _row[1], _row[2] = entity_assembly_id, entity_id
                             _row[3] = _row[4] = seq_id
 
@@ -6580,7 +6580,7 @@ class NmrDpRemediation:
                                      and comp_id == _coord_atom_site['alt_comp_id'][_coord_atom_site['alt_atom_id'].index(_atom_id)]:  # noqa: E501, pylint: disable=line-too-long
                                     _row[18] = comp_id
                                     # Entity_assembly_ID, Entity_ID, Comp_index_ID, Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                    cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
+                                    cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
                                                     if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                     and cca_row[6] == _seq_key[1]), None)
                                     if cca_row is not None:
@@ -6605,7 +6605,7 @@ class NmrDpRemediation:
                                             _row[18] = comp_id
                                             # Entity_assembly_ID, Entity_ID, Comp_index_ID,
                                             # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
+                                            cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                             and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
@@ -6619,7 +6619,7 @@ class NmrDpRemediation:
                                             _row[18] = comp_id
                                             # Entity_assembly_ID, Entity_ID, Comp_index_ID,
                                             # Seq_ID, Comp_ID, Auth_asym_ID, Auth_seq_ID
-                                            cca_row = next((cca_row for cca_row in self.__reg.chem_comp_asm_dat
+                                            cca_row = next((cca_row for cca_row in self._reg.chem_comp_asm_dat
                                                             if cca_row[4] == comp_id and cca_row[5] == _seq_key[0]
                                                             and cca_row[6] == _seq_key[1]), None)
                                             if cca_row is not None:
@@ -6634,7 +6634,7 @@ class NmrDpRemediation:
                             if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                 __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
+                                if self._reg.csStat.getTypeOfCompId(comp_id)[2]\
                                    and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                     _seq_key = __seq_key
                                     if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
@@ -6652,12 +6652,12 @@ class NmrDpRemediation:
                             elif any(True for d in orig_dat[idx] if d in EMPTY_VALUE):
                                 if seq_key in _auth_to_orig_seq:
                                     _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
-                                elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self.__reg.ccU) == auth_comp_id:
+                                elif comp_id != auth_comp_id and translateToStdResName(comp_id, ccU=self._reg.ccU) == auth_comp_id:
                                     _row[20], _row[21], _row[22] = auth_asym_id, auth_seq_id, comp_id
                                     _row[5] = comp_id = auth_comp_id
                                 if _row[23] in EMPTY_VALUE:
                                     _row[23] = atom_id
-                                ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                 if ambig_code > 0:
                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                     if orig_seq_id in EMPTY_VALUE:
@@ -6669,7 +6669,7 @@ class NmrDpRemediation:
                                     if atom_id[0] not in PROTON_BEGIN_CODE:
                                         _row[23] = atom_id
                                     else:
-                                        len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                        len_in_grp = len(self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                         if len_in_grp == 2:
                                             _row[23] = f'{atom_id[0:-1]}1'\
                                                 if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
@@ -6730,7 +6730,7 @@ class NmrDpRemediation:
                             if seq_key in auth_to_star_seq:
                                 entity_assembly_id, seq_id, entity_id, _ = auth_to_star_seq[seq_key]
                                 comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items() if _k == seq_key), _orig_comp_id)
-                                self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                                self._reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
                                 _row[1], _row[2] = entity_assembly_id, entity_id
                                 _row[3] = _row[4] = seq_id
 
@@ -6743,7 +6743,7 @@ class NmrDpRemediation:
                                     if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                         orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                         __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                        if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
+                                        if self._reg.csStat.getTypeOfCompId(comp_id)[2]\
                                            and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                             _seq_key = __seq_key
                                             if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
@@ -6763,7 +6763,7 @@ class NmrDpRemediation:
                                             _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                         if _row[23] in EMPTY_VALUE:
                                             _row[23] = atom_id
-                                        ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                        ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                         if ambig_code > 0:
                                             orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                             if orig_seq_id in EMPTY_VALUE:
@@ -6775,7 +6775,7 @@ class NmrDpRemediation:
                                             if atom_id[0] not in PROTON_BEGIN_CODE:
                                                 _row[23] = atom_id
                                             else:
-                                                len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                                len_in_grp = len(self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                                 if len_in_grp == 2:
                                                     _row[23] = f'{atom_id[0:-1]}1'\
                                                         if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3' else atom_id
@@ -6955,18 +6955,18 @@ class NmrDpRemediation:
                                             if has_ins_code:
                                                 auth_to_ins_code[seq_key] = auth_to_ins_code[dummy_key]
                                                 del auth_to_ins_code[dummy_key]
-                                            cif_ps = next((cif_ps for cif_ps in self.__reg.caC['polymer_sequence']
+                                            cif_ps = next((cif_ps for cif_ps in self._reg.caC['polymer_sequence']
                                                            if cif_ps['auth_chain_id'] == auth_asym_id
                                                            and auth_seq_id in cif_ps['auth_seq_id']), None)
                                             if cif_ps is not None:
                                                 _idx_ = cif_ps['auth_seq_id'].index(auth_seq_id)
                                                 if cif_ps['comp_id'][_idx_] in EMPTY_VALUE:
                                                     cif_ps['comp_id'][_idx_] = cif_ps['auth_comp_id'][_idx_] = _orig_comp_id
-                                                    if self.__reg.asmChkCachePath is not None:
-                                                        write_as_pickle(self.__reg.caC, self.__reg.asmChkCachePath)
+                                                    if self._reg.asmChkCachePath is not None:
+                                                        write_as_pickle(self._reg.caC, self._reg.asmChkCachePath)
                                         comp_id = next((_v[1] for _k, _v in auth_to_orig_seq.items()
                                                         if _k == seq_key), _orig_comp_id)
-                                        self.__reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
+                                        self._reg.ent_asym_id_with_exptl_data.add(entity_assembly_id)
                                         _row[1], _row[2] = entity_assembly_id, entity_id
                                         _row[3] = _row[4] = seq_id
 
@@ -6979,7 +6979,7 @@ class NmrDpRemediation:
                                             if _row[20] not in EMPTY_VALUE and seq_key not in _auth_to_orig_seq:
                                                 orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                                 __seq_key = (_seq_key[0], orig_seq_id, comp_id)
-                                                if self.__reg.csStat.getTypeOfCompId(comp_id)[2]\
+                                                if self._reg.csStat.getTypeOfCompId(comp_id)[2]\
                                                    and seq_key not in coord_atom_site and __seq_key in auth_to_star_seq:
                                                     _seq_key = __seq_key
                                                     if _row[21] in EMPTY_VALUE or _row[22] in EMPTY_VALUE:
@@ -6999,7 +6999,7 @@ class NmrDpRemediation:
                                                     _row[20], _row[21], _row[22] = _auth_to_orig_seq[seq_key]
                                                 if _row[23] in EMPTY_VALUE:
                                                     _row[23] = atom_id
-                                                ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                                                ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                                                 if ambig_code > 0:
                                                     orig_seq_id, orig_comp_id = auth_to_orig_seq[seq_key]
                                                     if orig_seq_id in EMPTY_VALUE:
@@ -7011,7 +7011,7 @@ class NmrDpRemediation:
                                                     if atom_id[0] not in PROTON_BEGIN_CODE:
                                                         _row[23] = atom_id
                                                     else:
-                                                        len_in_grp = len(self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
+                                                        len_in_grp = len(self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id))
                                                         if len_in_grp == 2:
                                                             _row[23] = f'{atom_id[0:-1]}1'\
                                                                 if ambig_code == 2 and ch2_name_in_xplor and atom_id[-1] == '3'\
@@ -7092,7 +7092,7 @@ class NmrDpRemediation:
                                         else:
                                             resolved = False
 
-                        is_valid, cc_name, _ = self.__reg.dpV.getChemCompNameAndStatusOf(comp_id)
+                        is_valid, cc_name, _ = self._reg.dpV.getChemCompNameAndStatusOf(comp_id)
                         comp_id_bmrb_only = not is_valid and cc_name is not None and 'processing site' in cc_name
 
                         if not resolved and has_auth_seq and not comp_id_bmrb_only:
@@ -7295,9 +7295,9 @@ class NmrDpRemediation:
                                                         _row[27] = auth_to_ins_code[__seq_key]
                                                     break
 
-                                                if self.__reg.caC['non_polymer'] is not None:
+                                                if self._reg.caC['non_polymer'] is not None:
                                                     ligands = 0
-                                                    for np in self.__reg.caC['non_polymer']:
+                                                    for np in self._reg.caC['non_polymer']:
                                                         if comp_id == np['comp_id'][0]:
                                                             ligands += len(np['seq_id'])
                                                     if ligands == 1:  # DAOTHER-9063, 2nd case
@@ -7325,10 +7325,10 @@ class NmrDpRemediation:
                                                           and v[2] == entity_id), None)
                                         if __seq_key is not None:
                                             __comp_id = __seq_key[2]
-                                            if self.__reg.ccU.updateChemCompDict(comp_id):
-                                                cc_type = self.__reg.ccU.lastChemCompDict['type']
-                                                if self.__reg.ccU.updateChemCompDict(__comp_id):
-                                                    __cc_type = self.__reg.ccU.lastChemCompDict['type']
+                                            if self._reg.ccU.updateChemCompDict(comp_id):
+                                                cc_type = self._reg.ccU.lastChemCompDict['type']
+                                                if self._reg.ccU.updateChemCompDict(__comp_id):
+                                                    __cc_type = self._reg.ccU.lastChemCompDict['type']
                                                     if cc_type == __cc_type:  # DAOTHER-9198
                                                         found = True
                                                         comp_id = __seq_key[2]
@@ -7449,7 +7449,7 @@ class NmrDpRemediation:
                         if not resolved:
 
                             entity_id = None
-                            if (self.__reg.combined_mode or (self.__reg.bmrb_only and self.__reg.internal_mode))\
+                            if (self._reg.combined_mode or (self._reg.bmrb_only and self._reg.internal_mode))\
                                and entity_id_col != -1:
                                 try:
                                     entity_id = int(row[entity_id_col])
@@ -7487,11 +7487,11 @@ class NmrDpRemediation:
                                 elif trial == 0:
                                     reparse_request = True
 
-                            atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
-                            if len(atom_ids) == 0 or atom_ids[0] not in self.__reg.csStat.getAllAtoms(comp_id):
-                                atom_ids = self.__reg.dpV.getAtomIdListInXplor(comp_id,
+                            atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id, atom_id)
+                            if len(atom_ids) == 0 or atom_ids[0] not in self._reg.csStat.getAllAtoms(comp_id):
+                                atom_ids = self._reg.dpV.getAtomIdListInXplor(comp_id,
                                                                                translateToStdAtomName(atom_id, comp_id,
-                                                                                                      ccU=self.__reg.ccU))
+                                                                                                      ccU=self._reg.ccU))
                             len_atom_ids = len(atom_ids)
                             if len_atom_ids == 0 or comp_id_bmrb_only or _row[24] == 'UNMAPPED':
                                 _row[6] = atom_id
@@ -7502,8 +7502,8 @@ class NmrDpRemediation:
                                 _row[6] = atom_ids[0]
                                 _row[19] = None
                                 fill_auth_atom_id = _row[18] not in EMPTY_VALUE
-                                if self.__reg.ccU.updateChemCompDict(comp_id):
-                                    cca = next((cca for cca in self.__reg.ccU.lastAtomDictList
+                                if self._reg.ccU.updateChemCompDict(comp_id):
+                                    cca = next((cca for cca in self._reg.ccU.lastAtomDictList
                                                 if cca['atom_id'] == _row[6]), None)
                                     if cca is not None:
                                         _row[7] = cca['type_symbol']
@@ -7537,7 +7537,7 @@ class NmrDpRemediation:
                                     _row[6] = atom_ids[-1]
 
                                 if fill_auth_atom_id:
-                                    _row[19] = _row[6] if self.__reg.caC is not None or row[auth_atom_id_col] in EMPTY_VALUE\
+                                    _row[19] = _row[6] if self._reg.caC is not None or row[auth_atom_id_col] in EMPTY_VALUE\
                                         else row[auth_atom_id_col]
 
                     # DAOTHER-9065
@@ -7554,7 +7554,7 @@ class NmrDpRemediation:
                             elif isinstance(_row[17], str) and _row[17].isdigit():
                                 seq_id_offset_for_unmapped[_row[1]] = _row[3] - int(_row[17])
 
-                    if self.__reg.bmrb_only and self.__reg.internal_mode and _row[1] not in EMPTY_VALUE and _row[2] in EMPTY_VALUE:
+                    if self._reg.bmrb_only and self._reg.internal_mode and _row[1] not in EMPTY_VALUE and _row[2] in EMPTY_VALUE:
                         entity_assembly_id = _row[1] if isinstance(_row[1], str) else str(_row[1])
                         if entity_assembly_id in entity_assembly_mappping:
                             _row[2] = entity_assembly_mappping[entity_assembly_id]
@@ -7568,7 +7568,7 @@ class NmrDpRemediation:
                             _row[12] = None
 
                         elif ambig_code in (2, 3):
-                            _ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                            _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
                             if _ambig_code not in (0, ambig_code):
                                 if _ambig_code != 1:
                                     _row[12] = _ambig_code
@@ -7603,14 +7603,14 @@ class NmrDpRemediation:
                                     if ambig_code_4_test:
                                         _row[12] = ambig_code = 4
                                         val = float(row[val_col])
-                                        sig = self.__reg.ccU.getBondSignature(comp_id, atom_id)
+                                        sig = self._reg.ccU.getBondSignature(comp_id, atom_id)
                                         for offset in range(1, PERIPH_OFFSET_ATTEMPT):
                                             if _idx + offset < len(loop):
                                                 row_ = loop.data[_idx + offset]
                                                 if row_[chain_id_col] == _chain_id and row_[seq_id_col] == _seq_id\
                                                    and row_[comp_id_col] == comp_id and row_[atom_id_col][0] == _atom_type\
                                                    and abs(float(row_[val_col]) - val) < 1.0\
-                                                   and self.__reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
                                                     row[ambig_code_col] = 4
                                                     reparse_request = True
                                             if _idx - offset >= 0:
@@ -7618,20 +7618,20 @@ class NmrDpRemediation:
                                                 if row_[chain_id_col] == _chain_id and row_[seq_id_col] == _seq_id\
                                                    and row_[comp_id_col] == comp_id and row_[atom_id_col][0] == _atom_type\
                                                    and abs(float(row_[val_col]) - val) < 1.0\
-                                                   and self.__reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
+                                                   and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
                                                     row[ambig_code_col] = 4
                                                     reparse_request = True
                                     else:
                                         _row[12] = ambig_code = 1
 
                         elif ambig_code == 4:
-                            if not self.__reg.annotation_mode and _row[24] != 'UNMAPPED':
+                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
                                 _chain_id = row[chain_id_col]
                                 _seq_id = row[seq_id_col]
                                 _atom_id = row[atom_id_col]
                                 _atom_type = _atom_id[0]
                                 _ambig_code = str(ambig_code)
-                                _atom_ids_in_group = self.__reg.ccU.getProtonsInSameGroup(comp_id, _atom_id)\
+                                _atom_ids_in_group = self._reg.ccU.getProtonsInSameGroup(comp_id, _atom_id)\
                                     if _atom_type in PROTON_BEGIN_CODE else []
                                 ambig_code_4_test = hetero_group_test = False
                                 _idx = idx
@@ -7712,7 +7712,7 @@ class NmrDpRemediation:
                                     _row[12] = ambig_code = 1
 
                         elif ambig_code == 5:
-                            if not self.__reg.annotation_mode and _row[24] != 'UNMAPPED':
+                            if not self._reg.annotation_mode and _row[24] != 'UNMAPPED':
                                 _chain_id = row[chain_id_col]
                                 _seq_id = row[seq_id_col]
                                 _atom_type = row[atom_id_col][0]
@@ -7787,12 +7787,12 @@ class NmrDpRemediation:
 
                 trial += 1
 
-            key_items = self.__reg.key_items[file_type][content_subtype]
+            key_items = self._reg.key_items[file_type][content_subtype]
 
-            conflict_id = self.__reg.nefT.get_conflict_id(lp, lp_category, key_items)[0]
+            conflict_id = self._reg.nefT.get_conflict_id(lp, lp_category, key_items)[0]
 
             if len(conflict_id) > 0:
-                conflict_id_set = self.__reg.nefT.get_conflict_id_set(lp, lp_category, key_items)[0]
+                conflict_id_set = self._reg.nefT.get_conflict_id_set(lp, lp_category, key_items)[0]
                 orig_atom_id_col = lp.tags.index('Original_PDB_atom_name') if 'Original_PDB_atom_name' in lp.tags else -1
 
                 for _id in conflict_id:
@@ -7811,12 +7811,12 @@ class NmrDpRemediation:
 
                         warn = f"Resolved redundancy of assigned chemical shifts ({msg}) by deletion of the latter one."
 
-                        self.__reg.report.warning.appendDescription('redundant_data',
+                        self._reg.report.warning.appendDescription('redundant_data',
                                                                     {'file_name': file_name, 'sf_framecode': sf_framecode,
                                                                      'category': lp_category, 'description': warn})
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateCsLoop() ++ Warning  - {warn}\n")
 
                 for _id in conflict_id:
                     del lp.data[_id]
@@ -7848,7 +7848,7 @@ class NmrDpRemediation:
                         atom_type = _row[7]
 
                         if atom_type == 'H':
-                            atom_in_same_group = self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id)
+                            atom_in_same_group = self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id)
 
                             if not any(((ambig_code == 5 and (__row[1] != chain_id or __row[3] != seq_id))
                                         or (ambig_code == 4 and __row[6] not in atom_in_same_group))
@@ -7856,7 +7856,7 @@ class NmrDpRemediation:
 
                                 for __row in lp:
                                     if __row[12] == ambig_code and __row[13] == ambig_set_id:
-                                        __row[12] = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
+                                        __row[12] = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id, None)
                                         __row[13] = None
 
                                 if not isinstance(sf, pynmrstar.Loop)\
@@ -7888,7 +7888,7 @@ class NmrDpRemediation:
                         continue
 
                     ambig_code = _row[12]
-                    _ambig_code = self.__reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
+                    _ambig_code = self._reg.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id)
 
                     chain_id = _row[1]
                     seq_id = _row[3]
@@ -7902,7 +7902,7 @@ class NmrDpRemediation:
                                                              and _row_[7] == atom_type and _row_[12] == ambig_code)
 
                         if atom_type == 'H':
-                            atom_in_same_group = self.__reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
+                            atom_in_same_group = self._reg.csStat.getProtonsInSameGroup(comp_id, atom_id, True)
 
                             if len(_atom_id_set_w_same_ambig_code - set(atom_in_same_group)) == 0:
                                 if _ambig_code > 1:
@@ -7910,7 +7910,7 @@ class NmrDpRemediation:
                                     _row[13] = None
 
                         else:
-                            geminal_atom = self.__reg.csStat.getGeminalAtom(comp_id, atom_id)
+                            geminal_atom = self._reg.csStat.getGeminalAtom(comp_id, atom_id)
 
                             if geminal_atom is not None and len(_atom_id_set_w_same_ambig_code - set([geminal_atom])) == 0:
                                 if _ambig_code > 1:
@@ -7999,7 +7999,7 @@ class NmrDpRemediation:
 
                         _aux_row = [None] * 4
                         _aux_row[0], _aux_row[1], _aux_row[2], _aux_row[3] =\
-                            ambig_shift_set_id[key], _row[0], self.__reg.entry_id, list_id
+                            ambig_shift_set_id[key], _row[0], self._reg.entry_id, list_id
 
                         aux_lp.add_data(_aux_row)
 
@@ -8025,8 +8025,8 @@ class NmrDpRemediation:
             else:
                 set_sf_tag(sf, 'ID', list_id)
 
-        if not self.__reg.native_combined:
-            self.__reg.dpV.testDataConsistencyInLoop(file_list_id, file_name, file_type, content_subtype,
+        if not self._reg.native_combined:
+            self._reg.dpV.testDataConsistencyInLoop(file_list_id, file_name, file_type, content_subtype,
                                                      sf, sf_framecode, lp_category, list_id)
 
         get_auth_seq_scheme.cache_clear()
@@ -8038,11 +8038,11 @@ class NmrDpRemediation:
         """ Synchronize sequence scheme of restraint loop based on coordinates.
         """
 
-        __errors = self.__reg.report.getTotalErrors()
+        __errors = self._reg.report.getTotalErrors()
 
-        for fileListId in range(self.__reg.file_path_list_len):
+        for fileListId in range(self._reg.file_path_list_len):
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -8061,33 +8061,33 @@ class NmrDpRemediation:
                 if file_type == 'nmr-star' and content_subtype == 'spectral_peak_alt':
                     lp_category = '_Assigned_peak_chem_shift'
 
-                if self.__reg.star_data_type[fileListId] == 'Loop':
-                    sf = self.__reg.star_data[fileListId]
+                if self._reg.star_data_type[fileListId] == 'Loop':
+                    sf = self._reg.star_data[fileListId]
 
-                    self.__syncMrLoop(fileListId, file_type, content_subtype, sf, lp_category)
+                    self._syncMrLoop(fileListId, file_type, content_subtype, sf, lp_category)
 
-                elif self.__reg.star_data_type[fileListId] == 'Saveframe':
-                    sf = self.__reg.star_data[fileListId]
+                elif self._reg.star_data_type[fileListId] == 'Saveframe':
+                    sf = self._reg.star_data[fileListId]
 
-                    self.__syncMrLoop(fileListId, file_type, content_subtype, sf, lp_category)
+                    self._syncMrLoop(fileListId, file_type, content_subtype, sf, lp_category)
 
                 else:
 
-                    for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
+                    for sf in self._reg.star_data[fileListId].get_saveframes_by_category(sf_category):
 
                         if not any(True for loop in sf.loops if loop.category == lp_category):
                             continue
 
-                        self.__syncMrLoop(fileListId, file_type, content_subtype, sf, lp_category)
+                        self._syncMrLoop(fileListId, file_type, content_subtype, sf, lp_category)
 
-            return self.__reg.report.getTotalErrors() == __errors
+            return self._reg.report.getTotalErrors() == __errors
 
-    def __syncMrLoop(self, file_list_id: int, file_type: str, content_subtype: str,
+    def _syncMrLoop(self, file_list_id: int, file_type: str, content_subtype: str,
                      sf: Union[pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> None:
         """ Synchronize sequence scheme of restraint loop based on coordinates.
         """
 
-        loop = sf if self.__reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
+        loop = sf if self._reg.star_data_type[file_list_id] == 'Loop' else sf.get_loop(lp_category)
 
         if file_type == 'nef':
 
@@ -8100,11 +8100,11 @@ class NmrDpRemediation:
                 for row in dat:
                     try:
                         seq_key = (row[0], int(row[1]))
-                        if seq_key in self.__reg.seq_id_map_for_remediation:
-                            row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                        if seq_key in self._reg.seq_id_map_for_remediation:
+                            row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                     except (ValueError, TypeError):
-                        if row[0] in self.__reg.chain_id_map_for_remediation:
-                            row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                        if row[0] in self._reg.chain_id_map_for_remediation:
+                            row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
             else:
                 for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
@@ -8117,11 +8117,11 @@ class NmrDpRemediation:
                     for row in dat:
                         try:
                             seq_key = (row[0], int(row[1]))
-                            if seq_key in self.__reg.seq_id_map_for_remediation:
-                                row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                            if seq_key in self._reg.seq_id_map_for_remediation:
+                                row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                         except (ValueError, TypeError):
-                            if row[0] in self.__reg.chain_id_map_for_remediation:
-                                row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                            if row[0] in self._reg.chain_id_map_for_remediation:
+                                row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
         else:
 
@@ -8137,12 +8137,12 @@ class NmrDpRemediation:
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
-                                    if seq_key in self.__reg.seq_id_map_for_remediation:
-                                        row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                                    if seq_key in self._reg.seq_id_map_for_remediation:
+                                        row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                                         row[2] = row[1]
                                 except (ValueError, TypeError):
-                                    if row[0] in self.__reg.chain_id_map_for_remediation:
-                                        row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                                    if row[0] in self._reg.chain_id_map_for_remediation:
+                                        row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
                         else:
                             tags = [chain_id_name, seq_id_name]
@@ -8150,11 +8150,11 @@ class NmrDpRemediation:
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
-                                    if seq_key in self.__reg.seq_id_map_for_remediation:
-                                        row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                                    if seq_key in self._reg.seq_id_map_for_remediation:
+                                        row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                                 except (ValueError, TypeError):
-                                    if row[0] in self.__reg.chain_id_map_for_remediation:
-                                        row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                                    if row[0] in self._reg.chain_id_map_for_remediation:
+                                        row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
             elif content_subtype == 'ccr_dd_restraint':
                 for interaction in ['Dipole_1', 'Dipole_2']:
@@ -8168,12 +8168,12 @@ class NmrDpRemediation:
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
-                                    if seq_key in self.__reg.seq_id_map_for_remediation:
-                                        row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                                    if seq_key in self._reg.seq_id_map_for_remediation:
+                                        row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                                         row[2] = row[1]
                                 except (ValueError, TypeError):
-                                    if row[0] in self.__reg.chain_id_map_for_remediation:
-                                        row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                                    if row[0] in self._reg.chain_id_map_for_remediation:
+                                        row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
                         else:
                             tags = [chain_id_name, seq_id_name]
@@ -8181,11 +8181,11 @@ class NmrDpRemediation:
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
-                                    if seq_key in self.__reg.seq_id_map_for_remediation:
-                                        row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                                    if seq_key in self._reg.seq_id_map_for_remediation:
+                                        row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                                 except (ValueError, TypeError):
-                                    if row[0] in self.__reg.chain_id_map_for_remediation:
-                                        row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                                    if row[0] in self._reg.chain_id_map_for_remediation:
+                                        row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
             else:
                 chain_id_name = 'Entity_assembly_ID'
@@ -8199,12 +8199,12 @@ class NmrDpRemediation:
                         for row in dat:
                             try:
                                 seq_key = (row[0], int(row[1]))
-                                if seq_key in self.__reg.seq_id_map_for_remediation:
-                                    row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                                if seq_key in self._reg.seq_id_map_for_remediation:
+                                    row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                                     row[2] = row[1]
                             except (ValueError, TypeError):
-                                if row[0] in self.__reg.chain_id_map_for_remediation:
-                                    row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                                if row[0] in self._reg.chain_id_map_for_remediation:
+                                    row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
                     else:
                         tags = [chain_id_name, seq_id_name]
@@ -8212,11 +8212,11 @@ class NmrDpRemediation:
                         for row in dat:
                             try:
                                 seq_key = (row[0], int(row[1]))
-                                if seq_key in self.__reg.seq_id_map_for_remediation:
-                                    row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                                if seq_key in self._reg.seq_id_map_for_remediation:
+                                    row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                             except (ValueError, TypeError):
-                                if row[0] in self.__reg.chain_id_map_for_remediation:
-                                    row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                                if row[0] in self._reg.chain_id_map_for_remediation:
+                                    row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
                 else:
                     for j in range(1, MAX_DIM_NUM_OF_SPECTRA):
@@ -8231,32 +8231,32 @@ class NmrDpRemediation:
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
-                                    if seq_key in self.__reg.seq_id_map_for_remediation:
-                                        row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                                    if seq_key in self._reg.seq_id_map_for_remediation:
+                                        row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                                         row[2] = row[1]
                                 except (ValueError, TypeError):
-                                    if row[0] in self.__reg.chain_id_map_for_remediation:
-                                        row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                                    if row[0] in self._reg.chain_id_map_for_remediation:
+                                        row[0] = self._reg.chain_id_map_for_remediation[row[0]]
                         else:
                             tags = [chain_id_name, seq_id_name]
                             dat = loop.get_tag(tags)
                             for row in dat:
                                 try:
                                     seq_key = (row[0], int(row[1]))
-                                    if seq_key in self.__reg.seq_id_map_for_remediation:
-                                        row[0], row[1] = self.__reg.seq_id_map_for_remediation[seq_key]
+                                    if seq_key in self._reg.seq_id_map_for_remediation:
+                                        row[0], row[1] = self._reg.seq_id_map_for_remediation[seq_key]
                                 except (ValueError, TypeError):
-                                    if row[0] in self.__reg.chain_id_map_for_remediation:
-                                        row[0] = self.__reg.chain_id_map_for_remediation[row[0]]
+                                    if row[0] in self._reg.chain_id_map_for_remediation:
+                                        row[0] = self._reg.chain_id_map_for_remediation[row[0]]
 
     def remediateRawTextPk(self, src_sf: pynmrstar.Saveframe, file_type: str, data_file_name: str, text_data: str,
                            reserved_list_ids: List[int]) -> bool:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).
         """
 
-        __errors = self.__reg.report.getTotalErrors()
+        __errors = self._reg.report.getTotalErrors()
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
 
         content_subtype = 'spectral_peak'
 
@@ -8264,25 +8264,25 @@ class NmrDpRemediation:
 
         poly_seq_set = []
 
-        if self.__reg.list_id_counter is None:
-            self.__reg.list_id_counter = {}
+        if self._reg.list_id_counter is None:
+            self._reg.list_id_counter = {}
 
         pk_sf_dict_holder = {}
 
         proc_nmr_ext_poly_seq = False
 
-        if self.__reg.nmr_ext_poly_seq is None and not self.__reg.bmrb_only or not self.__reg.internal_mode:
+        if self._reg.nmr_ext_poly_seq is None and not self._reg.bmrb_only or not self._reg.internal_mode:
             proc_nmr_ext_poly_seq = True
 
-            self.__reg.nmr_ext_poly_seq = []
+            self._reg.nmr_ext_poly_seq = []
 
             input_source_dic = input_source.get()
 
             nmr_poly_seq = input_source_dic['polymer_sequence']
-            cif_poly_seq = self.__reg.caC['polymer_sequence']
+            cif_poly_seq = self._reg.caC['polymer_sequence']
 
-            seq_align, _ = alignPolymerSequence(self.__reg.pA, cif_poly_seq, nmr_poly_seq)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star',
+            seq_align, _ = alignPolymerSequence(self._reg.pA, cif_poly_seq, nmr_poly_seq)
+            chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, 'nmr-star',
                                                     cif_poly_seq, nmr_poly_seq, seq_align)
 
             if chain_assign is not None:
@@ -8301,11 +8301,11 @@ class NmrDpRemediation:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
-                    self.__reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
-                    self.__reg.pA.doAlign()
+                    self._reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
+                    self._reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
+                    self._reg.pA.doAlign()
 
-                    myAlign = self.__reg.pA.getAlignment(test_chain_id)
+                    myAlign = self._reg.pA.getAlignment(test_chain_id)
 
                     length = len(myAlign)
 
@@ -8351,7 +8351,7 @@ class NmrDpRemediation:
 
                                     if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
-                                        self.__reg.nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
+                                        self._reg.nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
                                                                             'auth_seq_id': cif_auth_seq_id,
                                                                             'auth_comp_id': nmr_comp_id})
 
@@ -8362,7 +8362,7 @@ class NmrDpRemediation:
             if len(suspended_errors_for_lazy_eval) > 0:
                 for msg in suspended_errors_for_lazy_eval:
                     for k, v in msg.items():
-                        self.__reg.report.error.appendDescription(k, v)
+                        self._reg.report.error.appendDescription(k, v)
                 suspended_errors_for_lazy_eval.clear()
 
         def deal_pea_warn_message(file_name, listener):
@@ -8374,51 +8374,51 @@ class NmrDpRemediation:
                     msg_dict = {'file_name': file_name, 'sf_framecode': sf_framecode, 'description': warn, 'inheritable': True}
 
                     if warn.startswith('[Concatenated sequence]'):
-                        self.__reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+                        self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.error.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
-                        if not self.__reg.remediation_mode or 'Macromolecules page' not in warn:
+                        if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                             consume_suspended_message()
 
-                            self.__reg.report.warning.appendDescription('assigned_peak_atom_not_found', msg_dict)
+                            self._reg.report.warning.appendDescription('assigned_peak_atom_not_found', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
                         else:
-                            self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                            self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
-                        if self.__reg.remediation_mode:
+                        if self._reg.remediation_mode:
                             pass
                         else:
                             consume_suspended_message()
 
-                        self.__reg.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
+                        self._reg.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.warning.appendDescription('coordinate_issue', msg_dict)
+                        self._reg.report.warning.appendDescription('coordinate_issue', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -8426,76 +8426,76 @@ class NmrDpRemediation:
                         # DAOTHER-8905: change warning level from 'invalid_atom_nomenclature' error
                         # to 'atom_nomenclature_mismatch' warning
                         # because we accept atom nomenclature provided by depositor for peak list
-                        self.__reg.report.warning.appendDescription('atom_nomenclature_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('atom_nomenclature_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
+                        self._reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
-                        self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                         if SEQ_MISMATCH_WARNING_PAT.match(warn):
                             g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
-                            if d not in self.__reg.nmr_ext_poly_seq:
-                                self.__reg.nmr_ext_poly_seq.append(d)
+                            if d not in self._reg.nmr_ext_poly_seq:
+                                self._reg.nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Inconsistent peak assignment]'):
-                        self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
+                        self._reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Conflicted peak assignment]'):
-                        self.__reg.report.warning.appendDescription('conflicted_peak_list', msg_dict)
+                        self._reg.report.warning.appendDescription('conflicted_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Missing data]'):
-                        if (self.__reg.remediation_mode or self.__reg.internal_mode) and not self.__reg.conversion_server:
+                        if (self._reg.remediation_mode or self._reg.internal_mode) and not self._reg.conversion_server:
                             pass
                         else:
-                            self.__reg.report.error.appendDescription('missing_mandatory_item', msg_dict)
+                            self._reg.report.error.appendDescription('missing_mandatory_item', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {warn}\n")
 
-                    elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('anomalous_data', msg_dict)
+                        self._reg.report.error.appendDescription('anomalous_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ ValueError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]')\
-                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
-                        self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
+                            or (warn.startswith('[Range value error]') and self._reg.remediation_mode):
+                        self._reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Warning  - {warn}\n")
 
                     else:
-                        self.__reg.report.error.appendDescription('internal_error',
+                        self._reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.remediateRawTextPk() "
                                                                   "++ KeyError  - " + warn)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ KeyError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ KeyError  - {warn}\n")
 
         def deal_pea_warn_message_for_lazy_eval(file_name, listener):
 
@@ -8509,11 +8509,11 @@ class NmrDpRemediation:
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
 
                     # elif warn.startswith('[Atom not found]'):
-                    #     if not self.__reg.remediation_mode or 'Macromolecules page' not in warn:
+                    #     if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                     #         suspended_errors_for_lazy_eval.append({'atom_not_found': msg_dict})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
-                    #     if self.__reg.remediation_mode:
+                    #     if self._reg.remediation_mode:
                     #         pass
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated': msg_dict})
@@ -8527,26 +8527,26 @@ class NmrDpRemediation:
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data': msg_dict})
 
-                    # elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    # elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data': msg_dict})
 
         if file_type == 'nm-pea-ari':
-            reader = AriaPKReader(self.__reg.verbose, self.__reg.log,
-                                  self.__reg.representative_model_id,
-                                  self.__reg.representative_alt_id,
-                                  self.__reg.mr_atom_name_mapping,
-                                  self.__reg.cR, self.__reg.caC,
-                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = AriaPKReader(self._reg.verbose, self._reg.log,
+                                  self._reg.representative_model_id,
+                                  self._reg.representative_alt_id,
+                                  self._reg.mr_atom_name_mapping,
+                                  self._reg.cR, self._reg.caC,
+                                  self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -8554,21 +8554,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = AriaPKReader(self.__reg.verbose, self.__reg.log,
-                                          self.__reg.representative_model_id,
-                                          self.__reg.representative_alt_id,
-                                          self.__reg.mr_atom_name_mapping,
-                                          self.__reg.cR, self.__reg.caC,
-                                          self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = AriaPKReader(self._reg.verbose, self._reg.log,
+                                          self._reg.representative_model_id,
+                                          self._reg.representative_alt_id,
+                                          self._reg.mr_atom_name_mapping,
+                                          self._reg.cR, self._reg.caC,
+                                          self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                           reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -8579,18 +8579,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (ARIA) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -8601,22 +8601,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-bar':
-            reader = BarePKReader(self.__reg.verbose, self.__reg.log,
-                                  self.__reg.representative_model_id,
-                                  self.__reg.representative_alt_id,
-                                  self.__reg.mr_atom_name_mapping,
-                                  self.__reg.cR, self.__reg.caC,
-                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = BarePKReader(self._reg.verbose, self._reg.log,
+                                  self._reg.representative_model_id,
+                                  self._reg.representative_alt_id,
+                                  self._reg.mr_atom_name_mapping,
+                                  self._reg.cR, self._reg.caC,
+                                  self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -8624,21 +8624,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = BarePKReader(self.__reg.verbose, self.__reg.log,
-                                          self.__reg.representative_model_id,
-                                          self.__reg.representative_alt_id,
-                                          self.__reg.mr_atom_name_mapping,
-                                          self.__reg.cR, self.__reg.caC,
-                                          self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = BarePKReader(self._reg.verbose, self._reg.log,
+                                          self._reg.representative_model_id,
+                                          self._reg.representative_alt_id,
+                                          self._reg.mr_atom_name_mapping,
+                                          self._reg.cR, self._reg.caC,
+                                          self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                           reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -8649,18 +8649,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (Bare WSV/TSV) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -8671,22 +8671,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-ccp':
-            reader = CcpnPKReader(self.__reg.verbose, self.__reg.log,
-                                  self.__reg.representative_model_id,
-                                  self.__reg.representative_alt_id,
-                                  self.__reg.mr_atom_name_mapping,
-                                  self.__reg.cR, self.__reg.caC,
-                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = CcpnPKReader(self._reg.verbose, self._reg.log,
+                                  self._reg.representative_model_id,
+                                  self._reg.representative_alt_id,
+                                  self._reg.mr_atom_name_mapping,
+                                  self._reg.cR, self._reg.caC,
+                                  self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -8694,21 +8694,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = CcpnPKReader(self.__reg.verbose, self.__reg.log,
-                                          self.__reg.representative_model_id,
-                                          self.__reg.representative_alt_id,
-                                          self.__reg.mr_atom_name_mapping,
-                                          self.__reg.cR, self.__reg.caC,
-                                          self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = CcpnPKReader(self._reg.verbose, self._reg.log,
+                                          self._reg.representative_model_id,
+                                          self._reg.representative_alt_id,
+                                          self._reg.mr_atom_name_mapping,
+                                          self._reg.cR, self._reg.caC,
+                                          self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                           reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -8719,18 +8719,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (CCPN) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -8741,22 +8741,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-oli':
-            reader = OliviaPKReader(self.__reg.verbose, self.__reg.log,
-                                    self.__reg.representative_model_id,
-                                    self.__reg.representative_alt_id,
-                                    self.__reg.mr_atom_name_mapping,
-                                    self.__reg.cR, self.__reg.caC,
-                                    self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = OliviaPKReader(self._reg.verbose, self._reg.log,
+                                    self._reg.representative_model_id,
+                                    self._reg.representative_alt_id,
+                                    self._reg.mr_atom_name_mapping,
+                                    self._reg.cR, self._reg.caC,
+                                    self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -8764,21 +8764,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = OliviaPKReader(self.__reg.verbose, self.__reg.log,
-                                            self.__reg.representative_model_id,
-                                            self.__reg.representative_alt_id,
-                                            self.__reg.mr_atom_name_mapping,
-                                            self.__reg.cR, self.__reg.caC,
-                                            self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = OliviaPKReader(self._reg.verbose, self._reg.log,
+                                            self._reg.representative_model_id,
+                                            self._reg.representative_alt_id,
+                                            self._reg.mr_atom_name_mapping,
+                                            self._reg.cR, self._reg.caC,
+                                            self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                             reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -8789,18 +8789,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (OLIVIA) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -8811,22 +8811,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-pip':
-            reader = NmrPipePKReader(self.__reg.verbose, self.__reg.log,
-                                     self.__reg.representative_model_id,
-                                     self.__reg.representative_alt_id,
-                                     self.__reg.mr_atom_name_mapping,
-                                     self.__reg.cR, self.__reg.caC,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = NmrPipePKReader(self._reg.verbose, self._reg.log,
+                                     self._reg.representative_model_id,
+                                     self._reg.representative_alt_id,
+                                     self._reg.mr_atom_name_mapping,
+                                     self._reg.cR, self._reg.caC,
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -8834,21 +8834,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = NmrPipePKReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = NmrPipePKReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -8859,18 +8859,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (NMRPIPE) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -8881,22 +8881,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-pon':
-            reader = PonderosaPKReader(self.__reg.verbose, self.__reg.log,
-                                       self.__reg.representative_model_id,
-                                       self.__reg.representative_alt_id,
-                                       self.__reg.mr_atom_name_mapping,
-                                       self.__reg.cR, self.__reg.caC,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = PonderosaPKReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -8904,21 +8904,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = PonderosaPKReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = PonderosaPKReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -8929,18 +8929,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (PONDEROSA) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -8951,22 +8951,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-spa':
-            reader = SparkyPKReader(self.__reg.verbose, self.__reg.log,
-                                    self.__reg.representative_model_id,
-                                    self.__reg.representative_alt_id,
-                                    self.__reg.mr_atom_name_mapping,
-                                    self.__reg.cR, self.__reg.caC,
-                                    self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = SparkyPKReader(self._reg.verbose, self._reg.log,
+                                    self._reg.representative_model_id,
+                                    self._reg.representative_alt_id,
+                                    self._reg.mr_atom_name_mapping,
+                                    self._reg.cR, self._reg.caC,
+                                    self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -8974,21 +8974,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = SparkyPKReader(self.__reg.verbose, self.__reg.log,
-                                            self.__reg.representative_model_id,
-                                            self.__reg.representative_alt_id,
-                                            self.__reg.mr_atom_name_mapping,
-                                            self.__reg.cR, self.__reg.caC,
-                                            self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = SparkyPKReader(self._reg.verbose, self._reg.log,
+                                            self._reg.representative_model_id,
+                                            self._reg.representative_alt_id,
+                                            self._reg.mr_atom_name_mapping,
+                                            self._reg.cR, self._reg.caC,
+                                            self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                             reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -8999,18 +8999,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (SPARKY) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -9021,22 +9021,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-sps':
-            reader = SparkySPKReader(self.__reg.verbose, self.__reg.log,
-                                     self.__reg.representative_model_id,
-                                     self.__reg.representative_alt_id,
-                                     self.__reg.mr_atom_name_mapping,
-                                     self.__reg.cR, self.__reg.caC,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = SparkySPKReader(self._reg.verbose, self._reg.log,
+                                     self._reg.representative_model_id,
+                                     self._reg.representative_alt_id,
+                                     self._reg.mr_atom_name_mapping,
+                                     self._reg.cR, self._reg.caC,
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -9044,21 +9044,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = SparkySPKReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = SparkySPKReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -9069,18 +9069,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (SPARKY) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -9091,21 +9091,21 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-top':
-            reader = TopSpinPKReader(self.__reg.verbose, self.__reg.log,
-                                     self.__reg.representative_model_id,
-                                     self.__reg.representative_alt_id,
-                                     self.__reg.mr_atom_name_mapping,
-                                     self.__reg.cR, self.__reg.caC,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = TopSpinPKReader(self._reg.verbose, self._reg.log,
+                                     self._reg.representative_model_id,
+                                     self._reg.representative_alt_id,
+                                     self._reg.mr_atom_name_mapping,
+                                     self._reg.cR, self._reg.caC,
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id)
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id)
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -9113,20 +9113,20 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = TopSpinPKReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = TopSpinPKReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id)
+                                                  entryId=self._reg.entry_id)
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -9137,18 +9137,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (TOPSPIN) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -9159,22 +9159,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-vie':
-            reader = NmrViewPKReader(self.__reg.verbose, self.__reg.log,
-                                     self.__reg.representative_model_id,
-                                     self.__reg.representative_alt_id,
-                                     self.__reg.mr_atom_name_mapping,
-                                     self.__reg.cR, self.__reg.caC,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = NmrViewPKReader(self._reg.verbose, self._reg.log,
+                                     self._reg.representative_model_id,
+                                     self._reg.representative_alt_id,
+                                     self._reg.mr_atom_name_mapping,
+                                     self._reg.cR, self._reg.caC,
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -9182,21 +9182,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = NmrViewPKReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = NmrViewPKReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -9207,18 +9207,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (NMRVIEW) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -9229,22 +9229,22 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-vnm':
-            reader = VnmrPKReader(self.__reg.verbose, self.__reg.log,
-                                  self.__reg.representative_model_id,
-                                  self.__reg.representative_alt_id,
-                                  self.__reg.mr_atom_name_mapping,
-                                  self.__reg.cR, self.__reg.caC,
-                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = VnmrPKReader(self._reg.verbose, self._reg.log,
+                                  self._reg.representative_model_id,
+                                  self._reg.representative_alt_id,
+                                  self._reg.mr_atom_name_mapping,
+                                  self._reg.cR, self._reg.caC,
+                                  self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -9252,21 +9252,21 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = VnmrPKReader(self.__reg.verbose, self.__reg.log,
-                                          self.__reg.representative_model_id,
-                                          self.__reg.representative_alt_id,
-                                          self.__reg.mr_atom_name_mapping,
-                                          self.__reg.cR, self.__reg.caC,
-                                          self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = VnmrPKReader(self._reg.verbose, self._reg.log,
+                                          self._reg.representative_model_id,
+                                          self._reg.representative_alt_id,
+                                          self._reg.mr_atom_name_mapping,
+                                          self._reg.cR, self._reg.caC,
+                                          self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                           reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -9277,18 +9277,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (VNMR) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -9299,23 +9299,23 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-xea':
-            reader = XeasyPKReader(self.__reg.verbose, self.__reg.log,
-                                   self.__reg.representative_model_id,
-                                   self.__reg.representative_alt_id,
-                                   self.__reg.mr_atom_name_mapping,
-                                   self.__reg.cR, self.__reg.caC,
-                                   self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+            reader = XeasyPKReader(self._reg.verbose, self._reg.log,
+                                   self._reg.representative_model_id,
+                                   self._reg.representative_alt_id,
+                                   self._reg.mr_atom_name_mapping,
+                                   self._reg.cR, self._reg.caC,
+                                   self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                    None)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id,
-                                          csLoops=self.__reg.lp_data['chem_shift'])
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id,
+                                          csLoops=self._reg.lp_data['chem_shift'])
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -9323,22 +9323,22 @@ class NmrDpRemediation:
                 if reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = XeasyPKReader(self.__reg.verbose, self.__reg.log,
-                                           self.__reg.representative_model_id,
-                                           self.__reg.representative_alt_id,
-                                           self.__reg.mr_atom_name_mapping,
-                                           self.__reg.cR, self.__reg.caC,
-                                           self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = XeasyPKReader(self._reg.verbose, self._reg.log,
+                                           self._reg.representative_model_id,
+                                           self._reg.representative_alt_id,
+                                           self._reg.mr_atom_name_mapping,
+                                           self._reg.cR, self._reg.caC,
+                                           self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                            None,
                                            reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id,
-                                                  csLoops=self.__reg.lp_data['chem_shift'])
+                                                  entryId=self._reg.entry_id,
+                                                  csLoops=self._reg.lp_data['chem_shift'])
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -9349,18 +9349,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (XEASY) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -9371,21 +9371,21 @@ class NmrDpRemediation:
                                 pk_sf_dict_holder[content_subtype].append(sf)
 
         elif file_type == 'nm-pea-xwi':
-            reader = XwinNmrPKReader(self.__reg.verbose, self.__reg.log,
-                                     self.__reg.representative_model_id,
-                                     self.__reg.representative_alt_id,
-                                     self.__reg.mr_atom_name_mapping,
-                                     self.__reg.cR, self.__reg.caC,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-            reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-            reader.setInternalMode(self.__reg.internal_mode)
+            reader = XwinNmrPKReader(self._reg.verbose, self._reg.log,
+                                     self._reg.representative_model_id,
+                                     self._reg.representative_alt_id,
+                                     self._reg.mr_atom_name_mapping,
+                                     self._reg.cR, self._reg.caC,
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
+            reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+            reader.setInternalMode(self._reg.internal_mode)
 
-            _list_id_counter = copy.copy(self.__reg.list_id_counter)
+            _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-            listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+            listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                           createSfDict=True, originalFileName=data_file_name,
-                                          listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                          entryId=self.__reg.entry_id)
+                                          listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                          entryId=self._reg.entry_id)
 
             if listener is not None:
                 reasons = listener.getReasonsForReparsing()
@@ -9393,20 +9393,20 @@ class NmrDpRemediation:
                 if reasons is not None:
                     deal_pea_warn_message_for_lazy_eval(data_file_name, listener)
 
-                    reader = XwinNmrPKReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                    reader = XwinNmrPKReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    listener, _, _ = reader.parse(text_data, self.__reg.cifPath, isFilePath=False,
+                    listener, _, _ = reader.parse(text_data, self._reg.cifPath, isFilePath=False,
                                                   createSfDict=True, originalFileName=data_file_name,
                                                   listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                  entryId=self.__reg.entry_id)
+                                                  entryId=self._reg.entry_id)
 
                 deal_pea_warn_message(data_file_name, listener)
 
@@ -9417,18 +9417,18 @@ class NmrDpRemediation:
 
                 seq_align = listener.getSequenceAlignment()
                 if seq_align is not None:
-                    self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                    self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                 if len(listener.getContentSubtype()) == 0:
                     err = f"Failed to validate spectral peak list file (XWINNMR) {data_file_name!r}."
 
-                    self.__reg.report.error.appendDescription('internal_error',
+                    self._reg.report.error.appendDescription('internal_error',
                                                               f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - " + err)
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.remediateRawTextPk() ++ Error  - {err}\n")
 
-                self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                self._reg.list_id_counter, sf_dict = listener.getSfDict()
                 if sf_dict is not None:
                     for k, v in sf_dict.items():
                         content_subtype = contentSubtypeOf(k[0])
@@ -9440,7 +9440,7 @@ class NmrDpRemediation:
 
         if content_subtype in pk_sf_dict_holder:
 
-            master_entry = self.__reg.star_data[0]
+            master_entry = self._reg.star_data[0]
 
             master_entry.remove_saveframe(sf_framecode)
 
@@ -9468,14 +9468,14 @@ class NmrDpRemediation:
                     for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
                         updatePolySeqRst(poly_seq_rst, chain_id, seq_id, comp_id)
 
-            poly_seq_model = self.__reg.caC['polymer_sequence']
+            poly_seq_model = self._reg.caC['polymer_sequence']
 
             sortPolySeqRst(poly_seq_rst)
 
             file_type = 'nm-pea-any'
 
-            seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+            seq_align, _ = alignPolymerSequence(self._reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
+            chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type,
                                                     poly_seq_model, poly_seq_rst, seq_align)
 
             if chain_assign is not None:
@@ -9497,19 +9497,19 @@ class NmrDpRemediation:
                             if ps['chain_id'] in chain_mapping:
                                 ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                        seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                        seq_align, _ = alignPolymerSequence(self._reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
+                        chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type,
                                                                 poly_seq_model, poly_seq_rst, seq_align)
 
                     trimSequenceAlignment(seq_align, chain_assign)
 
             input_source.setItemValue('polymer_sequence', poly_seq_rst)
 
-            self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+            self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
-        if proc_nmr_ext_poly_seq and len(self.__reg.nmr_ext_poly_seq) > 0:
-            entity_assembly = self.__reg.caC['entity_assembly']
-            auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__reg.nmr_ext_poly_seq))
+        if proc_nmr_ext_poly_seq and len(self._reg.nmr_ext_poly_seq) > 0:
+            entity_assembly = self._reg.caC['entity_assembly']
+            auth_chain_ids = list(set(d['auth_chain_id'] for d in self._reg.nmr_ext_poly_seq))
             for auth_chain_id in auth_chain_ids:
                 try:
                     item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
@@ -9528,28 +9528,28 @@ class NmrDpRemediation:
                         unknown_residue = 'N'
                     else:
                         continue
-                    ps = next(ps for ps in self.__reg.caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id)
-                    auth_seq_ids = [d['auth_seq_id'] for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_chain_id]
+                    ps = next(ps for ps in self._reg.caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id)
+                    auth_seq_ids = [d['auth_seq_id'] for d in self._reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_chain_id]
                     auth_seq_ids.extend(list(filter(None, ps['auth_seq_id'])))
                     min_auth_seq_id = min(auth_seq_ids)
                     max_auth_seq_id = max(auth_seq_ids)
                     for auth_seq_id in range(min_auth_seq_id, max_auth_seq_id + 1):
                         if auth_seq_id not in ps['auth_seq_id']\
-                           and not any(True for d in self.__reg.nmr_ext_poly_seq
+                           and not any(True for d in self._reg.nmr_ext_poly_seq
                                        if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
-                            self.__reg.nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
+                            self._reg.nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
                                                                 'auth_seq_id': auth_seq_id,
                                                                 'auth_comp_id': unknown_residue})
 
-            self.__reg.nmr_ext_poly_seq = sorted(self.__reg.nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
+            self._reg.nmr_ext_poly_seq = sorted(self._reg.nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
 
-        return self.__reg.report.getTotalErrors() == __errors
+        return self._reg.report.getTotalErrors() == __errors
 
     def remediateSpectralPeakListSaveframe(self, star_data: pynmrstar.Entry) -> None:
         """ Remediate spectral peak list saveframe
         """
 
-        if not self.__reg.bmrb_only:
+        if not self._reg.bmrb_only:
             return
 
         sf_category = 'spectral_peak_list'
@@ -9607,7 +9607,7 @@ class NmrDpRemediation:
 
                 sf_category = 'entry_interview'
 
-                if sf_category in self.__reg.sf_category_list:
+                if sf_category in self._reg.sf_category_list:
 
                     int_sf = star_data.get_saveframes_by_category(sf_category)[0]
 
@@ -9615,7 +9615,7 @@ class NmrDpRemediation:
 
             sf_category = 'entry_information'
 
-            if sf_category in self.__reg.sf_category_list:
+            if sf_category in self._reg.sf_category_list:
 
                 inf_sf = star_data.get_saveframes_by_category(sf_category)[0]
 
@@ -9669,7 +9669,7 @@ class NmrDpRemediation:
                 if angle_type not in ('PHI', 'PSI'):
                     continue
 
-                if not self.__reg.csStat.peptideLike(comp_id):
+                if not self._reg.csStat.peptideLike(comp_id):
                     continue
 
                 if target_value not in EMPTY_VALUE\
@@ -9738,31 +9738,31 @@ class NmrDpRemediation:
 
         return modified
 
-    def __mergeStrPk(self) -> bool:
+    def _mergeStrPk(self) -> bool:
         """ Merge spectral peak lists in NMR-STAR restraint files.
         """
 
-        if self.__reg.combined_mode:
+        if self._reg.combined_mode:
             return True
 
-        if MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+        if MR_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
             return True
 
-        src_id = self.__reg.report.getInputSourceIdOfCoord()
+        src_id = self._reg.report.getInputSourceIdOfCoord()
 
         if src_id < 0:
             return False
 
-        if self.__reg.pk_sf_holder is None:
-            self.__reg.pk_sf_holder = []
+        if self._reg.pk_sf_holder is None:
+            self._reg.pk_sf_holder = []
 
-        list_id = len(self.__reg.pk_sf_holder) + 1
+        list_id = len(self._reg.pk_sf_holder) + 1
 
-        master_entry = self.__reg.star_data[0]
+        master_entry = self._reg.star_data[0]
 
-        for fileListId in range(self.__reg.cs_file_path_list_len, self.__reg.file_path_list_len):
+        for fileListId in range(self._reg.cs_file_path_list_len, self._reg.file_path_list_len):
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -9781,62 +9781,62 @@ class NmrDpRemediation:
 
                 sf_category = SF_CATEGORIES[file_type][content_subtype]
 
-                if self.__reg.bmrb_only and self.__reg.internal_mode and self.__reg.nmr_cif_sf_category_list is not None:
-                    if sf_category in self.__reg.nmr_cif_sf_category_list:
+                if self._reg.bmrb_only and self._reg.internal_mode and self._reg.nmr_cif_sf_category_list is not None:
+                    if sf_category in self._reg.nmr_cif_sf_category_list:
                         continue
 
-                if self.__reg.star_data_type[fileListId] == 'Loop':
+                if self._reg.star_data_type[fileListId] == 'Loop':
                     pass
 
-                elif self.__reg.star_data_type[fileListId] == 'Saveframe':
-                    sf = self.__reg.star_data[fileListId]
+                elif self._reg.star_data_type[fileListId] == 'Saveframe':
+                    sf = self._reg.star_data[fileListId]
 
-                    self.__reg.c2S.set_entry_id(sf, self.__reg.entry_id)
-                    self.__reg.c2S.set_local_sf_id(sf, list_id)
+                    self._reg.c2S.set_entry_id(sf, self._reg.entry_id)
+                    self._reg.c2S.set_local_sf_id(sf, list_id)
 
                     master_entry.add_saveframe(sf)
 
-                    self.__reg.pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf})
+                    self._reg.pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf})
 
                     list_id += 1
 
                 else:
 
-                    for sf in self.__reg.star_data[fileListId].get_saveframes_by_category(sf_category):
+                    for sf in self._reg.star_data[fileListId].get_saveframes_by_category(sf_category):
 
-                        self.__reg.c2S.set_entry_id(sf, self.__reg.entry_id)
-                        self.__reg.c2S.set_local_sf_id(sf, list_id)
+                        self._reg.c2S.set_entry_id(sf, self._reg.entry_id)
+                        self._reg.c2S.set_local_sf_id(sf, list_id)
 
                         master_entry.add_saveframe(sf)
 
-                        self.__reg.pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf})
+                        self._reg.pk_sf_holder.append({'file_type': 'nmr-star', 'saveframe': sf})
 
                         list_id += 1
 
         return True
 
-    def __mergeAnyPkAsIs(self) -> bool:
+    def _mergeAnyPkAsIs(self) -> bool:
         """ Merge spectral peak list file(s) in any plain text format (file type: nm-pea-any) into a single NMR-STAR file as-is.
         """
 
-        if self.__reg.combined_mode:
+        if self._reg.combined_mode:
             return True
 
-        if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
             return True
 
-        if self.__reg.pk_sf_holder is None:
-            self.__reg.pk_sf_holder = []
+        if self._reg.pk_sf_holder is None:
+            self._reg.pk_sf_holder = []
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
-        list_id = len(self.__reg.pk_sf_holder) + 1
+        list_id = len(self._reg.pk_sf_holder) + 1
 
-        master_entry = self.__reg.star_data[0]
+        master_entry = self._reg.star_data[0]
 
-        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+        for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_name = input_source_dic['file_name']
@@ -9866,11 +9866,11 @@ class NmrDpRemediation:
 
                 err = "The spectral peak list file includes assigned chemical shifts."
 
-                self.__reg.report.error.appendDescription('content_mismatch',
+                self._reg.report.error.appendDescription('content_mismatch',
                                                           {'file_name': file_name, 'description': err})
 
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.__mergeAnyPkAsIs() ++ Error  - {err}\n")
+                if self._reg.verbose:
+                    self._reg.log.write(f"+{self.__class_name__}.__mergeAnyPkAsIs() ++ Error  - {err}\n")
 
                 continue
 
@@ -9879,8 +9879,8 @@ class NmrDpRemediation:
             sf_category = SF_CATEGORIES['nmr-star'][content_subtype]
             sf_framecode = f'spectral_peak_list_{list_id}'
 
-            if self.__reg.bmrb_only and self.__reg.internal_mode and self.__reg.nmr_cif_sf_category_list is not None:
-                if sf_category in self.__reg.nmr_cif_sf_category_list:
+            if self._reg.bmrb_only and self._reg.internal_mode and self._reg.nmr_cif_sf_category_list is not None:
+                if sf_category in self._reg.nmr_cif_sf_category_list:
                     continue
 
             try:
@@ -9922,7 +9922,7 @@ class NmrDpRemediation:
                 sf = pynmrstar.Saveframe.from_scratch(sf_framecode, SF_TAG_PREFIXES['nmr-star'][content_subtype])
                 sf.add_tag('Sf_category', sf_category)
                 sf.add_tag('Sf_framecode', sf_framecode)
-                sf.add_tag('Entry_ID', self.__reg.entry_id)
+                sf.add_tag('Entry_ID', self._reg.entry_id)
                 sf.add_tag('ID', list_id)
                 sf.add_tag('Data_file_name', original_file_name if original_file_name is not None else file_name)
 
@@ -9982,7 +9982,7 @@ class NmrDpRemediation:
 
                 master_entry.add_saveframe(sf)
 
-                self.__reg.pk_sf_holder.append({'file_type': file_type, 'saveframe': sf})
+                self._reg.pk_sf_holder.append({'file_type': file_type, 'saveframe': sf})
 
                 list_id += 1
 
@@ -9992,13 +9992,13 @@ class NmrDpRemediation:
         """ Validate data content of legacy NMR chemical shift files and merge them if possible.
         """
 
-        if self.__reg.combined_mode or not self.__reg.conversion_server:
+        if self._reg.combined_mode or not self._reg.conversion_server:
             return True
 
-        if AC_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+        if AC_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
             return True
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -10015,12 +10015,12 @@ class NmrDpRemediation:
         sf_category = SF_CATEGORIES[file_type][content_subtype]
 
         _rlist_ids = []
-        if len(self.__reg.star_data) > 0 and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
-            for idx, sf in enumerate(self.__reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
+        if len(self._reg.star_data) > 0 and isinstance(self._reg.star_data[0], pynmrstar.Entry):
+            for idx, sf in enumerate(self._reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
                 list_id = get_first_sf_tag(sf, 'ID')
                 _rlist_ids.append({'list_id': int(list_id) if list_id not in EMPTY_VALUE else idx,
                                    'data_file_name': get_first_sf_tag(sf, 'Data_file_name')})
-            for sf in self.__reg.star_data[0].get_saveframes_by_category('assembly'):
+            for sf in self._reg.star_data[0].get_saveframes_by_category('assembly'):
                 try:
                     lp = sf.get_loop('_Entity_assembly')
                     has_pdb_chain_id = 'PDB_chain_ID' in lp.tags
@@ -10046,14 +10046,14 @@ class NmrDpRemediation:
                 except KeyError:
                     pass
 
-        if self.__reg.caC is not None:
-            nmr_poly_seq = deepcopy(self.__reg.caC['polymer_sequence'])
-            if self.__reg.caC['branched'] is not None:
-                nmr_poly_seq.extend(self.__reg.caC['branched'])
-            if self.__reg.caC['non_polymer'] is not None:
-                nmr_poly_seq.extend(self.__reg.caC['non_polymer'])
+        if self._reg.caC is not None:
+            nmr_poly_seq = deepcopy(self._reg.caC['polymer_sequence'])
+            if self._reg.caC['branched'] is not None:
+                nmr_poly_seq.extend(self._reg.caC['branched'])
+            if self._reg.caC['non_polymer'] is not None:
+                nmr_poly_seq.extend(self._reg.caC['non_polymer'])
             entity_assembly = {}
-            for item in self.__reg.caC['entity_assembly']:
+            for item in self._reg.caC['entity_assembly']:
                 _auth_asym_id = 'auth_asym_id' if 'fixed_auth_asym_id' not in item else 'fixed_auth_asym_id'
                 entity_assembly[str(item['entity_assembly_id'])] =\
                     {'entity_id': item['entity_id'],
@@ -10061,8 +10061,8 @@ class NmrDpRemediation:
 
         create_sf_dict = True
 
-        if self.__reg.list_id_counter is None:
-            self.__reg.list_id_counter = {}
+        if self._reg.list_id_counter is None:
+            self._reg.list_id_counter = {}
 
         cs_sf_dict_holder = {}
 
@@ -10108,10 +10108,10 @@ class NmrDpRemediation:
                 "Please re-upload the assigned chemical shift file.\n"\
                 "The following issues need to be fixed before re-upload.\n" + _err[:-1]
 
-            self.__reg.report.error.appendDescription('format_issue',
+            self._reg.report.error.appendDescription('format_issue',
                                                       {'file_name': file_name, 'description': err})
 
-            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {file_name} {err}\n")
+            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {file_name} {err}\n")
 
             return True
 
@@ -10120,7 +10120,7 @@ class NmrDpRemediation:
             if len(suspended_errors_for_lazy_eval) > 0:
                 for msg in suspended_errors_for_lazy_eval:
                     for k, v in msg.items():
-                        self.__reg.report.error.appendDescription(k, v)
+                        self._reg.report.error.appendDescription(k, v)
                 suspended_errors_for_lazy_eval.clear()
 
         def deal_shi_warn_message(file_name, listener, ignore_error):
@@ -10137,83 +10137,83 @@ class NmrDpRemediation:
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Concatenated sequence]'):
-                        self.__reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+                        self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.error.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
-                        self.__reg.report.error.appendDescription('atom_not_found', msg_dict)
+                        self._reg.report.error.appendDescription('atom_not_found', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('invalid_atom_nomenclature', msg_dict)
+                        self._reg.report.error.appendDescription('invalid_atom_nomenclature', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('invalid_data', msg_dict)
+                        self._reg.report.error.appendDescription('invalid_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ ValueError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
-                        self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
 
                         if SEQ_MISMATCH_WARNING_PAT.match(warn):
                             g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
-                            if d not in self.__reg.nmr_ext_poly_seq:
-                                self.__reg.nmr_ext_poly_seq.append(d)
+                            if d not in self._reg.nmr_ext_poly_seq:
+                                self._reg.nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Missing data]'):
-                        self.__reg.report.warning.appendDescription('missing_data', msg_dict)
+                        self._reg.report.warning.appendDescription('missing_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
 
-                    elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                         # consume_suspended_message()
 
-                        self.__reg.report.warning.appendDescription('anomalous_chemical_shift', msg_dict)
+                        self._reg.report.warning.appendDescription('anomalous_chemical_shift', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]')\
-                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
-                        self.__reg.report.warning.appendDescription('unusual_chemical_shift', msg_dict)
+                            or (warn.startswith('[Range value error]') and self._reg.remediation_mode):
+                        self._reg.report.warning.appendDescription('unusual_chemical_shift', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
 
                     elif not ignore_error:
-                        self.__reg.report.error.appendDescription('internal_error',
+                        self._reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.validateLegacyCs() "
                                                                   "++ KeyError  - " + warn)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ KeyError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ KeyError  - {warn}\n")
 
         def deal_shi_warn_message_for_lazy_eval(file_name, listener):
 
@@ -10240,11 +10240,11 @@ class NmrDpRemediation:
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
 
                     elif warn.startswith('[Atom not found]'):
-                        if not self.__reg.remediation_mode or 'Macromolecules page' not in warn:
+                        if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found': msg_dict})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
-                    #     if self.__reg.remediation_mode:
+                    #     if self._reg.remediation_mode:
                     #         pass
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated': msg_dict})
@@ -10258,15 +10258,15 @@ class NmrDpRemediation:
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data': msg_dict})
 
-                    # elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    # elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data': msg_dict})
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
-        for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
+        for acs in self._reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
             file_path = acs['file_name']
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -10278,7 +10278,7 @@ class NmrDpRemediation:
             if file_type is None or (not file_type.startswith('nm-shi-') and file_type != 'nm-aux-xea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
+            if self._reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             file_path = self.testPathWithSuffix(file_path, '-corrected')
@@ -10305,18 +10305,18 @@ class NmrDpRemediation:
             suspended_errors_for_lazy_eval.clear()
 
             if file_type == 'nm-shi-ari':
-                reader = AriaCSReader(self.__reg.verbose, self.__reg.log,
+                reader = AriaCSReader(self._reg.verbose, self._reg.log,
                                       nmr_poly_seq, entity_assembly,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10329,15 +10329,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = AriaCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = AriaCSReader(self._reg.verbose, self._reg.log,
                                               nmr_poly_seq, entity_assembly,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10349,14 +10349,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (ARIA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10367,18 +10367,18 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-shi-bar':
-                reader = BareCSReader(self.__reg.verbose, self.__reg.log,
+                reader = BareCSReader(self._reg.verbose, self._reg.log,
                                       nmr_poly_seq, entity_assembly,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10391,15 +10391,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = BareCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = BareCSReader(self._reg.verbose, self._reg.log,
                                               nmr_poly_seq, entity_assembly,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10412,14 +10412,14 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file "\
                                 f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10430,18 +10430,18 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-shi-gar':
-                reader = GarretCSReader(self.__reg.verbose, self.__reg.log,
+                reader = GarretCSReader(self._reg.verbose, self._reg.log,
                                         nmr_poly_seq, entity_assembly,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10454,15 +10454,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = GarretCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = GarretCSReader(self._reg.verbose, self._reg.log,
                                                 nmr_poly_seq, entity_assembly,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10474,14 +10474,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (GARRET) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10492,18 +10492,18 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-shi-npi':
-                reader = NmrPipeCSReader(self.__reg.verbose, self.__reg.log,
+                reader = NmrPipeCSReader(self._reg.verbose, self._reg.log,
                                          nmr_poly_seq, entity_assembly,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10516,15 +10516,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = NmrPipeCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = NmrPipeCSReader(self._reg.verbose, self._reg.log,
                                                  nmr_poly_seq, entity_assembly,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                  reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10536,14 +10536,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10554,18 +10554,18 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-shi-oli':
-                reader = OliviaCSReader(self.__reg.verbose, self.__reg.log,
+                reader = OliviaCSReader(self._reg.verbose, self._reg.log,
                                         nmr_poly_seq, entity_assembly,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10578,15 +10578,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = OliviaCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = OliviaCSReader(self._reg.verbose, self._reg.log,
                                                 nmr_poly_seq, entity_assembly,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10598,14 +10598,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10616,18 +10616,18 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-shi-pip':
-                reader = PippCSReader(self.__reg.verbose, self.__reg.log,
+                reader = PippCSReader(self._reg.verbose, self._reg.log,
                                       nmr_poly_seq, entity_assembly,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10640,15 +10640,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = PippCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = PippCSReader(self._reg.verbose, self._reg.log,
                                               nmr_poly_seq, entity_assembly,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10660,14 +10660,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (PIPP) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10678,18 +10678,18 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-shi-ppm':
-                reader = PpmCSReader(self.__reg.verbose, self.__reg.log,
+                reader = PpmCSReader(self._reg.verbose, self._reg.log,
                                      nmr_poly_seq, entity_assembly,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10702,15 +10702,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = PpmCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = PpmCSReader(self._reg.verbose, self._reg.log,
                                              nmr_poly_seq, entity_assembly,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10722,14 +10722,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10740,18 +10740,18 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-shi-st2':
-                reader = NmrStar2CSReader(self.__reg.verbose, self.__reg.log,
+                reader = NmrStar2CSReader(self._reg.verbose, self._reg.log,
                                           nmr_poly_seq, entity_assembly,
-                                          self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                          self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10764,15 +10764,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = NmrStar2CSReader(self.__reg.verbose, self.__reg.log,
+                        reader = NmrStar2CSReader(self._reg.verbose, self._reg.log,
                                                   nmr_poly_seq, entity_assembly,
-                                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                  self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                   reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10784,14 +10784,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10802,18 +10802,18 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type in ('nm-aux-xea', 'nm-shi-xea'):
-                reader = XeasyCSReader(self.__reg.verbose, self.__reg.log,
+                reader = XeasyCSReader(self._reg.verbose, self._reg.log,
                                        nmr_poly_seq, entity_assembly,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -10826,15 +10826,15 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = XeasyCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = XeasyCSReader(self._reg.verbose, self._reg.log,
                                                nmr_poly_seq, entity_assembly,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                reasons)
 
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -10846,14 +10846,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (XEASY) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCs() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -10863,9 +10863,9 @@ class NmrDpRemediation:
                                     if sf not in cs_sf_dict_holder[content_subtype]:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
-        if content_subtype in cs_sf_dict_holder and len(self.__reg.star_data) > 0\
-           and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
-            master_entry = self.__reg.star_data[0]
+        if content_subtype in cs_sf_dict_holder and len(self._reg.star_data) > 0\
+           and isinstance(self._reg.star_data[0], pynmrstar.Entry):
+            master_entry = self._reg.star_data[0]
 
             for sf in cs_sf_dict_holder[content_subtype]:
 
@@ -10894,19 +10894,19 @@ class NmrDpRemediation:
 
                 master_entry.add_saveframe(sf['saveframe'])
 
-        return not self.__reg.report.isError()
+        return not self._reg.report.isError()
 
     def validateLegacyCsp(self) -> bool:
         """ Validate data content of legacy NMR chemical shift perturbation files and merge them if possible.
         """
 
-        if not self.__reg.combined_mode or not self.__reg.conversion_server:
+        if not self._reg.combined_mode or not self._reg.conversion_server:
             return True
 
-        if AC_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+        if AC_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
             return True
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -10923,12 +10923,12 @@ class NmrDpRemediation:
         sf_category = SF_CATEGORIES[file_type][content_subtype]
 
         _rlist_ids = []
-        if len(self.__reg.star_data) > 0 and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
-            for idx, sf in enumerate(self.__reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
+        if len(self._reg.star_data) > 0 and isinstance(self._reg.star_data[0], pynmrstar.Entry):
+            for idx, sf in enumerate(self._reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
                 list_id = get_first_sf_tag(sf, 'ID')
                 _rlist_ids.append({'list_id': int(list_id) if list_id not in EMPTY_VALUE else idx,
                                    'data_file_name': get_first_sf_tag(sf, 'Data_file_name')})
-            for sf in self.__reg.star_data[0].get_saveframes_by_category('assembly'):
+            for sf in self._reg.star_data[0].get_saveframes_by_category('assembly'):
                 try:
                     lp = sf.get_loop('_Entity_assembly')
                     has_pdb_chain_id = 'PDB_chain_ID' in lp.tags
@@ -10954,14 +10954,14 @@ class NmrDpRemediation:
                 except KeyError:
                     pass
 
-        if self.__reg.caC is not None:
-            nmr_poly_seq = deepcopy(self.__reg.caC['polymer_sequence'])
-            if self.__reg.caC['branched'] is not None:
-                nmr_poly_seq.extend(self.__reg.caC['branched'])
-            if self.__reg.caC['non_polymer'] is not None:
-                nmr_poly_seq.extend(self.__reg.caC['non_polymer'])
+        if self._reg.caC is not None:
+            nmr_poly_seq = deepcopy(self._reg.caC['polymer_sequence'])
+            if self._reg.caC['branched'] is not None:
+                nmr_poly_seq.extend(self._reg.caC['branched'])
+            if self._reg.caC['non_polymer'] is not None:
+                nmr_poly_seq.extend(self._reg.caC['non_polymer'])
             entity_assembly = {}
-            for item in self.__reg.caC['entity_assembly']:
+            for item in self._reg.caC['entity_assembly']:
                 _auth_asym_id = 'auth_asym_id' if 'fixed_auth_asym_id' not in item else 'fixed_auth_asym_id'
                 entity_assembly[str(item['entity_assembly_id'])] =\
                     {'entity_id': item['entity_id'],
@@ -10969,8 +10969,8 @@ class NmrDpRemediation:
 
         create_sf_dict = True
 
-        if self.__reg.list_id_counter is None:
-            self.__reg.list_id_counter = {}
+        if self._reg.list_id_counter is None:
+            self._reg.list_id_counter = {}
 
         cs_sf_dict_holder = {}
 
@@ -11016,10 +11016,10 @@ class NmrDpRemediation:
                 "Please re-upload the assigned chemical shift file.\n"\
                 "The following issues need to be fixed before re-upload.\n" + _err[:-1]
 
-            self.__reg.report.error.appendDescription('format_issue',
+            self._reg.report.error.appendDescription('format_issue',
                                                       {'file_name': file_name, 'description': err})
 
-            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {file_name} {err}\n")
+            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {file_name} {err}\n")
 
             return True
 
@@ -11028,7 +11028,7 @@ class NmrDpRemediation:
             if len(suspended_errors_for_lazy_eval) > 0:
                 for msg in suspended_errors_for_lazy_eval:
                     for k, v in msg.items():
-                        self.__reg.report.error.appendDescription(k, v)
+                        self._reg.report.error.appendDescription(k, v)
                 suspended_errors_for_lazy_eval.clear()
 
         def deal_shi_warn_message(file_name, listener, ignore_error):
@@ -11045,83 +11045,83 @@ class NmrDpRemediation:
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Concatenated sequence]'):
-                        self.__reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+                        self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.error.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
-                        self.__reg.report.error.appendDescription('atom_not_found', msg_dict)
+                        self._reg.report.error.appendDescription('atom_not_found', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('invalid_atom_nomenclature', msg_dict)
+                        self._reg.report.error.appendDescription('invalid_atom_nomenclature', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('invalid_data', msg_dict)
+                        self._reg.report.error.appendDescription('invalid_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ ValueError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
-                        self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
 
                         if SEQ_MISMATCH_WARNING_PAT.match(warn):
                             g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
-                            if d not in self.__reg.nmr_ext_poly_seq:
-                                self.__reg.nmr_ext_poly_seq.append(d)
+                            if d not in self._reg.nmr_ext_poly_seq:
+                                self._reg.nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Missing data]'):
-                        self.__reg.report.warning.appendDescription('missing_data', msg_dict)
+                        self._reg.report.warning.appendDescription('missing_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
 
-                    elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                         # consume_suspended_message()
 
-                        self.__reg.report.warning.appendDescription('anomalous_chemical_shift', msg_dict)
+                        self._reg.report.warning.appendDescription('anomalous_chemical_shift', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]')\
-                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
-                        self.__reg.report.warning.appendDescription('unusual_chemical_shift', msg_dict)
+                            or (warn.startswith('[Range value error]') and self._reg.remediation_mode):
+                        self._reg.report.warning.appendDescription('unusual_chemical_shift', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Warning  - {warn}\n")
 
                     elif not ignore_error:
-                        self.__reg.report.error.appendDescription('internal_error',
+                        self._reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.validateLegacyCsp() "
                                                                   "++ KeyError  - " + warn)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ KeyError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ KeyError  - {warn}\n")
 
         def deal_shi_warn_message_for_lazy_eval(file_name, listener):
 
@@ -11148,11 +11148,11 @@ class NmrDpRemediation:
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
 
                     elif warn.startswith('[Atom not found]'):
-                        if not self.__reg.remediation_mode or 'Macromolecules page' not in warn:
+                        if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found': msg_dict})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
-                    #     if self.__reg.remediation_mode:
+                    #     if self._reg.remediation_mode:
                     #         pass
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated': msg_dict})
@@ -11166,17 +11166,17 @@ class NmrDpRemediation:
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data': msg_dict})
 
-                    # elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    # elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data': msg_dict})
 
-        csLoops = self.__reg.lp_data['chem_shift']
+        csLoops = self._reg.lp_data['chem_shift']
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
-        for acs in self.__reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
+        for acs in self._reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
             file_path = acs['file_name']
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -11188,7 +11188,7 @@ class NmrDpRemediation:
             if file_type is None or not file_type.startswith('nm-csp-'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
+            if self._reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             file_path = self.testPathWithSuffix(file_path, '-corrected')
@@ -11215,20 +11215,20 @@ class NmrDpRemediation:
             suspended_errors_for_lazy_eval.clear()
 
             if file_type == 'nm-csp-ari':
-                reader = AriaCSReader(self.__reg.verbose, self.__reg.log,
+                reader = AriaCSReader(self._reg.verbose, self._reg.log,
                                       nmr_poly_seq, entity_assembly,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11241,9 +11241,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = AriaCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = AriaCSReader(self._reg.verbose, self._reg.log,
                                               nmr_poly_seq, entity_assembly,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11251,7 +11251,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11263,14 +11263,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (ARIA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11281,20 +11281,20 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-csp-bar':
-                reader = BareCSReader(self.__reg.verbose, self.__reg.log,
+                reader = BareCSReader(self._reg.verbose, self._reg.log,
                                       nmr_poly_seq, entity_assembly,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11307,9 +11307,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = BareCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = BareCSReader(self._reg.verbose, self._reg.log,
                                               nmr_poly_seq, entity_assembly,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11317,7 +11317,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11330,14 +11330,14 @@ class NmrDpRemediation:
                             err = f"Failed to validate assigned chemical shift file "\
                                 f"(Bare WSV/TSV/CSV or Sparky resonance list) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11348,20 +11348,20 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-csp-gar':
-                reader = GarretCSReader(self.__reg.verbose, self.__reg.log,
+                reader = GarretCSReader(self._reg.verbose, self._reg.log,
                                         nmr_poly_seq, entity_assembly,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11374,9 +11374,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = GarretCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = GarretCSReader(self._reg.verbose, self._reg.log,
                                                 nmr_poly_seq, entity_assembly,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11384,7 +11384,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11396,14 +11396,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (GARRET) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11414,20 +11414,20 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-csp-npi':
-                reader = NmrPipeCSReader(self.__reg.verbose, self.__reg.log,
+                reader = NmrPipeCSReader(self._reg.verbose, self._reg.log,
                                          nmr_poly_seq, entity_assembly,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11440,9 +11440,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = NmrPipeCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = NmrPipeCSReader(self._reg.verbose, self._reg.log,
                                                  nmr_poly_seq, entity_assembly,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                  reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11450,7 +11450,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11462,14 +11462,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (NMRPIPE) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11480,20 +11480,20 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-csp-oli':
-                reader = OliviaCSReader(self.__reg.verbose, self.__reg.log,
+                reader = OliviaCSReader(self._reg.verbose, self._reg.log,
                                         nmr_poly_seq, entity_assembly,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11506,9 +11506,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = OliviaCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = OliviaCSReader(self._reg.verbose, self._reg.log,
                                                 nmr_poly_seq, entity_assembly,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11516,7 +11516,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11528,14 +11528,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (OLIVIA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11546,20 +11546,20 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-csp-pip':
-                reader = PippCSReader(self.__reg.verbose, self.__reg.log,
+                reader = PippCSReader(self._reg.verbose, self._reg.log,
                                       nmr_poly_seq, entity_assembly,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11572,9 +11572,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = PippCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = PippCSReader(self._reg.verbose, self._reg.log,
                                               nmr_poly_seq, entity_assembly,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11582,7 +11582,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11594,14 +11594,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (PIPP) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11612,20 +11612,20 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-csp-ppm':
-                reader = PpmCSReader(self.__reg.verbose, self.__reg.log,
+                reader = PpmCSReader(self._reg.verbose, self._reg.log,
                                      nmr_poly_seq, entity_assembly,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11638,9 +11638,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = PpmCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = PpmCSReader(self._reg.verbose, self._reg.log,
                                              nmr_poly_seq, entity_assembly,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11648,7 +11648,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11660,14 +11660,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (PPM) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11678,20 +11678,20 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-csp-st2':
-                reader = NmrStar2CSReader(self.__reg.verbose, self.__reg.log,
+                reader = NmrStar2CSReader(self._reg.verbose, self._reg.log,
                                           nmr_poly_seq, entity_assembly,
-                                          self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                          self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11704,9 +11704,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = NmrStar2CSReader(self.__reg.verbose, self.__reg.log,
+                        reader = NmrStar2CSReader(self._reg.verbose, self._reg.log,
                                                   nmr_poly_seq, entity_assembly,
-                                                  self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                                  self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                   reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11714,7 +11714,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11726,14 +11726,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (NMR-STAR V2.1) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11744,20 +11744,20 @@ class NmrDpRemediation:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-csp-xea':
-                reader = XeasyCSReader(self.__reg.verbose, self.__reg.log,
+                reader = XeasyCSReader(self._reg.verbose, self._reg.log,
                                        nmr_poly_seq, entity_assembly,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
                 reader.setCspMode(True)
                 reader.setCsloops(csLoops)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
                     reader.parse(file_path,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and parser_err_listener.getMessageList() is None:
@@ -11770,9 +11770,9 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_shi_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = XeasyCSReader(self.__reg.verbose, self.__reg.log,
+                        reader = XeasyCSReader(self._reg.verbose, self._reg.log,
                                                nmr_poly_seq, entity_assembly,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                reasons)
                         reader.setCspMode(True)
                         reader.setCsloops(csLoops)
@@ -11780,7 +11780,7 @@ class NmrDpRemediation:
                         listener, _, _ = reader.parse(file_path,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_shi_warn_message(file_name, listener, ignore_error)
 
@@ -11792,14 +11792,14 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate assigned chemical shift file (XEASY) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyCsp() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyCsp() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -11809,9 +11809,9 @@ class NmrDpRemediation:
                                     if sf not in cs_sf_dict_holder[content_subtype]:
                                         cs_sf_dict_holder[content_subtype].append(sf)
 
-        if content_subtype in cs_sf_dict_holder and len(self.__reg.star_data) > 0\
-           and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
-            master_entry = self.__reg.star_data[0]
+        if content_subtype in cs_sf_dict_holder and len(self._reg.star_data) > 0\
+           and isinstance(self._reg.star_data[0], pynmrstar.Entry):
+            master_entry = self._reg.star_data[0]
 
             for sf in cs_sf_dict_holder[content_subtype]:
 
@@ -11840,24 +11840,24 @@ class NmrDpRemediation:
 
                 master_entry.add_saveframe(sf['saveframe'])
 
-        return not self.__reg.report.isError()
+        return not self._reg.report.isError()
 
     def validateLegacyMr(self) -> bool:
         """ Validate data content of legacy restraint files.
         """
 
-        if self.__reg.combined_mode and not self.__reg.bmrb_only:
+        if self._reg.combined_mode and not self._reg.bmrb_only:
             return True
 
-        if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
             return True
 
-        src_id = self.__reg.report.getInputSourceIdOfCoord()
+        src_id = self._reg.report.getInputSourceIdOfCoord()
 
         if src_id < 0:
             return False
 
-        cif_input_source = self.__reg.report.input_sources[src_id]
+        cif_input_source = self._reg.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
 
         has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
@@ -11866,25 +11866,25 @@ class NmrDpRemediation:
             return False
 
         nmr_vs_model = None
-        chain_assign_dic = self.__reg.report.chain_assignment.get()
+        chain_assign_dic = self._reg.report.chain_assignment.get()
         if 'nmr_poly_seq_vs_model_poly_seq' in chain_assign_dic:
             nmr_vs_model = chain_assign_dic['nmr_poly_seq_vs_model_poly_seq']
 
-        if self.__reg.versioned_atom_name_mapping is not None:
-            for atom_map in self.__reg.versioned_atom_name_mapping:
-                if atom_map not in self.__reg.mr_atom_name_mapping:
-                    self.__reg.mr_atom_name_mapping.append(atom_map)
+        if self._reg.versioned_atom_name_mapping is not None:
+            for atom_map in self._reg.versioned_atom_name_mapping:
+                if atom_map not in self._reg.mr_atom_name_mapping:
+                    self._reg.mr_atom_name_mapping.append(atom_map)
 
-        if len(self.__reg.internal_atom_name_mapping) > 0:
-            for ver in sorted(list(self.__reg.internal_atom_name_mapping), reverse=True):
-                if self.__reg.internal_atom_name_mapping[ver] is None:
+        if len(self._reg.internal_atom_name_mapping) > 0:
+            for ver in sorted(list(self._reg.internal_atom_name_mapping), reverse=True):
+                if self._reg.internal_atom_name_mapping[ver] is None:
                     continue
-                for atom_map in self.__reg.internal_atom_name_mapping[ver]:
-                    if atom_map not in self.__reg.mr_atom_name_mapping:
-                        self.__reg.mr_atom_name_mapping.append(atom_map)
+                for atom_map in self._reg.internal_atom_name_mapping[ver]:
+                    if atom_map not in self._reg.mr_atom_name_mapping:
+                        self._reg.mr_atom_name_mapping.append(atom_map)
 
-        if self.__reg.mr_atom_name_mapping is not None and len(self.__reg.mr_atom_name_mapping) > 1:
-            self.__reg.mr_atom_name_mapping = list(reversed(self.__reg.mr_atom_name_mapping))
+        if self._reg.mr_atom_name_mapping is not None and len(self._reg.mr_atom_name_mapping) > 1:
+            self._reg.mr_atom_name_mapping = list(reversed(self._reg.mr_atom_name_mapping))
 
         amberAtomNumberDict = charmmAtomNumberDict = gromacsAtomNumberDict = pdbAtomNumberDict = None
         _amberAtomNumberDict = {}
@@ -11906,42 +11906,42 @@ class NmrDpRemediation:
 
                     if warn.startswith('[Concatenated sequence]'):
                         if not dry_run:
-                            self.__reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+                            self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         if not dry_run and not has_res_sch:
-                            self.__reg.report.error.appendDescription('sequence_mismatch', msg_dict)
+                            self._reg.report.error.appendDescription('sequence_mismatch', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
 
                             valid = False
 
                     elif warn.startswith('[Unknown atom name]'):
                         if not dry_run:
-                            self.__reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                            self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unknown residue name]'):
                         if not dry_run:
-                            self.__reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                            self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     else:
                         if not dry_run:
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ KeyError  - " + warn)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ KeyError  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ KeyError  - {warn}\n")
 
                         valid = False
 
@@ -11950,12 +11950,12 @@ class NmrDpRemediation:
 
             return valid
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+        for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -11983,12 +11983,12 @@ class NmrDpRemediation:
             if file_type == 'nm-res-sch':
                 has_res_sch = True
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+        for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -12009,14 +12009,14 @@ class NmrDpRemediation:
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
-                    reader = AmberPTReader(self.__reg.verbose, self.__reg.log,
-                                           self.__reg.representative_model_id,
-                                           self.__reg.representative_alt_id,
-                                           self.__reg.mr_atom_name_mapping,
-                                           self.__reg.cR, self.__reg.caC,
-                                           self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                    reader = AmberPTReader(self._reg.verbose, self._reg.log,
+                                           self._reg.representative_model_id,
+                                           self._reg.representative_alt_id,
+                                           self._reg.mr_atom_name_mapping,
+                                           self._reg.cR, self._reg.caC,
+                                           self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                    listener, _, _ = reader.parse(file_path, self.__reg.cifPath)
+                    listener, _, _ = reader.parse(file_path, self._reg.cifPath)
 
                     if listener is not None:
 
@@ -12030,7 +12030,7 @@ class NmrDpRemediation:
 
                         seq_align = listener.getSequenceAlignment()
                         if seq_align is not None:
-                            self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+                            self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
             elif file_type == 'nm-aux-cha' and content_subtype is not None and 'topology' in content_subtype:
 
@@ -12045,14 +12045,14 @@ class NmrDpRemediation:
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
-                    reader = CharmmCRDReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                    reader = CharmmCRDReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                    listener, _, _ = reader.parse(file_path, self.__reg.cifPath)
+                    listener, _, _ = reader.parse(file_path, self._reg.cifPath)
 
                     if listener is not None:
 
@@ -12066,7 +12066,7 @@ class NmrDpRemediation:
 
                         seq_align = listener.getSequenceAlignment()
                         if seq_align is not None:
-                            self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+                            self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
             elif file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
 
@@ -12081,14 +12081,14 @@ class NmrDpRemediation:
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
-                    reader = GromacsPTReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                    reader = GromacsPTReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                    listener, _, _ = reader.parse(file_path, self.__reg.cifPath)
+                    listener, _, _ = reader.parse(file_path, self._reg.cifPath)
 
                     if listener is not None:
 
@@ -12102,7 +12102,7 @@ class NmrDpRemediation:
 
                         seq_align = listener.getSequenceAlignment()
                         if seq_align is not None:
-                            self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+                            self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
             elif file_type == 'nm-aux-pdb' and content_subtype is not None and 'topology' in content_subtype:
 
@@ -12122,16 +12122,16 @@ class NmrDpRemediation:
                             if file_name != original_file_name and original_file_name is not None:
                                 file_name = f"{original_file_name} ({file_name})"
 
-                        reader = BarePDBReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                        reader = BarePDBReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
                         file_path = self.testPathWithSuffix(file_path, '-corrected')
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath)
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath)
 
                         if listener is not None:
 
@@ -12150,14 +12150,14 @@ class NmrDpRemediation:
 
                             seq_align = listener.getSequenceAlignment()
                             if seq_align is not None:
-                                self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+                                self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
 
                                 if valid or not has_res_amb:
 
                                     for sa in seq_align:
                                         ref_chain_id = sa['ref_chain_id']
                                         test_chain_id = sa['test_chain_id']
-                                        cif_ps = next((cif_ps for cif_ps in self.__reg.caC['polymer_sequence']
+                                        cif_ps = next((cif_ps for cif_ps in self._reg.caC['polymer_sequence']
                                                        if cif_ps['auth_chain_id'] == ref_chain_id), None)
                                         pdb_ps = next(pdb_ps for pdb_ps in poly_seq if pdb_ps['chain_id'] == test_chain_id)
 
@@ -12168,7 +12168,7 @@ class NmrDpRemediation:
                                         unobs_res_count = 0
                                         for seq_id in cif_ps['seq_id']:
                                             seq_key = (ref_chain_id, seq_id)
-                                            if seq_key in self.__reg.caC['coord_unobs_res']:
+                                            if seq_key in self._reg.caC['coord_unobs_res']:
                                                 unobs_res_count += 1
 
                                         if len(cif_ps['seq_id']) - unobs_res_count > len(pdb_ps['seq_id']):
@@ -12202,43 +12202,43 @@ class NmrDpRemediation:
             or (has_res_cha and not has_aux_cha)
             or (has_res_gro and not has_aux_gro)
             or has_res_sch)\
-           and pdbAtomNumberDict is None and self.__reg.internal_mode:
-            cif_file_name = os.path.basename(self.__reg.cifPath)
+           and pdbAtomNumberDict is None and self._reg.internal_mode:
+            cif_file_name = os.path.basename(self._reg.cifPath)
             if re.match(r'^([Pp][Dd][Bb]_)?(\d{4})?\d\w{3}.cif$', cif_file_name):
                 dep_id = cif_file_name[:-4]
 
-                file_path = os.path.join(self.__reg.cR.getDirPath(), f'{dep_id}_model-upload_P1.pdb.V1')
+                file_path = os.path.join(self._reg.cR.getDirPath(), f'{dep_id}_model-upload_P1.pdb.V1')
 
                 if os.path.exists(file_path):
-                    reader = BarePDBReader(self.__reg.verbose, self.__reg.log,
-                                           self.__reg.representative_model_id,
-                                           self.__reg.representative_alt_id,
-                                           self.__reg.mr_atom_name_mapping,
-                                           self.__reg.cR, self.__reg.caC,
-                                           self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                    reader = BarePDBReader(self._reg.verbose, self._reg.log,
+                                           self._reg.representative_model_id,
+                                           self._reg.representative_alt_id,
+                                           self._reg.mr_atom_name_mapping,
+                                           self._reg.cR, self._reg.caC,
+                                           self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                    listener, _, _ = reader.parse(file_path, self.__reg.cifPath)
+                    listener, _, _ = reader.parse(file_path, self._reg.cifPath)
 
                     if listener is not None:
                         pdbAtomNumberDict = listener.getAtomNumberDict()
 
-        if has_res_sch and pdbAtomNumberDict is None and not self.__reg.internal_mode:
-            cif_file_name = os.path.basename(self.__reg.cifPath)
+        if has_res_sch and pdbAtomNumberDict is None and not self._reg.internal_mode:
+            cif_file_name = os.path.basename(self._reg.cifPath)
 
             if WORK_MODEL_FILE_NAME_PAT.match(cif_file_name):
                 dep_id = WORK_MODEL_FILE_NAME_PAT.search(cif_file_name).groups()[0]
 
-                file_path = os.path.join(self.__reg.cR.getDirPath(), f'{dep_id}_model-upload_P1.pdb.V1')
+                file_path = os.path.join(self._reg.cR.getDirPath(), f'{dep_id}_model-upload_P1.pdb.V1')
 
                 if os.path.exists(file_path):
-                    reader = BarePDBReader(self.__reg.verbose, self.__reg.log,
-                                           self.__reg.representative_model_id,
-                                           self.__reg.representative_alt_id,
-                                           self.__reg.mr_atom_name_mapping,
-                                           self.__reg.cR, self.__reg.caC,
-                                           self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                    reader = BarePDBReader(self._reg.verbose, self._reg.log,
+                                           self._reg.representative_model_id,
+                                           self._reg.representative_alt_id,
+                                           self._reg.mr_atom_name_mapping,
+                                           self._reg.cR, self._reg.caC,
+                                           self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                    listener, _, _ = reader.parse(file_path, self.__reg.cifPath)
+                    listener, _, _ = reader.parse(file_path, self._reg.cifPath)
 
                     if listener is not None:
                         pdbAtomNumberDict = listener.getAtomNumberDict()
@@ -12251,7 +12251,7 @@ class NmrDpRemediation:
             if has_res_gro and gromacsAtomNumberDict is None:
                 gromacsAtomNumberDict = pdbAtomNumberDict
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
         # 6gbm, NOE restraint files must take precedence over other distance constraints such as hydrogen bonds
         ar_file_order, ar_file_any_dist, ar_file_wo_dist = [], [], []
@@ -12262,16 +12262,16 @@ class NmrDpRemediation:
         hint_for_any_dist = ['bond', 'disul', 'not', 'seen', 'pre', 'paramag', 'cidnp',
                              'csp', 'perturb', 'mutat', 'protect', 'symm']
 
-        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+        for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
             file_size = os.path.getsize(file_path)
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
 
-            if fileListId == self.__reg.file_path_list_len and file_type == 'nm-res-mr':
+            if fileListId == self._reg.file_path_list_len and file_type == 'nm-res-mr':
                 derived_from_public_mr = True
 
             fileListId += 1
@@ -12280,7 +12280,7 @@ class NmrDpRemediation:
                or file_type.startswith('nm-pea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
+            if self._reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             content_subtype = input_source_dic['content_subtype']
@@ -12316,28 +12316,28 @@ class NmrDpRemediation:
 
         poly_seq_set = []
 
-        create_sf_dict = self.__reg.remediation_mode
+        create_sf_dict = self._reg.remediation_mode
 
-        if self.__reg.list_id_counter is None:
-            self.__reg.list_id_counter = {}
-        if self.__reg.mr_sf_dict_holder is None:
-            self.__reg.mr_sf_dict_holder = {}
+        if self._reg.list_id_counter is None:
+            self._reg.list_id_counter = {}
+        if self._reg.mr_sf_dict_holder is None:
+            self._reg.mr_sf_dict_holder = {}
 
-        if self.__reg.nmr_ext_poly_seq is None:
-            self.__reg.nmr_ext_poly_seq = []
+        if self._reg.nmr_ext_poly_seq is None:
+            self._reg.nmr_ext_poly_seq = []
 
-        if not self.__reg.bmrb_only or not self.__reg.internal_mode:  # nmrPolySeq is None in __retrieveCoordAssemblyChecker()
+        if not self._reg.bmrb_only or not self._reg.internal_mode:  # nmrPolySeq is None in __retrieveCoordAssemblyChecker()
 
-            input_source = self.__reg.report.input_sources[0]
+            input_source = self._reg.report.input_sources[0]
             input_source_dic = input_source.get()
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
             nmr_poly_seq = input_source_dic['polymer_sequence']
-            cif_poly_seq = self.__reg.caC['polymer_sequence']
+            cif_poly_seq = self._reg.caC['polymer_sequence']
 
-            seq_align, _ = alignPolymerSequence(self.__reg.pA, cif_poly_seq, nmr_poly_seq)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star',
+            seq_align, _ = alignPolymerSequence(self._reg.pA, cif_poly_seq, nmr_poly_seq)
+            chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, 'nmr-star',
                                                     cif_poly_seq, nmr_poly_seq, seq_align)
 
             if chain_assign is not None:
@@ -12356,11 +12356,11 @@ class NmrDpRemediation:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
-                    self.__reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
-                    self.__reg.pA.doAlign()
+                    self._reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
+                    self._reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
+                    self._reg.pA.doAlign()
 
-                    myAlign = self.__reg.pA.getAlignment(test_chain_id)
+                    myAlign = self._reg.pA.getAlignment(test_chain_id)
 
                     length = len(myAlign)
 
@@ -12406,7 +12406,7 @@ class NmrDpRemediation:
 
                                     if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
-                                        self.__reg.nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
+                                        self._reg.nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
                                                                             'auth_seq_id': cif_auth_seq_id,
                                                                             'auth_comp_id': nmr_comp_id})
 
@@ -12419,7 +12419,7 @@ class NmrDpRemediation:
             if len(suspended_errors_for_lazy_eval) > 0:
                 for msg in suspended_errors_for_lazy_eval:
                     for k, v in msg.items():
-                        self.__reg.report.error.appendDescription(k, v)
+                        self._reg.report.error.appendDescription(k, v)
                 suspended_errors_for_lazy_eval.clear()
 
         def deal_res_warn_message(file_name, listener, ignore_error):
@@ -12436,196 +12436,196 @@ class NmrDpRemediation:
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Concatenated sequence]'):
-                        self.__reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+                        self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.error.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
 
-                        if not self.__reg.remediation_mode or 'Macromolecules page' not in warn or self.__reg.conversion_server:
+                        if not self._reg.remediation_mode or 'Macromolecules page' not in warn or self._reg.conversion_server:
                             consume_suspended_message()
 
-                            self.__reg.report.error.appendDescription('atom_not_found', msg_dict)
+                            self._reg.report.error.appendDescription('atom_not_found', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
                         else:
-                            self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                            self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
 
-                        if self.__reg.remediation_mode and not self.__reg.conversion_server:
+                        if self._reg.remediation_mode and not self._reg.conversion_server:
 
-                            self.__reg.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
+                            self._reg.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                         else:
                             consume_suspended_message()
 
-                            self.__reg.report.error.appendDescription('hydrogen_not_instantiated', msg_dict)
+                            self._reg.report.error.appendDescription('hydrogen_not_instantiated', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        if self.__reg.internal_mode:  # and not self.__reg.conversion_server:
+                        if self._reg.internal_mode:  # and not self._reg.conversion_server:
 
-                            self.__reg.report.warning.appendDescription('coordinate_issue', msg_dict)
+                            self._reg.report.warning.appendDescription('coordinate_issue', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                         else:
 
-                            self.__reg.report.error.appendDescription('coordinate_issue', msg_dict)
+                            self._reg.report.error.appendDescription('coordinate_issue', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('invalid_atom_nomenclature', msg_dict)
+                        self._reg.report.error.appendDescription('invalid_atom_nomenclature', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('invalid_data', msg_dict)
+                        self._reg.report.error.appendDescription('invalid_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ ValueError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
-                        self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                         if SEQ_MISMATCH_WARNING_PAT.match(warn):
                             g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
-                            if d not in self.__reg.nmr_ext_poly_seq:
-                                self.__reg.nmr_ext_poly_seq.append(d)
+                            if d not in self._reg.nmr_ext_poly_seq:
+                                self._reg.nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Missing data]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('missing_data', msg_dict)
+                        self._reg.report.error.appendDescription('missing_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ ValueError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Enum mismatch]'):
-                        self.__reg.report.warning.appendDescription('enum_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('enum_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Enum mismatch ignorable]'):
-                        self.__reg.report.warning.appendDescription('enum_mismatch_ignorable', msg_dict)
+                        self._reg.report.warning.appendDescription('enum_mismatch_ignorable', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unmatched atom type]'):
-                        self.__reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Inconsistent dihedral angle atoms]'):
-                        self.__reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                        self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
-                    elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('anomalous_data', msg_dict)
+                        self._reg.report.error.appendDescription('anomalous_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ ValueError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]')\
-                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
-                        self.__reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+                            or (warn.startswith('[Range value error]') and self._reg.remediation_mode):
+                        self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Insufficient atom selection]') or warn.startswith('[Insufficient angle selection]'):
 
-                        if self.__reg.conversion_server:
-                            self.__reg.report.error.appendDescription('unparsed_data', msg_dict)
+                        if self._reg.conversion_server:
+                            self._reg.report.error.appendDescription('unparsed_data', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {warn}\n")
 
                         else:
-                            self.__reg.report.warning.appendDescription('insufficient_mr_data', msg_dict)
+                            self._reg.report.warning.appendDescription('insufficient_mr_data', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Redundant data]'):
-                        self.__reg.report.warning.appendDescription('redundant_mr_data', msg_dict)
+                        self._reg.report.warning.appendDescription('redundant_mr_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Ambiguous dihedral angle]'):
-                        self.__reg.report.warning.appendDescription('ambiguous_dihedral_angle', msg_dict)
+                        self._reg.report.warning.appendDescription('ambiguous_dihedral_angle', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Anomalous RDC vector]'):
-                        self.__reg.report.warning.appendDescription('anomalous_rdc_vector', msg_dict)
+                        self._reg.report.warning.appendDescription('anomalous_rdc_vector', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Anomalous data]'):
-                        self.__reg.report.warning.appendDescription('anomalous_data', msg_dict)
+                        self._reg.report.warning.appendDescription('anomalous_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unsupported data]'):
-                        self.__reg.report.warning.appendDescription('unsupported_mr_data', msg_dict)
+                        self._reg.report.warning.appendDescription('unsupported_mr_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {warn}\n")
 
                     elif not ignore_error:
-                        self.__reg.report.error.appendDescription('internal_error',
+                        self._reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.validateLegacyMr() "
                                                                   "++ KeyError  - " + warn)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ KeyError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ KeyError  - {warn}\n")
 
         def deal_res_warn_message_for_lazy_eval(file_name, listener):
 
@@ -12652,11 +12652,11 @@ class NmrDpRemediation:
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
 
                     elif warn.startswith('[Atom not found]'):
-                        if not self.__reg.remediation_mode or 'Macromolecules page' not in warn:
+                        if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                             suspended_errors_for_lazy_eval.append({'atom_not_found': msg_dict})
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
-                        if self.__reg.remediation_mode:
+                        if self._reg.remediation_mode:
                             pass
                         else:
                             suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated': msg_dict})
@@ -12673,7 +12673,7 @@ class NmrDpRemediation:
                     # elif warn.startswith('[Missing data]'):
                     #     suspended_errors_for_lazy_eval.append({'missing_data': msg_dict})
 
-                    # elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    # elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data': msg_dict})
 
         for input_source, ar, _ in ar_file_order:
@@ -12690,7 +12690,7 @@ class NmrDpRemediation:
                or file_type.startswith('nm-pea'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
+            if self._reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             file_name = input_source_dic['file_name']
@@ -12701,7 +12701,7 @@ class NmrDpRemediation:
                     original_file_name = os.path.basename(input_source_dic['original_file_name'])
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
-            if original_file_name in EMPTY_VALUE and self.__reg.internal_mode:
+            if original_file_name in EMPTY_VALUE and self._reg.internal_mode:
                 original_file_name = file_name
 
             if file_type == 'nm-res-amb' and amberAtomNumberDict is None and 'has_comments' in ar and not ar['has_comments']:
@@ -12709,21 +12709,21 @@ class NmrDpRemediation:
                 err = f"To verify AMBER restraint file {file_name!r}, AMBER topology file must be uploaded "\
                     "or Sander comments should be included in the AMBER restraint file."
 
-                if self.__reg.internal_mode:
+                if self._reg.internal_mode:
 
-                    self.__reg.report.warning.appendDescription('missing_content',
+                    self._reg.report.warning.appendDescription('missing_content',
                                                                 {'file_name': file_name, 'description': err})
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
 
                 else:
 
-                    self.__reg.report.error.appendDescription('missing_mandatory_content',
+                    self._reg.report.error.appendDescription('missing_mandatory_content',
                                                               {'file_name': file_name, 'description': err})
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
                     continue
 
@@ -12732,21 +12732,21 @@ class NmrDpRemediation:
                 err = f"CHARMM topology file (aka. CRD or CHARM CARD) must be uploaded "\
                     f"to verify CHARMM restraint file {file_name!r}."
 
-                if self.__reg.internal_mode:
+                if self._reg.internal_mode:
 
-                    self.__reg.report.warning.appendDescription('missing_content',
+                    self._reg.report.warning.appendDescription('missing_content',
                                                                 {'file_name': file_name, 'description': err})
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
 
                 else:
 
-                    self.__reg.report.error.appendDescription('missing_mandatory_content',
+                    self._reg.report.error.appendDescription('missing_mandatory_content',
                                                               {'file_name': file_name, 'description': err})
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
                     continue
 
@@ -12754,21 +12754,21 @@ class NmrDpRemediation:
 
                 err = f"GROMACS topology file must be uploaded to verify GROMACS restraint file {file_name!r}."
 
-                if self.__reg.internal_mode:
+                if self._reg.internal_mode:
 
-                    self.__reg.report.warning.appendDescription('missing_content',
+                    self._reg.report.warning.appendDescription('missing_content',
                                                                 {'file_name': file_name, 'description': err})
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Warning  - {err}\n")
 
                 else:
 
-                    self.__reg.report.error.appendDescription('missing_mandatory_content',
+                    self._reg.report.error.appendDescription('missing_mandatory_content',
                                                               {'file_name': file_name, 'description': err})
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
                     continue
 
@@ -12792,22 +12792,22 @@ class NmrDpRemediation:
             suspended_errors_for_lazy_eval.clear()
 
             if file_type == 'nm-res-amb':
-                reader = AmberMRReader(self.__reg.verbose, self.__reg.log,
-                                       self.__reg.representative_model_id,
-                                       self.__reg.representative_alt_id,
-                                       self.__reg.mr_atom_name_mapping,
-                                       self.__reg.cR, self.__reg.caC,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = AmberMRReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                        amberAtomNumberDict, _amberAtomNumberDict,
                                        reasons)
-                reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = reader.getReasons()
@@ -12816,20 +12816,20 @@ class NmrDpRemediation:
                        and len(listener.warningMessage) > 0:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = AmberMRReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = AmberMRReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                amberAtomNumberDict, _amberAtomNumberDict,
                                                None)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                         if listener is not None:
                             reasons = reader.getReasons()
@@ -12857,43 +12857,43 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (AMBER) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-ari':
-                reader = AriaMRReader(self.__reg.verbose, self.__reg.log,
-                                      self.__reg.representative_model_id,
-                                      self.__reg.representative_alt_id,
-                                      self.__reg.mr_atom_name_mapping,
-                                      self.__reg.cR, self.__reg.caC,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader = AriaMRReader(self._reg.verbose, self._reg.log,
+                                      self._reg.representative_model_id,
+                                      self._reg.representative_alt_id,
+                                      self._reg.mr_atom_name_mapping,
+                                      self._reg.cR, self._reg.caC,
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12902,22 +12902,22 @@ class NmrDpRemediation:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = AriaMRReader(self.__reg.verbose, self.__reg.log,
-                                              self.__reg.representative_model_id,
-                                              self.__reg.representative_alt_id,
-                                              self.__reg.mr_atom_name_mapping,
-                                              self.__reg.cR, self.__reg.caC,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = AriaMRReader(self._reg.verbose, self._reg.log,
+                                              self._reg.representative_model_id,
+                                              self._reg.representative_alt_id,
+                                              self._reg.mr_atom_name_mapping,
+                                              self._reg.cR, self._reg.caC,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12928,43 +12928,43 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-arx':
-                reader = AriaMRXReader(self.__reg.verbose, self.__reg.log,
-                                       self.__reg.representative_model_id,
-                                       self.__reg.representative_alt_id,
-                                       self.__reg.mr_atom_name_mapping,
-                                       self.__reg.cR, self.__reg.caC,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader = AriaMRXReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -12973,22 +12973,22 @@ class NmrDpRemediation:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = AriaMRXReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = AriaMRXReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -12999,43 +12999,43 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (ARIA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-bar':
-                reader = BareMRReader(self.__reg.verbose, self.__reg.log,
-                                      self.__reg.representative_model_id,
-                                      self.__reg.representative_alt_id,
-                                      self.__reg.mr_atom_name_mapping,
-                                      self.__reg.cR, self.__reg.caC,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader = BareMRReader(self._reg.verbose, self._reg.log,
+                                      self._reg.representative_model_id,
+                                      self._reg.representative_alt_id,
+                                      self._reg.mr_atom_name_mapping,
+                                      self._reg.cR, self._reg.caC,
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -13044,22 +13044,22 @@ class NmrDpRemediation:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = BareMRReader(self.__reg.verbose, self.__reg.log,
-                                              self.__reg.representative_model_id,
-                                              self.__reg.representative_alt_id,
-                                              self.__reg.mr_atom_name_mapping,
-                                              self.__reg.cR, self.__reg.caC,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = BareMRReader(self._reg.verbose, self._reg.log,
+                                              self._reg.representative_model_id,
+                                              self._reg.representative_alt_id,
+                                              self._reg.mr_atom_name_mapping,
+                                              self._reg.cR, self._reg.caC,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13070,43 +13070,43 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (Bare WSV/TSV/CSV) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-bio':
-                reader = BiosymMRReader(self.__reg.verbose, self.__reg.log,
-                                        self.__reg.representative_model_id,
-                                        self.__reg.representative_alt_id,
-                                        self.__reg.mr_atom_name_mapping,
-                                        self.__reg.cR, self.__reg.caC,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader = BiosymMRReader(self._reg.verbose, self._reg.log,
+                                        self._reg.representative_model_id,
+                                        self._reg.representative_alt_id,
+                                        self._reg.mr_atom_name_mapping,
+                                        self._reg.cR, self._reg.caC,
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -13115,22 +13115,22 @@ class NmrDpRemediation:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = BiosymMRReader(self.__reg.verbose, self.__reg.log,
-                                                self.__reg.representative_model_id,
-                                                self.__reg.representative_alt_id,
-                                                self.__reg.mr_atom_name_mapping,
-                                                self.__reg.cR, self.__reg.caC,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = BiosymMRReader(self._reg.verbose, self._reg.log,
+                                                self._reg.representative_model_id,
+                                                self._reg.representative_alt_id,
+                                                self._reg.mr_atom_name_mapping,
+                                                self._reg.cR, self._reg.caC,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13141,73 +13141,73 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (BIOSYM) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-cha':
-                reader = CharmmMRReader(self.__reg.verbose, self.__reg.log,
-                                        self.__reg.representative_model_id,
-                                        self.__reg.representative_alt_id,
-                                        self.__reg.mr_atom_name_mapping,
-                                        self.__reg.cR, self.__reg.caC,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = CharmmMRReader(self._reg.verbose, self._reg.log,
+                                        self._reg.representative_model_id,
+                                        self._reg.representative_alt_id,
+                                        self._reg.mr_atom_name_mapping,
+                                        self._reg.cR, self._reg.caC,
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                         charmmAtomNumberDict,
                                         reasons)
-                reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                 reader.setNmrVsModel(nmr_vs_model)
-                if file_path in self.__reg.sll_pred_forced:
+                if file_path in self._reg.sll_pred_forced:
                     reader.setSllPredMode(True)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
                     if None not in (reasons, _reasons):
 
-                        reader = CharmmMRReader(self.__reg.verbose, self.__reg.log,
-                                                self.__reg.representative_model_id,
-                                                self.__reg.representative_alt_id,
-                                                self.__reg.mr_atom_name_mapping,
-                                                self.__reg.cR, self.__reg.caC,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CharmmMRReader(self._reg.verbose, self._reg.log,
+                                                self._reg.representative_model_id,
+                                                self._reg.representative_alt_id,
+                                                self._reg.mr_atom_name_mapping,
+                                                self._reg.cR, self._reg.caC,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 charmmAtomNumberDict,
                                                 None)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                         reader.setNmrVsModel(nmr_vs_model)
-                        if file_path in self.__reg.sll_pred_forced:
+                        if file_path in self._reg.sll_pred_forced:
                             reader.setSllPredMode(True)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -13219,27 +13219,27 @@ class NmrDpRemediation:
                             reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = CharmmMRReader(self.__reg.verbose, self.__reg.log,
-                                                self.__reg.representative_model_id,
-                                                self.__reg.representative_alt_id,
-                                                self.__reg.mr_atom_name_mapping,
-                                                self.__reg.cR, self.__reg.caC,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CharmmMRReader(self._reg.verbose, self._reg.log,
+                                                self._reg.representative_model_id,
+                                                self._reg.representative_alt_id,
+                                                self._reg.mr_atom_name_mapping,
+                                                self._reg.cR, self._reg.caC,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 charmmAtomNumberDict,
                                                 reasons)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                         reader.setNmrVsModel(nmr_vs_model)
-                        if file_path in self.__reg.sll_pred_forced:
+                        if file_path in self._reg.sll_pred_forced:
                             reader.setSllPredMode(True)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13250,71 +13250,71 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (CHARMM) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-cns':
-                reader = CnsMRReader(self.__reg.verbose, self.__reg.log,
-                                     self.__reg.representative_model_id,
-                                     self.__reg.representative_alt_id,
-                                     self.__reg.mr_atom_name_mapping,
-                                     self.__reg.cR, self.__reg.caC,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = CnsMRReader(self._reg.verbose, self._reg.log,
+                                     self._reg.representative_model_id,
+                                     self._reg.representative_alt_id,
+                                     self._reg.mr_atom_name_mapping,
+                                     self._reg.cR, self._reg.caC,
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                      reasons)
-                reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                 reader.setNmrVsModel(nmr_vs_model)
-                if file_path in self.__reg.sll_pred_forced:
+                if file_path in self._reg.sll_pred_forced:
                     reader.setSllPredMode(True)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
                     if None not in (reasons, _reasons):
 
-                        reader = CnsMRReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CnsMRReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              None)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                         reader.setNmrVsModel(nmr_vs_model)
-                        if file_path in self.__reg.sll_pred_forced:
+                        if file_path in self._reg.sll_pred_forced:
                             reader.setSllPredMode(True)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -13326,26 +13326,26 @@ class NmrDpRemediation:
                             reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = CnsMRReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CnsMRReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                         reader.setNmrVsModel(nmr_vs_model)
-                        if file_path in self.__reg.sll_pred_forced:
+                        if file_path in self._reg.sll_pred_forced:
                             reader.setSllPredMode(True)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13356,28 +13356,28 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (CNS) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-cya':
                 has_dist_restraint = 'dist_restraint' in content_subtype
@@ -13396,43 +13396,43 @@ class NmrDpRemediation:
                     else:
                         upl_or_lol = None
 
-                cya_file_ext = self.__reg.dpS.retrieveOriginalFileExtensionOfCyanaMrFile() if self.__reg.dpS is not None else None
+                cya_file_ext = self._reg.dpS.retrieveOriginalFileExtensionOfCyanaMrFile() if self._reg.dpS is not None else None
 
-                reader = CyanaMRReader(self.__reg.verbose, self.__reg.log,
-                                       self.__reg.representative_model_id,
-                                       self.__reg.representative_alt_id,
-                                       self.__reg.mr_atom_name_mapping,
-                                       self.__reg.cR, self.__reg.caC,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = CyanaMRReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                        reasons, upl_or_lol, cya_file_ext)
-                reader.setRemediateMode(self.__reg.remediation_mode)
+                reader.setRemediateMode(self._reg.remediation_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
                     if None not in (reasons, _reasons):
 
-                        reader = CyanaMRReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CyanaMRReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                None, upl_or_lol, cya_file_ext)
-                        reader.setRemediateMode(self.__reg.remediation_mode)
+                        reader.setRemediateMode(self._reg.remediation_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -13444,23 +13444,23 @@ class NmrDpRemediation:
                             reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = CyanaMRReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CyanaMRReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                reasons, upl_or_lol, cya_file_ext)
-                        reader.setRemediateMode(self.__reg.remediation_mode)
+                        reader.setRemediateMode(self._reg.remediation_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13471,7 +13471,7 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
@@ -13480,37 +13480,37 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (CYANA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-dyn':
-                reader = DynamoMRReader(self.__reg.verbose, self.__reg.log,
-                                        self.__reg.representative_model_id,
-                                        self.__reg.representative_alt_id,
-                                        self.__reg.mr_atom_name_mapping,
-                                        self.__reg.cR, self.__reg.caC,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader = DynamoMRReader(self._reg.verbose, self._reg.log,
+                                        self._reg.representative_model_id,
+                                        self._reg.representative_alt_id,
+                                        self._reg.mr_atom_name_mapping,
+                                        self._reg.cR, self._reg.caC,
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -13519,22 +13519,22 @@ class NmrDpRemediation:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = DynamoMRReader(self.__reg.verbose, self.__reg.log,
-                                                self.__reg.representative_model_id,
-                                                self.__reg.representative_alt_id,
-                                                self.__reg.mr_atom_name_mapping,
-                                                self.__reg.cR, self.__reg.caC,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = DynamoMRReader(self._reg.verbose, self._reg.log,
+                                                self._reg.representative_model_id,
+                                                self._reg.representative_alt_id,
+                                                self._reg.mr_atom_name_mapping,
+                                                self._reg.cR, self._reg.caC,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13545,43 +13545,43 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (DYNAMO/PALES/TALOS) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-isd':
-                reader = IsdMRReader(self.__reg.verbose, self.__reg.log,
-                                     self.__reg.representative_model_id,
-                                     self.__reg.representative_alt_id,
-                                     self.__reg.mr_atom_name_mapping,
-                                     self.__reg.cR, self.__reg.caC,
-                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader = IsdMRReader(self._reg.verbose, self._reg.log,
+                                     self._reg.representative_model_id,
+                                     self._reg.representative_alt_id,
+                                     self._reg.mr_atom_name_mapping,
+                                     self._reg.cR, self._reg.caC,
+                                     self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -13590,22 +13590,22 @@ class NmrDpRemediation:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = IsdMRReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = IsdMRReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13616,42 +13616,42 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (ISD) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-gro':
-                reader = GromacsMRReader(self.__reg.verbose, self.__reg.log,
-                                         self.__reg.representative_model_id,
-                                         self.__reg.representative_alt_id,
-                                         self.__reg.mr_atom_name_mapping,
-                                         self.__reg.cR, self.__reg.caC,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = GromacsMRReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                          gromacsAtomNumberDict)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     deal_res_warn_message(file_name, listener, ignore_error)
@@ -13663,63 +13663,63 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (GROMACS) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-noa':
-                reader = CyanaNOAReader(self.__reg.verbose, self.__reg.log,
-                                        self.__reg.representative_model_id,
-                                        self.__reg.representative_alt_id,
-                                        self.__reg.mr_atom_name_mapping,
-                                        self.__reg.cR, self.__reg.caC,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = CyanaNOAReader(self._reg.verbose, self._reg.log,
+                                        self._reg.representative_model_id,
+                                        self._reg.representative_alt_id,
+                                        self._reg.mr_atom_name_mapping,
+                                        self._reg.cR, self._reg.caC,
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                         reasons)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
                     if None not in (reasons, _reasons):
 
-                        reader = CyanaNOAReader(self.__reg.verbose, self.__reg.log,
-                                                self.__reg.representative_model_id,
-                                                self.__reg.representative_alt_id,
-                                                self.__reg.mr_atom_name_mapping,
-                                                self.__reg.cR, self.__reg.caC,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CyanaNOAReader(self._reg.verbose, self._reg.log,
+                                                self._reg.representative_model_id,
+                                                self._reg.representative_alt_id,
+                                                self._reg.mr_atom_name_mapping,
+                                                self._reg.cR, self._reg.caC,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 None)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -13731,22 +13731,22 @@ class NmrDpRemediation:
                             reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = CyanaNOAReader(self.__reg.verbose, self.__reg.log,
-                                                self.__reg.representative_model_id,
-                                                self.__reg.representative_alt_id,
-                                                self.__reg.mr_atom_name_mapping,
-                                                self.__reg.cR, self.__reg.caC,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CyanaNOAReader(self._reg.verbose, self._reg.log,
+                                                self._reg.representative_model_id,
+                                                self._reg.representative_alt_id,
+                                                self._reg.mr_atom_name_mapping,
+                                                self._reg.cR, self._reg.caC,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13757,7 +13757,7 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
@@ -13766,59 +13766,59 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (CYANA NOA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-ros':
-                reader = RosettaMRReader(self.__reg.verbose, self.__reg.log,
-                                         self.__reg.representative_model_id,
-                                         self.__reg.representative_alt_id,
-                                         self.__reg.mr_atom_name_mapping,
-                                         self.__reg.cR, self.__reg.caC,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = RosettaMRReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                          reasons)
-                reader.setRemediateMode(self.__reg.remediation_mode)
+                reader.setRemediateMode(self._reg.remediation_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
                     if None not in (reasons, _reasons):
 
-                        reader = RosettaMRReader(self.__reg.verbose, self.__reg.log,
-                                                 self.__reg.representative_model_id,
-                                                 self.__reg.representative_alt_id,
-                                                 self.__reg.mr_atom_name_mapping,
-                                                 self.__reg.cR, self.__reg.caC,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = RosettaMRReader(self._reg.verbose, self._reg.log,
+                                                 self._reg.representative_model_id,
+                                                 self._reg.representative_alt_id,
+                                                 self._reg.mr_atom_name_mapping,
+                                                 self._reg.cR, self._reg.caC,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                  None)
-                        reader.setRemediateMode(self.__reg.remediation_mode)
+                        reader.setRemediateMode(self._reg.remediation_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -13830,23 +13830,23 @@ class NmrDpRemediation:
                             reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = RosettaMRReader(self.__reg.verbose, self.__reg.log,
-                                                 self.__reg.representative_model_id,
-                                                 self.__reg.representative_alt_id,
-                                                 self.__reg.mr_atom_name_mapping,
-                                                 self.__reg.cR, self.__reg.caC,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = RosettaMRReader(self._reg.verbose, self._reg.log,
+                                                 self._reg.representative_model_id,
+                                                 self._reg.representative_alt_id,
+                                                 self._reg.mr_atom_name_mapping,
+                                                 self._reg.cR, self._reg.caC,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                  reasons)
-                        reader.setRemediateMode(self.__reg.remediation_mode)
+                        reader.setRemediateMode(self._reg.remediation_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13857,67 +13857,67 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (ROSETTA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-sch':
-                reader = SchrodingerMRReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = SchrodingerMRReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                              pdbAtomNumberDict, reasons)
-                reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                 reader.setNmrVsModel(nmr_vs_model)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
                     if None not in (reasons, _reasons):
 
-                        reader = SchrodingerMRReader(self.__reg.verbose, self.__reg.log,
-                                                     self.__reg.representative_model_id,
-                                                     self.__reg.representative_alt_id,
-                                                     self.__reg.mr_atom_name_mapping,
-                                                     self.__reg.cR, self.__reg.caC,
-                                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = SchrodingerMRReader(self._reg.verbose, self._reg.log,
+                                                     self._reg.representative_model_id,
+                                                     self._reg.representative_alt_id,
+                                                     self._reg.mr_atom_name_mapping,
+                                                     self._reg.cR, self._reg.caC,
+                                                     self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                      pdbAtomNumberDict, None)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                         reader.setNmrVsModel(nmr_vs_model)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -13929,24 +13929,24 @@ class NmrDpRemediation:
                             reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = SchrodingerMRReader(self.__reg.verbose, self.__reg.log,
-                                                     self.__reg.representative_model_id,
-                                                     self.__reg.representative_alt_id,
-                                                     self.__reg.mr_atom_name_mapping,
-                                                     self.__reg.cR, self.__reg.caC,
-                                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = SchrodingerMRReader(self._reg.verbose, self._reg.log,
+                                                     self._reg.representative_model_id,
+                                                     self._reg.representative_alt_id,
+                                                     self._reg.mr_atom_name_mapping,
+                                                     self._reg.cR, self._reg.caC,
+                                                     self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                      pdbAtomNumberDict, reasons)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                         reader.setNmrVsModel(nmr_vs_model)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -13957,43 +13957,43 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (SCHRODINGER/ASL) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-syb':
-                reader = SybylMRReader(self.__reg.verbose, self.__reg.log,
-                                       self.__reg.representative_model_id,
-                                       self.__reg.representative_alt_id,
-                                       self.__reg.mr_atom_name_mapping,
-                                       self.__reg.cR, self.__reg.caC,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                reader = SybylMRReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
@@ -14002,22 +14002,22 @@ class NmrDpRemediation:
                         deal_res_warn_message_for_lazy_eval(file_name, listener)
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = SybylMRReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = SybylMRReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                reasons)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -14028,73 +14028,73 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (SYBYL) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-res-xpl':
-                reader = XplorMRReader(self.__reg.verbose, self.__reg.log,
-                                       self.__reg.representative_model_id,
-                                       self.__reg.representative_alt_id,
-                                       self.__reg.mr_atom_name_mapping,
-                                       self.__reg.cR, self.__reg.caC,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = XplorMRReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                        reasons)
-                reader.setRemediateMode(self.__reg.remediation_mode and derived_from_public_mr)
-                reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                reader.setRemediateMode(self._reg.remediation_mode and derived_from_public_mr)
+                reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                 reader.setNmrVsModel(nmr_vs_model)
-                if file_path in self.__reg.sll_pred_forced:
+                if file_path in self._reg.sll_pred_forced:
                     reader.setSllPredMode(True)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                               createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                              listIdCounter=self.__reg.list_id_counter,
-                                              entryId=self.__reg.entry_id)
+                                              listIdCounter=self._reg.list_id_counter,
+                                              entryId=self._reg.entry_id)
 
                 if listener is not None:
                     reasons = listener.getReasonsForReparsing()
 
                     if None not in (reasons, _reasons):
 
-                        reader = XplorMRReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = XplorMRReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                None)
-                        reader.setRemediateMode(self.__reg.remediation_mode and derived_from_public_mr)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setRemediateMode(self._reg.remediation_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                         reader.setNmrVsModel(nmr_vs_model)
-                        if file_path in self.__reg.sll_pred_forced:
+                        if file_path in self._reg.sll_pred_forced:
                             reader.setSllPredMode(True)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                         if listener is not None:
                             reasons = listener.getReasonsForReparsing()
@@ -14106,27 +14106,27 @@ class NmrDpRemediation:
                             reasons_dict[file_type] = reasons
 
                         if 'model_chain_id_ext' in reasons:
-                            self.__reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
+                            self._reg.auth_asym_ids_with_chem_exch.update(reasons['model_chain_id_ext'])
                         if 'chain_id_clone' in reasons:
-                            self.__reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
+                            self._reg.auth_seq_ids_with_chem_exch.update(reasons['chain_id_clone'])
 
-                        reader = XplorMRReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = XplorMRReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                reasons)
-                        reader.setRemediateMode(self.__reg.remediation_mode and derived_from_public_mr)
-                        reader.setInternalMode(self.__reg.internal_mode and derived_from_public_mr)
+                        reader.setRemediateMode(self._reg.remediation_mode and derived_from_public_mr)
+                        reader.setInternalMode(self._reg.internal_mode and derived_from_public_mr)
                         reader.setNmrVsModel(nmr_vs_model)
-                        if file_path in self.__reg.sll_pred_forced:
+                        if file_path in self._reg.sll_pred_forced:
                             reader.setSllPredMode(True)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=__list_id_counter,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_res_warn_message(file_name, listener, ignore_error)
 
@@ -14137,7 +14137,7 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
                     # support content subtype change during MR validation with the coordinates
                     input_source.setItemValue('content_subtype', listener.getContentSubtype())
@@ -14146,22 +14146,22 @@ class NmrDpRemediation:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate the restraint file (XPLOR-NIH) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyMr() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyMr() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
-                                if content_subtype not in self.__reg.mr_sf_dict_holder:
-                                    self.__reg.mr_sf_dict_holder[content_subtype] = []
+                                if content_subtype not in self._reg.mr_sf_dict_holder:
+                                    self._reg.mr_sf_dict_holder[content_subtype] = []
                                 for sf in v:
-                                    if sf not in self.__reg.mr_sf_dict_holder[content_subtype]:
-                                        self.__reg.mr_sf_dict_holder[content_subtype].append(sf)
+                                    if sf not in self._reg.mr_sf_dict_holder[content_subtype]:
+                                        self._reg.mr_sf_dict_holder[content_subtype].append(sf)
 
         if len(poly_seq_set) > 1:
 
@@ -14175,14 +14175,14 @@ class NmrDpRemediation:
                     for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
                         updatePolySeqRst(poly_seq_rst, chain_id, seq_id, comp_id)
 
-            poly_seq_model = self.__reg.caC['polymer_sequence']
+            poly_seq_model = self._reg.caC['polymer_sequence']
 
             sortPolySeqRst(poly_seq_rst)
 
             file_type = 'nm-res-mr'
 
-            seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+            seq_align, _ = alignPolymerSequence(self._reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
+            chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type,
                                                     poly_seq_model, poly_seq_rst, seq_align)
 
             if chain_assign is not None:
@@ -14204,19 +14204,19 @@ class NmrDpRemediation:
                             if ps['chain_id'] in chain_mapping:
                                 ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                        seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                        seq_align, _ = alignPolymerSequence(self._reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
+                        chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type,
                                                                 poly_seq_model, poly_seq_rst, seq_align)
 
                     trimSequenceAlignment(seq_align, chain_assign)
 
             input_source.setItemValue('polymer_sequence', poly_seq_rst)
 
-            self.__reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
+            self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_restraint', seq_align)
 
-        if len(self.__reg.nmr_ext_poly_seq) > 0:
-            entity_assembly = self.__reg.caC['entity_assembly']
-            auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__reg.nmr_ext_poly_seq))
+        if len(self._reg.nmr_ext_poly_seq) > 0:
+            entity_assembly = self._reg.caC['entity_assembly']
+            auth_chain_ids = list(set(d['auth_chain_id'] for d in self._reg.nmr_ext_poly_seq))
             for auth_chain_id in auth_chain_ids:
                 try:
                     item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
@@ -14235,39 +14235,39 @@ class NmrDpRemediation:
                         unknown_residue = 'N'
                     else:
                         continue
-                    ps = next(ps for ps in self.__reg.caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id)
-                    auth_seq_ids = [d['auth_seq_id'] for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_chain_id]
+                    ps = next(ps for ps in self._reg.caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id)
+                    auth_seq_ids = [d['auth_seq_id'] for d in self._reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_chain_id]
                     auth_seq_ids.extend(list(filter(None, ps['auth_seq_id'])))
                     min_auth_seq_id = min(auth_seq_ids)
                     max_auth_seq_id = max(auth_seq_ids)
                     for auth_seq_id in range(min_auth_seq_id, max_auth_seq_id + 1):
                         if auth_seq_id not in ps['auth_seq_id']\
-                           and not any(True for d in self.__reg.nmr_ext_poly_seq
+                           and not any(True for d in self._reg.nmr_ext_poly_seq
                                        if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
-                            self.__reg.nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
+                            self._reg.nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
                                                                 'auth_seq_id': auth_seq_id,
                                                                 'auth_comp_id': unknown_residue})
 
-            self.__reg.nmr_ext_poly_seq = sorted(self.__reg.nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
+            self._reg.nmr_ext_poly_seq = sorted(self._reg.nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
 
-        return not self.__reg.report.isError()
+        return not self._reg.report.isError()
 
     def validateLegacyPk(self) -> bool:
         """ Validate data content of legacy spectral peak files and merge them if possible.
         """
 
-        if self.__reg.combined_mode and not self.__reg.bmrb_only:
+        if self._reg.combined_mode and not self._reg.bmrb_only:
             return True
 
-        if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
             return True
 
-        src_id = self.__reg.report.getInputSourceIdOfCoord()
+        src_id = self._reg.report.getInputSourceIdOfCoord()
 
         if src_id < 0:
             return False
 
-        cif_input_source = self.__reg.report.input_sources[src_id]
+        cif_input_source = self._reg.report.input_sources[src_id]
         cif_input_source_dic = cif_input_source.get()
 
         has_poly_seq = has_key_value(cif_input_source_dic, 'polymer_sequence')
@@ -14281,8 +14281,8 @@ class NmrDpRemediation:
         sf_category = SF_CATEGORIES[file_type][content_subtype]
 
         rlist_ids = []
-        if len(self.__reg.star_data) > 0 and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
-            for idx, sf in enumerate(self.__reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
+        if len(self._reg.star_data) > 0 and isinstance(self._reg.star_data[0], pynmrstar.Entry):
+            for idx, sf in enumerate(self._reg.star_data[0].get_saveframes_by_category(sf_category), start=1):
                 list_id = get_first_sf_tag(sf, 'ID')
                 rlist_ids.append(int(list_id) if list_id not in EMPTY_VALUE else idx)
 
@@ -14292,12 +14292,12 @@ class NmrDpRemediation:
 
         has_aux_xea = has_pea_xea = False
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+        for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -14366,10 +14366,10 @@ class NmrDpRemediation:
                 "Please re-upload the spectral peak list file.\n"\
                 "The following issues need to be fixed before re-upload.\n" + _err[:-1]
 
-            self.__reg.report.error.appendDescription('format_issue',
+            self._reg.report.error.appendDescription('format_issue',
                                                       {'file_name': file_name, 'description': err})
 
-            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {file_name} {err}\n")
+            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {file_name} {err}\n")
 
             return True, _type
 
@@ -14382,45 +14382,45 @@ class NmrDpRemediation:
                     msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
 
                     if warn.startswith('[Concatenated sequence]'):
-                        self.__reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+                        self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
-                        self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unknown atom name]'):
-                        self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
+                        self._reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Unknown residue name]'):
-                        self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
+                        self._reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     else:
-                        self.__reg.report.error.appendDescription('internal_error',
+                        self._reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.validateLegacyPk() "
                                                                   "++ KeyError  - " + warn)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - {warn}\n")
 
         if has_pea_xea:
 
-            fileListId = self.__reg.file_path_list_len
+            fileListId = self._reg.file_path_list_len
 
-            for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+            for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
                 file_path = self.testPathWithSuffix(ar['file_name'], '-corrected')
 
-                input_source = self.__reg.report.input_sources[fileListId]
+                input_source = self._reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
                 file_type = input_source_dic['file_type']
@@ -14439,14 +14439,14 @@ class NmrDpRemediation:
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
-                    reader = XeasyPROTReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
+                    reader = XeasyPROTReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT)
 
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, self.__reg.cifPath)
+                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, self._reg.cifPath)
 
                     _content_subtype = listener.getContentSubtype() if listener is not None else None
                     if _content_subtype is not None and len(_content_subtype) == 0:
@@ -14471,28 +14471,28 @@ class NmrDpRemediation:
 
         poly_seq_set = []
 
-        create_sf_dict = self.__reg.remediation_mode
+        create_sf_dict = self._reg.remediation_mode
 
-        if self.__reg.list_id_counter is None:
-            self.__reg.list_id_counter = {}
+        if self._reg.list_id_counter is None:
+            self._reg.list_id_counter = {}
 
         pk_sf_dict_holder = {}
 
         proc_nmr_ext_poly_seq = False
 
-        if self.__reg.nmr_ext_poly_seq is None and not self.__reg.bmrb_only or not self.__reg.internal_mode:
+        if self._reg.nmr_ext_poly_seq is None and not self._reg.bmrb_only or not self._reg.internal_mode:
             proc_nmr_ext_poly_seq = True
 
-            self.__reg.nmr_ext_poly_seq = []
+            self._reg.nmr_ext_poly_seq = []
 
-            input_source = self.__reg.report.input_sources[0]
+            input_source = self._reg.report.input_sources[0]
             input_source_dic = input_source.get()
 
             nmr_poly_seq = input_source_dic['polymer_sequence']
-            cif_poly_seq = self.__reg.caC['polymer_sequence']
+            cif_poly_seq = self._reg.caC['polymer_sequence']
 
-            seq_align, _ = alignPolymerSequence(self.__reg.pA, cif_poly_seq, nmr_poly_seq)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, 'nmr-star',
+            seq_align, _ = alignPolymerSequence(self._reg.pA, cif_poly_seq, nmr_poly_seq)
+            chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, 'nmr-star',
                                                     cif_poly_seq, nmr_poly_seq, seq_align)
 
             if chain_assign is not None:
@@ -14511,11 +14511,11 @@ class NmrDpRemediation:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
-                    self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
-                    self.__reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
-                    self.__reg.pA.doAlign()
+                    self._reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
+                    self._reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
+                    self._reg.pA.doAlign()
 
-                    myAlign = self.__reg.pA.getAlignment(test_chain_id)
+                    myAlign = self._reg.pA.getAlignment(test_chain_id)
 
                     length = len(myAlign)
 
@@ -14561,7 +14561,7 @@ class NmrDpRemediation:
 
                                     if offset is not None and cif_auth_seq_ids[i + offset] is not None:
                                         cif_auth_seq_id = cif_auth_seq_ids[i + offset] - offset - offset_2
-                                        self.__reg.nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
+                                        self._reg.nmr_ext_poly_seq.append({'auth_chain_id': ps2['auth_chain_id'],
                                                                             'auth_seq_id': cif_auth_seq_id,
                                                                             'auth_comp_id': nmr_comp_id})
 
@@ -14572,7 +14572,7 @@ class NmrDpRemediation:
             if len(suspended_errors_for_lazy_eval) > 0:
                 for msg in suspended_errors_for_lazy_eval:
                     for k, v in msg.items():
-                        self.__reg.report.error.appendDescription(k, v)
+                        self._reg.report.error.appendDescription(k, v)
                 suspended_errors_for_lazy_eval.clear()
 
         def deal_pea_warn_message(file_name, listener, ignore_error):
@@ -14589,51 +14589,51 @@ class NmrDpRemediation:
                             msg_dict['description'] = warn.replace(f', {g[1]}', '')
 
                     if warn.startswith('[Concatenated sequence]'):
-                        self.__reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+                        self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.error.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {warn}\n")
 
                     elif warn.startswith('[Atom not found]'):
-                        if not self.__reg.remediation_mode or 'Macromolecules page' not in warn:
+                        if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                             consume_suspended_message()
 
-                            self.__reg.report.warning.appendDescription('assigned_peak_atom_not_found', msg_dict)
+                            self._reg.report.warning.appendDescription('assigned_peak_atom_not_found', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
                         else:
-                            self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                            self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Hydrogen not instantiated]'):
-                        if (self.__reg.remediation_mode or self.__reg.internal_mode) and not self.__reg.conversion_server:
+                        if (self._reg.remediation_mode or self._reg.internal_mode) and not self._reg.conversion_server:
                             pass
                         else:
                             consume_suspended_message()
 
-                        self.__reg.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
+                        self._reg.report.warning.appendDescription('hydrogen_not_instantiated', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Coordinate issue]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.warning.appendDescription('coordinate_issue', msg_dict)
+                        self._reg.report.warning.appendDescription('coordinate_issue', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom nomenclature]'):
                         consume_suspended_message()
@@ -14641,76 +14641,76 @@ class NmrDpRemediation:
                         # DAOTHER-8905: change warning level from 'invalid_atom_nomenclature' error
                         # to 'atom_nomenclature_mismatch' warning
                         # because we accept atom nomenclature provided by depositor for peak list
-                        self.__reg.report.warning.appendDescription('atom_nomenclature_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('atom_nomenclature_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         # consume_suspended_message()
 
-                        self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
+                        self._reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Sequence mismatch warning]'):
-                        self.__reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
+                        self._reg.report.warning.appendDescription('sequence_mismatch', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                         if SEQ_MISMATCH_WARNING_PAT.match(warn):
                             g = SEQ_MISMATCH_WARNING_PAT.search(warn).groups()
                             d = {'auth_chain_id': g[2],
                                  'auth_seq_id': int(g[0]),
                                  'auth_comp_id': g[1]}
-                            if d not in self.__reg.nmr_ext_poly_seq:
-                                self.__reg.nmr_ext_poly_seq.append(d)
+                            if d not in self._reg.nmr_ext_poly_seq:
+                                self._reg.nmr_ext_poly_seq.append(d)
 
                     elif warn.startswith('[Inconsistent peak assignment]'):
-                        self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
+                        self._reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Conflicted peak assignment]'):
-                        self.__reg.report.warning.appendDescription('conflicted_peak_list', msg_dict)
+                        self._reg.report.warning.appendDescription('conflicted_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif warn.startswith('[Missing data]'):
-                        if (self.__reg.remediation_mode or self.__reg.internal_mode) and not self.__reg.conversion_server:
+                        if (self._reg.remediation_mode or self._reg.internal_mode) and not self._reg.conversion_server:
                             pass
                         else:
-                            self.__reg.report.error.appendDescription('missing_mandatory_item', msg_dict)
+                            self._reg.report.error.appendDescription('missing_mandatory_item', msg_dict)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {warn}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {warn}\n")
 
-                    elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                         # consume_suspended_message()
 
-                        self.__reg.report.error.appendDescription('anomalous_data', msg_dict)
+                        self._reg.report.error.appendDescription('anomalous_data', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ ValueError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ ValueError  - {warn}\n")
 
                     elif warn.startswith('[Range value warning]')\
-                            or (warn.startswith('[Range value error]') and self.__reg.remediation_mode):
-                        self.__reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
+                            or (warn.startswith('[Range value error]') and self._reg.remediation_mode):
+                        self._reg.report.warning.appendDescription('inconsistent_peak_list', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                     elif not ignore_error:
-                        self.__reg.report.error.appendDescription('internal_error',
+                        self._reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.validateLegacyPk() "
                                                                   "++ KeyError  - " + warn)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ KeyError  - {warn}\n")
 
         def deal_pea_warn_message_for_lazy_eval(file_name, listener):
 
@@ -14737,11 +14737,11 @@ class NmrDpRemediation:
                         suspended_errors_for_lazy_eval.append({'sequence_mismatch': msg_dict})
 
                     # elif warn.startswith('[Atom not found]'):
-                    #     if not self.__reg.remediation_mode or 'Macromolecules page' not in warn:
+                    #     if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
                     #         suspended_errors_for_lazy_eval.append({'atom_not_found': msg_dict})
 
                     # elif warn.startswith('[Hydrogen not instantiated]'):
-                    #     if self.__reg.remediation_mode:
+                    #     if self._reg.remediation_mode:
                     #         pass
                     #     else:
                     #         suspended_errors_for_lazy_eval.append({'hydrogen_not_instantiated': msg_dict})
@@ -14755,15 +14755,15 @@ class NmrDpRemediation:
                     elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
                         suspended_errors_for_lazy_eval.append({'invalid_data': msg_dict})
 
-                    # elif warn.startswith('[Range value error]') and not self.__reg.remediation_mode:
+                    # elif warn.startswith('[Range value error]') and not self._reg.remediation_mode:
                     #     suspended_errors_for_lazy_eval.append({'anomalous_data': msg_dict})
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+        for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -14775,7 +14775,7 @@ class NmrDpRemediation:
             if file_type.startswith('nm-res') or file_type.startswith('nm-aux'):
                 continue
 
-            if self.__reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
+            if self._reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
             file_path = self.testPathWithSuffix(file_path, '-corrected')
@@ -14791,15 +14791,15 @@ class NmrDpRemediation:
                     "the contents is temporarily stored as-is in the _Spectral_peak_list.Text_data tag "\
                     "and will be converted during future data remediation if the data matches a known peak list format."
 
-                self.__reg.report.warning.appendDescription('unsupported_peak_list',
+                self._reg.report.warning.appendDescription('unsupported_peak_list',
                                                             {'file_name': file_name, 'description': warn, 'inheritable': True})
 
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
+                if self._reg.verbose:
+                    self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Warning  - {warn}\n")
 
                 continue
 
-            if file_type == 'nm-pea-xea' and not has_aux_xea and not self.__reg.internal_mode:
+            if file_type == 'nm-pea-xea' and not has_aux_xea and not self._reg.internal_mode:
 
                 err = f"XEASY PROT file should be uploaded to verify XEASY spectral peak list file {file_name!r}."
 
@@ -14818,24 +14818,24 @@ class NmrDpRemediation:
             suspended_errors_for_lazy_eval.clear()
 
             if file_type == 'nm-pea-ari':
-                reader = AriaPKReader(self.__reg.verbose, self.__reg.log,
-                                      self.__reg.representative_model_id,
-                                      self.__reg.representative_alt_id,
-                                      self.__reg.mr_atom_name_mapping,
-                                      self.__reg.cR, self.__reg.caC,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = AriaPKReader(self._reg.verbose, self._reg.log,
+                                      self._reg.representative_model_id,
+                                      self._reg.representative_alt_id,
+                                      self._reg.mr_atom_name_mapping,
+                                      self._reg.cR, self._reg.caC,
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 if None not in (parser_err_listener, listener)\
                    and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
@@ -14848,21 +14848,21 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = AriaPKReader(self.__reg.verbose, self.__reg.log,
-                                              self.__reg.representative_model_id,
-                                              self.__reg.representative_alt_id,
-                                              self.__reg.mr_atom_name_mapping,
-                                              self.__reg.cR, self.__reg.caC,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = AriaPKReader(self._reg.verbose, self._reg.log,
+                                              self._reg.representative_model_id,
+                                              self._reg.representative_alt_id,
+                                              self._reg.mr_atom_name_mapping,
+                                              self._reg.cR, self._reg.caC,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -14873,20 +14873,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (ARIA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -14897,24 +14897,24 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-bar':
-                reader = BarePKReader(self.__reg.verbose, self.__reg.log,
-                                      self.__reg.representative_model_id,
-                                      self.__reg.representative_alt_id,
-                                      self.__reg.mr_atom_name_mapping,
-                                      self.__reg.cR, self.__reg.caC,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = BarePKReader(self._reg.verbose, self._reg.log,
+                                      self._reg.representative_model_id,
+                                      self._reg.representative_alt_id,
+                                      self._reg.mr_atom_name_mapping,
+                                      self._reg.cR, self._reg.caC,
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 if None not in (parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
@@ -14928,21 +14928,21 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = BarePKReader(self.__reg.verbose, self.__reg.log,
-                                              self.__reg.representative_model_id,
-                                              self.__reg.representative_alt_id,
-                                              self.__reg.mr_atom_name_mapping,
-                                              self.__reg.cR, self.__reg.caC,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = BarePKReader(self._reg.verbose, self._reg.log,
+                                              self._reg.representative_model_id,
+                                              self._reg.representative_alt_id,
+                                              self._reg.mr_atom_name_mapping,
+                                              self._reg.cR, self._reg.caC,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -14953,20 +14953,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -14977,23 +14977,23 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-ccp':
-                reader = CcpnPKReader(self.__reg.verbose, self.__reg.log,
-                                      self.__reg.representative_model_id,
-                                      self.__reg.representative_alt_id,
-                                      self.__reg.mr_atom_name_mapping,
-                                      self.__reg.cR, self.__reg.caC,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = CcpnPKReader(self._reg.verbose, self._reg.log,
+                                      self._reg.representative_model_id,
+                                      self._reg.representative_alt_id,
+                                      self._reg.mr_atom_name_mapping,
+                                      self._reg.cR, self._reg.caC,
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15011,21 +15011,21 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = CcpnPKReader(self.__reg.verbose, self.__reg.log,
-                                              self.__reg.representative_model_id,
-                                              self.__reg.representative_alt_id,
-                                              self.__reg.mr_atom_name_mapping,
-                                              self.__reg.cR, self.__reg.caC,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = CcpnPKReader(self._reg.verbose, self._reg.log,
+                                              self._reg.representative_model_id,
+                                              self._reg.representative_alt_id,
+                                              self._reg.mr_atom_name_mapping,
+                                              self._reg.cR, self._reg.caC,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15036,20 +15036,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (CCPN) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15060,23 +15060,23 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-oli':
-                reader = OliviaPKReader(self.__reg.verbose, self.__reg.log,
-                                        self.__reg.representative_model_id,
-                                        self.__reg.representative_alt_id,
-                                        self.__reg.mr_atom_name_mapping,
-                                        self.__reg.cR, self.__reg.caC,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = OliviaPKReader(self._reg.verbose, self._reg.log,
+                                        self._reg.representative_model_id,
+                                        self._reg.representative_alt_id,
+                                        self._reg.mr_atom_name_mapping,
+                                        self._reg.cR, self._reg.caC,
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15094,21 +15094,21 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = OliviaPKReader(self.__reg.verbose, self.__reg.log,
-                                                self.__reg.representative_model_id,
-                                                self.__reg.representative_alt_id,
-                                                self.__reg.mr_atom_name_mapping,
-                                                self.__reg.cR, self.__reg.caC,
-                                                self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = OliviaPKReader(self._reg.verbose, self._reg.log,
+                                                self._reg.representative_model_id,
+                                                self._reg.representative_alt_id,
+                                                self._reg.mr_atom_name_mapping,
+                                                self._reg.cR, self._reg.caC,
+                                                self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                 reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15119,20 +15119,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (OLIVIA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15143,23 +15143,23 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-pip':
-                reader = NmrPipePKReader(self.__reg.verbose, self.__reg.log,
-                                         self.__reg.representative_model_id,
-                                         self.__reg.representative_alt_id,
-                                         self.__reg.mr_atom_name_mapping,
-                                         self.__reg.cR, self.__reg.caC,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = NmrPipePKReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15177,21 +15177,21 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = NmrPipePKReader(self.__reg.verbose, self.__reg.log,
-                                                 self.__reg.representative_model_id,
-                                                 self.__reg.representative_alt_id,
-                                                 self.__reg.mr_atom_name_mapping,
-                                                 self.__reg.cR, self.__reg.caC,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = NmrPipePKReader(self._reg.verbose, self._reg.log,
+                                                 self._reg.representative_model_id,
+                                                 self._reg.representative_alt_id,
+                                                 self._reg.mr_atom_name_mapping,
+                                                 self._reg.cR, self._reg.caC,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                  reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15202,20 +15202,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (NMRPIPE) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15226,23 +15226,23 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-pon':
-                reader = PonderosaPKReader(self.__reg.verbose, self.__reg.log,
-                                           self.__reg.representative_model_id,
-                                           self.__reg.representative_alt_id,
-                                           self.__reg.mr_atom_name_mapping,
-                                           self.__reg.cR, self.__reg.caC,
-                                           self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = PonderosaPKReader(self._reg.verbose, self._reg.log,
+                                           self._reg.representative_model_id,
+                                           self._reg.representative_alt_id,
+                                           self._reg.mr_atom_name_mapping,
+                                           self._reg.cR, self._reg.caC,
+                                           self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15260,21 +15260,21 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = PonderosaPKReader(self.__reg.verbose, self.__reg.log,
-                                                   self.__reg.representative_model_id,
-                                                   self.__reg.representative_alt_id,
-                                                   self.__reg.mr_atom_name_mapping,
-                                                   self.__reg.cR, self.__reg.caC,
-                                                   self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = PonderosaPKReader(self._reg.verbose, self._reg.log,
+                                                   self._reg.representative_model_id,
+                                                   self._reg.representative_alt_id,
+                                                   self._reg.mr_atom_name_mapping,
+                                                   self._reg.cR, self._reg.caC,
+                                                   self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                    reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15285,20 +15285,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (PONDEROSA) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15309,25 +15309,25 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-spa':
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                reader = SparkyPKReader(self.__reg.verbose, self.__reg.log,
-                                        self.__reg.representative_model_id,
-                                        self.__reg.representative_alt_id,
-                                        self.__reg.mr_atom_name_mapping,
-                                        self.__reg.cR, self.__reg.caC,
-                                        self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = SparkyPKReader(self._reg.verbose, self._reg.log,
+                                        self._reg.representative_model_id,
+                                        self._reg.representative_alt_id,
+                                        self._reg.mr_atom_name_mapping,
+                                        self._reg.cR, self._reg.caC,
+                                        self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15343,25 +15343,25 @@ class NmrDpRemediation:
                         continue
 
                 if spa_type == 'reverse':
-                    self.__reg.list_id_counter = copy.copy(__list_id_counter)
+                    self._reg.list_id_counter = copy.copy(__list_id_counter)
 
-                    reader = SparkyRPKReader(self.__reg.verbose, self.__reg.log,
-                                             self.__reg.representative_model_id,
-                                             self.__reg.representative_alt_id,
-                                             self.__reg.mr_atom_name_mapping,
-                                             self.__reg.cR, self.__reg.caC,
-                                             self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader = SparkyRPKReader(self._reg.verbose, self._reg.log,
+                                             self._reg.representative_model_id,
+                                             self._reg.representative_alt_id,
+                                             self._reg.mr_atom_name_mapping,
+                                             self._reg.cR, self._reg.caC,
+                                             self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                    _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                     listener, parser_err_listener, lexer_err_listener =\
-                        reader.parse(file_path, self.__reg.cifPath,
+                        reader.parse(file_path, self._reg.cifPath,
                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                     listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                     entryId=self.__reg.entry_id,
-                                     csLoops=self.__reg.lp_data['chem_shift'])
+                                     listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                     entryId=self._reg.entry_id,
+                                     csLoops=self._reg.lp_data['chem_shift'])
 
                     _content_subtype = listener.getContentSubtype() if listener is not None else None
                     if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15374,26 +15374,26 @@ class NmrDpRemediation:
                             continue
 
                 if spa_type == 'no':
-                    if self.__reg.internal_mode:
-                        self.__reg.list_id_counter = copy.copy(__list_id_counter)
+                    if self._reg.internal_mode:
+                        self._reg.list_id_counter = copy.copy(__list_id_counter)
 
-                        reader = SparkyNPKReader(self.__reg.verbose, self.__reg.log,
-                                                 self.__reg.representative_model_id,
-                                                 self.__reg.representative_alt_id,
-                                                 self.__reg.mr_atom_name_mapping,
-                                                 self.__reg.cR, self.__reg.caC,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader = SparkyNPKReader(self._reg.verbose, self._reg.log,
+                                                 self._reg.representative_model_id,
+                                                 self._reg.representative_alt_id,
+                                                 self._reg.mr_atom_name_mapping,
+                                                 self._reg.cR, self._reg.caC,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                        _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                         listener, parser_err_listener, lexer_err_listener =\
-                            reader.parse(file_path, self.__reg.cifPath,
+                            reader.parse(file_path, self._reg.cifPath,
                                          createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                         listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                         entryId=self.__reg.entry_id,
-                                         csLoops=self.__reg.lp_data['chem_shift'])
+                                         listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                         entryId=self._reg.entry_id,
+                                         csLoops=self._reg.lp_data['chem_shift'])
 
                         _content_subtype = listener.getContentSubtype() if listener is not None else None
                         if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15410,10 +15410,10 @@ class NmrDpRemediation:
                             "Please re-upload the spectral peak list file."
                         msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
 
-                        self.__reg.report.error.appendDescription('format_issue', msg_dict)
+                        self._reg.report.error.appendDescription('format_issue', msg_dict)
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {warn}\n")
                         continue
 
                 if listener is not None:
@@ -15423,39 +15423,39 @@ class NmrDpRemediation:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         if spa_type == 'reverse':
-                            reader = SparkyRPKReader(self.__reg.verbose, self.__reg.log,
-                                                     self.__reg.representative_model_id,
-                                                     self.__reg.representative_alt_id,
-                                                     self.__reg.mr_atom_name_mapping,
-                                                     self.__reg.cR, self.__reg.caC,
-                                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                            reader = SparkyRPKReader(self._reg.verbose, self._reg.log,
+                                                     self._reg.representative_model_id,
+                                                     self._reg.representative_alt_id,
+                                                     self._reg.mr_atom_name_mapping,
+                                                     self._reg.cR, self._reg.caC,
+                                                     self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                      reasons)
-                        elif spa_type == 'default' or not self.__reg.internal_mode:
-                            reader = SparkyPKReader(self.__reg.verbose, self.__reg.log,
-                                                    self.__reg.representative_model_id,
-                                                    self.__reg.representative_alt_id,
-                                                    self.__reg.mr_atom_name_mapping,
-                                                    self.__reg.cR, self.__reg.caC,
-                                                    self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        elif spa_type == 'default' or not self._reg.internal_mode:
+                            reader = SparkyPKReader(self._reg.verbose, self._reg.log,
+                                                    self._reg.representative_model_id,
+                                                    self._reg.representative_alt_id,
+                                                    self._reg.mr_atom_name_mapping,
+                                                    self._reg.cR, self._reg.caC,
+                                                    self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                     reasons)
                         else:
-                            reader = SparkyNPKReader(self.__reg.verbose, self.__reg.log,
-                                                     self.__reg.representative_model_id,
-                                                     self.__reg.representative_alt_id,
-                                                     self.__reg.mr_atom_name_mapping,
-                                                     self.__reg.cR, self.__reg.caC,
-                                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                            reader = SparkyNPKReader(self._reg.verbose, self._reg.log,
+                                                     self._reg.representative_model_id,
+                                                     self._reg.representative_alt_id,
+                                                     self._reg.mr_atom_name_mapping,
+                                                     self._reg.cR, self._reg.caC,
+                                                     self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                      reasons)
-                            reader.setInternalMode(self.__reg.internal_mode)
+                            reader.setInternalMode(self._reg.internal_mode)
 
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15466,20 +15466,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15490,23 +15490,23 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-sps':
-                reader = SparkySPKReader(self.__reg.verbose, self.__reg.log,
-                                         self.__reg.representative_model_id,
-                                         self.__reg.representative_alt_id,
-                                         self.__reg.mr_atom_name_mapping,
-                                         self.__reg.cR, self.__reg.caC,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = SparkySPKReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15524,21 +15524,21 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = SparkySPKReader(self.__reg.verbose, self.__reg.log,
-                                                 self.__reg.representative_model_id,
-                                                 self.__reg.representative_alt_id,
-                                                 self.__reg.mr_atom_name_mapping,
-                                                 self.__reg.cR, self.__reg.caC,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = SparkySPKReader(self._reg.verbose, self._reg.log,
+                                                 self._reg.representative_model_id,
+                                                 self._reg.representative_alt_id,
+                                                 self._reg.mr_atom_name_mapping,
+                                                 self._reg.cR, self._reg.caC,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                  reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15549,20 +15549,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (SPARKY) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15573,23 +15573,23 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-top':
-                reader = TopSpinPKReader(self.__reg.verbose, self.__reg.log,
-                                         self.__reg.representative_model_id,
-                                         self.__reg.representative_alt_id,
-                                         self.__reg.mr_atom_name_mapping,
-                                         self.__reg.cR, self.__reg.caC,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = TopSpinPKReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 # ignore lexer error because of incomplete XML file format
                 listener, parser_err_listener, _ =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 if None not in (parser_err_listener, listener)\
                    and (parser_err_listener.getMessageList() is None or _content_subtype is not None):
@@ -15602,20 +15602,20 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = TopSpinPKReader(self.__reg.verbose, self.__reg.log,
-                                                 self.__reg.representative_model_id,
-                                                 self.__reg.representative_alt_id,
-                                                 self.__reg.mr_atom_name_mapping,
-                                                 self.__reg.cR, self.__reg.caC,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = TopSpinPKReader(self._reg.verbose, self._reg.log,
+                                                 self._reg.representative_model_id,
+                                                 self._reg.representative_alt_id,
+                                                 self._reg.mr_atom_name_mapping,
+                                                 self._reg.cR, self._reg.caC,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                  reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15626,20 +15626,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (TOPSPIN) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15650,25 +15650,25 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-vie':
-                __list_id_counter = copy.copy(self.__reg.list_id_counter)
+                __list_id_counter = copy.copy(self._reg.list_id_counter)
 
-                reader = NmrViewPKReader(self.__reg.verbose, self.__reg.log,
-                                         self.__reg.representative_model_id,
-                                         self.__reg.representative_alt_id,
-                                         self.__reg.mr_atom_name_mapping,
-                                         self.__reg.cR, self.__reg.caC,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = NmrViewPKReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15684,25 +15684,25 @@ class NmrDpRemediation:
                         continue
 
                 if vie_type != 'default':
-                    self.__reg.list_id_counter = copy.copy(__list_id_counter)
+                    self._reg.list_id_counter = copy.copy(__list_id_counter)
 
-                    reader = NmrViewNPKReader(self.__reg.verbose, self.__reg.log,
-                                              self.__reg.representative_model_id,
-                                              self.__reg.representative_alt_id,
-                                              self.__reg.mr_atom_name_mapping,
-                                              self.__reg.cR, self.__reg.caC,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                    reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                    reader.setInternalMode(self.__reg.internal_mode)
+                    reader = NmrViewNPKReader(self._reg.verbose, self._reg.log,
+                                              self._reg.representative_model_id,
+                                              self._reg.representative_alt_id,
+                                              self._reg.mr_atom_name_mapping,
+                                              self._reg.cR, self._reg.caC,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                    reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                    reader.setInternalMode(self._reg.internal_mode)
 
-                    _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                    _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                     listener, parser_err_listener, lexer_err_listener =\
-                        reader.parse(file_path, self.__reg.cifPath,
+                        reader.parse(file_path, self._reg.cifPath,
                                      createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                     listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                     entryId=self.__reg.entry_id,
-                                     csLoops=self.__reg.lp_data['chem_shift'])
+                                     listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                     entryId=self._reg.entry_id,
+                                     csLoops=self._reg.lp_data['chem_shift'])
 
                     _content_subtype = listener.getContentSubtype() if listener is not None else None
                     if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15721,30 +15721,30 @@ class NmrDpRemediation:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
                         if vie_type == 'default':
-                            reader = NmrViewPKReader(self.__reg.verbose, self.__reg.log,
-                                                     self.__reg.representative_model_id,
-                                                     self.__reg.representative_alt_id,
-                                                     self.__reg.mr_atom_name_mapping,
-                                                     self.__reg.cR, self.__reg.caC,
-                                                     self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                            reader = NmrViewPKReader(self._reg.verbose, self._reg.log,
+                                                     self._reg.representative_model_id,
+                                                     self._reg.representative_alt_id,
+                                                     self._reg.mr_atom_name_mapping,
+                                                     self._reg.cR, self._reg.caC,
+                                                     self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                      reasons)
                         else:
-                            reader = NmrViewNPKReader(self.__reg.verbose, self.__reg.log,
-                                                      self.__reg.representative_model_id,
-                                                      self.__reg.representative_alt_id,
-                                                      self.__reg.mr_atom_name_mapping,
-                                                      self.__reg.cR, self.__reg.caC,
-                                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                            reader = NmrViewNPKReader(self._reg.verbose, self._reg.log,
+                                                      self._reg.representative_model_id,
+                                                      self._reg.representative_alt_id,
+                                                      self._reg.mr_atom_name_mapping,
+                                                      self._reg.cR, self._reg.caC,
+                                                      self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                       reasons)
 
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15755,20 +15755,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (NMRVIEW) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15779,23 +15779,23 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-vnm':
-                reader = VnmrPKReader(self.__reg.verbose, self.__reg.log,
-                                      self.__reg.representative_model_id,
-                                      self.__reg.representative_alt_id,
-                                      self.__reg.mr_atom_name_mapping,
-                                      self.__reg.cR, self.__reg.caC,
-                                      self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = VnmrPKReader(self._reg.verbose, self._reg.log,
+                                      self._reg.representative_model_id,
+                                      self._reg.representative_alt_id,
+                                      self._reg.mr_atom_name_mapping,
+                                      self._reg.cR, self._reg.caC,
+                                      self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15813,21 +15813,21 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = VnmrPKReader(self.__reg.verbose, self.__reg.log,
-                                              self.__reg.representative_model_id,
-                                              self.__reg.representative_alt_id,
-                                              self.__reg.mr_atom_name_mapping,
-                                              self.__reg.cR, self.__reg.caC,
-                                              self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = VnmrPKReader(self._reg.verbose, self._reg.log,
+                                              self._reg.representative_model_id,
+                                              self._reg.representative_alt_id,
+                                              self._reg.mr_atom_name_mapping,
+                                              self._reg.cR, self._reg.caC,
+                                              self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                               reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15838,20 +15838,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (VNMR) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15862,24 +15862,24 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-xea':
-                reader = XeasyPKReader(self.__reg.verbose, self.__reg.log,
-                                       self.__reg.representative_model_id,
-                                       self.__reg.representative_alt_id,
-                                       self.__reg.mr_atom_name_mapping,
-                                       self.__reg.cR, self.__reg.caC,
-                                       self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                reader = XeasyPKReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                        xeasyAtomNumberDict)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id,
-                                 csLoops=self.__reg.lp_data['chem_shift'])
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id,
+                                 csLoops=self._reg.lp_data['chem_shift'])
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15897,22 +15897,22 @@ class NmrDpRemediation:
                     if reasons is not None and listener.warningMessage is not None and len(listener.warningMessage) > 0:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = XeasyPKReader(self.__reg.verbose, self.__reg.log,
-                                               self.__reg.representative_model_id,
-                                               self.__reg.representative_alt_id,
-                                               self.__reg.mr_atom_name_mapping,
-                                               self.__reg.cR, self.__reg.caC,
-                                               self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = XeasyPKReader(self._reg.verbose, self._reg.log,
+                                               self._reg.representative_model_id,
+                                               self._reg.representative_alt_id,
+                                               self._reg.mr_atom_name_mapping,
+                                               self._reg.cR, self._reg.caC,
+                                               self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                xeasyAtomNumberDict,
                                                reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id,
-                                                      csLoops=self.__reg.lp_data['chem_shift'])
+                                                      entryId=self._reg.entry_id,
+                                                      csLoops=self._reg.lp_data['chem_shift'])
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -15923,20 +15923,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (XEASY) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -15947,22 +15947,22 @@ class NmrDpRemediation:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
             elif file_type == 'nm-pea-xwi':
-                reader = XwinNmrPKReader(self.__reg.verbose, self.__reg.log,
-                                         self.__reg.representative_model_id,
-                                         self.__reg.representative_alt_id,
-                                         self.__reg.mr_atom_name_mapping,
-                                         self.__reg.cR, self.__reg.caC,
-                                         self.__reg.ccU, self.__reg.csStat, self.__reg.nefT)
-                reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                reader.setInternalMode(self.__reg.internal_mode)
+                reader = XwinNmrPKReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
+                reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                reader.setInternalMode(self._reg.internal_mode)
 
-                _list_id_counter = copy.copy(self.__reg.list_id_counter)
+                _list_id_counter = copy.copy(self._reg.list_id_counter)
 
                 listener, parser_err_listener, lexer_err_listener =\
-                    reader.parse(file_path, self.__reg.cifPath,
+                    reader.parse(file_path, self._reg.cifPath,
                                  createSfDict=create_sf_dict, originalFileName=original_file_name,
-                                 listIdCounter=self.__reg.list_id_counter, reservedListIds=reserved_list_ids,
-                                 entryId=self.__reg.entry_id)
+                                 listIdCounter=self._reg.list_id_counter, reservedListIds=reserved_list_ids,
+                                 entryId=self._reg.entry_id)
 
                 _content_subtype = listener.getContentSubtype() if listener is not None else None
                 if _content_subtype is not None and len(_content_subtype) == 0:
@@ -15980,20 +15980,20 @@ class NmrDpRemediation:
                     if reasons is not None:
                         deal_pea_warn_message_for_lazy_eval(file_name, listener)
 
-                        reader = XwinNmrPKReader(self.__reg.verbose, self.__reg.log,
-                                                 self.__reg.representative_model_id,
-                                                 self.__reg.representative_alt_id,
-                                                 self.__reg.mr_atom_name_mapping,
-                                                 self.__reg.cR, self.__reg.caC,
-                                                 self.__reg.ccU, self.__reg.csStat, self.__reg.nefT,
+                        reader = XwinNmrPKReader(self._reg.verbose, self._reg.log,
+                                                 self._reg.representative_model_id,
+                                                 self._reg.representative_alt_id,
+                                                 self._reg.mr_atom_name_mapping,
+                                                 self._reg.cR, self._reg.caC,
+                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT,
                                                  reasons)
-                        reader.enforcePeakRowFormat(self.__reg.enforce_peak_row_format)
-                        reader.setInternalMode(self.__reg.internal_mode)
+                        reader.enforcePeakRowFormat(self._reg.enforce_peak_row_format)
+                        reader.setInternalMode(self._reg.internal_mode)
 
-                        listener, _, _ = reader.parse(file_path, self.__reg.cifPath,
+                        listener, _, _ = reader.parse(file_path, self._reg.cifPath,
                                                       createSfDict=create_sf_dict, originalFileName=original_file_name,
                                                       listIdCounter=_list_id_counter, reservedListIds=reserved_list_ids,
-                                                      entryId=self.__reg.entry_id)
+                                                      entryId=self._reg.entry_id)
 
                     deal_pea_warn_message(file_name, listener, ignore_error)
 
@@ -16004,20 +16004,20 @@ class NmrDpRemediation:
 
                     seq_align = listener.getSequenceAlignment()
                     if seq_align is not None:
-                        self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+                        self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
                     if create_sf_dict:
                         if len(listener.getContentSubtype()) == 0 and not ignore_error:
                             err = f"Failed to validate spectral peak list file (XWINNMR) {file_name!r}."
 
-                            self.__reg.report.error.appendDescription('internal_error',
+                            self._reg.report.error.appendDescription('internal_error',
                                                                       f"+{self.__class_name__}.validateLegacyPk() "
                                                                       "++ Error  - " + err)
 
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.validateLegacyPk() ++ Error  - {err}\n")
 
-                        self.__reg.list_id_counter, sf_dict = listener.getSfDict()
+                        self._reg.list_id_counter, sf_dict = listener.getSfDict()
                         if sf_dict is not None:
                             for k, v in sf_dict.items():
                                 content_subtype = contentSubtypeOf(k[0])
@@ -16027,8 +16027,8 @@ class NmrDpRemediation:
                                     if sf not in pk_sf_dict_holder[content_subtype]:
                                         pk_sf_dict_holder[content_subtype].append(sf)
 
-        if len(self.__reg.star_data) > 0 and isinstance(self.__reg.star_data[0], pynmrstar.Entry):
-            master_entry = self.__reg.star_data[0]
+        if len(self._reg.star_data) > 0 and isinstance(self._reg.star_data[0], pynmrstar.Entry):
+            master_entry = self._reg.star_data[0]
 
             if content_subtype in pk_sf_dict_holder:
 
@@ -16053,7 +16053,7 @@ class NmrDpRemediation:
                     except ValueError:
                         pass
 
-                self.__reg.pk_sf_holder = pk_sf_dict_holder['spectral_peak']
+                self._reg.pk_sf_holder = pk_sf_dict_holder['spectral_peak']
 
         if len(poly_seq_set) > 1:
 
@@ -16067,14 +16067,14 @@ class NmrDpRemediation:
                     for seq_id, comp_id in zip(ps['seq_id'], ps['comp_id']):
                         updatePolySeqRst(poly_seq_rst, chain_id, seq_id, comp_id)
 
-            poly_seq_model = self.__reg.caC['polymer_sequence']
+            poly_seq_model = self._reg.caC['polymer_sequence']
 
             sortPolySeqRst(poly_seq_rst)
 
             file_type = 'nm-pea-any'
 
-            seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-            chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+            seq_align, _ = alignPolymerSequence(self._reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
+            chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type,
                                                     poly_seq_model, poly_seq_rst, seq_align)
 
             if chain_assign is not None:
@@ -16096,19 +16096,19 @@ class NmrDpRemediation:
                             if ps['chain_id'] in chain_mapping:
                                 ps['chain_id'] = chain_mapping[ps['chain_id']]
 
-                        seq_align, _ = alignPolymerSequence(self.__reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
-                        chain_assign, _ = assignPolymerSequence(self.__reg.pA, self.__reg.ccU, file_type,
+                        seq_align, _ = alignPolymerSequence(self._reg.pA, poly_seq_model, poly_seq_rst, conservative=False)
+                        chain_assign, _ = assignPolymerSequence(self._reg.pA, self._reg.ccU, file_type,
                                                                 poly_seq_model, poly_seq_rst, seq_align)
 
                     trimSequenceAlignment(seq_align, chain_assign)
 
             input_source.setItemValue('polymer_sequence', poly_seq_rst)
 
-            self.__reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
+            self._reg.report.sequence_alignment.setItemValue(f'model_poly_seq_vs_{content_subtype}', seq_align)
 
-        if proc_nmr_ext_poly_seq and len(self.__reg.nmr_ext_poly_seq) > 0:
-            entity_assembly = self.__reg.caC['entity_assembly']
-            auth_chain_ids = list(set(d['auth_chain_id'] for d in self.__reg.nmr_ext_poly_seq))
+        if proc_nmr_ext_poly_seq and len(self._reg.nmr_ext_poly_seq) > 0:
+            entity_assembly = self._reg.caC['entity_assembly']
+            auth_chain_ids = list(set(d['auth_chain_id'] for d in self._reg.nmr_ext_poly_seq))
             for auth_chain_id in auth_chain_ids:
                 try:
                     item = next(item for item in entity_assembly if auth_chain_id in item['auth_asym_id'].split(','))
@@ -16127,49 +16127,49 @@ class NmrDpRemediation:
                         unknown_residue = 'N'
                     else:
                         continue
-                    ps = next(ps for ps in self.__reg.caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id)
-                    auth_seq_ids = [d['auth_seq_id'] for d in self.__reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_chain_id]
+                    ps = next(ps for ps in self._reg.caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id)
+                    auth_seq_ids = [d['auth_seq_id'] for d in self._reg.nmr_ext_poly_seq if d['auth_chain_id'] == auth_chain_id]
                     auth_seq_ids.extend(list(filter(None, ps['auth_seq_id'])))
                     min_auth_seq_id = min(auth_seq_ids)
                     max_auth_seq_id = max(auth_seq_ids)
                     for auth_seq_id in range(min_auth_seq_id, max_auth_seq_id + 1):
                         if auth_seq_id not in ps['auth_seq_id']\
-                           and not any(True for d in self.__reg.nmr_ext_poly_seq
+                           and not any(True for d in self._reg.nmr_ext_poly_seq
                                        if d['auth_chain_id'] == auth_chain_id and d['auth_seq_id'] == auth_seq_id):
-                            self.__reg.nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
+                            self._reg.nmr_ext_poly_seq.append({'auth_chain_id': auth_chain_id,
                                                                 'auth_seq_id': auth_seq_id,
                                                                 'auth_comp_id': unknown_residue})
 
-            self.__reg.nmr_ext_poly_seq = sorted(self.__reg.nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
+            self._reg.nmr_ext_poly_seq = sorted(self._reg.nmr_ext_poly_seq, key=itemgetter('auth_chain_id', 'auth_seq_id'))
 
-        return not self.__reg.report.isError()
+        return not self._reg.report.isError()
 
     def validateSaxsMr(self) -> bool:
         """ Validate SAXS restraint files.
         """
 
-        if self.__reg.combined_mode:
+        if self._reg.combined_mode:
             return True
 
-        if AR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
             return True
 
         content_subtype = 'saxs_restraint'
 
-        if self.__reg.list_id_counter is None:
-            self.__reg.list_id_counter = {}
-        if self.__reg.mr_sf_dict_holder is None:
-            self.__reg.mr_sf_dict_holder = {}
+        if self._reg.list_id_counter is None:
+            self._reg.list_id_counter = {}
+        if self._reg.mr_sf_dict_holder is None:
+            self._reg.mr_sf_dict_holder = {}
 
-        if content_subtype not in self.__reg.mr_sf_dict_holder:
-            self.__reg.mr_sf_dict_holder[content_subtype] = []
+        if content_subtype not in self._reg.mr_sf_dict_holder:
+            self._reg.mr_sf_dict_holder[content_subtype] = []
 
-        fileListId = self.__reg.file_path_list_len
+        fileListId = self._reg.file_path_list_len
 
-        for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+        for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
-            input_source = self.__reg.report.input_sources[fileListId]
+            input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
@@ -16251,13 +16251,13 @@ class NmrDpRemediation:
                         if _q_value == 0.0:
 
                             if len(sf_item) > 0 and sf_item['id'] > 0:
-                                self.__reg.mr_sf_dict_holder[content_subtype].append(sf_item)
+                                self._reg.mr_sf_dict_holder[content_subtype].append(sf_item)
                                 lp_count += 1
 
-                            self.__reg.list_id_counter =\
-                                incListIdCounter(content_subtype, self.__reg.list_id_counter, reduced=False)
+                            self._reg.list_id_counter =\
+                                incListIdCounter(content_subtype, self._reg.list_id_counter, reduced=False)
 
-                            list_id = self.__reg.list_id_counter[content_subtype]
+                            list_id = self._reg.list_id_counter[content_subtype]
 
                             restraint_name = getRestraintName(content_subtype)
 
@@ -16266,7 +16266,7 @@ class NmrDpRemediation:
                             if original_file_name is not None:
                                 title = original_file_name
 
-                            sf = getSaveframe(content_subtype, sf_framecode, list_id, self.__reg.entry_id, title, reduced=False)
+                            sf = getSaveframe(content_subtype, sf_framecode, list_id, self._reg.entry_id, title, reduced=False)
 
                             _restraint_name = restraint_name.split()
 
@@ -16293,7 +16293,7 @@ class NmrDpRemediation:
                             sf_item['index_id'] += 1
 
                             row = getRow('saxs', sf_item['id'], sf_item['index_id'], None, None, _line[0].replace('E', 'e'),
-                                         sf_item['list_id'], self.__reg.entry_id, dstFunc, None, None, None, None, None)
+                                         sf_item['list_id'], self._reg.entry_id, dstFunc, None, None, None, None, None)
                             sf_item['loop'].add_data(row)
 
                             _q_value = q_value
@@ -16301,7 +16301,7 @@ class NmrDpRemediation:
                         else:
 
                             _row = getRow('saxs', 1, 1, None, None, _line[0].replace('E', 'e'),
-                                          sf_item['list_id'] + 1, self.__reg.entry_id, dstFunc, None, None, None, None, None)
+                                          sf_item['list_id'] + 1, self._reg.entry_id, dstFunc, None, None, None, None, None)
 
                             _q_value = 0.0
 
@@ -16309,13 +16309,13 @@ class NmrDpRemediation:
                         continue
 
             if len(sf_item) > 0 and sf_item['id'] > 0:
-                self.__reg.mr_sf_dict_holder[content_subtype].append(sf_item)
+                self._reg.mr_sf_dict_holder[content_subtype].append(sf_item)
 
                 lp_count += 1
                 input_source.setItemValue('content_subtype', {'saxs_restraint': lp_count})
 
-        if len(self.__reg.mr_sf_dict_holder[content_subtype]) == 0:
-            del self.__reg.mr_sf_dict_holder[content_subtype]
+        if len(self._reg.mr_sf_dict_holder[content_subtype]) == 0:
+            del self._reg.mr_sf_dict_holder[content_subtype]
 
         return True
 
@@ -16323,13 +16323,13 @@ class NmrDpRemediation:
         """ Update _Constraint_stat_list saveframe.
         """
 
-        if (not self.__reg.combined_mode and not self.__reg.remediation_mode)\
-           or self.__reg.dstPath is None\
-           or self.__reg.release_mode\
-           or self.__reg.report.getInputSourceIdOfCoord() < 0:
+        if (not self._reg.combined_mode and not self._reg.remediation_mode)\
+           or self._reg.dstPath is None\
+           or self._reg.release_mode\
+           or self._reg.report.getInputSourceIdOfCoord() < 0:
             return True
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         file_type = input_source_dic['file_type']
@@ -16337,20 +16337,20 @@ class NmrDpRemediation:
         if file_type == 'nef':
             return True
 
-        if len(self.__reg.star_data) == 0 or not isinstance(self.__reg.star_data[0], pynmrstar.Entry):
+        if len(self._reg.star_data) == 0 or not isinstance(self._reg.star_data[0], pynmrstar.Entry):
             return False
 
-        master_entry = self.__reg.star_data[0]
+        master_entry = self._reg.star_data[0]
 
-        if 'constraint_statistics' in self.__reg.sf_category_list and self.__reg.list_id_counter is not None:
+        if 'constraint_statistics' in self._reg.sf_category_list and self._reg.list_id_counter is not None:
             return False
 
-        if self.__reg.bmrb_only and self.__reg.internal_mode and self.__reg.bmrb_id is not None:
-            master_entry.entry_id = self.__reg.bmrb_id
+        if self._reg.bmrb_only and self._reg.internal_mode and self._reg.bmrb_id is not None:
+            master_entry.entry_id = self._reg.bmrb_id
         else:
-            master_entry.entry_id = f'nef_{self.__reg.entry_id.lower()}'
+            master_entry.entry_id = f'nef_{self._reg.entry_id.lower()}'
 
-        self.__reg.c2S.set_entry_id(master_entry, self.__reg.entry_id)
+        self._reg.c2S.set_entry_id(master_entry, self._reg.entry_id)
 
         # refresh _Constraint_stat_list saveframe
 
@@ -16360,7 +16360,7 @@ class NmrDpRemediation:
 
         if len(cst_sfs) > 0:
 
-            if self.__reg.list_id_counter is None:
+            if self._reg.list_id_counter is None:
                 master_entry.remove_saveframe(sf_framecode)
 
             else:
@@ -16389,10 +16389,10 @@ class NmrDpRemediation:
 
                     for parent_pointer, cst_sf in enumerate(cst_sfs, start=1):
 
-                        self.__reg.nefT.check_data(cst_sf, lp_category, key_items, data_items,
+                        self._reg.nefT.check_data(cst_sf, lp_category, key_items, data_items,
                                                    allowed_tags, None, parent_pointer=parent_pointer,
                                                    enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                   excl_missing_data=self.__reg.excl_missing_data)
+                                                   excl_missing_data=self._reg.excl_missing_data)
 
                     return True
 
@@ -16400,13 +16400,13 @@ class NmrDpRemediation:
                     for cst_sf in reversed(cst_sfs):
                         del master_entry[cst_sf]
 
-        self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(master_entry)
+        self._reg.sf_category_list, self._reg.lp_category_list = self._reg.nefT.get_inventory_list(master_entry)
 
         # initialize loop counter
         lp_counts = {t: 0 for t in NMR_CONTENT_SUBTYPES}
 
         # increment loop counter of each content subtype
-        for lp_category in self.__reg.lp_category_list:
+        for lp_category in self._reg.lp_category_list:
             if lp_category in LP_CATEGORIES[file_type].values():
                 lp_counts[[k for k, v in LP_CATEGORIES[file_type].items() if v == lp_category][0]] += 1
 
@@ -16420,10 +16420,10 @@ class NmrDpRemediation:
         cst_sf.set_tag_prefix('_Constraint_stat_list')
         cst_sf.add_tag('Sf_category', sf_framecode)
         cst_sf.add_tag('Sf_framecode', sf_framecode)
-        cst_sf.add_tag('Entry_ID', self.__reg.entry_id)
+        cst_sf.add_tag('Entry_ID', self._reg.entry_id)
         cst_sf.add_tag('ID', 1)
-        if self.__reg.srcName is not None:
-            cst_sf.add_tag('Data_file_name', self.__reg.srcName)
+        if self._reg.srcName is not None:
+            cst_sf.add_tag('Data_file_name', self._reg.srcName)
 
         if has_key_value(input_source_dic, 'content_subtype'):
 
@@ -16558,8 +16558,8 @@ class NmrDpRemediation:
                                              'seq_id': get_auth_seq_id(row[auth_seq_id_2_col]),
                                              'comp_id': row[comp_id_2_col],
                                              'atom_id': row[atom_id_2_col]}
-                                    if isAmbigAtomSelection([_atom1, atom1], self.__reg.csStat)\
-                                       or isAmbigAtomSelection([_atom2, atom2], self.__reg.csStat):
+                                    if isAmbigAtomSelection([_atom1, atom1], self._reg.csStat)\
+                                       or isAmbigAtomSelection([_atom2, atom2], self._reg.csStat):
                                         sf_item[sf_framecode]['constraint_subsubtype'] = 'ambi'
                                         break
                                     _atom1, _atom2 = atom1, atom2
@@ -16908,7 +16908,7 @@ class NmrDpRemediation:
                     sf_category = SF_CATEGORIES[file_type][content_subtype]
                     lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-                    auth_to_entity_type = self.__reg.caC['auth_to_entity_type']
+                    auth_to_entity_type = self._reg.caC['auth_to_entity_type']
 
                     Dihedral_angle_tot_num = 0
                     for sf in master_entry.get_saveframes_by_category(sf_category):
@@ -17409,7 +17409,7 @@ class NmrDpRemediation:
                         cst_sf.add_tag('RDC_ambig_intermol_tot_num', RDC_ambig_intermol_tot_num)
                         cst_sf.add_tag('RDC_intermol_tot_num', RDC_intermol_tot_num)
 
-                elif content_subtype in self.__reg.mr_content_subtypes:
+                elif content_subtype in self._reg.mr_content_subtypes:
 
                     sf_category = SF_CATEGORIES[file_type][content_subtype]
                     lp_category = LP_CATEGORIES[file_type][content_subtype]
@@ -17533,7 +17533,7 @@ class NmrDpRemediation:
 
             block_id = 0
 
-            for content_subtype in self.__reg.mr_content_subtypes:
+            for content_subtype in self._reg.mr_content_subtypes:
                 if content_subtype in input_source_dic['content_subtype']:
                     sf_category = SF_CATEGORIES[file_type][content_subtype]
 
@@ -17542,7 +17542,7 @@ class NmrDpRemediation:
 
                         row = [None] * len(tags)
 
-                        row[0], row[1] = 1, self.__reg.srcName
+                        row[0], row[1] = 1, self._reg.srcName
                         sf_allowed_tags = SF_ALLOWED_TAGS[file_type][content_subtype]
                         if 'Constraint_file_ID' in sf_allowed_tags:
                             set_sf_tag(sf, 'Constraint_file_ID', 1)
@@ -17564,7 +17564,7 @@ class NmrDpRemediation:
                             if 'constraint_subsubtype' in sf_item[sf_framecode] else None
                         row[3], row[4], row[5], row[6] =\
                             constraint_type, constraint_subtype, constraint_subsubtype, sf_item[sf_framecode]['id']
-                        row[7], row[8] = 1, self.__reg.entry_id
+                        row[7], row[8] = 1, self._reg.entry_id
 
                         cf_loop.add_data(row)
 
@@ -17638,7 +17638,7 @@ class NmrDpRemediation:
 
             lp.add_tag(tags)
 
-            for content_subtype in self.__reg.nmr_rep_content_subtypes:
+            for content_subtype in self._reg.nmr_rep_content_subtypes:
                 sf_category = SF_CATEGORIES[file_type][content_subtype]
 
                 if sf_category.endswith('constraints'):  # ignore non-quantitative data set
@@ -17647,7 +17647,7 @@ class NmrDpRemediation:
                 count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
 
                 if count > 0:
-                    row = [sf_category, count, self.__reg.entry_id]
+                    row = [sf_category, count, self._reg.entry_id]
                     lp.add_data(row)
                     lp.data.sort()
 
@@ -17670,10 +17670,10 @@ class NmrDpRemediation:
 
             lp.add_tag(tags)
 
-            datum_counter = self.__reg.dpV.getDatumCounter(master_entry)
+            datum_counter = self._reg.dpV.getDatumCounter(master_entry)
 
             for k, v in datum_counter.items():
-                row = [k, v, self.__reg.entry_id]
+                row = [k, v, self._reg.entry_id]
                 lp.add_data(row)
 
             sf.add_loop(lp)
@@ -17681,10 +17681,10 @@ class NmrDpRemediation:
         except IndexError:
             pass
 
-        master_entry = self.__reg.c2S.normalize_str(master_entry)
+        master_entry = self._reg.c2S.normalize_str(master_entry)
 
-        master_entry.write_to_file(self.__reg.dstPath,
-                                   show_comments=(self.__reg.bmrb_only and self.__reg.internal_mode),
+        master_entry.write_to_file(self._reg.dstPath,
+                                   show_comments=(self._reg.bmrb_only and self._reg.internal_mode),
                                    skip_empty_loops=True, skip_empty_tags=False)
 
         return True
@@ -17693,13 +17693,13 @@ class NmrDpRemediation:
         """ Merge CS+MR+PK into next NMR combined data files.
         """
 
-        if self.__reg.combined_mode or not self.__reg.remediation_mode or self.__reg.dstPath is None:
+        if self._reg.combined_mode or not self._reg.remediation_mode or self._reg.dstPath is None:
             return False
 
-        if len(self.__reg.star_data) == 0 or not isinstance(self.__reg.star_data[0], pynmrstar.Entry):
+        if len(self._reg.star_data) == 0 or not isinstance(self._reg.star_data[0], pynmrstar.Entry):
             return False
 
-        master_entry = self.__reg.star_data[0]
+        master_entry = self._reg.star_data[0]
 
         sf_framecode = 'constraint_statistics'
 
@@ -17709,7 +17709,7 @@ class NmrDpRemediation:
             for cst_sf in reversed(cst_sfs):
                 del master_entry[cst_sf]
 
-        input_source = self.__reg.report.input_sources[0]
+        input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
         original_file_name = input_source_dic['file_name']
@@ -17718,18 +17718,18 @@ class NmrDpRemediation:
 
         file_type = 'nmr-star'
 
-        master_entry.entry_id = f'cs_{self.__reg.entry_id.lower()}'
+        master_entry.entry_id = f'cs_{self._reg.entry_id.lower()}'
 
-        self.__reg.c2S.set_entry_id(master_entry, self.__reg.entry_id)
+        self._reg.c2S.set_entry_id(master_entry, self._reg.entry_id)
 
-        self.__reg.c2S.normalize_str(master_entry)
+        self._reg.c2S.normalize_str(master_entry)
 
-        if self.__reg.bmrb_only and self.__reg.internal_mode and self.__reg.bmrb_id is not None:
-            master_entry.entry_id = self.__reg.bmrb_id
+        if self._reg.bmrb_only and self._reg.internal_mode and self._reg.bmrb_id is not None:
+            master_entry.entry_id = self._reg.bmrb_id
         else:
-            master_entry.entry_id = f'nef_{self.__reg.entry_id.lower()}'
+            master_entry.entry_id = f'nef_{self._reg.entry_id.lower()}'
 
-        self.__reg.c2S.set_entry_id(master_entry, self.__reg.entry_id)
+        self._reg.c2S.set_entry_id(master_entry, self._reg.entry_id)
 
         # remove _Audit loop if exists
 
@@ -17741,7 +17741,7 @@ class NmrDpRemediation:
 
         sf_list = master_entry.get_saveframes_by_category(sf_category)
 
-        if self.__reg.internal_mode:
+        if self._reg.internal_mode:
             today = datetime.today()
             today_weekday = today.weekday()
             days_ahead = (4 - today_weekday) % 7
@@ -17755,7 +17755,7 @@ class NmrDpRemediation:
 
                 loop = sf.get_loop(lp_category)
 
-                if self.__reg.internal_mode:
+                if self._reg.internal_mode:
 
                     dat = loop.get_tag(['Revision_ID', 'Update_record'])
 
@@ -17766,7 +17766,7 @@ class NmrDpRemediation:
                         row[loop.tags.index('Revision_ID')] = last_revision_id + 1
                         row[loop.tags.index('Creation_date')] = this_friday.strftime('%Y-%m-%d')
                         row[loop.tags.index('Update_record')] = 'Remediation'
-                        row[loop.tags.index('Entry_ID')] = self.__reg.entry_id
+                        row[loop.tags.index('Entry_ID')] = self._reg.entry_id
 
                         loop.add_data(row)
 
@@ -17789,7 +17789,7 @@ class NmrDpRemediation:
 
                     loop = sf.get_loop(lp_category)
 
-                    if self.__reg.internal_mode:
+                    if self._reg.internal_mode:
 
                         dat = loop.get_tag(['Revision_ID', 'Update_record'])
 
@@ -17800,7 +17800,7 @@ class NmrDpRemediation:
                             row[loop.tags.index('Revision_ID')] = last_revision_id + 1
                             row[loop.tags.index('Creation_date')] = this_friday.strftime('%Y-%m-%d')
                             row[loop.tags.index('Update_record')] = 'Remediation'
-                            row[loop.tags.index('Entry_ID')] = self.__reg.entry_id
+                            row[loop.tags.index('Entry_ID')] = self._reg.entry_id
 
                             loop.add_data(row)
 
@@ -17813,7 +17813,7 @@ class NmrDpRemediation:
 
                 del master_entry[sf]
 
-        if self.__reg.internal_mode and not self.__reg.bmrb_only and not update_audit:
+        if self._reg.internal_mode and not self._reg.bmrb_only and not update_audit:
 
             sf_list = master_entry.get_saveframes_by_category(sf_category)
 
@@ -17835,14 +17835,14 @@ class NmrDpRemediation:
 
                     lp.add_tag(tags)
 
-                    lp.add_data([1, this_friday.strftime('%Y-%m-%d'), 'Preliminary version', None, self.__reg.entry_id])
+                    lp.add_data([1, this_friday.strftime('%Y-%m-%d'), 'Preliminary version', None, self._reg.entry_id])
 
                     sf.add_loop(lp)
 
             except IndexError:
                 pass
 
-        if self.__reg.internal_mode and not self.__reg.bmrb_only:
+        if self._reg.internal_mode and not self._reg.bmrb_only:
 
             nmr_star_version = get_first_sf_tag(sf_list[0], 'NMR_STAR_version')
 
@@ -17869,20 +17869,20 @@ class NmrDpRemediation:
         cst_sf.set_tag_prefix('_Constraint_stat_list')
         cst_sf.add_tag('Sf_category', sf_framecode)
         cst_sf.add_tag('Sf_framecode', sf_framecode)
-        cst_sf.add_tag('Entry_ID', self.__reg.entry_id)
+        cst_sf.add_tag('Entry_ID', self._reg.entry_id)
         cst_sf.add_tag('ID', 1)
 
-        if self.__reg.remediation_mode:
+        if self._reg.remediation_mode:
 
-            if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
+            if AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict:
 
-                fileListId = self.__reg.file_path_list_len
+                fileListId = self._reg.file_path_list_len
 
                 file_names = []
 
-                for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+                for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
-                    input_source = self.__reg.report.input_sources[fileListId]
+                    input_source = self._reg.report.input_sources[fileListId]
                     input_source_dic = input_source.get()
 
                     fileListId += 1
@@ -17904,12 +17904,12 @@ class NmrDpRemediation:
 
         # statistics
 
-        if self.__reg.mr_sf_dict_holder is not None:
+        if self._reg.mr_sf_dict_holder is not None:
 
             content_subtype = 'dist_restraint'
 
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     if 'NOE_dist_averaging_method' in sf_item:
                         cst_sf.add_tag('NOE_dist_averaging_method', sf_item['NOE_dist_averaging_method'])
                         break
@@ -17931,7 +17931,7 @@ class NmrDpRemediation:
                     NOE_interentity_tot_num =\
                     NOE_other_tot_num = 0
 
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
 
                     sf = sf_item['saveframe']
                     sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
@@ -17947,7 +17947,7 @@ class NmrDpRemediation:
                             use_member_logic_code = any(True for row in dat if row not in EMPTY_VALUE)
 
                     if not use_member_logic_code:
-                        self.__reg.dpV.updateGenDistConstIdInMrStr(sf_item)
+                        self._reg.dpV.updateGenDistConstIdInMrStr(sf_item)
 
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
                     if 'lower' in potential_type:
@@ -18045,7 +18045,7 @@ class NmrDpRemediation:
                                 else:
                                     NOE_ambig_intermol_tot_num += 1
 
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     sf = sf_item['saveframe']
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
                     if 'lower' in potential_type:
@@ -18076,7 +18076,7 @@ class NmrDpRemediation:
                     cst_sf.add_tag('NOE_interentity_tot_num', NOE_interentity_tot_num)
                     cst_sf.add_tag('NOE_other_tot_num', NOE_other_tot_num)
 
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     if 'ROE_dist_averaging_method' in sf_item:
                         cst_sf.add_tag('ROE_dist_averaging_method', sf_item['ROE_dist_averaging_method'])
                         break
@@ -18092,7 +18092,7 @@ class NmrDpRemediation:
                     ROE_ambig_intermol_tot_num =\
                     ROE_other_tot_num = 0
 
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     sf = sf_item['saveframe']
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
                     if 'lower' in potential_type:
@@ -18193,11 +18193,11 @@ class NmrDpRemediation:
 
             content_subtype = 'dihed_restraint'
 
-            auth_to_entity_type = self.__reg.caC['auth_to_entity_type']
+            auth_to_entity_type = self._reg.caC['auth_to_entity_type']
 
             Dihedral_angle_tot_num = 0
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     Dihedral_angle_tot_num += sf_item['id']
 
             if Dihedral_angle_tot_num > 0:
@@ -18209,9 +18209,9 @@ class NmrDpRemediation:
                 Protein_chi_one_angle_tot_num =\
                 Protein_other_angle_tot_num = 0
 
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
-                    self.__reg.dpV.updateTorsionAngleConstIdInMrStr(sf_item)
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
+                    self._reg.dpV.updateTorsionAngleConstIdInMrStr(sf_item)
 
                     lp = sf_item['loop']
 
@@ -18270,14 +18270,14 @@ class NmrDpRemediation:
 
                         sf = sf_item['saveframe']
 
-                        if 'jcoup_restraint' not in self.__reg.mr_sf_dict_holder:
+                        if 'jcoup_restraint' not in self._reg.mr_sf_dict_holder:
                             set_sf_tag(sf, 'Constraint_type', 'backbone chemical shifts')
 
                         else:
 
                             _protein_jcoups = _protein_bb_jcoups = _protein_oth_jcoups = 0
 
-                            for _sf_item in self.__reg.mr_sf_dict_holder['jcoup_restraint']:
+                            for _sf_item in self._reg.mr_sf_dict_holder['jcoup_restraint']:
 
                                 _lp = _sf_item['loop']
 
@@ -18340,8 +18340,8 @@ class NmrDpRemediation:
                 NA_other_angle_tot_num =\
                 NA_amb_dihedral_angle_tot_num = 0
 
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
 
                     lp = sf_item['loop']
 
@@ -18401,14 +18401,14 @@ class NmrDpRemediation:
 
                         sf = sf_item['saveframe']
 
-                        if 'jcoup_restraint' not in self.__reg.mr_sf_dict_holder:
+                        if 'jcoup_restraint' not in self._reg.mr_sf_dict_holder:
                             set_sf_tag(sf, 'Constraint_type', 'unknown')
 
                         else:
 
                             _na_jcoups = 0
 
-                            for _sf_item in self.__reg.mr_sf_dict_holder['jcoup_restraint']:
+                            for _sf_item in self._reg.mr_sf_dict_holder['jcoup_restraint']:
 
                                 _lp = _sf_item['loop']
 
@@ -18445,8 +18445,8 @@ class NmrDpRemediation:
                 cst_sf.add_tag('NA_other_angle_tot_num', NA_other_angle_tot_num)
                 cst_sf.add_tag('NA_amb_dihedral_angle_tot_num', NA_amb_dihedral_angle_tot_num)
 
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
 
                     lp = sf_item['loop']
 
@@ -18489,14 +18489,14 @@ class NmrDpRemediation:
 
                         sf = sf_item['saveframe']
 
-                        if 'jcoup_restraint' not in self.__reg.mr_sf_dict_holder:
+                        if 'jcoup_restraint' not in self._reg.mr_sf_dict_holder:
                             set_sf_tag(sf, 'Constraint_type', 'unknown')
 
                         else:
 
                             _br_jcoups = 0
 
-                            for _sf_item in self.__reg.mr_sf_dict_holder['jcoup_restraint']:
+                            for _sf_item in self._reg.mr_sf_dict_holder['jcoup_restraint']:
 
                                 _lp = _sf_item['loop']
 
@@ -18546,8 +18546,8 @@ class NmrDpRemediation:
                 RDC_ambig_intermol_tot_num =\
                 RDC_intermol_tot_num = 0
 
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     lp = sf_item['loop']
 
                     # RDC_tot_num += sf_item['id']
@@ -18671,8 +18671,8 @@ class NmrDpRemediation:
             content_subtype = 'dist_restraint'
 
             hbond_pairs = set()
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     sf = sf_item['saveframe']
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
                     if 'lower' in potential_type:
@@ -18710,8 +18710,8 @@ class NmrDpRemediation:
                             continue
 
                         if atom_id_1[0] in PROTON_BEGIN_CODE:
-                            if self.__reg.ccU.updateChemCompDict(comp_id_1):
-                                bonded_atom_id_1 = self.__reg.ccU.getBondedAtoms(comp_id_1, atom_id_1)
+                            if self._reg.ccU.updateChemCompDict(comp_id_1):
+                                bonded_atom_id_1 = self._reg.ccU.getBondedAtoms(comp_id_1, atom_id_1)
                                 if len(bonded_atom_id_1) == 0:
                                     continue
                                 if any(True for _row in lp
@@ -18723,8 +18723,8 @@ class NmrDpRemediation:
                                            and _row[atom_id_2_col] == bonded_atom_id_1[0])):
                                     continue
                         if atom_id_2[0] in PROTON_BEGIN_CODE:
-                            if self.__reg.ccU.updateChemCompDict(comp_id_2):
-                                bonded_atom_id_2 = self.__reg.ccU.getBondedAtoms(comp_id_2, atom_id_2)
+                            if self._reg.ccU.updateChemCompDict(comp_id_2):
+                                bonded_atom_id_2 = self._reg.ccU.getBondedAtoms(comp_id_2, atom_id_2)
                                 if len(bonded_atom_id_2) == 0:
                                     continue
                                 if any(True for _row in lp
@@ -18745,8 +18745,8 @@ class NmrDpRemediation:
                 cst_sf.add_tag('H_bonds_constrained_tot_num', H_bonds_constrained_tot_num)
 
             ssbond_pairs = set()
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     sf = sf_item['saveframe']
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
                     if 'lower' in potential_type:
@@ -18784,8 +18784,8 @@ class NmrDpRemediation:
                             continue
 
                         if atom_id_1[0] in PROTON_BEGIN_CODE:
-                            if self.__reg.ccU.updateChemCompDict(comp_id_1):
-                                bonded_atom_id_1 = self.__reg.ccU.getBondedAtoms(comp_id_1, atom_id_1)
+                            if self._reg.ccU.updateChemCompDict(comp_id_1):
+                                bonded_atom_id_1 = self._reg.ccU.getBondedAtoms(comp_id_1, atom_id_1)
                                 if len(bonded_atom_id_1) == 0:
                                     continue
                                 if any(True for _row in lp
@@ -18797,8 +18797,8 @@ class NmrDpRemediation:
                                            and _row[atom_id_2_col] == bonded_atom_id_1[0])):
                                     continue
                         if atom_id_2[0] in PROTON_BEGIN_CODE:
-                            if self.__reg.ccU.updateChemCompDict(comp_id_2):
-                                bonded_atom_id_2 = self.__reg.ccU.getBondedAtoms(comp_id_2, atom_id_2)
+                            if self._reg.ccU.updateChemCompDict(comp_id_2):
+                                bonded_atom_id_2 = self._reg.ccU.getBondedAtoms(comp_id_2, atom_id_2)
                                 if len(bonded_atom_id_2) == 0:
                                     continue
                                 if any(True for _row in lp
@@ -18821,8 +18821,8 @@ class NmrDpRemediation:
             content_subtype = 'jcoup_restraint'
 
             Derived_coupling_const_tot_num = 0
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     Derived_coupling_const_tot_num += sf_item['id']
 
             if Derived_coupling_const_tot_num > 0:
@@ -18831,8 +18831,8 @@ class NmrDpRemediation:
             content_subtype = 'hvycs_restraint'
 
             Derived_CACB_chem_shift_tot_num = 0
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     Derived_CACB_chem_shift_tot_num += sf_item['id']
 
             if Derived_CACB_chem_shift_tot_num > 0:
@@ -18841,8 +18841,8 @@ class NmrDpRemediation:
             content_subtype = 'procs_restraint'
 
             Derived_1H_chem_shift_tot_num = 0
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     Derived_1H_chem_shift_tot_num += sf_item['id']
 
             if Derived_1H_chem_shift_tot_num > 0:
@@ -18851,8 +18851,8 @@ class NmrDpRemediation:
             content_subtype = 'dist_restraint'
 
             Derived_photo_cidnps_tot_num = 0
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     sf = sf_item['saveframe']
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
                     if 'lower' in potential_type:
@@ -18866,8 +18866,8 @@ class NmrDpRemediation:
                 cst_sf.add_tag('Derived_photo_cidnps_tot_num', Derived_photo_cidnps_tot_num)
 
             Derived_paramag_relax_tot_num = 0
-            if content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+            if content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     sf = sf_item['saveframe']
                     potential_type = get_first_sf_tag(sf, 'Potential_type')
                     if 'lower' in potential_type:
@@ -18882,9 +18882,9 @@ class NmrDpRemediation:
 
             content_subtype = 'other_restraint'
 
-            if content_subtype in self.__reg.mr_sf_dict_holder:
+            if content_subtype in self._reg.mr_sf_dict_holder:
                 Protein_other_tot_num = NA_other_tot_num = 0
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     lp = sf_item['loop']
                     lp_tags = lp['tags']
                     lp_data = lp['data']
@@ -18962,7 +18962,7 @@ class NmrDpRemediation:
         software_dict = {}
         software_id = 0
 
-        if 'software' in self.__reg.sf_category_list:
+        if 'software' in self._reg.sf_category_list:
             for sf in master_entry.get_saveframes_by_category('software'):
                 _id = get_first_sf_tag(sf, 'ID')
                 _name = get_first_sf_tag(sf, 'Name')
@@ -18978,9 +18978,9 @@ class NmrDpRemediation:
         file_name_dict = {}
         file_id = block_id = 0
 
-        for content_subtype in self.__reg.mr_content_subtypes:
-            if self.__reg.mr_sf_dict_holder is not None and content_subtype in self.__reg.mr_sf_dict_holder:
-                for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+        for content_subtype in self._reg.mr_content_subtypes:
+            if self._reg.mr_sf_dict_holder is not None and content_subtype in self._reg.mr_sf_dict_holder:
+                for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                     row = [None] * len(tags)
 
                     sf = sf_item['saveframe']
@@ -19018,7 +19018,7 @@ class NmrDpRemediation:
                         try:
                             for item in sf_item['loop']['data']:
                                 auth_comp_id = item[4]
-                                peptide, nucleotide, _ = self.__reg.csStat.getTypeOfCompId(auth_comp_id)
+                                peptide, nucleotide, _ = self._reg.csStat.getTypeOfCompId(auth_comp_id)
                                 if peptide:
                                     constraint_type = 'protein peptide planarity'
                                     break
@@ -19099,20 +19099,20 @@ class NmrDpRemediation:
 
                     row[6], row[7], row[8], row[9] =\
                         constraint_type, constraint_subtype, constraint_subsubtype, sf_item['id']
-                    row[10], row[11] = 1, self.__reg.entry_id
+                    row[10], row[11] = 1, self._reg.entry_id
 
                     cf_loop.add_data(row)
 
         ext_mr_sf_holder = []
 
-        if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
+        if AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict:
 
-            fileListId = self.__reg.file_path_list_len
+            fileListId = self._reg.file_path_list_len
 
-            for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+            for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
                 file_path = ar['file_name']
 
-                input_source = self.__reg.report.input_sources[fileListId]
+                input_source = self._reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
                 mr_file_type = input_source_dic['file_type']
@@ -19127,9 +19127,9 @@ class NmrDpRemediation:
                     if input_source_dic['original_file_name'] is not None:
                         original_file_name = os.path.basename(input_source_dic['original_file_name'])
 
-                self.__reg.list_id_counter = incListIdCounter(None, self.__reg.list_id_counter)
+                self._reg.list_id_counter = incListIdCounter(None, self._reg.list_id_counter)
 
-                list_id = self.__reg.list_id_counter['other_restraint']
+                list_id = self._reg.list_id_counter['other_restraint']
 
                 sf_framecode = f'NMR_restraints_not_interpreted_{list_id}'
 
@@ -19146,7 +19146,7 @@ class NmrDpRemediation:
                             data_format = None
                         break
 
-                sf = getSaveframe(None, sf_framecode, list_id, self.__reg.entry_id, original_file_name,
+                sf = getSaveframe(None, sf_framecode, list_id, self._reg.entry_id, original_file_name,
                                   constraintType=details)
 
                 file_id += 1
@@ -19185,7 +19185,7 @@ class NmrDpRemediation:
                 with open(file_path, 'r', encoding='ascii', errors='ignore') as ifh:
                     sf.add_tag('Text_data', ifh.read())
 
-                row[10], row[11] = 1, self.__reg.entry_id
+                row[10], row[11] = 1, self._reg.entry_id
 
                 # cf_loop.add_data(row)
 
@@ -19193,16 +19193,16 @@ class NmrDpRemediation:
 
                 if not os.path.exists(sel_res_cif_file) and not os.path.exists(sel_res_oth_file):
 
-                    if self.__reg.internal_mode:
+                    if self._reg.internal_mode:
 
                         err = f"Uninterpreted restraints are stored in {sf_framecode} saveframe as raw text format. "\
                             "@todo: It needs to be reviewed."
 
-                        self.__reg.report.error.appendDescription('internal_error',
+                        self._reg.report.error.appendDescription('internal_error',
                                                                   f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}")
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}\n")
 
                     else:
 
@@ -19216,20 +19216,20 @@ class NmrDpRemediation:
                                "and will be converted during future data remediation "\
                                "if the data matches a known restraint format."
 
-                        self.__reg.report.warning.appendDescription('unsupported_mr_data',
+                        self._reg.report.warning.appendDescription('unsupported_mr_data',
                                                                     {'file_name': file_name, 'description': warn,
                                                                      'inheritable': True})
 
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Warning  - {warn}\n")
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Warning  - {warn}\n")
 
         cst_sf.add_loop(cf_loop)
 
-        if self.__reg.orig_cst_sf is None:
+        if self._reg.orig_cst_sf is None:
             if len(cf_loop) > 0:
                 master_entry.add_saveframe(cst_sf)
         else:
-            _data_file_name = get_first_sf_tag(self.__reg.orig_cst_sf, 'Data_file_name')
+            _data_file_name = get_first_sf_tag(self._reg.orig_cst_sf, 'Data_file_name')
             replace_data_file_name = False
             if len(_data_file_name) > 0:
                 replace_data_file_name = any(True for _file_name in _data_file_name.split(',')
@@ -19238,10 +19238,10 @@ class NmrDpRemediation:
             for tag in cst_sf.tags:
                 if tag[0] == 'Data_file_name' and not replace_data_file_name:
                     continue
-                set_sf_tag(self.__reg.orig_cst_sf, tag[0], tag[1])
+                set_sf_tag(self._reg.orig_cst_sf, tag[0], tag[1])
             has_cf_loop = replace_cf_loop = False
             try:
-                _cf_loop = self.__reg.orig_cst_sf.get_loop('_Constraint_file')
+                _cf_loop = self._reg.orig_cst_sf.get_loop('_Constraint_file')
                 has_cf_loop = True
                 if len(_cf_loop) != len(cf_loop) and len(cf_loop) > 0:
                     replace_cf_loop = True
@@ -19286,10 +19286,10 @@ class NmrDpRemediation:
                 replace_cf_loop = True
             if replace_cf_loop:
                 if has_cf_loop:
-                    del self.__reg.orig_cst_sf[_cf_loop]
-                self.__reg.orig_cst_sf.add_loop(cf_loop)
+                    del self._reg.orig_cst_sf[_cf_loop]
+                self._reg.orig_cst_sf.add_loop(cf_loop)
 
-            master_entry.add_saveframe(self.__reg.orig_cst_sf)
+            master_entry.add_saveframe(self._reg.orig_cst_sf)
 
         # resolve CYANA distance subtype
 
@@ -19331,11 +19331,11 @@ class NmrDpRemediation:
         removed_sf_names = []
         resolved_sf_name_prefixes = []
 
-        for content_subtype in self.__reg.mr_content_subtypes:
-            if self.__reg.mr_sf_dict_holder is not None and content_subtype in self.__reg.mr_sf_dict_holder:
+        for content_subtype in self._reg.mr_content_subtypes:
+            if self._reg.mr_sf_dict_holder is not None and content_subtype in self._reg.mr_sf_dict_holder:
                 if content_subtype != 'other_restraint':
                     lp_category = LP_CATEGORIES[file_type][content_subtype]
-                    for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+                    for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                         sf = sf_item['saveframe']
                         sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
 
@@ -19353,20 +19353,20 @@ class NmrDpRemediation:
 
                         if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 
-                            if self.__reg.internal_mode or self.__reg.bmrb_only:
+                            if self._reg.internal_mode or self._reg.bmrb_only:
                                 _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
                                 _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
                                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                                if len(_data_file_name) > 0 and _data_file_name != data_file_name and self.__reg.internal_mode:
+                                if len(_data_file_name) > 0 and _data_file_name != data_file_name and self._reg.internal_mode:
                                     data_file_name_map[data_file_name] = _data_file_name
                                     set_sf_tag(sf, 'Data_file_name', _data_file_name)
                                     update_data_file_name = True
 
-                                    fileListId = self.__reg.file_path_list_len
+                                    fileListId = self._reg.file_path_list_len
 
-                                    for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+                                    for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
-                                        input_source = self.__reg.report.input_sources[fileListId]
+                                        input_source = self._reg.report.input_sources[fileListId]
                                         input_source_dic = input_source.get()
 
                                         fileListId += 1
@@ -19401,14 +19401,14 @@ class NmrDpRemediation:
                                       f"Please remove {sf_framecode!r} saveframe "\
                                       f"and re-upload the {READABLE_FILE_TYPE[file_type]} file."
 
-                                self.__reg.report.error.appendDescription('format_issue',
+                                self._reg.report.error.appendDescription('format_issue',
                                                                           {'file_name': _data_file_name, 'description': err})
 
-                                self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - "
+                                self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - "
                                                      f"{_data_file_name} {err}\n")
                                 continue
 
-                        elif self.__reg.internal_mode or self.__reg.bmrb_only:
+                        elif self._reg.internal_mode or self._reg.bmrb_only:
 
                             try:
 
@@ -19420,7 +19420,7 @@ class NmrDpRemediation:
                                    and any(True for _sf in master_entry.frame_list if _sf.name.startswith(sf_framecode_prefix)):
                                     resolved_sf_name_prefixes.append(sf_framecode_prefix)
 
-                                    for sf_item_ in self.__reg.mr_sf_dict_holder[content_subtype]:
+                                    for sf_item_ in self._reg.mr_sf_dict_holder[content_subtype]:
                                         sf_ = sf_item_['saveframe']
                                         sf_framecode_ = get_first_sf_tag(sf_, 'Sf_framecode')
 
@@ -19461,16 +19461,16 @@ class NmrDpRemediation:
 
                                             _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
                                             if len(_data_file_name) > 0 and _data_file_name != data_file_name\
-                                               and self.__reg.internal_mode:
+                                               and self._reg.internal_mode:
                                                 data_file_name_map[data_file_name] = _data_file_name
                                                 set_sf_tag(sf, 'Data_file_name', _data_file_name)
                                                 update_data_file_name = True
 
-                                                fileListId = self.__reg.file_path_list_len
+                                                fileListId = self._reg.file_path_list_len
 
-                                                for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+                                                for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
-                                                    input_source = self.__reg.report.input_sources[fileListId]
+                                                    input_source = self._reg.report.input_sources[fileListId]
                                                     input_source_dic = input_source.get()
 
                                                     fileListId += 1
@@ -19499,19 +19499,19 @@ class NmrDpRemediation:
                         master_entry.add_saveframe(sf)
                         removed_sf_names.append(sf_framecode)
 
-                        _lp = next((lp for lp in self.__reg.lp_data[content_subtype] if lp['sf_framecode'] == sf_framecode), None)
+                        _lp = next((lp for lp in self._reg.lp_data[content_subtype] if lp['sf_framecode'] == sf_framecode), None)
                         if _lp is not None:
-                            self.__reg.lp_data[content_subtype].remove(_lp)
+                            self._reg.lp_data[content_subtype].remove(_lp)
                             data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                            self.__reg.dpV.testDataConsistencyInLoop(0, data_file_name, 'nmr-star', content_subtype,
+                            self._reg.dpV.testDataConsistencyInLoop(0, data_file_name, 'nmr-star', content_subtype,
                                                                      sf, sf_framecode, lp_category, sf_item['list_id'])
 
                 else:
-                    for sf_item in self.__reg.mr_sf_dict_holder[content_subtype]:
+                    for sf_item in self._reg.mr_sf_dict_holder[content_subtype]:
                         sf = sf_item['saveframe']
                         sf_framecode = sf.get_tag('Sf_framecode')[0]
 
-                        other_data = {'entry_id': self.__reg.entry_id,
+                        other_data = {'entry_id': self._reg.entry_id,
                                       'saveframes': [{'name': sf_framecode,
                                                       'category': 'undefined',
                                                       'tag_prefix': '?',
@@ -19520,7 +19520,7 @@ class NmrDpRemediation:
                                                                ['Definition', sf.get_tag('Definition')[0]],
                                                                ['Data_file_name', sf.get_tag('Data_file_name')[0]],
                                                                ['ID', sf.get_tag('ID')[0]],
-                                                               ['Entry_ID', self.__reg.entry_id]
+                                                               ['Entry_ID', self._reg.entry_id]
                                                                ],
                                                       'loops': [{'category': 'unknown',
                                                                  'tags': sf_item['loop']['tags'],
@@ -19543,20 +19543,20 @@ class NmrDpRemediation:
 
                         if any(True for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode)):
 
-                            if self.__reg.internal_mode or self.__reg.bmrb_only:
+                            if self._reg.internal_mode or self._reg.bmrb_only:
                                 _sf = next(_sf for _sf in master_entry.frame_list if _sf.name in (sf_framecode, alt_sf_framecode))
                                 _data_file_name = get_first_sf_tag(_sf, 'Data_file_name')
                                 data_file_name = get_first_sf_tag(sf, 'Data_file_name')
-                                if len(_data_file_name) > 0 and _data_file_name != data_file_name and self.__reg.bmrb_only:
+                                if len(_data_file_name) > 0 and _data_file_name != data_file_name and self._reg.bmrb_only:
                                     data_file_name_map[data_file_name] = _data_file_name
                                     set_sf_tag(sf, 'Data_file_name', _data_file_name)
                                     update_data_file_name = True
 
-                                    fileListId = self.__reg.file_path_list_len
+                                    fileListId = self._reg.file_path_list_len
 
-                                    for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+                                    for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
-                                        input_source = self.__reg.report.input_sources[fileListId]
+                                        input_source = self._reg.report.input_sources[fileListId]
                                         input_source_dic = input_source.get()
 
                                         fileListId += 1
@@ -19589,10 +19589,10 @@ class NmrDpRemediation:
                                       f"Please remove {sf_framecode!r} saveframe "\
                                       f"and re-upload the {READABLE_FILE_TYPE[file_type]} file."
 
-                                self.__reg.report.error.appendDescription('format_issue',
+                                self._reg.report.error.appendDescription('format_issue',
                                                                           {'file_name': _data_file_name, 'description': err})
 
-                                self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - "
+                                self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - "
                                                      f"{_data_file_name} {err}\n")
                                 continue
 
@@ -19600,7 +19600,7 @@ class NmrDpRemediation:
 
         for sf in ext_mr_sf_holder:
 
-            if self.__reg.internal_mode and any(True for _sf in master_entry.frame_list if _sf.name == sf.name):
+            if self._reg.internal_mode and any(True for _sf in master_entry.frame_list if _sf.name == sf.name):
                 continue
 
             master_entry.add_saveframe(sf)
@@ -19611,13 +19611,13 @@ class NmrDpRemediation:
                 if row[1] in data_file_name_map:
                     cf_loop[idx][1] = data_file_name_map[row[1]]
 
-            fileListId = self.__reg.file_path_list_len
+            fileListId = self._reg.file_path_list_len
 
             file_names = []
 
-            for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+            for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
-                input_source = self.__reg.report.input_sources[fileListId]
+                input_source = self._reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
                 fileListId += 1
@@ -19634,7 +19634,7 @@ class NmrDpRemediation:
 
                 file_names.append(retrieveOriginalFileName(file_name))
 
-            for content_subtype in self.__reg.mr_sf_dict_holder:
+            for content_subtype in self._reg.mr_sf_dict_holder:
                 if content_subtype != 'other_restraint':
                     sf_category = SF_CATEGORIES[file_type][content_subtype]
                     for sf in master_entry.get_saveframes_by_category(sf_category):
@@ -19662,12 +19662,12 @@ class NmrDpRemediation:
             if len(file_names) > 0:
                 set_sf_tag(cst_sf, 'Data_file_name', ','.join(sorted(file_names)))
 
-        self.__mergeStrPk()
+        self._mergeStrPk()
 
-        # if self.__reg.merge_any_pk_as_is:  # DAOTHER-7407 enabled until Phase 2 release
-        self.__mergeAnyPkAsIs()
+        # if self._reg.merge_any_pk_as_is:  # DAOTHER-7407 enabled until Phase 2 release
+        self._mergeAnyPkAsIs()
 
-        if self.__reg.bmrb_only and self.__reg.internal_mode:
+        if self._reg.bmrb_only and self._reg.internal_mode:
             self.performBmrbJAnnTasks()
 
         try:
@@ -19678,9 +19678,9 @@ class NmrDpRemediation:
 
             sf_category = SF_CATEGORIES[file_type][content_subtype]
 
-            self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(master_entry)
+            self._reg.sf_category_list, self._reg.lp_category_list = self._reg.nefT.get_inventory_list(master_entry)
 
-            has_entry_info = sf_category in self.__reg.sf_category_list
+            has_entry_info = sf_category in self._reg.sf_category_list
 
             if has_entry_info:
                 sf = master_entry.get_saveframes_by_category(sf_category)[0]
@@ -19692,7 +19692,7 @@ class NmrDpRemediation:
                 sf.set_tag_prefix('_Entry')
                 sf.add_tag('Sf_category', sf_framecode)
                 sf.add_tag('Sf_framecode', sf_framecode)
-                sf.add_tag('ID', self.__reg.entry_id)
+                sf.add_tag('ID', self._reg.entry_id)
 
             # update _Data_set loop
 
@@ -19711,7 +19711,7 @@ class NmrDpRemediation:
 
             lp.add_tag(tags)
 
-            for content_subtype in self.__reg.nmr_rep_content_subtypes:
+            for content_subtype in self._reg.nmr_rep_content_subtypes:
                 sf_category = SF_CATEGORIES[file_type][content_subtype]
 
                 if sf_category.endswith('constraints'):  # ignore non-quantitative data set
@@ -19720,7 +19720,7 @@ class NmrDpRemediation:
                 count = sum(1 for sf in master_entry.frame_list if sf.category == sf_category)
 
                 if count > 0:
-                    row = [sf_category, count, self.__reg.entry_id]
+                    row = [sf_category, count, self._reg.entry_id]
                     lp.add_data(row)
 
             lp.sort_rows('Type')
@@ -19742,10 +19742,10 @@ class NmrDpRemediation:
 
             lp.add_tag(tags)
 
-            datum_counter = self.__reg.dpV.getDatumCounter(master_entry)
+            datum_counter = self._reg.dpV.getDatumCounter(master_entry)
 
             for k, v in datum_counter.items():
-                row = [k, v, self.__reg.entry_id]
+                row = [k, v, self._reg.entry_id]
                 lp.add_data(row)
 
             sf.add_loop(lp)
@@ -19754,47 +19754,47 @@ class NmrDpRemediation:
                 master_entry.add_saveframe(sf)
 
         except IndexError as e:
-            self.__reg.report.error.appendDescription('internal_error',
+            self._reg.report.error.appendDescription('internal_error',
                                                       f"+{self.__class_name__}.mergeLegacyData() ++ Error  - " + str(e))
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {str(e)}\n")
+            if self._reg.verbose:
+                self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {str(e)}\n")
 
-        master_entry = self.__reg.c2S.normalize_str(master_entry)
+        master_entry = self._reg.c2S.normalize_str(master_entry)
 
-        master_entry.write_to_file(self.__reg.dstPath,
-                                   show_comments=(self.__reg.bmrb_only and self.__reg.internal_mode),
+        master_entry.write_to_file(self._reg.dstPath,
+                                   show_comments=(self._reg.bmrb_only and self._reg.internal_mode),
                                    skip_empty_loops=True, skip_empty_tags=False)
 
-        self.__reg.list_id_counter = None
-        self.__reg.mr_sf_dict_holder = None
-        self.__reg.pk_sf_holder = None
+        self._reg.list_id_counter = None
+        self._reg.mr_sf_dict_holder = None
+        self._reg.pk_sf_holder = None
 
         # check inventory again
 
-        self.__reg.sf_category_list, self.__reg.lp_category_list = self.__reg.nefT.get_inventory_list(master_entry)
+        self._reg.sf_category_list, self._reg.lp_category_list = self._reg.nefT.get_inventory_list(master_entry)
 
         lp_counts = {t: 0 for t in NMR_CONTENT_SUBTYPES}
 
-        for lp_category in self.__reg.lp_category_list:
+        for lp_category in self._reg.lp_category_list:
             if lp_category in LP_CATEGORIES[file_type].values():
                 lp_counts[[k for k, v in LP_CATEGORIES[file_type].items() if v == lp_category][0]] += 1
 
         mr_loops = 0
 
-        for content_subtype in self.__reg.mr_content_subtypes:
+        for content_subtype in self._reg.mr_content_subtypes:
             if content_subtype in lp_counts:
                 mr_loops += lp_counts[content_subtype]
 
-        if mr_loops == 0 and not self.__reg.validation_server and not self.__reg.mr_has_valid_star_restraint:
+        if mr_loops == 0 and not self._reg.validation_server and not self._reg.mr_has_valid_star_restraint:
 
-            if 'other_data_types' not in self.__reg.sf_category_list:
+            if 'other_data_types' not in self._reg.sf_category_list:
 
                 mr_file_names = []
 
-                for fileListId in range(self.__reg.cs_file_path_list_len, self.__reg.file_path_list_len):
+                for fileListId in range(self._reg.cs_file_path_list_len, self._reg.file_path_list_len):
 
-                    input_source = self.__reg.report.input_sources[fileListId]
+                    input_source = self._reg.report.input_sources[fileListId]
                     input_source_dic = input_source.get()
 
                     file_type = input_source_dic['file_type']
@@ -19804,13 +19804,13 @@ class NmrDpRemediation:
 
                     mr_file_names.append(input_source_dic['file_name'])
 
-                if AR_FILE_PATH_LIST_KEY in self.__reg.inputParamDict:
+                if AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict:
 
-                    fileListId = self.__reg.file_path_list_len
+                    fileListId = self._reg.file_path_list_len
 
-                    for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+                    for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
 
-                        input_source = self.__reg.report.input_sources[fileListId]
+                        input_source = self._reg.report.input_sources[fileListId]
                         input_source_dic = input_source.get()
 
                         file_type = input_source_dic['file_type']
@@ -19831,12 +19831,12 @@ class NmrDpRemediation:
                     err = "Deposition of restraints used for the structure determination is mandatory. "\
                         f"Please verify {desc} and re-upload valid restraint file(s)."
 
-                    self.__reg.report.error.appendDescription('missing_mandatory_content',
-                                                              {'file_name': os.path.basename(self.__reg.dstPath),
+                    self._reg.report.error.appendDescription('missing_mandatory_content',
+                                                              {'file_name': os.path.basename(self._reg.dstPath),
                                                                'description': err})
 
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}\n")
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.mergeLegacyData() ++ Error  - {err}\n")
 
         return True
 
@@ -19846,10 +19846,10 @@ class NmrDpRemediation:
                    network access to PubMed, NCBI Taxonomy, BMRB-API, BMRB ETS, etc
         """
 
-        if self.__reg.combined_mode or not self.__reg.remediation_mode or (self.__reg.dstPath is None and not enforce):
+        if self._reg.combined_mode or not self._reg.remediation_mode or (self._reg.dstPath is None and not enforce):
             return True
 
-        if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None:
+        if len(self._reg.star_data) == 0 or self._reg.star_data[0] is None:
             return False
 
         try:
@@ -19860,6 +19860,6 @@ class NmrDpRemediation:
             except ImportError:
                 return False
 
-        ann = BmrbJAnnTasks(self.__reg)
+        ann = BmrbJAnnTasks(self._reg)
 
-        return ann.perform(self.__reg.star_data[0])
+        return ann.perform(self._reg.star_data[0])

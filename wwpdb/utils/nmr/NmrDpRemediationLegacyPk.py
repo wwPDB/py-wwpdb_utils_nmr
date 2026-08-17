@@ -848,7 +848,7 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                                  entryId=self._reg.entry_id,
                                  csLoops=self._reg.lp_data['chem_shift'])
 
-                if None not in (parser_err_listener, listener)\
+                if None not in (lexer_err_listener, parser_err_listener, listener)\
                    and ((lexer_err_listener.getMessageList() is None and parser_err_listener.getMessageList() is None)
                         or _content_subtype is not None):
                     if deal_lexer_or_parser_error(a_pk_format_name, file_name, None, parser_err_listener)[0]:

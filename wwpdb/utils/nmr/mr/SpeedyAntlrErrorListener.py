@@ -77,7 +77,7 @@ def createSpeedyAntlrErrorListener(saModule, lexerErrorListener, parserErrorList
             # 'input_stream' and 'char_index' are part of the SA_ErrorListener
             # signature that the C++ side calls positionally; the two ANTLR
             # listeners work from (line, column) alone.
-            def syntaxError(self, input_stream, offendingSymbol, char_index,  # pylint: disable=unused-argument
+            def syntaxError(self, input_stream, offendingSymbol, char_index,  # pylint: disable=unused-argument,missing-function-docstring
                             line, column, msg):
                 msg = normalizeErrorMessage(msg)
                 # The ANTLR listeners ignore both 'recognizer' and the exception,

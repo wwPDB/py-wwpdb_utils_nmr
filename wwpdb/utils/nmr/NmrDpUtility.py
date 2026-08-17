@@ -283,6 +283,10 @@
 # 13-Jul-2026  M. Yokochi - implement ensemble composition analysis including cluster analysis (DAOTHER-9785)
 # 24-Jul-2026  M. Yokochi - explain exact copy of the multimer's chemical shifts using comma-separated Auth_asym_IDs (DAOTHER-10898)
 # 07-Aug-2026  M. Yokochi - bridge ANTLR4 C++ lexer/parser into the Python listeners (speedy-antlr-tool, DAOTHER-9785)
+# 17-Aug-2026  M. Yokochi - code refactoring: split NmrDpValidation and NmrDpRemediation classes into topic modules
+#                           (NmrDpValidation{Base,Input,Coord,Loop,Nomencl,Cs,Mr,Pk,CoordChk,CsStats,MrStats,OutStats}
+#                           and NmrDpRemediation{Base,Enum,PolySeq,CsLoop,Cs,Mr,Pk,LegacyCs,LegacyMr,LegacyPk,Stats,Merge}),
+#                           no API change
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -401,7 +405,9 @@ try:
                                                REPRESENTATIVE_ALT_ID,
                                                SPECTRAL_DIM_TEMPLATE,
                                                DEFAULT_COORD_PROPERTIES)
-    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
+    from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
+                                               get_next_path,
+                                               test_path_with_suffix)
     from wwpdb.utils.nmr.NmrDpFirstAid import NmrDpFirstAid
     from wwpdb.utils.nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                                  detect_bom,
@@ -541,7 +547,9 @@ except ImportError:
                                    REPRESENTATIVE_ALT_ID,
                                    SPECTRAL_DIM_TEMPLATE,
                                    DEFAULT_COORD_PROPERTIES)
-    from nmr.NmrDpRegistry import NmrDpRegistry
+    from nmr.NmrDpRegistry import (NmrDpRegistry,
+                                   get_next_path,
+                                   test_path_with_suffix)
     from nmr.NmrDpFirstAid import NmrDpFirstAid
     from nmr.NmrDpMrSplitter import (NmrDpMrSplitter,
                                      detect_bom,
@@ -884,36 +892,12 @@ class NmrDpUtility:
     def getNextPath(self, src_path: str, suffix: str = '~') -> str:
         """ Return candidate next file path.
         """
-        assert len(suffix) > 0
-
-        src_path_next = src_path + suffix
-
-        if self.__reg.dirPath is not None:
-            src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
-
-        return src_path_next
+        return get_next_path(self.__reg, src_path, suffix)
 
     def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
         """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
         """
-        assert len(suffix) > 0
-
-        test_path = src_path + suffix
-
-        if os.path.exists(test_path):
-            return test_path
-
-        if None in (self.__reg.dirPath, self.__reg.spareDirPath) or self.__reg.dirPath == self.__reg.spareDirPath:
-            return test_path if defer_check else src_path
-
-        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
-
-        if not os.path.exists(chk_path):
-            return test_path if defer_check else src_path
-
-        os.symlink(chk_path, test_path)
-
-        return test_path
+        return test_path_with_suffix(self.__reg, src_path, suffix, defer_check)
 
     def setVerbose(self, verbose: bool) -> None:
         """ Set verbose mode.

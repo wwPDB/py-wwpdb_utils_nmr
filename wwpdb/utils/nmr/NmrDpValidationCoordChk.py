@@ -186,20 +186,20 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     sf_framecode = ''
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
-                        self._mapCoordDisulfideBond2Nmr(file_name, file_type, content_subtype,
-                                                        sf, sf_framecode, lp_category,
-                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                        self._mapCoordBond2Nmr(file_name, file_type, content_subtype,
+                                               sf, sf_framecode, lp_category,
+                                               nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                               nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self._reg.star_data_type[fileListId] == 'Saveframe':
                     sf = self._reg.star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
-                        self._mapCoordDisulfideBond2Nmr(file_name, file_type, content_subtype,
-                                                        sf, sf_framecode, lp_category,
-                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                        self._mapCoordBond2Nmr(file_name, file_type, content_subtype,
+                                               sf, sf_framecode, lp_category,
+                                               nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                               nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
                 else:
 
                     for sf in self._reg.star_data[fileListId].get_saveframes_by_category(sf_category):
@@ -209,10 +209,10 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                             continue
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
-                            self._mapCoordDisulfideBond2Nmr(file_name, file_type, content_subtype,
-                                                            sf, sf_framecode, lp_category,
-                                                            nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                            nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                            self._mapCoordBond2Nmr(file_name, file_type, content_subtype,
+                                                   sf, sf_framecode, lp_category,
+                                                   nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                   nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                         if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
                             pass
@@ -314,13 +314,13 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
 
         return is_done
 
-    def _mapCoordDisulfideBond2Nmr(self, file_name: str, file_type: str, content_subtype: str,
-                                   sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                                   sf_framecode: str, lp_category: str,
-                                   nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
-                                   nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
-                                   ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
-        """ Map disulfide bond of coordinate file to NMR data.
+    def _mapCoordBond2Nmr(self, file_name: str, file_type: str, content_subtype: str,
+                          sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
+                          sf_framecode: str, lp_category: str,
+                          nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
+                          nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
+                          ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
+        """ Map a bond of coordinate file to NMR data.
         """
 
         ca_chem_shift_1 = cb_chem_shift_1 = ca_chem_shift_2 = cb_chem_shift_2 = None
@@ -496,20 +496,20 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     sf_framecode = ''
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
-                        self._mapCoordOtherBond2Nmr(file_name, file_type, content_subtype,
-                                                    sf, sf_framecode, lp_category,
-                                                    nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                    nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                        self._mapCoordBond2Nmr(file_name, file_type, content_subtype,
+                                               sf, sf_framecode, lp_category,
+                                               nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                               nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 elif self._reg.star_data_type[fileListId] == 'Saveframe':
                     sf = self._reg.star_data[fileListId]
                     sf_framecode = get_first_sf_tag(sf, 'sf_framecode')
 
                     ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
-                        self._mapCoordOtherBond2Nmr(file_name, file_type, content_subtype,
-                                                    sf, sf_framecode, lp_category,
-                                                    nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                    nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                        self._mapCoordBond2Nmr(file_name, file_type, content_subtype,
+                                               sf, sf_framecode, lp_category,
+                                               nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                               nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                 else:
 
@@ -520,10 +520,10 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                             continue
 
                         ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2 =\
-                            self._mapCoordOtherBond2Nmr(file_name, file_type, content_subtype,
-                                                        sf, sf_framecode, lp_category,
-                                                        nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
-                                                        nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
+                            self._mapCoordBond2Nmr(file_name, file_type, content_subtype,
+                                                   sf, sf_framecode, lp_category,
+                                                   nmr_chain_id_1, nmr_seq_id_1, nmr_comp_id_1,
+                                                   nmr_chain_id_2, nmr_seq_id_2, nmr_comp_id_2)
 
                         if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
                             pass
@@ -624,73 +624,6 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                 is_done = True
 
         return is_done
-
-    def _mapCoordOtherBond2Nmr(self, file_name: str, file_type: str, content_subtype: str,
-                               sf: Union[pynmrstar.Saveframe, pynmrstar.Loop],
-                               sf_framecode: str, lp_category: str,
-                               nmr_chain_id_1: str, nmr_seq_id_1: int, nmr_comp_id_1: str,
-                               nmr_chain_id_2: str, nmr_seq_id_2: int, nmr_comp_id_2: str
-                               ) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
-        """ Map other bond (neither disulfide nor covalent bond) of coordinate file to NMR data.
-        """
-
-        ca_chem_shift_1 = cb_chem_shift_1 = ca_chem_shift_2 = cb_chem_shift_2 = None
-
-        key_items = self._reg.key_items[file_type][content_subtype]
-        data_items = DATA_ITEMS[file_type][content_subtype]
-
-        item_names = ITEM_NAMES_IN_CS_LOOP[file_type]
-        chain_id_name = item_names['chain_id']
-        seq_id_name = item_names['seq_id']
-        comp_id_name = item_names['comp_id']
-        atom_id_name = item_names['atom_id']
-        value_name = item_names['value']
-
-        if not self._reg.report.error.exists(file_name, sf_framecode):
-
-            lp_data = next((lp['data'] for lp in self._reg.lp_data[content_subtype]
-                            if lp['file_name'] == file_name and lp['sf_framecode'] == sf_framecode), None)
-
-            if lp_data is None:
-
-                try:
-
-                    lp_data = self._reg.nefT.check_data(sf, lp_category, key_items, data_items, None, None, None,
-                                                        enforce_allowed_tags=(file_type == 'nmr-star'),
-                                                        excl_missing_data=self._reg.excl_missing_data)[0]
-
-                    self._reg.lp_data[content_subtype].append({'file_name': file_name, 'sf_framecode': sf_framecode,
-                                                               'data': lp_data})
-
-                except Exception:  # pylint: disable=broad-exception-caught
-                    pass
-
-            if lp_data is not None:
-
-                for row in lp_data:
-                    chain_id = row[chain_id_name]
-                    seq_id = row[seq_id_name]
-                    comp_id = row[comp_id_name]
-                    atom_id = row[atom_id_name]
-
-                    if chain_id == nmr_chain_id_1 and seq_id == nmr_seq_id_1 and comp_id == nmr_comp_id_1:
-                        if atom_id == 'CA' and ca_chem_shift_1 is None:
-                            ca_chem_shift_1 = row[value_name]
-                        elif atom_id == 'CB' and cb_chem_shift_1 is None:
-                            cb_chem_shift_1 = row[value_name]
-
-                    elif chain_id == nmr_chain_id_2 and seq_id == nmr_seq_id_2 and comp_id == nmr_comp_id_2:
-                        if atom_id == 'CA' and ca_chem_shift_2 is None:
-                            ca_chem_shift_2 = row[value_name]
-                        elif atom_id == 'CB' and cb_chem_shift_2 is None:
-                            cb_chem_shift_2 = row[value_name]
-
-                    if None in (ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2):
-                        pass
-                    else:
-                        break
-
-        return ca_chem_shift_1, cb_chem_shift_1, ca_chem_shift_2, cb_chem_shift_2
 
     def testCoordCovalentBond(self, file_name: str, file_type: str, content_subtype: str, sf_framecode: str, lp_category: str
                               ) -> None:

@@ -13,7 +13,6 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.3.0"
 
-import os
 from typing import Optional, Union
 
 import pynmrstar
@@ -28,7 +27,8 @@ try:
                                                EMPTY_VALUE,
                                                MAX_DIM_NUM_OF_SPECTRA,
                                                COMMENT_PAT)
-    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
+    from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
+                                               test_path_with_suffix)
     from wwpdb.utils.nmr.CifToNmrStar import get_first_sf_tag
 except ImportError:
     from nmr.NmrDpConstant import (SF_CATEGORIES,
@@ -40,7 +40,8 @@ except ImportError:
                                    EMPTY_VALUE,
                                    MAX_DIM_NUM_OF_SPECTRA,
                                    COMMENT_PAT)
-    from nmr.NmrDpRegistry import NmrDpRegistry
+    from nmr.NmrDpRegistry import (NmrDpRegistry,
+                                   test_path_with_suffix)
     from nmr.CifToNmrStar import get_first_sf_tag
 
 
@@ -103,24 +104,7 @@ class NmrDpRemediationBase:
     def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
         """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
         """
-        assert len(suffix) > 0
-
-        test_path = src_path + suffix
-
-        if os.path.exists(test_path):
-            return test_path
-
-        if None in (self._reg.dirPath, self._reg.spareDirPath) or self._reg.dirPath == self._reg.spareDirPath:
-            return test_path if defer_check else src_path
-
-        chk_path = os.path.join(self._reg.spareDirPath, os.path.basename(test_path))
-
-        if not os.path.exists(chk_path):
-            return test_path if defer_check else src_path
-
-        os.symlink(chk_path, test_path)
-
-        return test_path
+        return test_path_with_suffix(self._reg, src_path, suffix, defer_check)
 
     def cleanUpSf(self) -> bool:
         """ Clean-up third-party saveframes.

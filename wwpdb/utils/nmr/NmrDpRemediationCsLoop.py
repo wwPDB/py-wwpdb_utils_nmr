@@ -1077,7 +1077,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                    and row[atom_id_col][0] == atom_type\
                                                    and abs(float(row[val_col]) - val) < 1.0\
                                                    and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
-                                                    src_lp.data[src_idx + offset][ambig_code_col] = '4'
+                                                    row[ambig_code_col] = '4'
                                                     reparse = True
 
                             elif ambig_code == 4:
@@ -1326,7 +1326,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                and row[atom_id_col][0] == atom_type\
                                                and abs(float(row[val_col]) - val) < 1.0\
                                                and self._reg.ccU.getBondSignature(comp_id, row[atom_id_col]) == sig:
-                                                src_lp.data[src_idx + offset][ambig_code_col] = '4'
+                                                row[ambig_code_col] = '4'
                                                 reparse = True
 
                         elif ambig_code == 4:

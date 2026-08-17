@@ -47,7 +47,7 @@ except ImportError:
     from nmr.NmrVrptUtility import predict_redox_state_of_cystein  # noqa: F401 pylint: disable=unused-import
 
 
-class NmrDpValidation(NmrDpValidationInput,
+class NmrDpValidation(NmrDpValidationInput,  # pylint: disable=too-many-ancestors
                       NmrDpValidationCoord,
                       NmrDpValidationLoop,
                       NmrDpValidationNomencl,

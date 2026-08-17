@@ -43,7 +43,7 @@ except ImportError:
                                           get_chem_shift_format_from_string)
 
 
-class NmrDpRemediation(NmrDpRemediationEnum,
+class NmrDpRemediation(NmrDpRemediationEnum,  # pylint: disable=too-many-ancestors
                        NmrDpRemediationPolySeq,
                        NmrDpRemediationCsLoop,
                        NmrDpRemediationCs,

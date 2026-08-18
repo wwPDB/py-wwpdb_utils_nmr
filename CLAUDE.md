@@ -47,21 +47,20 @@ python -m unittest discover -v -s wwpdb/utils/tests-nmr-tox -p "NmrDpUtilityTest
 
 ### Known failures
 
-A green run is **58 ran, 52 ok, 1 error, 1 skipped**. The one error and the two
-flake8 findings below predate the current work and are not worth chasing:
+A green run is **58 ran, 52 ok, 1 failure, 1 skipped**. The one failure predates
+the current work and is not worth chasing:
 
-- `test_get_nef_atom` — `TypeError: 'NoneType' object is not iterable` in
-  `ChemCompUtil.getMethylAtoms`. `updateChemCompDict` sets `lastCompId` even when
-  the CCD lookup fails, leaving `lastAtomDictList` unpopulated; `getMethylAtoms`
-  guards with `compId != self.lastCompId and not updateChemCompDict(compId)`,
-  which short-circuits once `lastCompId` already holds that comp_id, and then
-  dereferences `lastAtomDictList`. A first-ever call returns `[]` correctly — the
-  crash needs a prior lookup for the same comp_id. Fixing it means also checking
-  `self.lastAtomDictList is None` in the guard.
-- `mr/BaseLinearMRParserListener.py:1316` E231 and `mr/ParserListenerUtil.py:380`
-  E201.
+- `test_get_nef_atom` — asserts that `get_nef_atom("HEM", ...)` collapses the
+  `HMA/HMAA/HMAB` methyl protons to `HMA%`, but gets
+  `"Unknown non-standard residue HEM found."`. That branch needs
+  `NefTranslator.chemCompAtom` to be populated, which only happens through a
+  setter the test never calls (its third positional argument is `details`, not a
+  chem-comp dict). Nothing to do with the CCD fixtures: `HEM` and `HEB` ship in
+  the mocked `ligand-dict-v3`, and `csStat.getMethylAtoms("HEM")` returns the
+  methyls correctly.
 
-Anything else failing is new.
+Anything else failing is new. flake8 and pylint are both clean at CI's
+invocations.
 
 ## Architecture
 

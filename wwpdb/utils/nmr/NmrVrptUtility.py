@@ -17,6 +17,8 @@
 # 24-Jul-2026  M. Yokochi - map comma-separated Auth_asym_IDs for calculation of chemical shift completeness (DAOTHER-10898)
 # 31-Jul-2026  M. Yokochi - fix unexpected missing of dihedral angle restraint validation
 # 03-Aug-2026  M. Yokochi - add RDC restraint analysis (DAOTHER-9785, v1.3.0)
+# 18-Aug-2026  M. Yokochi - implement Monte Carlo simulation to estimate uncertainty of calculated RDC values
+#                           (DAOTHER-9785, 10893, v1.3.1)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -27,7 +29,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.3.0"
+__version__ = "v1.3.1"
 
 import collections
 import copy
@@ -150,6 +152,11 @@ NMR_VTF_RDC_VIOL_CUTOFF = 1.0  # to be decided
 NMR_VTF_DIST_ERR_BINS = (0.1, 0.2, 0.5)
 NMR_VTF_DIHED_ERR_BINS = (1.0, 10.0, 20.0)
 NMR_VTF_RDC_ERR_BINS = (1.0, 2.0, 5.0)  # to be decided
+
+
+# effective Monte Carlo simulation cycles for estimating uncertainty of calculated RDC values
+# note that the real cycle will be scaled by the effective models
+RDC_EFF_MC_CYCLES = 1000
 
 
 def uncompress_gzip_file(inPath: str, outPath: str) -> None:
@@ -984,6 +991,7 @@ class NmrVrptUtility:
                  '__rdcRestSeqDict',
                  '__rdcSaupeOrderMatrix',
                  '__rdcCalcDict',
+                 '__rdcSyntCalcDict',
                  '__rdcCorrPlotDict',
                  '__distRestViolDict',
                  '__distRestUnmapped',
@@ -1106,6 +1114,8 @@ class NmrVrptUtility:
         self.__rdcSaupeOrderMatrix = None
         # calculated RDC values based on molecular alignment tensor
         self.__rdcCalcDict = None
+        # calculated RDC values for synthetic RDC values derived from Monte Carlo simulations
+        self.__rdcSyntCalcDict = None
         # RDC correlation plot of observed and calculated RDCs for each list
         self.__rdcCorrPlotDict = None
 
@@ -2978,8 +2988,11 @@ class NmrVrptUtility:
 
         self.__rdcSaupeOrderMatrix = {}
         self.__rdcCalcDict = {}
+        self.__rdcSyntCalcDict = {}
 
         try:
+
+            cycles = max(RDC_EFF_MC_CYCLES // len(self.__eff_model_ids), 1)
 
             list_ids = set()
             for rest_key in self.__rdcRestDict:
@@ -3063,7 +3076,9 @@ class NmrVrptUtility:
 
                     Si = numpy.diag(numpy.array([1.0 / s for s in list(S)], dtype=float))
 
-                    x = Vh.T @ Si @ U.T @ b
+                    Ai = Vh.T @ Si @ U.T
+
+                    x = Ai @ b
 
                     Syy, Szz, Sxy, Sxz, Syz = x[0], x[1], x[2], x[3], x[4]
 
@@ -3100,12 +3115,37 @@ class NmrVrptUtility:
                         assert abs(Szz_) >= abs(Syy_) >= abs(Sxx_)
                         assert 0 <= eta <= 1.0
 
-                        b_calc = list(A @ x)
+                        b_calc = A @ x
 
-                        for rest_key, val in zip(target_rest_keys, b_calc):
+                        for rest_key, val in zip(target_rest_keys, list(b_calc * dmax)):
                             if rest_key not in self.__rdcCalcDict:
                                 self.__rdcCalcDict[rest_key] = {}
-                            self.__rdcCalcDict[rest_key][model_id] = val * dmax
+                            self.__rdcCalcDict[rest_key][model_id] = val
+
+                        b_size = b.shape[0]
+
+                        b_std = numpy.sqrt(((b_calc - b) ** 2).sum() / (b_size - 1))
+
+                        for _ in range(cycles):
+                            b_noise = numpy.random.normal(loc=0.0, scale=b_std, size=b_size)
+
+                            b_syn = b + b_noise
+
+                            x_syn = Ai @ b_syn
+
+                            _Syy, _Szz, _Sxy, _Sxz, _Syz = x_syn[0], x_syn[1], x_syn[2], x_syn[3], x_syn[4]
+
+                            if -0.5 <= _Syy <= 1.0 and -0.5 <= _Szz <= 1.0\
+                               and abs(_Sxy) <= 0.75 and abs(_Sxz) <= 0.75 and abs(_Syz) <= 0.75:
+
+                                b_syn_calc = A @ x_syn
+
+                                for rest_key, val in zip(target_rest_keys, list(b_syn_calc * dmax)):
+                                    if rest_key not in self.__rdcSyntCalcDict:
+                                        self.__rdcSyntCalcDict[rest_key] = {}
+                                    if model_id not in self.__rdcSyntCalcDict[rest_key]:
+                                        self.__rdcSyntCalcDict[rest_key][model_id] = []
+                                    self.__rdcSyntCalcDict[rest_key][model_id].append(val)
 
             return True
 
@@ -4309,8 +4349,19 @@ class NmrVrptUtility:
                         rdc_calcs = numpy.array(list(rdc_calc.values()), dtype=float) / r['scale_factor']
                         rdc_calc_mean = numpy.mean(rdc_calcs)
                         rdc_calc_center = round(rdc_calc_mean, 2)
-                        rdc_calc_min = round(numpy.min(rdc_calcs), 2)
-                        rdc_calc_max = round(numpy.max(rdc_calcs), 2)
+
+                        # uncertainty of calculated RDC values is estimated by Monte Carlo simulation
+                        rdc_calc_min = rdc_calc_max = None
+                        if rest_key in self.__rdcSyntCalcDict:
+                            _rdc_synt_calcs = []
+                            for v in self.__rdcSyntCalcDict[rest_key].values():
+                                _rdc_synt_calcs.extend(v)
+                            if len(_rdc_synt_calcs) > RDC_EFF_MC_CYCLES / 2:
+                                rdc_synt_calcs = numpy.array(_rdc_synt_calcs, dtype=float) / r['scale_factor']
+
+                                rdc_synt_std = numpy.std(rdc_synt_calcs)
+                                rdc_calc_min = round(rdc_calc_mean - rdc_synt_std, 2)
+                                rdc_calc_max = round(rdc_calc_mean + rdc_synt_std, 2)
 
                         q_scores[rdc_type]['rdc_exp'].append(rdc_exp_center)
                         q_scores[rdc_type]['rdc_calc'].append(rdc_calc_mean)

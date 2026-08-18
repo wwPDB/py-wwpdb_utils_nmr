@@ -1313,7 +1313,7 @@ class BaseLinearMRParserListener():
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}" if upper_limit > 0.0 else "0.0"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
-                    self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index,g=group)}"
+                    self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index, g=group)}"
                                   f"The upper limit value='{upper_limit:.3f}' is omitted "
                                   f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None

@@ -377,7 +377,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                         return f'{atomId[1:]}%'
                     else:
                         if f'H{atomId[1:]}2' in _refAtomIdList:
-                            return f'H{ atomId[1:]}%'
+                            return f'H{atomId[1:]}%'
 
                 elif atomId[-1] in ('-', '+'):
                     if f'{atomId[:-1]}2' in _refAtomIdList:

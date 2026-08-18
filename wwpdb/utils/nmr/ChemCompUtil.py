@@ -137,7 +137,7 @@ class ChemCompUtil:
         """ Return atoms in methyl group of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -162,7 +162,7 @@ class ChemCompUtil:
         """ Return all protons in methyl group of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -186,7 +186,7 @@ class ChemCompUtil:
         """ Return representative protons in methyl group of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -210,7 +210,7 @@ class ChemCompUtil:
         """ Return non-representative protons in methyl group of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -234,7 +234,7 @@ class ChemCompUtil:
         """ Return representative protons in methylene/amino group of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -258,7 +258,7 @@ class ChemCompUtil:
         """ Return non-representative protons in methylene/amino group of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -282,7 +282,7 @@ class ChemCompUtil:
         """ Return representative protons in amino group of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -306,7 +306,7 @@ class ChemCompUtil:
         """ Return non-representative protons in amino group of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -330,7 +330,7 @@ class ChemCompUtil:
         """ Return imide protons of a given comp_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         atmList = []
@@ -366,7 +366,7 @@ class ChemCompUtil:
         """ Return bonded atoms to a given atom.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         bondedAtoms = [(b['atom_id_1'] if b['atom_id_1'] != atomId else b['atom_id_2'])
@@ -385,7 +385,7 @@ class ChemCompUtil:
         """ Return protons in the same group of a given comp_id and atom_id.
         """
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         bondedTo = self.getBondedAtoms(compId, atomId)
@@ -415,7 +415,7 @@ class ChemCompUtil:
         if greekLetter not in ('A', 'B', 'G', 'D', 'E', 'Z', 'H'):
             return []
 
-        if compId != self.lastCompId and not self.updateChemCompDict(compId):
+        if not self.updateChemCompDict(compId):
             return []
 
         touched = ['N', 'C', 'O', 'OXT']

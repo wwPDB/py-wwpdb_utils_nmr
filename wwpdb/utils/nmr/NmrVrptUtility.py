@@ -3067,7 +3067,9 @@ class NmrVrptUtility:
                             # this effect should be taken into consideration when comparing (raw) observed RDCs and calculated RDCs
                             b_exp.append(r['scale_factor'] * r['target_value'] / dmax)
 
-                    if len(b_exp) < 5:
+                    b_size = len(b_exp)
+
+                    if b_size < 5:
                         continue
 
                     b = numpy.array(b_exp, dtype=float)
@@ -3122,9 +3124,7 @@ class NmrVrptUtility:
                                 self.__rdcCalcDict[rest_key] = {}
                             self.__rdcCalcDict[rest_key][model_id] = val
 
-                        b_size = b.shape[0]
-
-                        b_std = numpy.sqrt(((b_calc - b) ** 2).sum() / (b_size - 1))
+                        b_std = numpy.std(b_calc - b)
 
                         for _ in range(cycles):
                             b_noise = numpy.random.normal(loc=0.0, scale=b_std, size=b_size)
@@ -4356,7 +4356,7 @@ class NmrVrptUtility:
                             _rdc_synt_calcs = []
                             for v in self.__rdcSyntCalcDict[rest_key].values():
                                 _rdc_synt_calcs.extend(v)
-                            if len(_rdc_synt_calcs) > RDC_EFF_MC_CYCLES / 2:
+                            if len(_rdc_synt_calcs) > RDC_EFF_MC_CYCLES * 0.9:
                                 rdc_synt_calcs = numpy.array(_rdc_synt_calcs, dtype=float) / r['scale_factor']
 
                                 rdc_synt_std = numpy.std(rdc_synt_calcs)
@@ -4394,11 +4394,17 @@ class NmrVrptUtility:
                     total_sum_of_square = ((rdc_exp_array - rdc_exp_mean) ** 2).sum()
                     sum_of_squared_errors = ((rdc_exp_array - rdc_calc_array) ** 2).sum()
                     sum_of_squared_values = (rdc_exp_array ** 2).sum()
+
                     q_scores[k]['r2'] =\
-                        round(1.0 - sum_of_squared_errors / total_sum_of_square, 2) if total_sum_of_square > 0 else 1.0
-                    q_scores[k]['cornilescu_q'] = round(math.sqrt(sum_of_squared_errors / sum_of_squared_values), 2)
-                    q_scores[k]['clore_q'] = round(math.sqrt(sum_of_squared_errors
-                                                             / (rdc_exp_array.shape[0] * denominator_unit)), 2)
+                        round(1.0 - sum_of_squared_errors / total_sum_of_square, 2)\
+                        if total_sum_of_square > 0.0 else 1.0
+                    q_scores[k]['cornilescu_q'] =\
+                        round(math.sqrt(sum_of_squared_errors / sum_of_squared_values), 2)\
+                        if sum_of_squared_values > 0.0 else 0.0
+                    q_scores[k]['clore_q'] =\
+                        round(math.sqrt(sum_of_squared_errors / (rdc_exp_array.shape[0] * denominator_unit)), 2)\
+                        if denominator_unit > 0.0 else 0.0
+
                     del q_scores[k]['rdc_exp']
                     del q_scores[k]['rdc_calc']
 

@@ -184,6 +184,11 @@ PYTHONPATH=$PWD/wwpdb/utils python -c "from nmr.NmrDpUtility import NmrDpUtility
   dirs). Mirror neighbouring files' import order rather than sorting.
 - Line length 132 for both flake8 and pylint. Existing over-length lines carry
   `# noqa: E501`.
+- `ChemCompUtil` accessors guard with `if not self.updateChemCompDict(compId):
+  return ...`. Do **not** reintroduce a `compId != self.lastCompId and`
+  short-circuit in front of it: `updateChemCompDict` sets `lastCompId` even when
+  the lookup fails, so the short-circuit lets a failed comp_id skip the guard and
+  silently inherit the previously loaded compound's atom and bond lists.
 
 ## Refactoring these modules
 

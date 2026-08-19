@@ -2026,6 +2026,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                         data_file_name = get_first_sf_tag(sf, 'Data_file_name')
                         if data_file_name in EMPTY_VALUE:
                             continue
+                        sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
                         block_id = get_first_sf_tag(sf, "Block_ID")
                         data_file_name = retrieveOriginalFileName(data_file_name)
                         if data_file_name not in file_names:
@@ -2039,7 +2040,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                                 continue
                             dat = cf_loop.get_tag(['Constraint_filename', 'Software_name', 'Block_ID'])
                             for idx, row in enumerate(dat):
-                                if row[2] != block_id or row[1] not in sf.name:
+                                if row[2] != block_id or row[1] not in sf_framecode:
                                     continue
                                 if row[0] != data_file_name:
                                     cf_loop.data[idx][cf_loop.tags.index('Constraint_filename')] = data_file_name

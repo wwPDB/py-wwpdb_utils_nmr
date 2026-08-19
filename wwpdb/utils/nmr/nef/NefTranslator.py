@@ -144,6 +144,8 @@
 #                           mandatory data item carrying remove-bad-pattern with an empty value
 # 19-Aug-2026  M. Yokochi - stop check_data() rebinding its key_items/data_items parameters per loop, which raised
 #                           StopIteration on the second loop of a multi-loop entry
+# 19-Aug-2026  M. Yokochi - optimize get_conflict_id_set() by grouping row ids by key in one pass instead of
+#                           rebuilding every prior row's key for each conflicted row
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -6495,6 +6497,15 @@ class NefTranslator:
                 keys = set()
                 dup_ids = set()
 
+                raw_keys = [''.join(f'{row[j]} ' for j in range(key_len)) for row in tag_data]
+
+                rows_of_raw_key = {}
+                for idx, raw_key in enumerate(raw_keys):
+                    if raw_key in rows_of_raw_key:
+                        rows_of_raw_key[raw_key].append(idx)
+                    else:
+                        rows_of_raw_key[raw_key] = [idx]
+
                 for idx, row in enumerate(tag_data):
 
                     if key_f.tell() > 0:
@@ -6522,29 +6533,14 @@ class NefTranslator:
 
                     for idx in conflict_id:
 
-                        if key_f.tell() > 0:
-                            key_f.truncate(0)
-                            key_f.seek(0)
-
-                        for j in range(key_len):
-                            key_f.write(f'{tag_data[idx][j]} ')
-
-                        key = key_f.getvalue()
-
                         id_set = [idx]
 
-                        for m in range(idx):
+                        for m in rows_of_raw_key[raw_keys[idx]]:
 
-                            if key_f.tell() > 0:
-                                key_f.truncate(0)
-                                key_f.seek(0)
+                            if m >= idx:
+                                break
 
-                            for j in range(key_len):
-                                key_f.write(f'{tag_data[m][j]} ')
-
-                            _key = key_f.getvalue()
-
-                            if key == _key and m < len_loop:
+                            if m < len_loop:
                                 id_set.append(m)
 
                                 if m in conflict_id:

@@ -134,6 +134,8 @@
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 # 19-Aug-2026  M. Yokochi - optimize check_data() by replacing the quadratic duplicate-index scan with
 #                           collections.Counter and hoisting per-cell key/data item lookups out of the row loop
+# 19-Aug-2026  M. Yokochi - collapse the four duplicated blocks of duplicate-key detection in check_data() into
+#                           a single closure and group rows by key in one pass instead of rescanning the loop
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -4957,6 +4959,105 @@ class NefTranslator:
 
             data = []  # data of all loops
 
+            def compose_key(row, use_relax):
+                """ Return key of a given row of a loop.
+                """
+
+                if key_f.tell() > 0:
+                    key_f.truncate(0)
+                    key_f.seek(0)
+
+                for j in range(key_len):
+                    key_f.write(f'{row[j]} ')
+
+                if use_relax:
+                    for j in relax_key_ids:
+                        key_f.write(f'{row[j]} ')
+
+                return key_f.getvalue()
+
+            def test_dup_key(warns, use_relax):
+                """ Report duplicated keys of a loop. Return whether retry with relaxed keys is required.
+                """
+
+                keys, rechk, rows_of = set(), False, None
+
+                for row in tag_data:
+
+                    key = compose_key(row, use_relax)
+
+                    if key not in keys:
+                        keys.add(key)
+                        continue
+
+                    if not use_relax and len(relax_key_ids) > 0:
+
+                        relax_key = False
+
+                        for j in relax_key_ids:
+                            if row[j] is not EMPTY_VALUE:
+                                relax_key = True
+                                break
+
+                        if relax_key:
+                            rechk = True
+                            continue
+
+                    if msg_f.tell() > 0:
+                        msg_f.truncate(0)
+                        msg_f.seek(0)
+
+                    for j in range(key_len):
+                        msg_f.write(f'{key_names[j]} {row[j]}, ')
+
+                    if use_relax:
+                        for j in relax_key_ids:
+                            if row[j] not in EMPTY_VALUE:
+                                msg_f.write(f'{tags[j]} {row[j]}, ')
+
+                    pos = msg_f.tell() - 2
+                    msg_f.truncate(pos)
+                    msg_f.seek(pos)
+
+                    idx_msg = ''
+
+                    if idx_f.tell() > 0:
+                        idx_f.truncate(0)
+                        idx_f.seek(0)
+
+                    if len(idx_tag_ids) > 0:
+
+                        if rows_of is None:
+                            rows_of = {}
+                            for _row in tag_data:
+                                rows_of.setdefault(compose_key(_row, use_relax), []).append(_row)
+
+                        for _j in idx_tag_ids:
+                            idx_f.write(f'{tags[_j]} ')
+
+                            for _row in rows_of[key]:
+                                idx_f.write(f'{_row[_j]} vs ')
+
+                            pos = idx_f.tell() - 4
+                            idx_f.truncate(pos)
+                            idx_f.seek(pos)
+
+                            idx_f.write(', ')
+
+                        pos = idx_f.tell() - 2
+                        idx_f.truncate(pos)
+                        idx_f.seek(pos)
+
+                        idx_msg = f"[Check rows of {idx_f.getvalue()}] "
+
+                    if is_bond_lp:
+                        continue
+
+                    warns.append("[Multiple data] "
+                                 f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} "
+                                 "exist in a loop.")
+
+                return rechk
             for loop in loops:
 
                 if is_target_lp:
@@ -5256,172 +5357,8 @@ class NefTranslator:
                                                          f"#_of_row {idx + 1}, data_of_row {r}.")
 
                 if _test_on_index and key_len > 0:
-                    keys = set()
-
-                    rechk = False
-
-                    for row in tag_data:
-
-                        if key_f.tell() > 0:
-                            key_f.truncate(0)
-                            key_f.seek(0)
-
-                        for j in range(key_len):
-                            key_f.write(f'{row[j]} ')
-
-                        key = key_f.getvalue()
-
-                        if key in keys:
-
-                            relax_key = False
-
-                            if len(relax_key_ids) > 0:
-                                for j in relax_key_ids:
-                                    if row[j] is not EMPTY_VALUE:
-                                        relax_key = True
-                                        break
-
-                            if relax_key:
-                                rechk = True
-
-                            else:
-
-                                if msg_f.tell() > 0:
-                                    msg_f.truncate(0)
-                                    msg_f.seek(0)
-
-                                for j in range(key_len):
-                                    msg_f.write(f'{key_names[j]} {row[j]}, ')
-
-                                pos = msg_f.tell() - 2
-                                msg_f.truncate(pos)
-                                msg_f.seek(pos)
-
-                                idx_msg = ''
-
-                                if idx_f.tell() > 0:
-                                    idx_f.truncate(0)
-                                    idx_f.seek(0)
-
-                                if len(idx_tag_ids) > 0:
-                                    for _j in idx_tag_ids:
-                                        idx_f.write(f'{tags[_j]} ')
-
-                                        for _row in tag_data:
-
-                                            if key_f.tell() > 0:
-                                                key_f.truncate(0)
-                                                key_f.seek(0)
-
-                                            for j in range(key_len):
-                                                key_f.write(f'{_row[j]} ')
-
-                                            _key = key_f.getvalue()
-
-                                            if key == _key:
-                                                idx_f.write(f'{_row[_j]} vs ')
-
-                                        pos = idx_f.tell() - 4
-                                        idx_f.truncate(pos)
-                                        idx_f.seek(pos)
-
-                                        idx_f.write(', ')
-
-                                    pos = idx_f.tell() - 2
-                                    idx_f.truncate(pos)
-                                    idx_f.seek(pos)
-
-                                    idx_msg = f"[Check rows of {idx_f.getvalue()}] "
-
-                                if is_bond_lp:
-                                    continue
-
-                                f.append("[Multiple data] "
-                                         f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} "
-                                         "exist in a loop.")
-
-                        else:
-                            keys.add(key)
-
-                    if rechk:
-                        keys = set()
-
-                        for row in tag_data:
-
-                            if key_f.tell() > 0:
-                                key_f.truncate(0)
-                                key_f.seek(0)
-
-                            for j in range(key_len):
-                                key_f.write(f'{row[j]} ')
-                            for j in relax_key_ids:
-                                key_f.write(f'{row[j]} ')
-
-                            key = key_f.getvalue()
-
-                            if key in keys:
-
-                                if msg_f.tell() > 0:
-                                    msg_f.truncate(0)
-                                    msg_f.seek(0)
-
-                                for j in range(key_len):
-                                    msg_f.write(f'{key_names[j]} {row[j]}, ')
-                                for j in relax_key_ids:
-                                    if row[j] not in EMPTY_VALUE:
-                                        msg_f.write(f'{tags[j]} {row[j]}, ')
-
-                                pos = msg_f.tell() - 2
-                                msg_f.truncate(pos)
-                                msg_f.seek(pos)
-
-                                idx_msg = ''
-
-                                if idx_f.tell() > 0:
-                                    idx_f.truncate(0)
-                                    idx_f.seek(0)
-
-                                if len(idx_tag_ids) > 0:
-                                    for _j in idx_tag_ids:
-                                        idx_f.write(f'{tags[_j]} ')
-
-                                        for _row in tag_data:
-
-                                            if key_f.tell() > 0:
-                                                key_f.truncate(0)
-                                                key_f.seek(0)
-
-                                            for j in range(key_len):
-                                                key_f.write(f'{_row[j]} ')
-                                            for j in relax_key_ids:
-                                                key_f.write(f'{_row[j]} ')
-
-                                            _key = key_f.getvalue()
-
-                                            if key == _key:
-                                                idx_f.write(f'{_row[_j]} vs ')
-
-                                        pos = idx_f.tell() - 4
-                                        idx_f.truncate(pos)
-                                        idx_f.seek(pos)
-
-                                        idx_f.write(', ')
-
-                                    pos = idx_f.tell() - 2
-                                    idx_f.truncate(pos)
-                                    idx_f.seek(pos)
-
-                                    idx_msg = f"[Check rows of {idx_f.getvalue()}] "
-
-                                if is_bond_lp:
-                                    continue
-
-                                f.append("[Multiple data] "
-                                         f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} "
-                                         "exist in a loop.")
-
-                            else:
-                                keys.add(key)
+                    if test_dup_key(f, False):
+                        test_dup_key(f, True)
 
                 if len(f) > 0:
 
@@ -5452,172 +5389,8 @@ class NefTranslator:
                     tag_data = loop.get_tag(tags)
 
                     if _test_on_index and key_len > 0:
-                        keys = set()
-
-                        rechk = False
-
-                        for row in tag_data:
-
-                            if key_f.tell() > 0:
-                                key_f.truncate(0)
-                                key_f.seek(0)
-
-                            for j in range(key_len):
-                                key_f.write(f'{row[j]} ')
-
-                            key = key_f.getvalue()
-
-                            if key in keys:
-
-                                relax_key = False
-
-                                if len(relax_key_ids) > 0:
-                                    for j in relax_key_ids:
-                                        if row[j] is not EMPTY_VALUE:
-                                            relax_key = True
-                                            break
-
-                                if relax_key:
-                                    rechk = True
-
-                                else:
-
-                                    if msg_f.tell() > 0:
-                                        msg_f.truncate(0)
-                                        msg_f.seek(0)
-
-                                    for j in range(key_len):
-                                        msg_f.write(f'{key_names[j]} {row[j]}, ')
-
-                                    pos = msg_f.tell() - 2
-                                    msg_f.truncate(pos)
-                                    msg_f.seek(pos)
-
-                                    idx_msg = ''
-
-                                    if idx_f.tell() > 0:
-                                        idx_f.truncate(0)
-                                        idx_f.seek(0)
-
-                                    if len(idx_tag_ids) > 0:
-                                        for _j in idx_tag_ids:
-                                            idx_f.write(f'{tags[_j]} ')
-
-                                            for _row in tag_data:
-
-                                                if key_f.tell() > 0:
-                                                    key_f.truncate(0)
-                                                    key_f.seek(0)
-
-                                                for j in range(key_len):
-                                                    key_f.write(f'{_row[j]} ')
-
-                                                _key = key_f.getvalue()
-
-                                                if key == _key:
-                                                    idx_f.write(f'{_row[_j]} vs ')
-
-                                            pos = idx_f.tell() - 4
-                                            idx_f.truncate(pos)
-                                            idx_f.seek(pos)
-
-                                            idx_f.write(', ')
-
-                                        pos = idx_f.tell() - 2
-                                        idx_f.truncate(pos)
-                                        idx_f.seek(pos)
-
-                                        idx_msg = f"[Check rows of {idx_f.getvalue()}] "
-
-                                    if is_bond_lp:
-                                        continue
-
-                                    _f.append("[Multiple data] "
-                                              f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} "
-                                              "exist in a loop.")
-
-                            else:
-                                keys.add(key)
-
-                        if rechk:
-                            keys = set()
-
-                            for row in tag_data:
-
-                                if key_f.tell() > 0:
-                                    key_f.truncate(0)
-                                    key_f.seek(0)
-
-                                for j in range(key_len):
-                                    key_f.write(f'{row[j]} ')
-                                for j in relax_key_ids:
-                                    key_f.write(f'{row[j]} ')
-
-                                key = key_f.getvalue()
-
-                                if key in keys:
-
-                                    if msg_f.tell() > 0:
-                                        msg_f.truncate(0)
-                                        msg_f.seek(0)
-
-                                    for j in range(key_len):
-                                        msg_f.write(f'{key_names[j]} {row[j]}, ')
-                                    for j in relax_key_ids:
-                                        if row[j] not in EMPTY_VALUE:
-                                            msg_f.write(f'{tags[j]} {row[j]}, ')
-
-                                    pos = msg_f.tell() - 2
-                                    msg_f.truncate(pos)
-                                    msg_f.seek(pos)
-
-                                    idx_msg = ''
-
-                                    if idx_f.tell() > 0:
-                                        idx_f.truncate(0)
-                                        idx_f.seek(0)
-
-                                    if len(idx_tag_ids) > 0:
-                                        for _j in idx_tag_ids:
-                                            idx_f.write(f'{tags[_j]} ')
-
-                                            for _row in tag_data:
-
-                                                if key_f.tell() > 0:
-                                                    key_f.truncate(0)
-                                                    key_f.seek(0)
-
-                                                for j in range(key_len):
-                                                    key_f.write(f'{_row[j]} ')
-                                                for j in relax_key_ids:
-                                                    key_f.write(f'{_row[j]} ')
-
-                                                _key = key_f.getvalue()
-
-                                                if key == _key:
-                                                    idx_f.write(f'{_row[_j]} vs ')
-
-                                            pos = idx_f.tell() - 4
-                                            idx_f.truncate(pos)
-                                            idx_f.seek(pos)
-
-                                            idx_f.write(', ')
-
-                                        pos = idx_f.tell() - 2
-                                        idx_f.truncate(pos)
-                                        idx_f.seek(pos)
-
-                                        idx_msg = f"[Check rows of {idx_f.getvalue()}] "
-
-                                    if is_bond_lp:
-                                        continue
-
-                                    _f.append("[Multiple data] "
-                                              f"{idx_msg}Duplicated rows having the following values {msg_f.getvalue()} "
-                                              "exist in a loop.")
-
-                                else:
-                                    keys.add(key)
+                        if test_dup_key(_f, False):
+                            test_dup_key(_f, True)
 
                     if len(_f) == 0:
                         f = []

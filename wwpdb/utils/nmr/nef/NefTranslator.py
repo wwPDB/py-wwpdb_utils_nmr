@@ -130,22 +130,9 @@
 # 28-May-2026  M. Yokochi - add mandatory saveframe tags if not exists (DAOTHER-10781, v5.1.0)
 # 28-May-2026  M. Yokochi - join methylene/aromatic opposite atoms with the identical chemical shift value and ambiguity code '1'
 #                           using the wildcard code '%' (DAOTHER-10781, v5.1.0)
-# 28-May-2026  M. Yokochi - fix conversion from NMR-STAR _Bond loop to NEF _nef_covalent_link loop (DAOTHER=10781, v5.1.0)
+# 28-May-2026  M. Yokochi - fix conversion from NMR-STAR _Bond loop to NEF _nef_covalent_link loop (DAOTHER-10781, v5.1.0)
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
-# 19-Aug-2026  M. Yokochi - optimize check_data() by replacing the quadratic duplicate-index scan with
-#                           collections.Counter and hoisting per-cell key/data item lookups out of the row loop
-# 19-Aug-2026  M. Yokochi - collapse the four duplicated blocks of duplicate-key detection in check_data() into
-#                           a single closure and group rows by key in one pass instead of rescanning the loop
-# 19-Aug-2026  M. Yokochi - fix check_data() reporting the wrong row for a non-integer index tag; the enumerate()
-#                           counter over the index tag ids was used as a row index
-# 19-Aug-2026  M. Yokochi - fix relaxed key test in check_data() comparing a cell against the EMPTY_VALUE tuple
-#                           by identity, which made every duplicated key relaxable
-# 19-Aug-2026  M. Yokochi - fix misspelled 'detele-bad-pattern' key in check_data(), which raised KeyError for a
-#                           mandatory data item carrying remove-bad-pattern with an empty value
-# 19-Aug-2026  M. Yokochi - stop check_data() rebinding its key_items/data_items parameters per loop, which raised
-#                           StopIteration on the second loop of a multi-loop entry
-# 19-Aug-2026  M. Yokochi - optimize get_conflict_id_set() by grouping row ids by key in one pass instead of
-#                           rebuilding every prior row's key for each conflicted row
+# 19-Aug-2026  M. Yokochi - refactor check_data() and get_conflict_id_set() for performance gain including minor bug fixes (v5.3.0)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -5369,7 +5356,7 @@ class NefTranslator:
                                 for d in data_item_at[j]:
                                     if d['name'] == name and d['mandatory']\
                                        and 'default' not in d and 'default-from' not in d\
-                                       and not ('clear-bad-pattern' in d and d['clear-bad-pattern'])\
+                                       and not ('remove-bad-pattern' in d and d['remove-bad-pattern'])\
                                        and not skip_empty_value_error(loop, idx):
                                         r = {}
                                         for _j, _t in enumerate(loop.tags):

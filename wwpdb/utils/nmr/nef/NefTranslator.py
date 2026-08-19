@@ -142,6 +142,8 @@
 #                           by identity, which made every duplicated key relaxable
 # 19-Aug-2026  M. Yokochi - fix misspelled 'detele-bad-pattern' key in check_data(), which raised KeyError for a
 #                           mandatory data item carrying remove-bad-pattern with an empty value
+# 19-Aug-2026  M. Yokochi - stop check_data() rebinding its key_items/data_items parameters per loop, which raised
+#                           StopIteration on the second loop of a multi-loop entry
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -5064,19 +5066,24 @@ class NefTranslator:
                                  "exist in a loop.")
 
                 return rechk
+            org_key_items, org_data_items = key_items, data_items
+
             for loop in loops:
+
+                key_items, data_items = org_key_items, org_data_items
+                is_comb_id_as_temp_key = False
 
                 if is_target_lp:
                     if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in loop.tags:
-                        key_items = deepcopy(key_items)
-                        data_items = deepcopy(data_items)
+                        key_items = list(key_items)
+                        data_items = list(data_items)
                         comb_item = next(item for item in data_items if item['name'] == 'restraint_combination_id')
                         key_items.insert(1, comb_item)
                         data_items.remove(comb_item)
                         is_comb_id_as_temp_key = True
                     elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
-                        key_items = deepcopy(key_items)
-                        data_items = deepcopy(data_items)
+                        key_items = list(key_items)
+                        data_items = list(data_items)
                         comb_item = next(item for item in data_items if item['name'] == 'Combination_ID')
                         key_items.insert(1, comb_item)
                         data_items.remove(comb_item)

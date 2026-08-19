@@ -136,6 +136,8 @@
 #                           collections.Counter and hoisting per-cell key/data item lookups out of the row loop
 # 19-Aug-2026  M. Yokochi - collapse the four duplicated blocks of duplicate-key detection in check_data() into
 #                           a single closure and group rows by key in one pass instead of rescanning the loop
+# 19-Aug-2026  M. Yokochi - fix check_data() reporting the wrong row for a non-integer index tag; the enumerate()
+#                           counter over the index tag ids was used as a row index
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -5310,10 +5312,16 @@ class NefTranslator:
 
                 if _test_on_index:  # and len(idx_tag_ids) > 0 and len(tag_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
 
-                    for idx, idx_tag_id in enumerate(idx_tag_ids):
+                    for idx_tag_id in idx_tag_ids:
+
+                        row_id = -1
 
                         try:
-                            idxs = [int(row[idx_tag_id]) for row in tag_data]
+                            idxs = []
+
+                            for row in tag_data:
+                                row_id += 1
+                                idxs.append(int(row[idx_tag_id]))
 
                             _idxs = collections.Counter(idxs)
 
@@ -5325,9 +5333,9 @@ class NefTranslator:
                         except (ValueError, TypeError) as e:
                             r = {}
                             for j, t in enumerate(loop.tags):
-                                r[t] = loop.data[idx][j]
+                                r[t] = loop.data[row_id][j]
                             raise ValueError(f"{tags[idx_tag_id]} must be an integer. "
-                                             f"#_of_row {idx + 1}, data_of_row {r}.") from e
+                                             f"#_of_row {row_id + 1}, data_of_row {r}.") from e
 
                 if not excl_missing_data:
                     for idx, row in enumerate(tag_data):

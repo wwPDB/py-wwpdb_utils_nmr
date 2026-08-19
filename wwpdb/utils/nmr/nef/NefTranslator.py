@@ -140,6 +140,8 @@
 #                           counter over the index tag ids was used as a row index
 # 19-Aug-2026  M. Yokochi - fix relaxed key test in check_data() comparing a cell against the EMPTY_VALUE tuple
 #                           by identity, which made every duplicated key relaxable
+# 19-Aug-2026  M. Yokochi - fix misspelled 'detele-bad-pattern' key in check_data(), which raised KeyError for a
+#                           mandatory data item carrying remove-bad-pattern with an empty value
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -5358,7 +5360,7 @@ class NefTranslator:
                                 for d in data_item_at[j]:
                                     if d['name'] == name and d['mandatory']\
                                        and 'default' not in d and 'default-from' not in d\
-                                       and not ('remove-bad-pattern' in d and d['detele-bad-pattern'])\
+                                       and not ('clear-bad-pattern' in d and d['clear-bad-pattern'])\
                                        and not skip_empty_value_error(loop, idx):
                                         r = {}
                                         for _j, _t in enumerate(loop.tags):

@@ -132,6 +132,8 @@
 #                           using the wildcard code '%' (DAOTHER-10781, v5.1.0)
 # 28-May-2026  M. Yokochi - fix conversion from NMR-STAR _Bond loop to NEF _nef_covalent_link loop (DAOTHER=10781, v5.1.0)
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
+# 19-Aug-2026  M. Yokochi - optimize check_data() by replacing the quadratic duplicate-index scan with
+#                           collections.Counter and hoisting per-cell key/data item lookups out of the row loop
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -5195,6 +5197,14 @@ class NefTranslator:
                         if d['name'] == name and 'relax-key-if-exist' in d and d['relax-key-if-exist']:
                             relax_key_ids.add(j)
 
+                key_item_of = {}
+                for k in key_items:
+                    key_item_of.setdefault(k['name'], k)
+
+                data_item_at = [tuple(d for d in data_items if d['name'] == name) for name in tags]
+
+                group_mand_items = [d for d in data_items if 'group-mandatory' in d and d['group-mandatory']]
+
                 tag_data = loop.get_tag(tags)
 
                 if _test_on_index:  # and len(idx_tag_ids) > 0 and len(tag_data) <= MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK:
@@ -5204,7 +5214,9 @@ class NefTranslator:
                         try:
                             idxs = [int(row[idx_tag_id]) for row in tag_data]
 
-                            dup_idxs = [_idx for _idx in set(idxs) if idxs.count(_idx) > 1]
+                            _idxs = collections.Counter(idxs)
+
+                            dup_idxs = [_idx for _idx in set(idxs) if _idxs[_idx] > 1]
 
                             if len(dup_idxs) > 0:
                                 raise KeyError(f"{tags[idx_tag_id]} must be unique in loop. {dup_idxs} are duplicated.")
@@ -5221,8 +5233,8 @@ class NefTranslator:
                         for j in range(tag_len):
                             if row[j] in EMPTY_VALUE:
                                 name = tags[j]
-                                if name in key_names:
-                                    k = key_items[key_names.index(name)]
+                                if name in key_item_of:
+                                    k = key_item_of[name]
                                     if not ('remove-bad-pattern' in k and k['remove-bad-pattern'])\
                                        and 'default' not in k and 'default-from' not in k\
                                        and not skip_empty_value_error(loop, idx):
@@ -5232,7 +5244,7 @@ class NefTranslator:
                                         raise ValueError(f"{name} must not be empty. "
                                                          f"#_of_row {idx + 1}, data_of_row {r}.")
 
-                                for d in data_items:
+                                for d in data_item_at[j]:
                                     if d['name'] == name and d['mandatory']\
                                        and 'default' not in d and 'default-from' not in d\
                                        and not ('remove-bad-pattern' in d and d['detele-bad-pattern'])\
@@ -5991,7 +6003,7 @@ class NefTranslator:
                                     ent[name] = val if isinstance(val, str) else str(val)
 
                         else:
-                            for d in data_items:
+                            for d in data_item_at[j]:
                                 if d['name'] == name:
                                     type = d['type']
                                     if val in EMPTY_VALUE and ('enum' in type or ('default-from' not in d and 'default' not in d)):
@@ -6472,7 +6484,7 @@ class NefTranslator:
                                         else:
                                             ent[name] = val if isinstance(val, str) else str(val)
 
-                    for d in data_items:
+                    for d in group_mand_items:
                         if 'group-mandatory' in d and d['group-mandatory']:
                             name = d['name']
                             group = d['group']

@@ -138,6 +138,8 @@
 #                           a single closure and group rows by key in one pass instead of rescanning the loop
 # 19-Aug-2026  M. Yokochi - fix check_data() reporting the wrong row for a non-integer index tag; the enumerate()
 #                           counter over the index tag ids was used as a row index
+# 19-Aug-2026  M. Yokochi - fix relaxed key test in check_data() comparing a cell against the EMPTY_VALUE tuple
+#                           by identity, which made every duplicated key relaxable
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -4997,7 +4999,7 @@ class NefTranslator:
                         relax_key = False
 
                         for j in relax_key_ids:
-                            if row[j] is not EMPTY_VALUE:
+                            if row[j] not in EMPTY_VALUE:
                                 relax_key = True
                                 break
 

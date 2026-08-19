@@ -157,6 +157,7 @@ NMR_VTF_RDC_ERR_BINS = (1.0, 2.0, 5.0)  # to be decided
 # effective Monte Carlo simulation cycles for estimating uncertainty of calculated RDC values
 # note that the real cycle will be scaled by the effective models
 RDC_EFF_MC_CYCLES = 1000
+RDC_MIN_MC_CYCLES = int(RDC_EFF_MC_CYCLES * 0.9)
 
 
 def uncompress_gzip_file(inPath: str, outPath: str) -> None:
@@ -2993,6 +2994,7 @@ class NmrVrptUtility:
         try:
 
             cycles = max(RDC_EFF_MC_CYCLES // len(self.__eff_model_ids), 1)
+            rng = numpy.random.default_rng(999)
 
             list_ids = set()
             for rest_key in self.__rdcRestDict:
@@ -3127,7 +3129,7 @@ class NmrVrptUtility:
                         b_std = numpy.std(b_calc - b)
 
                         for _ in range(cycles):
-                            b_noise = numpy.random.normal(loc=0.0, scale=b_std, size=b_size)
+                            b_noise = rng.normal(loc=0.0, scale=b_std, size=b_size)
 
                             b_syn = b + b_noise
 
@@ -4356,12 +4358,14 @@ class NmrVrptUtility:
                             _rdc_synt_calcs = []
                             for v in self.__rdcSyntCalcDict[rest_key].values():
                                 _rdc_synt_calcs.extend(v)
-                            if len(_rdc_synt_calcs) > RDC_EFF_MC_CYCLES * 0.9:
+                            if len(_rdc_synt_calcs) > RDC_MIN_MC_CYCLES:
                                 rdc_synt_calcs = numpy.array(_rdc_synt_calcs, dtype=float) / r['scale_factor']
 
-                                rdc_synt_std = numpy.std(rdc_synt_calcs)
-                                rdc_calc_min = round(rdc_calc_mean - rdc_synt_std, 2)
-                                rdc_calc_max = round(rdc_calc_mean + rdc_synt_std, 2)
+                                # rdc_synt_std = numpy.std(rdc_synt_calcs)
+                                # rdc_calc_min = round(rdc_calc_mean - rdc_synt_std, 2)
+                                # rdc_calc_max = round(rdc_calc_mean + rdc_synt_std, 2)
+                                rdc_calc_min = round(numpy.min(rdc_synt_calcs), 2)
+                                rdc_calc_max = round(numpy.max(rdc_synt_calcs), 2)
 
                         q_scores[rdc_type]['rdc_exp'].append(rdc_exp_center)
                         q_scores[rdc_type]['rdc_calc'].append(rdc_calc_mean)

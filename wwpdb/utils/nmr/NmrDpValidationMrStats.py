@@ -3,6 +3,8 @@
 # Date: 17-Aug-2026
 #
 # Updates:
+# 19-Aug-2026  M. Yokochi - optimize _getTypeOfDistanceRestraint() by indexing inter-chain restraints by their
+#                           sequence/composition pair instead of scanning the whole loop per row
 ##
 """ Statistics of restraints and spectral peak lists for NMR data validation.
     @author: Masashi Yokochi
@@ -16,7 +18,7 @@ __version__ = "5.3.0"
 import collections
 import copy
 import itertools
-from typing import List, Optional, Set
+from typing import Callable, List, Optional, Set
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LP_CATEGORIES,
@@ -139,6 +141,31 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                     row[seq_id_1_name], row[seq_id_2_name],
                     row[comp_id_1_name], row[comp_id_2_name],
                     row[atom_id_1_name], row[atom_id_2_name])
+
+        symmetry_index = None
+
+        def get_symmetry_index():
+            """ Return row ids of inter-chain restraints grouped by their sequence/composition pair.
+                Built on first use so that loops never reaching the symmetry test are not touched.
+            """
+
+            nonlocal symmetry_index
+
+            if symmetry_index is None:
+                symmetry_index = {}
+                for _idx, _row in enumerate(lp_data):
+                    _chain_id_1 = _row[chain_id_1_name]
+                    _chain_id_2 = _row[chain_id_2_name]
+                    if _chain_id_1 == _chain_id_2:
+                        continue
+                    _key = (_row[seq_id_1_name], _row[comp_id_1_name],
+                            _row[seq_id_2_name], _row[comp_id_2_name])
+                    if _key in symmetry_index:
+                        symmetry_index[_key].append((_idx, _chain_id_1, _chain_id_2))
+                    else:
+                        symmetry_index[_key] = [(_idx, _chain_id_1, _chain_id_2)]
+
+            return symmetry_index
 
         def get_est_value_range(row):
             target_value = row.get(target_value_name)
@@ -282,9 +309,10 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                 max_val = max(max_val, target_value)
                 min_val = min(min_val, target_value)
 
-                data_type = self._getTypeOfDistanceRestraint(file_type, lp_data, idx, target_value, upper_limit, lower_limit,
+                data_type = self._getTypeOfDistanceRestraint(file_type, idx, target_value, upper_limit, lower_limit,
                                                              member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                             chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                             chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                             get_symmetry_index)
 
                 if 'hydrogen_bonds' in data_type and ('too close!' in data_type or 'too far!' in data_type):
 
@@ -571,9 +599,10 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                     if target_value is None or target_value < v or target_value >= v + scale:
                         continue
 
-                    data_type = self._getTypeOfDistanceRestraint(file_type, lp_data, idx, target_value, upper_limit, lower_limit,
+                    data_type = self._getTypeOfDistanceRestraint(file_type, idx, target_value, upper_limit, lower_limit,
                                                                  member_id, chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                                 chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                 chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                 get_symmetry_index)
 
                     if data_type in _count:
                         _count[data_type] += 1
@@ -727,11 +756,12 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                                     chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
                                         comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row_1)
 
-                                    data_type = self._getTypeOfDistanceRestraint(file_type, lp_data, row_id_1,
+                                    data_type = self._getTypeOfDistanceRestraint(file_type, row_id_1,
                                                                                  target_value, upper_limit, lower_limit,
                                                                                  member_id,
                                                                                  chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                                                 chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                                 chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                                 get_symmetry_index)
 
                                     if data_type in _count:
                                         _count[data_type] += 1
@@ -750,11 +780,12 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
                                 chain_id_1, chain_id_2, seq_id_1, seq_id_2, \
                                     comp_id_1, comp_id_2, atom_id_1, atom_id_2 = ext_atom_names(row_1)
 
-                                data_type = self._getTypeOfDistanceRestraint(file_type, lp_data, row_id_1,
+                                data_type = self._getTypeOfDistanceRestraint(file_type, row_id_1,
                                                                              target_value, upper_limit, lower_limit,
                                                                              member_id,
                                                                              chain_id_1, seq_id_1, comp_id_1, atom_id_1,
-                                                                             chain_id_2, seq_id_2, comp_id_2, atom_id_2)
+                                                                             chain_id_2, seq_id_2, comp_id_2, atom_id_2,
+                                                                             get_symmetry_index)
 
                                 if data_type in _count:
                                     _count[data_type] += 1
@@ -981,25 +1012,13 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
             if self._reg.verbose:
                 self._reg.log.write(f"+{self.__class_name__}.__calculateStatsOfCovalentBond() ++ Error  - {str(e)}\n")
 
-    def _getTypeOfDistanceRestraint(self, file_type: str, lp_data: List[dict], row_id: int,
+    def _getTypeOfDistanceRestraint(self, file_type: str, row_id: int,
                                     target_value: float, upper_limit: float, lower_limit: float, member_id: Optional[int],
                                     chain_id_1: str, seq_id_1: int, comp_id_1: str, atom_id_1: str,
-                                    chain_id_2: str, seq_id_2: int, comp_id_2: str, atom_id_2: str) -> str:
+                                    chain_id_2: str, seq_id_2: int, comp_id_2: str, atom_id_2: str,
+                                    get_symmetry_index: Callable[[], dict]) -> str:
         """ Return type of distance restraint.
         """
-
-        item_names = ITEM_NAMES_IN_DIST_LOOP[file_type]
-        chain_id_1_name = item_names['chain_id_1']
-        chain_id_2_name = item_names['chain_id_2']
-        seq_id_1_name = item_names['seq_id_1']
-        seq_id_2_name = item_names['seq_id_2']
-        comp_id_1_name = item_names['comp_id_1']
-        comp_id_2_name = item_names['comp_id_2']
-
-        def ext_comp_names(row):
-            return (row[chain_id_1_name], row[chain_id_2_name],
-                    row[seq_id_1_name], row[seq_id_2_name],
-                    row[comp_id_1_name], row[comp_id_2_name])
 
         hydrogen_bond_type = disulfide_bond_type = diselenide_bond_type = other_bond_type = None
 
@@ -1223,25 +1242,18 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
 
                 elif chain_id_1 != chain_id_2:
 
-                    for idx, row in enumerate(lp_data):
+                    _symmetry_index = get_symmetry_index()
 
-                        if idx == row_id:
-                            continue
+                    for _key in ((seq_id_1, comp_id_1, seq_id_2, comp_id_2),
+                                 (seq_id_2, comp_id_2, seq_id_1, comp_id_1)):
 
-                        _chain_id_1, _chain_id_2, _seq_id_1, _seq_id_2, \
-                            _comp_id_1, _comp_id_2 = ext_comp_names(row)
-
-                        if _chain_id_1 != _chain_id_2 and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
-
-                            if seq_id_1 == _seq_id_1 and comp_id_1 == _comp_id_1\
-                               and seq_id_2 == _seq_id_2 and comp_id_2 == _comp_id_2:
+                        for idx, _chain_id_1, _chain_id_2 in _symmetry_index.get(_key, ()):
+                            if idx != row_id and _chain_id_1 != chain_id_1 and _chain_id_2 != chain_id_2:
                                 symmetry = True
                                 break
 
-                            if seq_id_1 == _seq_id_2 and comp_id_1 == _comp_id_2\
-                               and seq_id_2 == _seq_id_1 and comp_id_2 == _comp_id_1:
-                                symmetry = True
-                                break
+                        if symmetry:
+                            break
 
         range_of_seq = abs(seq_id_1 - seq_id_2)
 

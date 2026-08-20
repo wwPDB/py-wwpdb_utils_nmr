@@ -5055,6 +5055,7 @@ class NefTranslator:
                                  "exist in a loop.")
 
                 return rechk
+
             org_key_items, org_data_items = key_items, data_items
 
             for loop in loops:
@@ -5416,8 +5417,10 @@ class NefTranslator:
                         if j < key_len:
                             k = key_items[j]
                             type = k['type']  # pylint: disable=redefined-builtin
+
                             if val in EMPTY_VALUE and 'default' in k and k['default'] in EMPTY_VALUE:
                                 ent[name] = k['default']
+
                             elif type == 'bool':
                                 try:
                                     ent[name] = val.lower() in TRUE_VALUE
@@ -5787,11 +5790,13 @@ class NefTranslator:
                             for d in data_item_at[j]:
                                 if d['name'] == name:
                                     type = d['type']
+
                                     if val in EMPTY_VALUE and ('enum' in type or ('default-from' not in d and 'default' not in d)):
                                         if d['mandatory'] and excl_missing_data:
                                             missing_mandatory_data = True
                                             continue
                                         ent[name] = None
+
                                     elif type == 'bool':
                                         try:
                                             ent[name] = val.lower() in TRUE_VALUE
@@ -6675,12 +6680,14 @@ class NefTranslator:
                 else:
                     for col, dat in enumerate(row):
                         dat_type = key_types[col]
+
                         if dat_type == 'bool':
                             try:
                                 bool(dat)
                             except (ValueError, TypeError):
                                 if idx < len_loop:
                                     bad_ids.add(idx)
+
                         elif 'int' in dat_type or dat_type == 'pointer-index':
                             try:
                                 int(dat)
@@ -6694,6 +6701,7 @@ class NefTranslator:
                                 else:
                                     if idx < len_loop:
                                         bad_ids.add(idx)
+
                         elif 'float' in dat_type:
                             try:
                                 val = float(dat)
@@ -6793,8 +6801,10 @@ class NefTranslator:
             for t in tag_items:
                 if t['name'] == name:
                     type = t['type']  # pylint: disable=redefined-builtin
+
                     if val in EMPTY_VALUE and 'enum' not in type and 'default-from' not in t and 'default' not in t:
                         ent[name] = None
+
                     elif type == 'bool':
                         try:
                             ent[name] = val.lower() in TRUE_VALUE

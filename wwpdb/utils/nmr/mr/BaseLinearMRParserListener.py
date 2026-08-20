@@ -6303,6 +6303,10 @@ class BaseLinearMRParserListener():
                     return True, ref_seq_id
                 break
 
+            if seqId not in sa['test_seq_id'] and seqId in poly_seq_model['auth_seq_id']\
+               and compId == poly_seq_model['comp_id'][poly_seq_model['auth_seq_id'].index(seqId)]:
+                return True, seqId  # 6c0a
+
         return False, seqId
 
     def getIntnlCompIdFromSeqAlign(self, authSeqId: int) -> Optional[str]:

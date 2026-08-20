@@ -157,7 +157,7 @@ NMR_VTF_RDC_ERR_BINS = (1.0, 2.0, 5.0)  # to be decided
 # effective Monte Carlo simulation cycles for estimating uncertainty of calculated RDC values
 # note that the real cycle will be scaled by the effective models
 RDC_EFF_MC_CYCLES = 1000
-RDC_MIN_MC_CYCLES = int(RDC_EFF_MC_CYCLES * 0.9)
+RDC_MIN_MC_CYCLES = RDC_EFF_MC_CYCLES * 0.9
 
 
 def uncompress_gzip_file(inPath: str, outPath: str) -> None:
@@ -3002,7 +3002,7 @@ class NmrVrptUtility:
 
             for list_id in sorted(list(list_ids)):
 
-                dmax = None
+                dmax_dict = {}
 
                 self.__rdcSaupeOrderMatrix[list_id] = {}
 
@@ -3011,7 +3011,7 @@ class NmrVrptUtility:
                     target_rest_keys = []
 
                     A = numpy.empty((0, 5), dtype=float)
-                    b_exp = []
+                    b_exp_list, dmax_list = [], []
 
                     for rest_key, restraints in self.__rdcRestDict.items():
 
@@ -3050,8 +3050,12 @@ class NmrVrptUtility:
 
                             target_rest_keys.append(rest_key)
 
-                            if dmax is None:
-                                dmax = rdc_dmax(atom_type_1, atom_type_2, distance(pos_1, pos_2), hz_unit=True)
+                            vec_key = (atom_type_1, atom_type_2)
+
+                            if vec_key not in dmax_dict:
+                                dmax_dict[vec_key] = rdc_dmax(atom_type_1, atom_type_2, distance(pos_1, pos_2), hz_unit=True)
+
+                            _dmax = dmax_dict[vec_key]
 
                             vector = to_unit_vector(pos_2 - pos_1)
                             cos_x, cos_y, cos_z = vector[0], vector[1], vector[2]
@@ -3067,14 +3071,17 @@ class NmrVrptUtility:
                             # input observed RDC values calibrated with a given scale factor
                             # so, calculated RDC values will be scaled by default,
                             # this effect should be taken into consideration when comparing (raw) observed RDCs and calculated RDCs
-                            b_exp.append(r['scale_factor'] * r['target_value'] / dmax)
+                            b_exp_list.append(r['scale_factor'] * r['target_value'] / _dmax)
 
-                    b_size = len(b_exp)
+                            dmax_list.append(_dmax)
+
+                    b_size = len(b_exp_list)
 
                     if b_size < 5:
                         continue
 
-                    b = numpy.array(b_exp, dtype=float)
+                    b_exp = numpy.array(b_exp_list, dtype=float)
+                    dmax = numpy.array(dmax_list, dtype=float)
 
                     U, S, Vh = numpy.linalg.svd(A, full_matrices=False)
 
@@ -3082,7 +3089,7 @@ class NmrVrptUtility:
 
                     Ai = Vh.T @ Si @ U.T
 
-                    x = Ai @ b
+                    x = Ai @ b_exp
 
                     Syy, Szz, Sxy, Sxz, Syz = x[0], x[1], x[2], x[3], x[4]
 
@@ -3114,7 +3121,7 @@ class NmrVrptUtility:
                                                                          'Sxy': f'{Sxy_:.4e}', 'Sxz': f'{Sxz_:.4e}',
                                                                          'Syz': f'{Syz_:.4e}',
                                                                          'Da': f'{Sxx_ - Syy_:.4e}', 'eta': f'{eta:.4e}',
-                                                                         'Dmax': f'{dmax:.4e}'}
+                                                                         'Dmax': f'{dmax[0]:.4e}'}
 
                         assert abs(Szz_) >= abs(Syy_) >= abs(Sxx_)
                         assert 0 <= eta <= 1.0
@@ -3126,12 +3133,12 @@ class NmrVrptUtility:
                                 self.__rdcCalcDict[rest_key] = {}
                             self.__rdcCalcDict[rest_key][model_id] = val
 
-                        b_std = numpy.std(b_calc - b)
+                        b_std = numpy.std(b_calc - b_exp)
 
                         for _ in range(cycles):
                             b_noise = rng.normal(loc=0.0, scale=b_std, size=b_size)
 
-                            b_syn = b + b_noise
+                            b_syn = b_exp + b_noise
 
                             x_syn = Ai @ b_syn
 

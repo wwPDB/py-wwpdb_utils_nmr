@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/BareCSLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/BareCSLexer.g4 by ANTLR 4.13.2
 
 
 #include "BareCSLexer.h"
@@ -45,7 +45,7 @@ struct BareCSLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-BareCSLexerStaticData *barecslexerLexerStaticData = nullptr;
+std::unique_ptr<BareCSLexerStaticData> barecslexerLexerStaticData = nullptr;
 
 void barecslexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -181,7 +181,7 @@ void barecslexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  barecslexerLexerStaticData = staticData.release();
+  barecslexerLexerStaticData = std::move(staticData);
 }
 
 }

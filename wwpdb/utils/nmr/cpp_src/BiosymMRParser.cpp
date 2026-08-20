@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/BiosymMRParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/BiosymMRParser.g4 by ANTLR 4.13.2
 
 
 #include "BiosymMRParserVisitor.h"
@@ -40,7 +40,7 @@ struct BiosymMRParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-BiosymMRParserStaticData *biosymmrparserParserStaticData = nullptr;
+std::unique_ptr<BiosymMRParserStaticData> biosymmrparserParserStaticData = nullptr;
 
 void biosymmrparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -149,7 +149,7 @@ void biosymmrparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  biosymmrparserParserStaticData = staticData.release();
+  biosymmrparserParserStaticData = std::move(staticData);
 }
 
 }

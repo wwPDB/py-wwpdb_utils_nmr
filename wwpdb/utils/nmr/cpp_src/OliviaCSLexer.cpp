@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/OliviaCSLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/OliviaCSLexer.g4 by ANTLR 4.13.2
 
 
 #include "OliviaCSLexer.h"
@@ -45,7 +45,7 @@ struct OliviaCSLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-OliviaCSLexerStaticData *oliviacslexerLexerStaticData = nullptr;
+std::unique_ptr<OliviaCSLexerStaticData> oliviacslexerLexerStaticData = nullptr;
 
 void oliviacslexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -292,7 +292,7 @@ void oliviacslexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  oliviacslexerLexerStaticData = staticData.release();
+  oliviacslexerLexerStaticData = std::move(staticData);
 }
 
 }

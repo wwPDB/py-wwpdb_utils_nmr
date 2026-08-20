@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/PippCSParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/PippCSParser.g4 by ANTLR 4.13.2
 
 
 #include "PippCSParserVisitor.h"
@@ -40,7 +40,7 @@ struct PippCSParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-PippCSParserStaticData *pippcsparserParserStaticData = nullptr;
+std::unique_ptr<PippCSParserStaticData> pippcsparserParserStaticData = nullptr;
 
 void pippcsparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -109,7 +109,7 @@ void pippcsparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  pippcsparserParserStaticData = staticData.release();
+  pippcsparserParserStaticData = std::move(staticData);
 }
 
 }

@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/XeasyPKParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/XeasyPKParser.g4 by ANTLR 4.13.2
 
 
 #include "XeasyPKParserVisitor.h"
@@ -40,7 +40,7 @@ struct XeasyPKParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-XeasyPKParserStaticData *xeasypkparserParserStaticData = nullptr;
+std::unique_ptr<XeasyPKParserStaticData> xeasypkparserParserStaticData = nullptr;
 
 void xeasypkparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -194,7 +194,7 @@ void xeasypkparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  xeasypkparserParserStaticData = staticData.release();
+  xeasypkparserParserStaticData = std::move(staticData);
 }
 
 }

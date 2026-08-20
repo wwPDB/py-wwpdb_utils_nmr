@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/NmrPipePKLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/NmrPipePKLexer.g4 by ANTLR 4.13.2
 
 
 #include "NmrPipePKLexer.h"
@@ -45,7 +45,7 @@ struct NmrPipePKLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-NmrPipePKLexerStaticData *nmrpipepklexerLexerStaticData = nullptr;
+std::unique_ptr<NmrPipePKLexerStaticData> nmrpipepklexerLexerStaticData = nullptr;
 
 void nmrpipepklexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -561,7 +561,7 @@ void nmrpipepklexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  nmrpipepklexerLexerStaticData = staticData.release();
+  nmrpipepklexerLexerStaticData = std::move(staticData);
 }
 
 }

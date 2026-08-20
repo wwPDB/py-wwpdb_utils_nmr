@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/RosettaMRLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/RosettaMRLexer.g4 by ANTLR 4.13.2
 
 
 #include "RosettaMRLexer.h"
@@ -45,7 +45,7 @@ struct RosettaMRLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-RosettaMRLexerStaticData *rosettamrlexerLexerStaticData = nullptr;
+std::unique_ptr<RosettaMRLexerStaticData> rosettamrlexerLexerStaticData = nullptr;
 
 void rosettamrlexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -470,7 +470,7 @@ void rosettamrlexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  rosettamrlexerLexerStaticData = staticData.release();
+  rosettamrlexerLexerStaticData = std::move(staticData);
 }
 
 }

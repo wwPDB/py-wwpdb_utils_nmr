@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/XeasyPKLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/XeasyPKLexer.g4 by ANTLR 4.13.2
 
 
 #include "XeasyPKLexer.h"
@@ -45,7 +45,7 @@ struct XeasyPKLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-XeasyPKLexerStaticData *xeasypklexerLexerStaticData = nullptr;
+std::unique_ptr<XeasyPKLexerStaticData> xeasypklexerLexerStaticData = nullptr;
 
 void xeasypklexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -321,7 +321,7 @@ void xeasypklexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  xeasypklexerLexerStaticData = staticData.release();
+  xeasypklexerLexerStaticData = std::move(staticData);
 }
 
 }

@@ -23,7 +23,7 @@
 
     The Python target is deliberately NOT regenerated. The committed
     <Grammar>Lexer.py/<Grammar>Parser.py are byte-identical to a fresh
-    'antlr4 -Dlanguage=Python3 -no-visitor' run with ANTLR 4.13.0, and
+    'antlr4 -Dlanguage=Python3 -no-visitor' run with ANTLR 4.13.2, and
     regenerating in place would overwrite the hand-written
     <Grammar>ParserListener.py, which shadows ANTLR's generated listener base of
     the same name. (Note the -no-listener flag that speedy-antlr-tool's own
@@ -51,7 +51,7 @@ import sys
 import urllib.request
 import zipfile
 
-ANTLR_VERSION = '4.13.0'
+ANTLR_VERSION = '4.13.2'
 
 CPP_RUNTIME_URL = f'https://www.antlr.org/download/antlr4-cpp-runtime-{ANTLR_VERSION}-source.zip'
 

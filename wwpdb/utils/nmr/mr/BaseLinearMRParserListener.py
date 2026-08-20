@@ -6229,7 +6229,7 @@ class BaseLinearMRParserListener():
                         atomSelection.append(atom_id)
         return atomSelection
 
-    def validateOneLetterCodeSeq(self, firstResId: int, oneLetterCodes: str) -> None:
+    def validateOneLetterCodeSeq(self, firstResId: int, oneLetterCodes: str) -> bool:
         """ Validate one-letter code sequence as restraint's polymer sequence.
         """
 
@@ -6271,6 +6271,8 @@ class BaseLinearMRParserListener():
                         continue
                     self.internal_seq_offset = ref_seq_id - test_seq_id
                     break
+
+        return len(self.__chainAssign) > 0
 
     def getRealSeqIdFromSeqAlign(self, seqId: int, compId: Optional[str] = None) -> Tuple[bool, int]:
         """ Retrieve aligned residue number based on sequence alignment.

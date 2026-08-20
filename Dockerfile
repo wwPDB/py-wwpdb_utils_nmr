@@ -14,6 +14,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
+        default-jdk \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the repository

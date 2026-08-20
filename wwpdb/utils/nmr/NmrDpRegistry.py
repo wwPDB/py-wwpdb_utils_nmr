@@ -11,9 +11,10 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.2.0"
+__version__ = "5.3.0"
 
 import copy
+import os
 import sys
 from dataclasses import dataclass, field
 from typing import IO, List, Union
@@ -364,3 +365,39 @@ class NmrDpRegistry:
     versioned_atom_name_mapping: List[dict] = None
     # atom name mapping derived from the original uploaded coordinate file
     internal_atom_name_mapping: dict = field(default_factory=dict)
+
+
+def get_next_path(reg: NmrDpRegistry, src_path: str, suffix: str = '~') -> str:
+    """ Return candidate next file path.
+    """
+    assert len(suffix) > 0
+
+    src_path_next = src_path + suffix
+
+    if reg.dirPath is not None:
+        src_path_next = os.path.join(reg.dirPath, os.path.basename(src_path_next))
+
+    return src_path_next
+
+
+def test_path_with_suffix(reg: NmrDpRegistry, src_path: str, suffix: str, defer_check: bool = False) -> str:
+    """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
+    """
+    assert len(suffix) > 0
+
+    test_path = src_path + suffix
+
+    if os.path.exists(test_path):
+        return test_path
+
+    if None in (reg.dirPath, reg.spareDirPath) or reg.dirPath == reg.spareDirPath:
+        return test_path if defer_check else src_path
+
+    chk_path = os.path.join(reg.spareDirPath, os.path.basename(test_path))
+
+    if not os.path.exists(chk_path):
+        return test_path if defer_check else src_path
+
+    os.symlink(chk_path, test_path)
+
+    return test_path

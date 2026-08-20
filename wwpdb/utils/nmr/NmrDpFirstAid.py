@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.2.0"
+__version__ = "5.3.0"
 
 import os
 import re
@@ -46,7 +46,8 @@ try:
                                                CATEGORY_PAT,
                                                SF_CATEGORY_PAT,
                                                SF_FRAMECODE_PAT)
-    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
+    from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
+                                               get_next_path)
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
 except ImportError:
@@ -73,7 +74,8 @@ except ImportError:
                                    CATEGORY_PAT,
                                    SF_CATEGORY_PAT,
                                    SF_FRAMECODE_PAT)
-    from nmr.NmrDpRegistry import NmrDpRegistry
+    from nmr.NmrDpRegistry import (NmrDpRegistry,
+                                   get_next_path)
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
 
@@ -103,14 +105,7 @@ class NmrDpFirstAid:
     def getNextPath(self, src_path: str, suffix: str = '~') -> str:
         """ Return candidate next file path.
         """
-        assert len(suffix) > 0
-
-        src_path_next = src_path + suffix
-
-        if self.__reg.dirPath is not None:
-            src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
-
-        return src_path_next
+        return get_next_path(self.__reg, src_path, suffix)
 
     def fixFormatIssueOfInputSource(self, file_list_id: int, file_name: str, file_type: str,
                                     srcPath: Optional[str] = None, fileSubType: str = 'S',

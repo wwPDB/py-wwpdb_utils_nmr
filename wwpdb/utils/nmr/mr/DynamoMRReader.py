@@ -9,13 +9,13 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import os
 import sys
 from typing import IO, List, Optional, Tuple
 
-from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker, PredictionMode
+from antlr4 import ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -25,6 +25,8 @@ try:
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.AntlrParseUtil import parseAntlr
+    from wwpdb.utils.nmr.mr import sa_dynamomr
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.mr.DynamoMRLexer import DynamoMRLexer
@@ -40,6 +42,8 @@ except ImportError:
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
+    from nmr.AntlrParseUtil import parseAntlr
+    from nmr.mr import sa_dynamomr
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.DynamoMRLexer import DynamoMRLexer
@@ -150,7 +154,7 @@ class DynamoMRReader:
                     return None, None, None
 
                 ifh = open(mrFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
+                mrText = ifh.read()
 
             else:
                 mrFilePath, mrString = None, mrFilePath
@@ -160,7 +164,7 @@ class DynamoMRReader:
                         self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
-                input = InputStream(mrString)
+                mrText = mrString
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
@@ -175,11 +179,12 @@ class DynamoMRReader:
                             self.__log.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
-            lexer = DynamoMRLexer(input)
-            lexer.removeErrorListeners()
-
-            lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
-            lexer.addErrorListener(lexer_error_listener)
+            tree, parser_error_listener, lexer_error_listener =\
+                parseAntlr(DynamoMRLexer, DynamoMRParser, 'dynamo_mr', mrText,
+                           filePath=mrFilePath, saModule=sa_dynamomr,
+                           maxLexerErrorReport=self.__maxLexerErrorReport,
+                           maxParserErrorReport=self.__maxParserErrorReport,
+                           predictionModeSll=True)
 
             messageList = lexer_error_listener.getMessageList()
 
@@ -190,15 +195,6 @@ class DynamoMRReader:
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
-
-            stream = CommonTokenStream(lexer)
-            parser = DynamoMRParser(stream)
-            # try with simpler/faster SLL prediction mode
-            parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
-            parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
-            parser.addErrorListener(parser_error_listener)
-            tree = parser.dynamo_mr()
 
             walker = ParseTreeWalker()
             listener = DynamoMRParserListener(self.__verbose, self.__log,
@@ -247,6 +243,16 @@ class DynamoMRReader:
 
 
 if __name__ == "__main__":
+    reader = DynamoMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6c0a/work/aEF_RDC_Final.txt',
+                 '../../tests-nmr/mock-data-remediation/6c0a/6c0a.cif')
+
+    reader = DynamoMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2lgc/work/2lgc-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2lgc/2lgc.cif')
+
     reader = DynamoMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/6yeg/talos-pred.txt-corrected',

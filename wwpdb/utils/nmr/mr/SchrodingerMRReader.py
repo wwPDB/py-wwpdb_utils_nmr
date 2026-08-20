@@ -9,13 +9,13 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import os
 import sys
 from typing import IO, List, Optional, Tuple
 
-from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker, PredictionMode
+from antlr4 import ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -25,6 +25,8 @@ try:
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.AntlrParseUtil import parseAntlr
+    from wwpdb.utils.nmr.mr import sa_schrodingermr
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.mr.SchrodingerMRLexer import SchrodingerMRLexer
@@ -40,6 +42,8 @@ except ImportError:
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
+    from nmr.AntlrParseUtil import parseAntlr
+    from nmr.mr import sa_schrodingermr
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.SchrodingerMRLexer import SchrodingerMRLexer
@@ -179,7 +183,7 @@ class SchrodingerMRReader:
                     return None, None, None
 
                 ifh = open(mrFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
+                mrText = ifh.read()
 
             else:
                 mrFilePath, mrString = None, mrFilePath
@@ -189,7 +193,7 @@ class SchrodingerMRReader:
                         self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
                     return None, None, None
 
-                input = InputStream(mrString)
+                mrText = mrString
 
             if cifFilePath is not None:
                 if not os.access(cifFilePath, os.R_OK):
@@ -204,11 +208,12 @@ class SchrodingerMRReader:
                             self.__log.write(f"+{self.__class_name__}.parse() {cifFilePath} is not CIF file.\n")
                         return None, None, None
 
-            lexer = SchrodingerMRLexer(input)
-            lexer.removeErrorListeners()
-
-            lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
-            lexer.addErrorListener(lexer_error_listener)
+            tree, parser_error_listener, lexer_error_listener =\
+                parseAntlr(SchrodingerMRLexer, SchrodingerMRParser, 'schrodinger_mr', mrText,
+                           filePath=mrFilePath, saModule=sa_schrodingermr,
+                           maxLexerErrorReport=self.__maxLexerErrorReport,
+                           maxParserErrorReport=self.__maxParserErrorReport,
+                           predictionModeSll=not isFilePath or self.__sll_pred)
 
             messageList = lexer_error_listener.getMessageList()
 
@@ -219,15 +224,6 @@ class SchrodingerMRReader:
                     if 'input' in description:
                         self.__log.write(f"{description['input']}\n")
                         self.__log.write(f"{description['marker']}\n")
-
-            stream = CommonTokenStream(lexer)
-            parser = SchrodingerMRParser(stream)
-            if not isFilePath or self.__sll_pred:
-                parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
-            parser.removeErrorListeners()
-            parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
-            parser.addErrorListener(parser_error_listener)
-            tree = parser.schrodinger_mr()
 
             walker = ParseTreeWalker()
             listener = SchrodingerMRParserListener(self.__verbose, self.__log,

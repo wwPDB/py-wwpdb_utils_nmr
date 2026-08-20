@@ -1313,7 +1313,7 @@ class BaseLinearMRParserListener():
                 dstFunc['upper_limit'] = f"{upper_limit:.3f}" if upper_limit > 0.0 else "0.0"
             else:
                 if (upper_limit <= DIST_ERROR_MIN or upper_limit > DIST_ERROR_MAX) and omit_dist_limit_outlier:
-                    self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index,g=group)}"
+                    self.f.append(f"[Range value warning] {self.getCurrentRestraint(n=index, g=group)}"
                                   f"The upper limit value='{upper_limit:.3f}' is omitted "
                                   f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     upper_limit = None
@@ -6229,7 +6229,7 @@ class BaseLinearMRParserListener():
                         atomSelection.append(atom_id)
         return atomSelection
 
-    def validateOneLetterCodeSeq(self, firstResId: int, oneLetterCodes: str) -> None:
+    def validateOneLetterCodeSeq(self, firstResId: int, oneLetterCodes: str) -> bool:
         """ Validate one-letter code sequence as restraint's polymer sequence.
         """
 
@@ -6272,6 +6272,8 @@ class BaseLinearMRParserListener():
                     self.internal_seq_offset = ref_seq_id - test_seq_id
                     break
 
+        return len(self.__chainAssign) > 0
+
     def getRealSeqIdFromSeqAlign(self, seqId: int, compId: Optional[str] = None) -> Tuple[bool, int]:
         """ Retrieve aligned residue number based on sequence alignment.
         """
@@ -6300,6 +6302,10 @@ class BaseLinearMRParserListener():
                 if compId is None or compId == poly_seq_model['comp_id'][poly_seq_model['auth_seq_id'].index(ref_seq_id)]:
                     return True, ref_seq_id
                 break
+
+            if seqId not in sa['test_seq_id'] and seqId in poly_seq_model['auth_seq_id']\
+               and compId == poly_seq_model['comp_id'][poly_seq_model['auth_seq_id'].index(seqId)]:
+                return True, seqId  # 6c0a
 
         return False, seqId
 

@@ -157,7 +157,8 @@ class DynamoMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.has_sequence = len(self.cur_sequence) > 0
 
         if self.has_sequence and self.hasPolySeq:
-            self.validateOneLetterCodeSeq(self.first_resid, self.cur_sequence)
+            if not self.validateOneLetterCodeSeq(self.first_resid, self.cur_sequence):
+                self.has_sequence = False  # can't trust provided one-letter sequence (2lgc)
 
         self.open_sequence = False
 

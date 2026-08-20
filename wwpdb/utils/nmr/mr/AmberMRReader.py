@@ -9,14 +9,14 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "1.1.1"
+__version__ = "1.2.0"
 
 import copy
 import os
 import sys
 from typing import IO, List, Optional, Tuple
 
-from antlr4 import CommonTokenStream, InputStream, ParseTreeWalker, PredictionMode
+from antlr4 import ParseTreeWalker
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -26,6 +26,8 @@ try:
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
+    from wwpdb.utils.nmr.AntlrParseUtil import parseAntlr
+    from wwpdb.utils.nmr.mr import sa_ambermr
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.mr.AmberMRLexer import AmberMRLexer
@@ -42,6 +44,8 @@ except ImportError:
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
+    from nmr.AntlrParseUtil import parseAntlr
+    from nmr.mr import sa_ambermr
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.AmberMRLexer import AmberMRLexer
@@ -210,15 +214,16 @@ class AmberMRReader:
 
                 if isFilePath:
                     ifh = open(mrFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                    input = InputStream(ifh.read())  # pylint: disable=redefined-builtin
+                    mrText = ifh.read()
                 else:
-                    input = InputStream(mrString)
+                    mrText = mrString
 
-                lexer = AmberMRLexer(input)
-                lexer.removeErrorListeners()
-
-                lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
-                lexer.addErrorListener(lexer_error_listener)
+                tree, parser_error_listener, lexer_error_listener =\
+                    parseAntlr(AmberMRLexer, AmberMRParser, 'amber_mr', mrText,
+                               filePath=mrFilePath, saModule=sa_ambermr,
+                               maxLexerErrorReport=self.__maxLexerErrorReport,
+                               maxParserErrorReport=self.__maxParserErrorReport,
+                               predictionModeSll=True)
 
                 messageList = lexer_error_listener.getMessageList()
 
@@ -229,15 +234,6 @@ class AmberMRReader:
                         if 'input' in description:
                             self.__log.write(f"{description['input']}\n")
                             self.__log.write(f"{description['marker']}\n")
-
-                stream = CommonTokenStream(lexer)
-                parser = AmberMRParser(stream)
-                # try with simpler/faster SLL prediction mode
-                parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
-                parser.removeErrorListeners()
-                parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
-                parser.addErrorListener(parser_error_listener)
-                tree = parser.amber_mr()
 
                 walker = ParseTreeWalker()
                 listener = AmberMRParserListener(self.__verbose, self.__log,
@@ -302,15 +298,16 @@ class AmberMRReader:
 
                     if isFilePath:
                         ifh = open(mrFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
-                        input = InputStream(ifh.read())
+                        mrText = ifh.read()
                     else:
-                        input = InputStream(mrString)
+                        mrText = mrString
 
-                    lexer = AmberMRLexer(input)
-                    lexer.removeErrorListeners()
-
-                    lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)
-                    lexer.addErrorListener(lexer_error_listener)
+                    tree, parser_error_listener, lexer_error_listener =\
+                        parseAntlr(AmberMRLexer, AmberMRParser, 'amber_mr', mrText,
+                                   filePath=mrFilePath, saModule=sa_ambermr,
+                                   maxLexerErrorReport=self.__maxLexerErrorReport,
+                                   maxParserErrorReport=self.__maxParserErrorReport,
+                                   predictionModeSll=True)
 
                     messageList = lexer_error_listener.getMessageList()
 
@@ -321,15 +318,6 @@ class AmberMRReader:
                             if 'input' in description:
                                 self.__log.write(f"{description['input']}\n")
                                 self.__log.write(f"{description['marker']}\n")
-
-                    stream = CommonTokenStream(lexer)
-                    parser = AmberMRParser(stream)
-                    # try with simpler/faster SLL prediction mode
-                    parser._interp.predictionMode = PredictionMode.SLL  # pylint: disable=protected-access
-                    parser.removeErrorListeners()
-                    parser_error_listener = ParserErrorListener(mrFilePath, maxErrorReport=self.__maxParserErrorReport)
-                    parser.addErrorListener(parser_error_listener)
-                    tree = parser.amber_mr()
                     walker = ParseTreeWalker()
                     listener = AmberMRParserListener(self.__verbose, self.__log,
                                                      self.__representativeModelId,

@@ -10,7 +10,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.2.0"
+__version__ = "5.3.0"
 
 import codecs
 import hashlib
@@ -65,7 +65,9 @@ try:
                                                WEIGHT_RANGE_MAX,
                                                KNOWN_ANGLE_NAMES,
                                                CYANA_MR_FILE_EXTS)
-    from wwpdb.utils.nmr.NmrDpRegistry import NmrDpRegistry
+    from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
+                                               get_next_path,
+                                               test_path_with_suffix)
     from wwpdb.utils.nmr.AlignUtil import (getRestraintFormatName,
                                            getRestraintFormatNames)
     from wwpdb.utils.nmr.NmrVrptUtility import (uncompress_gzip_file,
@@ -147,7 +149,9 @@ except ImportError:
                                    WEIGHT_RANGE_MAX,
                                    KNOWN_ANGLE_NAMES,
                                    CYANA_MR_FILE_EXTS)
-    from nmr.NmrDpRegistry import NmrDpRegistry
+    from nmr.NmrDpRegistry import (NmrDpRegistry,
+                                   get_next_path,
+                                   test_path_with_suffix)
     from nmr.AlignUtil import (getRestraintFormatName,
                                getRestraintFormatNames)
     from nmr.NmrVrptUtility import (uncompress_gzip_file,
@@ -1209,36 +1213,12 @@ class NmrDpMrSplitter:
     def getNextPath(self, src_path: str, suffix: str = '~') -> str:
         """ Return candidate next file path.
         """
-        assert len(suffix) > 0
-
-        src_path_next = src_path + suffix
-
-        if self.__reg.dirPath is not None:
-            src_path_next = os.path.join(self.__reg.dirPath, os.path.basename(src_path_next))
-
-        return src_path_next
+        return get_next_path(self.__reg, src_path, suffix)
 
     def testPathWithSuffix(self, src_path: str, suffix: str, defer_check: bool = False) -> str:
         """ Return basename(src_path) + suffix file path in either current workspace or default workspace if possible.
         """
-        assert len(suffix) > 0
-
-        test_path = src_path + suffix
-
-        if os.path.exists(test_path):
-            return test_path
-
-        if None in (self.__reg.dirPath, self.__reg.spareDirPath) or self.__reg.dirPath == self.__reg.spareDirPath:
-            return test_path if defer_check else src_path
-
-        chk_path = os.path.join(self.__reg.spareDirPath, os.path.basename(test_path))
-
-        if not os.path.exists(chk_path):
-            return test_path if defer_check else src_path
-
-        os.symlink(chk_path, test_path)
-
-        return test_path
+        return test_path_with_suffix(self.__reg, src_path, suffix, defer_check)
 
     def testPath(self, src_path: str, defer_check: bool = False) -> str:
         """ Return basename(src_path) file in either current workspace or default workspace if possible.
@@ -3621,8 +3601,8 @@ class NmrDpMrSplitter:
 
                             if _file_type != file_type:
 
-                                err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                    f"but recognized as {self.readable_file_type[_file_type]} file."
+                                err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                                    f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                                 # DAOTHER-5673
                                 err += " Please re-upload the NEF file as an NMR unified data file."\
                                     if _file_type == 'nef' else " Please re-upload the file."
@@ -3809,8 +3789,8 @@ class NmrDpMrSplitter:
 
                             if _file_type != file_type:
 
-                                err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                    f"but recognized as {self.readable_file_type[_file_type]} file."
+                                err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                                    f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                                 # DAOTHER-5673
                                 err += " Please re-upload the NEF file as an NMR unified data file."\
                                     if _file_type == 'nef' else " Please re-upload the file."
@@ -3969,8 +3949,8 @@ class NmrDpMrSplitter:
 
                     if _file_type != file_type:
 
-                        err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                            f"but recognized as {self.readable_file_type[_file_type]} file."
+                        err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                            f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                         # DAOTHER-5673
                         err += " Please re-upload the NEF file as an NMR unified data file."\
                             if _file_type == 'nef' else " Please re-upload the file."
@@ -4781,8 +4761,8 @@ class NmrDpMrSplitter:
 
                                 if _file_type != file_type:
 
-                                    err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                        f"but recognized as {self.readable_file_type[_file_type]} file."
+                                    err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                                        f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                                     # DAOTHER-5673
                                     err += " Please re-upload the NEF file as an NMR unified data file."\
                                         if _file_type == 'nef' else " Please re-upload the file."
@@ -4923,8 +4903,8 @@ class NmrDpMrSplitter:
 
                                 if _file_type != file_type:
 
-                                    err = f"{file_name!r} was selected as {self.readable_file_type[file_type]} file, "\
-                                        f"but recognized as {self.readable_file_type[_file_type]} file."
+                                    err = f"{file_name!r} was selected as {READABLE_FILE_TYPE[file_type]} file, "\
+                                        f"but recognized as {READABLE_FILE_TYPE[_file_type]} file."
                                     # DAOTHER-5673
                                     err += " Please re-upload the NEF file as an NMR unified data file."\
                                         if _file_type == 'nef' else " Please re-upload the file."
@@ -5902,6 +5882,7 @@ class NmrDpMrSplitter:
                 open(div_try_file, 'w', encoding='utf-8') as ofh2:
             for line in ifh:
                 i += 1
+
                 if i < err_line_number - MR_MAX_SPACER_LINES:
                     if ws_or_comment:
                         if line.isspace() or COMMENT_PAT.match(line)\
@@ -6795,6 +6776,7 @@ class NmrDpMrSplitter:
             with open(file_path, 'r', encoding='utf-8') as ifh:
                 for line in ifh:
                     i += 1
+
                     if i < err_line_number - MR_MAX_SPACER_LINES:
                         continue
                     if i < err_line_number - 1:

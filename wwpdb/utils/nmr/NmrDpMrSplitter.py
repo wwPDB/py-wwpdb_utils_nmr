@@ -5882,6 +5882,7 @@ class NmrDpMrSplitter:
                 open(div_try_file, 'w', encoding='utf-8') as ofh2:
             for line in ifh:
                 i += 1
+
                 if i < err_line_number - MR_MAX_SPACER_LINES:
                     if ws_or_comment:
                         if line.isspace() or COMMENT_PAT.match(line)\
@@ -6775,6 +6776,7 @@ class NmrDpMrSplitter:
             with open(file_path, 'r', encoding='utf-8') as ifh:
                 for line in ifh:
                     i += 1
+
                     if i < err_line_number - MR_MAX_SPACER_LINES:
                         continue
                     if i < err_line_number - 1:

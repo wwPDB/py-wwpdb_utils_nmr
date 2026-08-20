@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/CnsMRLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/CnsMRLexer.g4 by ANTLR 4.13.2
 
 
 #include "CnsMRLexer.h"
@@ -45,7 +45,7 @@ struct CnsMRLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-CnsMRLexerStaticData *cnsmrlexerLexerStaticData = nullptr;
+std::unique_ptr<CnsMRLexerStaticData> cnsmrlexerLexerStaticData = nullptr;
 
 void cnsmrlexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -1884,7 +1884,7 @@ void cnsmrlexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  cnsmrlexerLexerStaticData = staticData.release();
+  cnsmrlexerLexerStaticData = std::move(staticData);
 }
 
 }

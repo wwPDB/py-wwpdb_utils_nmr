@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/AriaMRParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/AriaMRParser.g4 by ANTLR 4.13.2
 
 
 #include "AriaMRParserVisitor.h"
@@ -40,7 +40,7 @@ struct AriaMRParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-AriaMRParserStaticData *ariamrparserParserStaticData = nullptr;
+std::unique_ptr<AriaMRParserStaticData> ariamrparserParserStaticData = nullptr;
 
 void ariamrparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -128,7 +128,7 @@ void ariamrparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  ariamrparserParserStaticData = staticData.release();
+  ariamrparserParserStaticData = std::move(staticData);
 }
 
 }

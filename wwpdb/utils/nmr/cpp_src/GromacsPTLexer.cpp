@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/GromacsPTLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/GromacsPTLexer.g4 by ANTLR 4.13.2
 
 
 #include "GromacsPTLexer.h"
@@ -45,7 +45,7 @@ struct GromacsPTLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-GromacsPTLexerStaticData *gromacsptlexerLexerStaticData = nullptr;
+std::unique_ptr<GromacsPTLexerStaticData> gromacsptlexerLexerStaticData = nullptr;
 
 void gromacsptlexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -401,7 +401,7 @@ void gromacsptlexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  gromacsptlexerLexerStaticData = staticData.release();
+  gromacsptlexerLexerStaticData = std::move(staticData);
 }
 
 }

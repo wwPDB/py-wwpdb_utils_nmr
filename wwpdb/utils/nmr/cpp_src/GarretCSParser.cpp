@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/GarretCSParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/GarretCSParser.g4 by ANTLR 4.13.2
 
 
 #include "GarretCSParserVisitor.h"
@@ -40,7 +40,7 @@ struct GarretCSParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-GarretCSParserStaticData *garretcsparserParserStaticData = nullptr;
+std::unique_ptr<GarretCSParserStaticData> garretcsparserParserStaticData = nullptr;
 
 void garretcsparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -85,7 +85,7 @@ void garretcsparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  garretcsparserParserStaticData = staticData.release();
+  garretcsparserParserStaticData = std::move(staticData);
 }
 
 }

@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/DynamoMRLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/DynamoMRLexer.g4 by ANTLR 4.13.2
 
 
 #include "DynamoMRLexer.h"
@@ -45,7 +45,7 @@ struct DynamoMRLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-DynamoMRLexerStaticData *dynamomrlexerLexerStaticData = nullptr;
+std::unique_ptr<DynamoMRLexerStaticData> dynamomrlexerLexerStaticData = nullptr;
 
 void dynamomrlexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -686,7 +686,7 @@ void dynamomrlexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  dynamomrlexerLexerStaticData = staticData.release();
+  dynamomrlexerLexerStaticData = std::move(staticData);
 }
 
 }

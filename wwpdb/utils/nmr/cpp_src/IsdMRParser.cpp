@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/IsdMRParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/IsdMRParser.g4 by ANTLR 4.13.2
 
 
 #include "IsdMRParserVisitor.h"
@@ -40,7 +40,7 @@ struct IsdMRParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-IsdMRParserStaticData *isdmrparserParserStaticData = nullptr;
+std::unique_ptr<IsdMRParserStaticData> isdmrparserParserStaticData = nullptr;
 
 void isdmrparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -81,7 +81,7 @@ void isdmrparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  isdmrparserParserStaticData = staticData.release();
+  isdmrparserParserStaticData = std::move(staticData);
 }
 
 }

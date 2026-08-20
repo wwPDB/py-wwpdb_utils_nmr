@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/SparkyPKParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/SparkyPKParser.g4 by ANTLR 4.13.2
 
 
 #include "SparkyPKParserVisitor.h"
@@ -40,7 +40,7 @@ struct SparkyPKParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-SparkyPKParserStaticData *sparkypkparserParserStaticData = nullptr;
+std::unique_ptr<SparkyPKParserStaticData> sparkypkparserParserStaticData = nullptr;
 
 void sparkypkparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -181,7 +181,7 @@ void sparkypkparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  sparkypkparserParserStaticData = staticData.release();
+  sparkypkparserParserStaticData = std::move(staticData);
 }
 
 }

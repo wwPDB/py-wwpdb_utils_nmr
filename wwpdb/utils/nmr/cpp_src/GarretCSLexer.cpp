@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/GarretCSLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/GarretCSLexer.g4 by ANTLR 4.13.2
 
 
 #include "GarretCSLexer.h"
@@ -45,7 +45,7 @@ struct GarretCSLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-GarretCSLexerStaticData *garretcslexerLexerStaticData = nullptr;
+std::unique_ptr<GarretCSLexerStaticData> garretcslexerLexerStaticData = nullptr;
 
 void garretcslexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -177,7 +177,7 @@ void garretcslexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  garretcslexerLexerStaticData = staticData.release();
+  garretcslexerLexerStaticData = std::move(staticData);
 }
 
 }

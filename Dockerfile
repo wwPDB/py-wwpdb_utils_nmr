@@ -72,7 +72,7 @@ RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install 
 # .g4 grammars. Stripping matters: it takes each accelerator from ~25 MB to ~2 MB.
 # If this step is removed the readers still work, falling back to the ANTLR
 # Python runtime (see wwpdb/utils/nmr/AntlrParseUtil.py).
-RUN python tools/gen_speedy_antlr.py \
+RUN python tools/gen_speedy_antlr.py --all \
     && WWPDB_NMR_BUILD_SPEEDY_ANTLR=1 python setup.py build_clib build_ext --inplace -j "$(nproc)" \
     && find wwpdb/utils/nmr -name 'sa_*_cpp_parser*.so' -exec strip --strip-unneeded {} + \
     && rm -rf build

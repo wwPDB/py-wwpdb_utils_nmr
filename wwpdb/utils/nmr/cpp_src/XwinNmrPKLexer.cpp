@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/XwinNmrPKLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/XwinNmrPKLexer.g4 by ANTLR 4.13.2
 
 
 #include "XwinNmrPKLexer.h"
@@ -45,7 +45,7 @@ struct XwinNmrPKLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-XwinNmrPKLexerStaticData *xwinnmrpklexerLexerStaticData = nullptr;
+std::unique_ptr<XwinNmrPKLexerStaticData> xwinnmrpklexerLexerStaticData = nullptr;
 
 void xwinnmrpklexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -196,7 +196,7 @@ void xwinnmrpklexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  xwinnmrpklexerLexerStaticData = staticData.release();
+  xwinnmrpklexerLexerStaticData = std::move(staticData);
 }
 
 }

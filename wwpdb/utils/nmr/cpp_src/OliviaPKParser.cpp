@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/OliviaPKParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/OliviaPKParser.g4 by ANTLR 4.13.2
 
 
 #include "OliviaPKParserVisitor.h"
@@ -40,7 +40,7 @@ struct OliviaPKParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-OliviaPKParserStaticData *oliviapkparserParserStaticData = nullptr;
+std::unique_ptr<OliviaPKParserStaticData> oliviapkparserParserStaticData = nullptr;
 
 void oliviapkparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -312,7 +312,7 @@ void oliviapkparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  oliviapkparserParserStaticData = staticData.release();
+  oliviapkparserParserStaticData = std::move(staticData);
 }
 
 }

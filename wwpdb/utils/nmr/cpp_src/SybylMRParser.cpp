@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/SybylMRParser.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/SybylMRParser.g4 by ANTLR 4.13.2
 
 
 #include "SybylMRParserVisitor.h"
@@ -40,7 +40,7 @@ struct SybylMRParserStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-SybylMRParserStaticData *sybylmrparserParserStaticData = nullptr;
+std::unique_ptr<SybylMRParserStaticData> sybylmrparserParserStaticData = nullptr;
 
 void sybylmrparserParserInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -84,7 +84,7 @@ void sybylmrparserParserInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  sybylmrparserParserStaticData = staticData.release();
+  sybylmrparserParserStaticData = std::move(staticData);
 }
 
 }

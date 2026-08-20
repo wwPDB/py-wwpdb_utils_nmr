@@ -1,3 +1,4 @@
+antlr4-tools
 mmcif
 packaging
 pynmrstar
@@ -6,4 +7,5 @@ requests
 rmsd
 scikit-learn
 setuptools
+speedy-antlr-tool
 wwpdb.utils.align

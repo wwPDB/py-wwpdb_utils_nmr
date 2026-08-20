@@ -1,5 +1,5 @@
 {
-  "antlr_version": "4.13.0",
+  "antlr_version": "4.13.2",
   "generated_by": "tools/gen_speedy_antlr.py",
   "shared_sources": [
     "speedy_antlr.cpp"

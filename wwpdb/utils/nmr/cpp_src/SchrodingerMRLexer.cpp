@@ -1,5 +1,5 @@
 
-// Generated from /home/webmaster/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/SchrodingerMRLexer.g4 by ANTLR 4.13.0
+// Generated from /data/git/py-wwpdb_utils_nmr/wwpdb/utils/tests-nmr/antlr-grammars-v4.10/SchrodingerMRLexer.g4 by ANTLR 4.13.2
 
 
 #include "SchrodingerMRLexer.h"
@@ -45,7 +45,7 @@ struct SchrodingerMRLexerStaticData final {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
 static thread_local
 #endif
-SchrodingerMRLexerStaticData *schrodingermrlexerLexerStaticData = nullptr;
+std::unique_ptr<SchrodingerMRLexerStaticData> schrodingermrlexerLexerStaticData = nullptr;
 
 void schrodingermrlexerLexerInitialize() {
 #if ANTLR4_USE_THREAD_LOCAL_CACHE
@@ -823,7 +823,7 @@ void schrodingermrlexerLexerInitialize() {
   for (size_t i = 0; i < count; i++) { 
     staticData->decisionToDFA.emplace_back(staticData->atn->getDecisionState(i), i);
   }
-  schrodingermrlexerLexerStaticData = staticData.release();
+  schrodingermrlexerLexerStaticData = std::move(staticData);
 }
 
 }

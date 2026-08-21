@@ -787,7 +787,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.planeRestraints = 0     # AMBER: Plane-point/plane angle restraints
         self.noepkRestraints = 0     # AMBER: NOESY volume restraints
         self.procsRestraints = 0     # AMBER: Chemical shift restraints
-        self.pcsRestraints = 0       # AMBER: Psuedocontact shift restraints
+        self.pcsRestraints = 0       # AMBER: Pseudocontact shift restraints
         self.rdcRestraints = 0       # AMBER: Direct dipolar coupling restraints
         self.csaRestraints = 0       # AMBER: Residual CSA or pseudo-CSA restraints
         self.geoRestraints = 0       # AMBER: Generalized distance restraints
@@ -1754,7 +1754,7 @@ class AmberMRParserListener(ParseTreeListener):
             for col, iat in enumerate(self.iat):
                 if iat < 0:
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                    f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as a angle restraint.")
+                                    f"Ambiguous atom selection 'iat({col+1})={iat}' is not allowed as an angle restraint.")
                     valid = False
             if not valid:
                 return
@@ -5192,7 +5192,7 @@ class AmberMRParserListener(ParseTreeListener):
                    and self.__omitDistLimitOutlier:
                     self.__f.append(f"[Range value warning] {self.__getCurrentRestraint()}"
                                     f"The upper linear limit value 'r4={self.upperLinearLimit}' is omitted "
-                                    f"because it is not  within range {DIST_RESTRAINT_ERROR}.")
+                                    f"because it is not within range {DIST_RESTRAINT_ERROR}.")
                     self.upperLinearLimit = None
                 else:
                     validRange = False
@@ -8368,7 +8368,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         if atom_id[0] not in PROTON_BEGIN_CODE:
                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
-                                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from ihp) is not a proton.")
+                                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id}) (derived from ihp) is not a proton.")
                             continue
 
                         atomSelection = []
@@ -8396,7 +8396,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                         if atom_id[0] not in PROTON_BEGIN_CODE:
                             self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(imix, ipeak)}"
-                                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id} (derived from jhp) is not a proton.")
+                                            f"({chain_id}:{seq_id}:{comp_id}:{atom_id}) (derived from jhp) is not a proton.")
                             continue
 
                         dstFunc = self.validateNoexpRange(imix, ipeak, awt, arange)
@@ -8750,7 +8750,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                     if atom_id[0] not in PROTON_BEGIN_CODE:
                         self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(n=n)}"
-                                        f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.")
+                                        f"({chain_id}:{seq_id}:{comp_id}:{atom_id}) is not a proton.")
                         continue
 
                     dstFunc = self.validateShfRange(n, wt, shrang)
@@ -9289,7 +9289,7 @@ class AmberMRParserListener(ParseTreeListener):
 
                 if atom_id[0] not in PROTON_BEGIN_CODE:
                     self.__f.append(f"[Invalid data] {self.__getCurrentRestraint(self.nmpmc, n)}"
-                                    f"({chain_id}:{seq_id}:{comp_id}:{atom_id} is not a proton.")
+                                    f"({chain_id}:{seq_id}:{comp_id}:{atom_id}) is not a proton.")
                     continue
 
                 dstFunc = self.validatePcsRange(n, wt, tolpro, mltpro)
@@ -9328,7 +9328,7 @@ class AmberMRParserListener(ParseTreeListener):
                     'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
                     else 'Unsupported data'
                 self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                "Failed to recognize AMBER atom numbers in the Psuedocontact shift restraint file "
+                                "Failed to recognize AMBER atom numbers in the Pseudocontact shift restraint file "
                                 "because AMBER parameter/topology file is not available.")
                 return
 
@@ -10550,7 +10550,7 @@ class AmberMRParserListener(ParseTreeListener):
                         'Missing data' if not self.__internal and len(self.__atomNumberDict) == 0\
                         else 'Unsupported data'
                     self.__f.append(f"[{warn_title}] {self.__getCurrentRestraint()}"
-                                    "Failed to recognize AMBER atom numbers in the Residual CSA or psuedo-CSA restraint file "
+                                    "Failed to recognize AMBER atom numbers in the Residual CSA or pseudo-CSA restraint file "
                                     "because AMBER parameter/topology file is not available.")
                     return
 
@@ -11404,7 +11404,7 @@ class AmberMRParserListener(ParseTreeListener):
             if lenAtomId > 1 and not allowAmbig:
                 if enableWarning:
                     self.__f.append("[Invalid atom selection] "
-                                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.")
+                                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as an angle restraint.")
                 continue
 
             for cifAtomId in _atomId:

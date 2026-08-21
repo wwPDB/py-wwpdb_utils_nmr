@@ -16074,10 +16074,10 @@ class NmrDpUtility:
                 if len(lower_bound_sf_names) == 0:
                     lower_bound_sf_names = lower_bound_sf_names[0]
 
-                err = "There is no attractive distance restraints expressed by upper limit potential, "\
+                err = "There are no attractive distance restraints expressed by upper limit potential, "\
                       f"except for repulsive distance restraints, {lower_bound_sf_names}. "\
-                      "It means that your restraints does not have sufficient power to determine the structure. "\
-                      "Please re-upload all restraints used for the structure detemination."
+                      "It means that your restraints do not have sufficient power to determine the structure. "\
+                      "Please re-upload all restraints used for the structure determination."
 
                 self.__reg.report.error.appendDescription('missing_mandatory_content',
                                                           {'file_name': data_file_name, 'category': lp_category,

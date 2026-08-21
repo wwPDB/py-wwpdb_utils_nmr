@@ -5325,7 +5325,7 @@ class BasePKParserListener():
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.__internal:
             self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
-                          "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
+                          "Neither peak height nor peak volume value is set. Please re-upload the NMR spectral peak list file.")
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:
@@ -5428,7 +5428,7 @@ class BasePKParserListener():
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.__internal:
             self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
-                          "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
+                          "Neither peak height nor peak volume value is set. Please re-upload the NMR spectral peak list file.")
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:
@@ -5551,7 +5551,7 @@ class BasePKParserListener():
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.__internal:
             self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
-                          "Neither peak height nor peak volume value are set. Please re-upload the NMR spectral peak list file.")
+                          "Neither peak height nor peak volume value is set. Please re-upload the NMR spectral peak list file.")
             return None
 
         if pos_unc_1 is not None and pos_unc_1 != 0.0:

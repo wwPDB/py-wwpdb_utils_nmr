@@ -6199,7 +6199,7 @@ def getRestraintName(mrSubtype: str, title: bool = False) -> str:
     if mrSubtype.startswith('ddc'):
         return "Dipolar coupling restraints" if title else "dipolar coupling restraints"
     if mrSubtype.startswith('ang'):
-        return "Angle databse restraints" if title else "angle database restraints"
+        return "Angle database restraints" if title else "angle database restraints"
     if mrSubtype.startswith('pre') or mrSubtype.startswith('auto_relax'):
         return "Paramagnetic relaxation enhancement restraints" if title else "paramagnetic relaxation enhancement restraints"
     if mrSubtype.startswith('pcs'):
@@ -9475,7 +9475,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
         if lenAtomId > 1 and not allowAmbig:
             if enableWarning:
                 warningMessage = f"[Invalid atom selection] "\
-                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint."
+                    f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as an angle restraint."
             continue
 
         for cifAtomId in _atomId:
@@ -9797,7 +9797,7 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
                 return 'ambiguous diselenide bond'
 
             if is_like_ssbond():
-                return 'ambiguous disufide bond'
+                return 'ambiguous disulfide bond'
 
             if is_like_hbond():
                 return 'ambiguous hydrogen bond'
@@ -9811,7 +9811,7 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
                 return 'diselenide bond (lower bound)'
 
             if is_like_ssbond():
-                return 'disufide bond (lower bound)'
+                return 'disulfide bond (lower bound)'
 
             if is_like_hbond():
                 return 'hydrogen bond (lower bound)'
@@ -9830,13 +9830,13 @@ def getDistConstraintType(atomSelectionSet: List[List[dict]], dstFunc: dict, csS
         return 'reinforced disulfide bond'
 
     if is_like_sebond():
-        return 'diselenide bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'deselenide bond (lower bond)'
+        return 'diselenide bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'diselenide bond (lower bound)'
 
     if is_like_ssbond():
-        return 'disulfide bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'disulfide bond (lower bond)'
+        return 'disulfide bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'disulfide bond (lower bound)'
 
     if is_like_hbond():
-        return 'hydrogen bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'hydrogen bond (lower bond)'
+        return 'hydrogen bond' if upperLimit > DIST_AMBIG_LOW or lowerLimit <= 0.0 else 'hydrogen bond (lower bound)'
 
     return None if 'roe' not in _hint else 'ROE'
 

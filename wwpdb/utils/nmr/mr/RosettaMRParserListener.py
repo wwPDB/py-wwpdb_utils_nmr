@@ -4051,7 +4051,7 @@ class RosettaMRParserListener(ParseTreeListener):
             self.selectCoordAtoms(chainAssign1, seqId1, atomId1)
             self.selectCoordAtoms(chainAssign2, seqId234, atomId2, False, 'a local coordinate')  # originAtom1
             self.selectCoordAtoms(chainAssign3, seqId234, atomId3, False, 'a local coordinate')  # originAtom2
-            self.selectCoordAtoms(chainAssign4, seqId234, atomId4, False, 'a local coordiante')  # originAtom3
+            self.selectCoordAtoms(chainAssign4, seqId234, atomId4, False, 'a local coordinate')  # originAtom3
 
             if len(self.atomSelectionSet) < 4:
                 return
@@ -5718,13 +5718,13 @@ class RosettaMRParserListener(ParseTreeListener):
             for atom1 in self.atomSelectionSet[0]:
                 if atom1['comp_id'] != 'CYS':
                     self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
-                                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
+                                    f"Failed to select a Cysteine residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
                     return
 
             for atom2 in self.atomSelectionSet[1]:
                 if atom2['comp_id'] != 'CYS':
                     self.__f.append(f"[Invalid atom selection] {self.__getCurrentRestraint()}"
-                                    f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
+                                    f"Failed to select a Cysteine residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
                     return
 
             chain_id_1 = self.atomSelectionSet[0][0]['chain_id']

@@ -545,7 +545,7 @@ class NmrDpFirstAid:
         try:
 
             msg = next(msg for msg in message['error'] if msg_template in msg)
-            warn = 'The saveframe must have NMR-STAR V3.2 tags. Saveframe error occured:'\
+            warn = 'The saveframe must have NMR-STAR V3.2 tags. Saveframe error occurred:'\
                 + msg[len(msg_template):].replace('<pynmrstar.', '').replace("'>", "'")
 
             self.__reg.report.warning.appendDescription('corrected_format_issue',

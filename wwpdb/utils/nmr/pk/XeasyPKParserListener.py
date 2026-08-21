@@ -634,7 +634,7 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
                                         "because XEASY PROT file is not available.")
                     elif ai not in self.__atomNumberDict:
                         self.__g.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
-                                        f"'{ai})' is not defined in the XEASY PROT file.")
+                                        f"'{ai}' is not defined in the XEASY PROT file.")
                 else:
                     _factor = copy.copy(self.__atomNumberDict[ai])
                     _factor['atom_id'] = _factor['auth_atom_id']

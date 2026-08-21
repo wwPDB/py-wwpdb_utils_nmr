@@ -1204,7 +1204,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
 
             if self._reg.op != 'nmr-str-replace-cs' or not self._reg.bmrb_only:
 
-                err = f"The saveframe with a category {sf_category!r} is missing, "\
+                err = f"The saveframe with a category {sf_category!r} is missing. "\
                     f"Deposition of assigned chemical shifts is mandatory. Please re-upload the {file_type.upper()} file."
 
                 self._reg.report.error.appendDescription('missing_mandatory_content',
@@ -1289,7 +1289,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
 
             elif not self._reg.validation_server:
 
-                err = f"The saveframe with a category {sf_category!r} is missing, "\
+                err = f"The saveframe with a category {sf_category!r} is missing. "\
                     f"Deposition of distance restraints is mandatory. Please re-upload the {file_type.upper()} file."
 
                 self._reg.report.error.appendDescription('missing_mandatory_content',

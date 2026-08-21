@@ -28,7 +28,7 @@ try:
     from wwpdb.utils.nmr.NmrDpValidationBase import (is_non_metal_element,  # noqa: F401 pylint: disable=unused-import
                                                      is_like_planality_boundary,
                                                      get_atom_name_mapping)
-    from wwpdb.utils.nmr.NmrVrptUtility import predict_redox_state_of_cystein  # noqa: F401 pylint: disable=unused-import
+    from wwpdb.utils.nmr.NmrVrptUtility import predict_redox_state_of_cysteine  # noqa: F401 pylint: disable=unused-import
 except ImportError:
     from nmr.NmrDpValidationInput import NmrDpValidationInput
     from nmr.NmrDpValidationCoord import NmrDpValidationCoord
@@ -44,7 +44,7 @@ except ImportError:
     from nmr.NmrDpValidationBase import (is_non_metal_element,  # noqa: F401 pylint: disable=unused-import
                                          is_like_planality_boundary,
                                          get_atom_name_mapping)
-    from nmr.NmrVrptUtility import predict_redox_state_of_cystein  # noqa: F401 pylint: disable=unused-import
+    from nmr.NmrVrptUtility import predict_redox_state_of_cysteine  # noqa: F401 pylint: disable=unused-import
 
 
 class NmrDpValidation(NmrDpValidationInput,  # pylint: disable=too-many-ancestors

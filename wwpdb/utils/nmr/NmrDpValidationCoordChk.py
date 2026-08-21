@@ -39,7 +39,7 @@ try:
                                                PERIPH_OFFSET_ATTEMPT)
     from wwpdb.utils.nmr.CifToNmrStar import (has_key_value,
                                               get_first_sf_tag)
-    from wwpdb.utils.nmr.NmrVrptUtility import predict_redox_state_of_cystein
+    from wwpdb.utils.nmr.NmrVrptUtility import predict_redox_state_of_cysteine
     from wwpdb.utils.nmr.NmrDpValidationBase import NmrDpValidationBase
 except ImportError:
     from nmr.NmrDpConstant import (SF_CATEGORIES,
@@ -62,7 +62,7 @@ except ImportError:
                                    PERIPH_OFFSET_ATTEMPT)
     from nmr.CifToNmrStar import (has_key_value,
                                   get_first_sf_tag)
-    from nmr.NmrVrptUtility import predict_redox_state_of_cystein
+    from nmr.NmrVrptUtility import predict_redox_state_of_cysteine
     from nmr.NmrDpValidationBase import NmrDpValidationBase
 
 
@@ -259,11 +259,11 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     disulf['redox_state_pred_2'] = 'unknown'
 
                 if disulf['redox_state_pred_1'] == 'ambiguous' and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
-                    oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
+                    oxi, red = predict_redox_state_of_cysteine(ca_chem_shift_1, cb_chem_shift_1)
                     disulf['redox_state_pred_1'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                 if disulf['redox_state_pred_2'] == 'ambiguous' and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
-                    oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
+                    oxi, red = predict_redox_state_of_cysteine(ca_chem_shift_2, cb_chem_shift_2)
                     disulf['redox_state_pred_2'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                 if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
@@ -570,11 +570,11 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     other['redox_state_pred_2'] = 'unknown'
 
                 if other['redox_state_pred_1'] == 'ambiguous' and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
-                    oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
+                    oxi, red = predict_redox_state_of_cysteine(ca_chem_shift_1, cb_chem_shift_1)
                     other['redox_state_pred_1'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                 if other['redox_state_pred_2'] == 'ambiguous' and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
-                    oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
+                    oxi, red = predict_redox_state_of_cysteine(ca_chem_shift_2, cb_chem_shift_2)
                     other['redox_state_pred_2'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                 if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':

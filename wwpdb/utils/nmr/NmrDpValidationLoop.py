@@ -321,7 +321,7 @@ class NmrDpValidationLoop(NmrDpValidationBase):
                         has_bad_pattern = True
                     elif clea:
                         if content_subtype == 'chem_shift':
-                            warn += ' Partially assiged chemical shifts should be resolved or removed.'
+                            warn += ' Partially assigned chemical shifts should be resolved or removed.'
                             item = 'incompletely_assigned_chemical_shift'
                         elif content_subtype.startswith('spectral_peak'):
 

@@ -1808,7 +1808,7 @@ class NmrDpValidationCs(NmrDpValidationBase):
                                                 f"{ambig_set_id_name} {ambig_set_id}] "\
                                                 f"However, {value_name} {value2} of "\
                                                 + row_tmp % (chain_id2, seq_id2, comp_id2, atom_id2)\
-                                                + " is noticeably diffrent from others in the set "\
+                                                + " is noticeably different from others in the set "\
                                                 "that share the same ambiguity code "\
                                                 f"by {value2 - value:.3f} (tolerance {CS_UNCERT_MAX})."
 

@@ -772,7 +772,7 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                             if _variant_[0] not in ('-', '+'):
 
                                 warn = f"Residue variant {_variant_!r} should start with "\
-                                    "either '-' or '+' symbol according to the NEF sepcification."
+                                    "either '-' or '+' symbol according to the NEF specification."
 
                                 self._reg.report.warning.appendDescription('atom_nomenclature_mismatch',
                                                                            {'file_name': file_name, 'sf_framecode': sf_framecode,

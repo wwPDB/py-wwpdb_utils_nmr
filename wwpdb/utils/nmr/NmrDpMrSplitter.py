@@ -2697,7 +2697,7 @@ class NmrDpMrSplitter:
                     else:
 
                         err = "The restraint file is not recognized properly "\
-                            "so that there is no mandatory distance restraints int the set of uploaded restraint files. "\
+                            "so that there is no mandatory distance restraints in the set of uploaded restraint files. "\
                             "Please re-upload the restraint file."
 
                         self.__reg.suspended_errors_for_lazy_eval.append({'content_mismatch':

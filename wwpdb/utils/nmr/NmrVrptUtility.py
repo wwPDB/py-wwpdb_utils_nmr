@@ -669,9 +669,9 @@ def probability_density(value: float, mean: float, stddev: float) -> float:
     return math.exp(-((value - mean) ** 2.0) / (2.0 * stddev2)) / math.sqrt(2.0 * math.pi * stddev2)
 
 
-def predict_redox_state_of_cystein(ca_chem_shift: Optional[float], cb_chem_shift: Optional[float]
-                                   ) -> Tuple[float, float]:
-    """ Return prediction of redox state of Cystein using assigned CA, CB chemical shifts.
+def predict_redox_state_of_cysteine(ca_chem_shift: Optional[float], cb_chem_shift: Optional[float]
+                                    ) -> Tuple[float, float]:
+    """ Return prediction of redox state of Cysteine using assigned CA, CB chemical shifts.
         @return: probability of oxidized state, probability of reduced state
         Reference:
           13C NMR chemical shifts can predict disulfide bond formation.
@@ -4806,7 +4806,7 @@ class NmrVrptUtility:
                                 ambig_redox_state = True
 
                             if ambig_redox_state:
-                                oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
+                                oxi, red = predict_redox_state_of_cysteine(ca_chem_shift, cb_chem_shift)
                                 if oxi < 0.001:
                                     pass
                                 elif red < 0.001 or oxi > 0.5:
@@ -4892,7 +4892,7 @@ class NmrVrptUtility:
                                             ambig_redox_state = True
 
                                         if ambig_redox_state:
-                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
+                                            oxi, red = predict_redox_state_of_cysteine(ca_chem_shift, cb_chem_shift)
                                             if oxi < 0.001:
                                                 pass
                                             elif red < 0.001 or oxi > 0.5:

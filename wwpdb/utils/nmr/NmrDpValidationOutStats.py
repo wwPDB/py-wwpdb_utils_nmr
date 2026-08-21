@@ -384,8 +384,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                     if has_key_value(cif_input_source_dic, 'polymer_sequence'):
                         cif_poly_seq = cif_input_source_dic['polymer_sequence']
 
-            has_cystain = cif_poly_seq is not None\
-                and not any(ps for ps in cif_poly_seq if 'CYS' in ps['comp_id'] or 'DCY' in ps['comp_id'])
+            has_cysteine = cif_poly_seq is not None\
+                and any(ps for ps in cif_poly_seq if 'CYS' in ps['comp_id'] or 'DCY' in ps['comp_id'])
 
             # model
 
@@ -843,7 +843,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                     if restraint_count == 0:
                         if dist_type in ('sebond', 'metal'):
                             continue
-                        if dist_type == 'sbond' and not has_cystain:
+                        if dist_type == 'sbond' and not has_cysteine:
                             continue
 
                     restraint_percent = round(100.0 * restraint_count / total_dist_restraint_count, 1)
@@ -1572,7 +1572,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                             rest_summary['disulfide_bond_restraints'] =\
                                                 sum(v['sbond'] for v in dist_summary['total'].values())
                                             if rest_summary['disulfide_bond_restraints'] == 0:
-                                                if not has_cystain:
+                                                if not has_cysteine:
                                                     del rest_summary['disulfide_bond_restraints']
                                             else:
                                                 rest_summary['disulfide_bond_dist_types'] =\
@@ -1714,7 +1714,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                             rest_summary['long_range'] = 0
                                             rest_summary['inter-chain'] = 0
                                             rest_summary['hydrogen_bond_restraints'] = 0
-                                            if has_cystain:
+                                            if has_cysteine:
                                                 rest_summary['disulfide_bond_restraints'] = 0
                                             rest_summary['total_dihedral_angle_restraints'] = total_dihed_restraint_count
                                             if has_rdc:
@@ -1790,7 +1790,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                             rest_summary['long_range'] = 0
                                             rest_summary['inter-chain'] = 0
                                             rest_summary['hydrogen_bond_restraints'] = 0
-                                            if has_cystain:
+                                            if has_cysteine:
                                                 rest_summary['disulfide_bond_restraints'] = 0
                                             rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
                                             rest_summary['number_of_unmapped_restraints'] = len(vrpt_mr['unmapped_rdc'])

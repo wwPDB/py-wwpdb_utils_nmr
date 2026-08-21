@@ -31,7 +31,7 @@ try:
     from wwpdb.utils.nmr.AlignUtil import letterToDigit
     from wwpdb.utils.nmr.CifToNmrStar import (has_key_value,
                                               get_first_sf_tag)
-    from wwpdb.utils.nmr.NmrVrptUtility import (predict_redox_state_of_cystein,
+    from wwpdb.utils.nmr.NmrVrptUtility import (predict_redox_state_of_cysteine,
                                                 predict_cis_trans_peptide_of_proline,
                                                 predict_tautomer_state_of_histidine,
                                                 predict_rotamer_state_of_leucine,
@@ -53,7 +53,7 @@ except ImportError:
     from nmr.AlignUtil import letterToDigit
     from nmr.CifToNmrStar import (has_key_value,
                                   get_first_sf_tag)
-    from nmr.NmrVrptUtility import (predict_redox_state_of_cystein,
+    from nmr.NmrVrptUtility import (predict_redox_state_of_cysteine,
                                     predict_cis_trans_peptide_of_proline,
                                     predict_tautomer_state_of_histidine,
                                     predict_rotamer_state_of_leucine,
@@ -1388,7 +1388,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                                 cys['redox_state_pred'] = 'unknown'
 
                             if cys['redox_state_pred'] == 'ambiguous':
-                                oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
+                                oxi, red = predict_redox_state_of_cysteine(ca_chem_shift, cb_chem_shift)
                                 if oxi < 0.001:
                                     cys['redox_state_pred'] = 'reduced'
                                 elif red < 0.001:
@@ -2053,7 +2053,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                                         ambig_redox_state = True
 
                                     if ambig_redox_state:
-                                        oxi, red = predict_redox_state_of_cystein(ca_chem_shift, cb_chem_shift)
+                                        oxi, red = predict_redox_state_of_cysteine(ca_chem_shift, cb_chem_shift)
                                         if oxi < 0.001:
                                             pass
                                         elif red < 0.001 or oxi > 0.5:

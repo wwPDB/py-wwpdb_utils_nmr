@@ -6493,14 +6493,14 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             for atom1 in self.atomSelectionSet[0]:
                 if atom1['comp_id'] != 'CYS':
                     self.f.append(f"[Invalid atom selection] {self.getCurrentRestraint()}"
-                                  f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
+                                  f"Failed to select a Cysteine residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
                     self.ssbondRestraints -= 1
                     return
 
             for atom2 in self.atomSelectionSet[1]:
                 if atom2['comp_id'] != 'CYS':
                     self.f.append(f"[Invalid atom selection] {self.getCurrentRestraint()}"
-                                  f"Failed to select a Cystein residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
+                                  f"Failed to select a Cysteine residue for disulfide bond between '{seqId1}' and '{seqId2}'.")
                     self.ssbondRestraints -= 1
                     return
 

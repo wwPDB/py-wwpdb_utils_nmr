@@ -4223,7 +4223,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                      "Found an dihedral angle vector over multiple covalent bonds "
+                                      "Found a dihedral angle vector over multiple covalent bonds "
                                       "in the 'RAMAchandran' statement; "
                                       f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                       f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -4356,7 +4356,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if len(sf['loop']['tags']) == 0:
                     sf['loop']['tags'] = ['index_id', 'id',
                                           'auth_asym_id', 'auth_seq_id', 'auth_comp_id', 'auth_atom_id',
-                                          'target_Rgry', 'force_constant'
+                                          'target_Rgyr', 'force_constant',
                                           'list_id']
                     sf['tags'].append(['classification', self.classification])
                     sf['tags'].append(['scale', self.radiScale])
@@ -6057,14 +6057,14 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         if donor['chain_id'] != hydrogen['chain_id']:
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                          "The donor atom and its hygrogen are in different chains; "
+                          "The donor atom and its hydrogen are in different chains; "
                           f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return
 
         if donor['seq_id'] != hydrogen['seq_id']:
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                          "The donor atom and its hygrogen are in different residues; "
+                          "The donor atom and its hydrogen are in different residues; "
                           f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return
@@ -7309,7 +7309,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     or self.reasons['segment_id_mismatch'][chainId] is not None):
                                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                               "Couldn't specify segment name "
-                                              f"'{chainId}' the coordinates.")
+                                              f"'{chainId}' in the coordinates.")
                                 # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
@@ -8572,7 +8572,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         or self.reasons['segment_id_mismatch'][chainId] is not None):
                                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                                   "Couldn't specify segment name "
-                                                  f"{begChainId:!r}:{endChainId:!r} in the coordinates.")
+                                                  f"'{begChainId}':'{endChainId}' in the coordinates.")
 
                 else:
                     if ctx.Simple_name(0) or ctx.Double_quote_string(0):

@@ -1244,14 +1244,14 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
 
         if donor['chain_id'] != hydrogen['chain_id']:
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                          "The donor atom and its hygrogen are in different chains; "
+                          "The donor atom and its hydrogen are in different chains; "
                           f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return
 
         if donor['seq_id'] != hydrogen['seq_id']:
             self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                          "The donor atom and its hygrogen are in different residues; "
+                          "The donor atom and its hydrogen are in different residues; "
                           f"({donor['chain_id']}:{donor['seq_id']}:{donor['comp_id']}:{donor['atom_id']}, "
                           f"{hydrogen['chain_id']}:{hydrogen['seq_id']}:{hydrogen['comp_id']}:{hydrogen['atom_id']}).")
             return

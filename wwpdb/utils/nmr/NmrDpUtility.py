@@ -416,7 +416,7 @@ try:
                                                  get_type_of_star_file,
                                                  get_peak_list_format)
     from wwpdb.utils.nmr.NmrDpValidation import (NmrDpValidation,
-                                                 predict_redox_state_of_cystein,
+                                                 predict_redox_state_of_cysteine,
                                                  is_like_planality_boundary)
     from wwpdb.utils.nmr.NmrDpRemediation import (NmrDpRemediation,
                                                   get_chem_shift_format_from_string)
@@ -558,7 +558,7 @@ except ImportError:
                                      get_type_of_star_file,
                                      get_peak_list_format)
     from nmr.NmrDpValidation import (NmrDpValidation,
-                                     predict_redox_state_of_cystein,
+                                     predict_redox_state_of_cysteine,
                                      is_like_planality_boundary)
     from nmr.NmrDpRemediation import (NmrDpRemediation,
                                       get_chem_shift_format_from_string)
@@ -5362,12 +5362,12 @@ class NmrDpUtility:
 
                                         if disulf['redox_state_pred_1'] == 'ambiguous'\
                                            and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
-                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
+                                            oxi, red = predict_redox_state_of_cysteine(ca_chem_shift_1, cb_chem_shift_1)
                                             disulf['redox_state_pred_1'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                                         if disulf['redox_state_pred_2'] == 'ambiguous'\
                                            and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
-                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
+                                            oxi, red = predict_redox_state_of_cysteine(ca_chem_shift_2, cb_chem_shift_2)
                                             disulf['redox_state_pred_2'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                                         if disulf['redox_state_pred_1'] != 'oxidized' and disulf['redox_state_pred_1'] != 'unknown':
@@ -5555,12 +5555,12 @@ class NmrDpUtility:
 
                                         if other['redox_state_pred_1'] == 'ambiguous'\
                                            and ((ca_chem_shift_1 is not None) or (cb_chem_shift_1 is not None)):
-                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift_1, cb_chem_shift_1)
+                                            oxi, red = predict_redox_state_of_cysteine(ca_chem_shift_1, cb_chem_shift_1)
                                             other['redox_state_pred_1'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                                         if other['redox_state_pred_2'] == 'ambiguous'\
                                            and ((ca_chem_shift_2 is not None) or (cb_chem_shift_2 is not None)):
-                                            oxi, red = predict_redox_state_of_cystein(ca_chem_shift_2, cb_chem_shift_2)
+                                            oxi, red = predict_redox_state_of_cysteine(ca_chem_shift_2, cb_chem_shift_2)
                                             other['redox_state_pred_2'] = f"oxidized {oxi:.1%}, reduced {red:.1%}"
 
                                         if other['redox_state_pred_1'] != 'oxidized' and other['redox_state_pred_1'] != 'unknown':

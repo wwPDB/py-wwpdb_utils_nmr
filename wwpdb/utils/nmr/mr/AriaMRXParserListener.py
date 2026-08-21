@@ -862,7 +862,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             if ps is None or seqId not in ps['seq_id']:
                 self.f.append(f"[Missing data] {self.getCurrentRestraint()}"
-                              f"'Residue number '{self.__resid}' is not defined in /data_set/sequence XML element.")
+                              f"Residue number '{self.__resid}' is not defined in /data_set/sequence XML element.")
                 self.dihedRestraints -= 1
                 return
 

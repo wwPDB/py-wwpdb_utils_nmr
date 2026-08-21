@@ -2306,7 +2306,7 @@ class NmrVrptUtility:
                    written by Kumaran Baskaran
             @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of restraints,
                      support combinational restraints (_Gen_dist_constraint.Combination_ID, Member_ID)
-                     define bond types for deselenide bond and metal coordination (sebond, metal)
+                     define bond types for diselenide bond and metal coordination (sebond, metal)
                      ignore obvious lower-bound-* potential restraint (e.g. CYAYA .lol file)
         """
 

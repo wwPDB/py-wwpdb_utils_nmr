@@ -1287,7 +1287,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             self.squareExponent = int(str(ctx.Integer()))
             if self.squareExponent <= 0.0:
                 self.f.append("[Invalid data] "
-                              "The exponent value  "
+                              "The exponent value "
                               f"'RESTRAINTS HARMONIC {str(ctx.Exponent())}={self.squareExponent} END' "
                               "must be a positive value.")
 
@@ -2702,7 +2702,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                     if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
                         self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
-                                      "Found an dihedral angle vector over multiple covalent bonds "
+                                      "Found a dihedral angle vector over multiple covalent bonds "
                                       "in the 'CONFormation' statement; "
                                       f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
                                       f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
@@ -3750,7 +3750,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     or self.reasons['segment_id_mismatch'][chainId] is not None):
                                 self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                               "Couldn't specify segment name "
-                                              f"'{chainId}' the coordinates.")
+                                              f"'{chainId}' in the coordinates.")
                                 # do not use 'chainId!r' expression, '%' code throws ValueError
                     else:
                         if 'segment_id_mismatch' not in self.reasonsForReParsing:
@@ -5106,7 +5106,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         or self.reasons['segment_id_mismatch'][chainId] is not None):
                                     self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
                                                   "Couldn't specify segment name "
-                                                  f"{begChainId:!r}:{endChainId:!r} in the coordinates.")
+                                                  f"'{begChainId}':'{endChainId}' in the coordinates.")
 
                 else:
                     if ctx.Simple_name(0) or ctx.Double_quote_string(0):

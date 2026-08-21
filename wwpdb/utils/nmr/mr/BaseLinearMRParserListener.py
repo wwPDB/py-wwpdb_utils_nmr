@@ -4394,7 +4394,7 @@ class BaseLinearMRParserListener():
             if lenAtomId > 1 and not allowAmbig:
                 if enableWarning:
                     self.f.append(f"[Invalid atom selection] {self.getCurrentRestraint()}"
-                                  f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
+                                  f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as an angle restraint.")
                 continue
 
             if __compId != cifCompId and __compId not in self.__compIdMap:
@@ -4668,7 +4668,7 @@ class BaseLinearMRParserListener():
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.f.append(f"[Invalid atom selection] {self.getCurrentRestraint(n=index, g=group)}"
-                              f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as a angle restraint.")
+                              f"Ambiguous atom selection '{seqId}:{__compId}:{__atomId}' is not allowed as an angle restraint.")
                 continue
 
             if __compId != cifCompId and __compId not in self.__compIdMap:
@@ -4765,7 +4765,7 @@ class BaseLinearMRParserListener():
                 continue
             if lenAtomId > 1 and not allowAmbig:
                 self.f.append(f"[Invalid atom selection] {self.getCurrentRestraint(n=index, g=group)}"
-                              f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as a angle restraint.")
+                              f"Ambiguous atom selection '{seqId}:{compId}:{atomId}' is not allowed as an angle restraint.")
                 continue
 
             for cifAtomId in _atomId:

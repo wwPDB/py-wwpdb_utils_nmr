@@ -2194,7 +2194,7 @@ class NmrDpMrSplitter:
 
                 if file_type != 'nm-aux-pdb':
 
-                    err = f"The {mr_format_name} restraint file {file_name!r} is not plain text file. {str(e)}"
+                    err = f"The {mr_format_name} restraint file {file_name!r} is not a plain text file. {str(e)}"
 
                     self.__reg.report.error.appendDescription('format_issue',
                                                               {'file_name': file_name, 'description': err})
@@ -2478,7 +2478,7 @@ class NmrDpMrSplitter:
                             "Did you accidentally select wrong format? Please re-upload the restraint file."
                     else:
                         err = f"The {mr_format_name} topology file includes assigned chemical shifts. "\
-                            "Did you accidentally select rong format? Please re-upload the restraint file."
+                            "Did you accidentally select wrong format? Please re-upload the restraint file."
 
                     self.__reg.report.error.appendDescription('content_mismatch',
                                                               {'file_name': file_name, 'description': err})
@@ -2686,7 +2686,7 @@ class NmrDpMrSplitter:
                     if self.__reg.permit_missing_legacy_dist_restraint:
 
                         err = f"The restraint file is not recognized properly {file_type}. "\
-                            "Please fix the file so that it conformes to the format specifications."
+                            "Please fix the file so that it conforms to the format specifications."
 
                         self.__reg.suspended_errors_for_lazy_eval.append({'content_mismatch':
                                                                           {'file_name': file_name, 'description': err}})
@@ -2827,7 +2827,7 @@ class NmrDpMrSplitter:
 
             if is_binary_file(file_path) or is_eps_or_pdf_file(file_path):  # DAOTHER-9425
 
-                err = f"The spectal peak list file {file_name!r} (any plain text format) is not plain text file."
+                err = f"The spectral peak list file {file_name!r} (any plain text format) is not a plain text file."
 
                 self.__reg.report.error.appendDescription('format_issue',
                                                           {'file_name': file_name, 'description': err})
@@ -3114,7 +3114,7 @@ class NmrDpMrSplitter:
             else:
 
                 err = f"The spectral peak list file {file_name!r} (any plain text format) "\
-                    f"is identified as {getRestraintFormatNames(valid_types)} file"\
+                    f"is identified as {getRestraintFormatNames(valid_types)} file "\
                     f"and can be {getRestraintFormatNames(possible_types)} file as well. "\
                     "Did you accidentally select wrong format? Please re-upload the spectral peak list file."
 

@@ -78,7 +78,7 @@ class NmrDpValidationCs(NmrDpValidationBase):
         """ Validate assigned chemical shift value based on BMRB chemical shift statistics.
         """
 
-        no_reason_message = " Neither aromatic ring nor paramagnetic/ferromagnetic atom were found in the vicinity."
+        no_reason_message = " Neither aromatic ring nor paramagnetic/ferromagnetic atom was found in the vicinity."
         fold_warn_message = " Please check for folded/aliased signals."
 
         item_names = ITEM_NAMES_IN_CS_LOOP[file_type]

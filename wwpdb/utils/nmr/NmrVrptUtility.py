@@ -3121,7 +3121,7 @@ class NmrVrptUtility:
                                                                          'Sxy': f'{Sxy_:.4e}', 'Sxz': f'{Sxz_:.4e}',
                                                                          'Syz': f'{Syz_:.4e}',
                                                                          'Da': f'{Sxx_ - Syy_:.4e}', 'eta': f'{eta:.4e}',
-                                                                         'Dmax': f'{dmax[0]:.4e}'}
+                                                                         'Dmax': f'{numpy.mean(dmax):.4e}'}
 
                         assert abs(Szz_) >= abs(Syy_) >= abs(Sxx_)
                         assert 0 <= eta <= 1.0

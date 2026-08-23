@@ -1619,7 +1619,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                             all_total = total_dist_restraint_count\
                                                 + total_dihed_restraint_count\
                                                 + total_rdc_restraint_count
-                                            rest_summary['number_of_restaints_per_residue'] = \
+                                            rest_summary['number_of_restraints_per_residue'] = \
                                                 round(float(all_total) / vrpt_mr['seq_length'], 1)
                                             rest_summary['number_of_long_range_restraints_per_residue'] =\
                                                 round(float(sum(sum(v.values()) for v in dist_summary['long'].values()))
@@ -1724,7 +1724,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                 all_unmapped += len(vrpt_mr['unmapped_rdc'])
                                             rest_summary['number_of_unmapped_restraints'] = all_unmapped
                                             all_total = total_dihed_restraint_count + total_rdc_restraint_count
-                                            rest_summary['number_of_restaints_per_residue'] = \
+                                            rest_summary['number_of_restraints_per_residue'] = \
                                                 round(float(all_total) / vrpt_mr['seq_length'], 1)
                                             rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
 
@@ -1794,7 +1794,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                 rest_summary['disulfide_bond_restraints'] = 0
                                             rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
                                             rest_summary['number_of_unmapped_restraints'] = len(vrpt_mr['unmapped_rdc'])
-                                            rest_summary['number_of_restaints_per_residue'] = \
+                                            rest_summary['number_of_restraints_per_residue'] = \
                                                 round(float(total_rdc_restraint_count) / vrpt_mr['seq_length'], 1)
                                             rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
 

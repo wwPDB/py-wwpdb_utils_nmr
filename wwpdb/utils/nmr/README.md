@@ -476,7 +476,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-res-noa`|**internal use**|`nmr-restraints` / `cyana`|Restraint file in CYANA NOE assignment format (aka. NOA)
 `nm-aux-pdb`|**internal use**|`nmr-restraints` / `any`|Topology file in Bare PDB format for AMBER/CHARMM/GROMACS/SCHRODINGER systems in case
 `nm-res-ros`|`nm-res-ros`|`nmr-restraints` / `rosetta`|Restraint file in ROSETTA format (including CS-ROSETTA extension for disulfide bond and RDC)
-`nm-res-sch`|`nm-res-sch`|`nmr-restraints` / `schrodinger`|Restraint file in Schröginder/ASL format
+`nm-res-sch`|`nm-res-sch`|`nmr-restraints` / `schrodinger`|Restraint file in Schrödinger/ASL format
 `nm-res-syb`|`nm-res-syb`|`nmr-restraints` / `sybyl`|Restraint file in SYBYL format
 `nm-res-xpl`|`nm-res-xpl`|`nmr-restraints` / `xplor-nih`|Restraint file in XPLOR-NIH format
 `nm-res-oth`|`nm-res-oth`|`nmr-restraints` / `any`|Restraint file in other format including NMR-STAR V3

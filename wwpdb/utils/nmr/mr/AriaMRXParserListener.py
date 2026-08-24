@@ -530,7 +530,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
         """
 
     def extractCommonAtomName(self, atom_sel: List[dict]) -> str:
-        """ Return standardized pseudo atom name from given atom selections.
+        """ Return standardized pseudoatom name from given atom selections.
         """
 
         if len(atom_sel) == 0:

@@ -53,7 +53,7 @@
 # 23-Apr-2020  M. Yokochi - make sure to parse chem_shift_ref saveframe tag (DAOTHER-5610)
 # 23-Apr-2020  M. Yokochi - implement automatic format correction (DAOTHER-5603, 5610)
 # 24-Apr-2020  M. Yokochi - separate format_issue error and missing_mandatory_content error (DAOTHER-5611)
-# 24-Apr-2020  M. Yokochi - support 'QR' pseudo atom name (DAOTHER-5611)
+# 24-Apr-2020  M. Yokochi - support 'QR' pseudoatom name (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR conventional deposition (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - implement automatic format correction for 6NZN, 6PQF, 6PSI entry (DAOTHE-5611)
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
@@ -98,7 +98,7 @@
 # 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note
 #                           in processed NMR-STAR file,
 #                           set False for OneDep environment (DAOTHER-6030)
-# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom
+# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudoatom
 #                           nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
@@ -164,7 +164,7 @@
 #                           while upload-conversion of the coordinate file (DAOTHER-7665)
 # 17-Feb-2022  M. Yokochi - do report incompletely assigned chemical shifts for conventional deposition (DAOTHER-7662)
 # 21-Feb-2022  M. Yokochi - verify 'onebond' coherence transfer type using CCD (DAOTHER-7681, issue #2)
-# 21-Feb-2022  M. Yokochi - verify pseudo atom names in NMR restraints are in assigned chemical shifts (DAOTHER-7681, issue #1)
+# 21-Feb-2022  M. Yokochi - verify pseudoatom names in NMR restraints are in assigned chemical shifts (DAOTHER-7681, issue #1)
 # 24-Mar-2022  M. Yokochi - utilize software specific MR parsers for sanity check of NMR restraint files (DAOTHER-7690)
 # 20-Mar-2022  M. Yokochi - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022  M. Yokochi - detect other possible MR format if the first parsing fails (DAOTHER-7690)
@@ -6841,7 +6841,7 @@ class NmrDpUtility:
         return self.__reg.report.getTotalErrors() == __errors
 
     def __testCsPseudoAtomNameConsistencyInMrLoop(self) -> bool:
-        """ Perform consistency test on pseudo atom names between assigned chemical shifts and restraints. (DAOTHER-7681, issue #1)
+        """ Perform consistency test on pseudoatom names between assigned chemical shifts and restraints. (DAOTHER-7681, issue #1)
         """
 
         __errors = self.__reg.report.getTotalErrors()

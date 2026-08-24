@@ -112,7 +112,7 @@ class NmrDpRegistry:
     validation_server: bool = False
     # whether to skip missing_mandatory_content error for data conversion server (DAOTHER-9785)
     conversion_server: bool = False
-    # whether to translate conventional pseudo atom nomenclature in combined NMR-STAR file
+    # whether to translate conventional pseudoatom nomenclature in combined NMR-STAR file
     transl_pseudo_name: bool = False
     # whether to enable tolerant sequence alignment for residue variants
     tolerant_seq_align: bool = False
@@ -121,7 +121,7 @@ class NmrDpRegistry:
     fix_format_issue: bool = False
     # whether to exclude missing mandatory data (enabled if NMR conventional deposition)
     excl_missing_data: bool = False
-    # whether to complement missing data (add missing pseudo atoms in NMR restraints, DAOTHER-7681, issue #1)
+    # whether to complement missing data (add missing pseudoatoms in NMR restraints, DAOTHER-7681, issue #1)
     cmpl_missing_data: bool = False
     # whether to trust pdbx_nmr_ensemble to get total number of models
     trust_pdbx_nmr_ens: bool = True

@@ -6249,7 +6249,7 @@ class BasePKParserListener():
         return has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4
 
     def __extractCommonAtom(self, atom_sel: List[dict]) -> dict:
-        """ Return standardized pseudo atom name from given atom selections.
+        """ Return standardized pseudoatom name from given atom selections.
         """
 
         if len(atom_sel) == 0:

@@ -36,7 +36,6 @@ try:
                                                PTNR1_AUTH_ATOM_DATA_ITEMS,
                                                PTNR2_AUTH_ATOM_DATA_ITEMS,
                                                NMR_STAR_LP_KEY_ITEMS)
-    from wwpdb.utils.nmr.AlignUtil import deepcopy
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
@@ -44,6 +43,7 @@ try:
     from wwpdb.utils.nmr.mr.CharmmMRParser import CharmmMRParser
     from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
+                                                       atomKey,
                                                        translateToStdAtomName,
                                                        hasInterChainRestraint,
                                                        isIdenticalRestraint,
@@ -73,7 +73,6 @@ except ImportError:
                                    PTNR1_AUTH_ATOM_DATA_ITEMS,
                                    PTNR2_AUTH_ATOM_DATA_ITEMS,
                                    NMR_STAR_LP_KEY_ITEMS)
-    from nmr.AlignUtil import deepcopy
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance)
     from nmr.nef.NefTranslator import NefTranslator
@@ -81,6 +80,8 @@ except ImportError:
     from nmr.mr.CharmmMRParser import CharmmMRParser
     from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from nmr.mr.ParserListenerUtil import (toRegEx,
+                                           atomKey,
+                                           translateToStdAtomName,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
                                            isDefinedSegmentRestraint,
@@ -2310,14 +2311,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
 
                         if 'atom_selection' in self.factor:
-                            _refAtomSelection = deepcopy(self.factor['atom_selection'])
-                            for atom in _refAtomSelection:
-                                if 'is_poly' in atom:
-                                    del atom['is_poly']
-                                if 'auth_atom_id' in atom:
-                                    del atom['auth_atom_id']
-                                if 'segment_id' in atom:
-                                    del atom['segment_id']
+                            _refAtomKeys = {atomKey(atom, ('is_poly', 'auth_atom_id', 'segment_id'))
+                                            for atom in self.factor['atom_selection']}
 
                             try:
 
@@ -2334,7 +2329,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                 if self.verbose:
                                     self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
-                            self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+                            self.factor['atom_selection'] = [atom for atom in _atomSelection
+                                                             if atomKey(atom) not in _refAtomKeys]
 
                             if len(self.factor['atom_selection']) == 0:
                                 self.factor['atom_id'] = [None]
@@ -2363,18 +2359,11 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         if self.verbose:
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
-                    _refAtomSelection = deepcopy(self.factor['atom_selection'])
-                    for atom in _refAtomSelection:
-                        if 'is_poly' in atom:
-                            del atom['is_poly']
-                        if 'auth_atom_id' in atom:
-                            del atom['auth_atom_id']
-                        if 'segment_id' in atom:
-                            del atom['segment_id']
+                    _refAtomKeys = {atomKey(atom, ('is_poly', 'auth_atom_id', 'segment_id'))
+                                    for atom in self.factor['atom_selection']}
 
-                    _refAtomSelection = [atom for atom in _refAtomSelection if atom in _atomSelection]
-
-                    self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+                    self.factor['atom_selection'] = [atom for atom in _atomSelection
+                                                     if atomKey(atom) not in _refAtomKeys]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]

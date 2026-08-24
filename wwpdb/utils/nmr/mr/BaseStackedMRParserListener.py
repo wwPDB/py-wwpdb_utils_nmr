@@ -135,6 +135,8 @@ try:
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
+                                                       copyFactor,
+                                                       copyPolySeq,
                                                        toNefEx,
                                                        coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -266,6 +268,8 @@ except ImportError:
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (toRegEx,
+                                           copyFactor,
+                                           copyPolySeq,
                                            toNefEx,
                                            coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -1798,7 +1802,7 @@ class BaseStackedMRParserListener():
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                         _compId = None
                                         for compId in list(compIds):
-                                            _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
+                                            _polySeqRstFailed = copyPolySeq(self.__polySeqRstFailed)
                                             updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                             sortPolySeqRst(_polySeqRstFailed)
                                             _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
@@ -1822,7 +1826,7 @@ class BaseStackedMRParserListener():
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                         _compId = None
                                         for compId in list(compIds):
-                                            _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
+                                            _polySeqRstFailed = copyPolySeq(self.__polySeqRstFailed)
                                             updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                             sortPolySeqRst(_polySeqRstFailed)
                                             _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
@@ -2062,7 +2066,7 @@ class BaseStackedMRParserListener():
                                 for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                     _compId = None
                                     for compId in list(compIds):
-                                        _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
+                                        _polySeqRstFailed = copyPolySeq(self.__polySeqRstFailed)
                                         updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                         sortPolySeqRst(_polySeqRstFailed)
                                         _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
@@ -2086,7 +2090,7 @@ class BaseStackedMRParserListener():
                                 for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                     _compId = None
                                     for compId in list(compIds):
-                                        _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
+                                        _polySeqRstFailed = copyPolySeq(self.__polySeqRstFailed)
                                         updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                         sortPolySeqRst(_polySeqRstFailed)
                                         _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.polySeq, _polySeqRstFailed)
@@ -2535,7 +2539,7 @@ class BaseStackedMRParserListener():
                     del self.reasonsForReParsing['label_seq_scheme']
                     if 'local_seq_scheme' in self.reasonsForReParsing:
                         del self.reasonsForReParsing['local_seq_scheme']
-                    __f = deepcopy(self.f)
+                    __f = self.f
                     self.f = []
                     for f in __f:
                         self.f.append(re.sub(r'\[Anomalous data\]', '[Atom not found]', f, 1))
@@ -2752,7 +2756,7 @@ class BaseStackedMRParserListener():
 
             if len(self.reasonsForReParsing) == 0 and self.reasons is None\
                and any('[Insufficient atom selection]' in f and 'Macromolecules page' in f for f in self.f):
-                __f = deepcopy(self.f)
+                __f = self.f
                 self.f = []
                 for f in __f:
                     if '[Insufficient atom selection]' in f and 'Macromolecules page' in f:
@@ -4551,7 +4555,7 @@ class BaseStackedMRParserListener():
         if factor_has_is_poly != atomsel_has_is_poly\
            or factor_has_auth_atom_id != atomsel_has_auth_atom_id\
            or factor_has_segment_id != atomsel_has_segment_id:
-            refAtomSelection = deepcopy(_factor['atom_selection'])
+            refAtomSelection = [dict(a) if a.__class__ is dict else a for a in _factor['atom_selection']]
             if factor_has_is_poly != atomsel_has_is_poly:
                 if factor_has_is_poly:
                     for _atom in refAtomSelection:
@@ -4823,7 +4827,7 @@ class BaseStackedMRParserListener():
                 self.has_gd = True
             elif 'has_lanthanide' in _factor_:
                 self.has_la = True
-            return deepcopy(_factor_)
+            return copyFactor(_factor_)
 
         unambig = self.cur_subtype != 'dist'
 
@@ -5872,7 +5876,7 @@ class BaseStackedMRParserListener():
             del _factor['alt_atom_id']
 
         if ambig_atom_sel or valid:
-            self.__cachedDictForFactor[key] = deepcopy(_factor)
+            self.__cachedDictForFactor[key] = copyFactor(_factor)
 
         return _factor
 
@@ -6197,7 +6201,7 @@ class BaseStackedMRParserListener():
                     if not isPolySeq:
                         replacedBy = self.getRealCompId(compId)
                         if replacedBy != compId:
-                            _coordAtomSite = deepcopy(coordAtomSite)
+                            _coordAtomSite = copy.copy(coordAtomSite)
                             _coordAtomSite['comp_id'] = replacedBy
                             _coordAtomSite['atom_id'] = [cca['atom_id'] for cca in self.ccU.lastAtomDictList
                                                          if cca['leaving_atom_flag'] != 'Y']

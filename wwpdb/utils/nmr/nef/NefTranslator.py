@@ -141,7 +141,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.0"
+__version__ = "5.3.1"
 
 import collections
 import copy
@@ -198,8 +198,7 @@ try:
                                                LP_CATEGORIES,
                                                KEY_ITEMS,
                                                DATA_ITEMS)
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           letterToDigit,
+    from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            getOneLetterCode,
                                            alignPolymerSequence,
@@ -249,8 +248,7 @@ except ImportError:
                                    LP_CATEGORIES,
                                    KEY_ITEMS,
                                    DATA_ITEMS)
-    from nmr.AlignUtil import (deepcopy,
-                               letterToDigit,
+    from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                getOneLetterCode,
                                alignPolymerSequence,
@@ -2523,7 +2521,7 @@ class NefTranslator:
                 # convert protonated DC -> DNR, protonated C -> CH
                 if 'Atom_ID' in loop.tags and 'Auth_comp_ID' not in loop.tags\
                    and set(tags) & set(loop.tags) == set(tags):
-                    pre_tags = deepcopy(tags)
+                    pre_tags = list(tags)
                     pre_tags.append('Atom_ID')
                     pre_seq_data = loop.get_tag(pre_tags)
                     has_dc_h3 = has_c_h3 = False
@@ -2555,7 +2553,7 @@ class NefTranslator:
 
                 elif 'Atom_ID' in loop.tags and 'Auth_comp_ID' in loop.tags\
                         and set(tags) & set(loop.tags) == set(tags):
-                    pre_tags = deepcopy(tags)
+                    pre_tags = list(tags)
                     pre_tags.append('Atom_ID')
                     pre_seq_data = loop.get_tag(pre_tags)
                     has_dc_h3 = has_c_h3 = False
@@ -6383,11 +6381,11 @@ class NefTranslator:
 
                 if is_target_lp:
                     if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in loop.tags:
-                        key_items = deepcopy(key_items)
+                        key_items = list(key_items)
                         key_items.insert(0, {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True})
                     elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
-                        key_items = deepcopy(key_items)
+                        key_items = list(key_items)
                         key_items.insert(0, {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True})
 
@@ -6464,11 +6462,11 @@ class NefTranslator:
 
                 if is_target_lp:
                     if (is_nef_dist_lp or is_nef_dihed_lp) and 'restraint_combination_id' in loop.tags:
-                        key_items = deepcopy(key_items)
+                        key_items = list(key_items)
                         key_items.insert(0, {'name': 'restraint_combination_id', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True})
                     elif (is_star_dist_lp or is_star_dihed_lp) and 'Combination_ID' in loop.tags:
-                        key_items = deepcopy(key_items)
+                        key_items = list(key_items)
                         key_items.insert(0, {'name': 'Combination_ID', 'type': 'positive-int', 'mandatory': False,
                                              'enforce-non-zero': True})
 
@@ -7837,7 +7835,8 @@ class NefTranslator:
 
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtomInXplor:
-            return deepcopy(self.__cachedDictForValidStarAtomInXplor[key])
+            _atom_list, _ambiguity_code, _details = self.__cachedDictForValidStarAtomInXplor[key]
+            return (list(_atom_list), _ambiguity_code, _details)
 
         atom_list = []
         ambiguity_code = details = None
@@ -8114,7 +8113,7 @@ class NefTranslator:
             return (atom_list, ambiguity_code, details)
 
         finally:
-            _atom_list = deepcopy(atom_list)
+            _atom_list = list(atom_list)
             self.__cachedDictForValidStarAtomInXplor[key] = (_atom_list, ambiguity_code, details)
             if leave_unmatched:
                 key = (comp_id, atom_id, details, False, methyl_only)
@@ -8140,7 +8139,8 @@ class NefTranslator:
 
         key = (comp_id, atom_id, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForValidStarAtom:
-            return deepcopy(self.__cachedDictForValidStarAtom[key])
+            _atom_list, _ambiguity_code, _details = self.__cachedDictForValidStarAtom[key]
+            return (list(_atom_list), _ambiguity_code, _details)
 
         atom_list = []
         ambiguity_code = details = None
@@ -8356,7 +8356,7 @@ class NefTranslator:
             return (atom_list, ambiguity_code, details)
 
         finally:
-            _atom_list = deepcopy(atom_list)
+            _atom_list = list(atom_list)
             self.__cachedDictForValidStarAtom[key] = (_atom_list, ambiguity_code, details)
             if leave_unmatched:
                 key = (comp_id, atom_id, details, False, methyl_only)
@@ -8376,7 +8376,8 @@ class NefTranslator:
 
         key = (comp_id, nef_atom, details, leave_unmatched, methyl_only)
         if key in self.__cachedDictForStarAtom:
-            return deepcopy(self.__cachedDictForStarAtom[key])
+            _atom_list, _ambiguity_code, _details = self.__cachedDictForStarAtom[key]
+            return (list(_atom_list), _ambiguity_code, _details)
 
         comp_id = comp_id.upper()
         is_std_comp_id = comp_id in STD_MON_DICT
@@ -8724,7 +8725,7 @@ class NefTranslator:
             return (atom_list, ambiguity_code, details)
 
         finally:
-            _atom_list = deepcopy(atom_list)
+            _atom_list = list(atom_list)
             self.__cachedDictForStarAtom[key] = (_atom_list, ambiguity_code, details)
             if leave_unmatched:
                 key = (comp_id, nef_atom, details, False, methyl_only)
@@ -8745,7 +8746,8 @@ class NefTranslator:
 
         key = (comp_id, str(star_atom_list), str(details), leave_unmatched)
         if key in self.__cachedDictForNefAtom:
-            return deepcopy(self.__cachedDictForNefAtom[key])
+            _atom_list, _details, _atom_id_map = self.__cachedDictForNefAtom[key]
+            return (list(_atom_list), _details, dict(_atom_id_map))
 
         atom_list, atoms = [], []
         atom_id_map = {}
@@ -9192,7 +9194,7 @@ class NefTranslator:
             return (atom_list, details, atom_id_map)
 
         finally:
-            _atom_list = deepcopy(atom_list)
+            _atom_list = list(atom_list)
             self.__cachedDictForNefAtom[key] = (_atom_list, details, atom_id_map)
             if leave_unmatched:
                 key = (comp_id, str(star_atom_list), str(details), False)

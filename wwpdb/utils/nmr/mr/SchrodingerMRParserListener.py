@@ -36,8 +36,7 @@ try:
                                                CARTN_DATA_ITEMS,
                                                AUTH_ATOM_DATA_ITEMS,
                                                AUTH_ATOM_CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           getOneLetterCode,
+    from wwpdb.utils.nmr.AlignUtil import (getOneLetterCode,
                                            updatePolySeqRstFromAtomSelectionSet)
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance)
@@ -46,6 +45,8 @@ try:
     from wwpdb.utils.nmr.mr.SchrodingerMRParser import SchrodingerMRParser
     from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
+                                                       copyFactor,
+                                                       atomKey,
                                                        hasInterChainRestraint,
                                                        isIdenticalRestraint,
                                                        isLongRangeRestraint,
@@ -73,8 +74,7 @@ except ImportError:
                                    CARTN_DATA_ITEMS,
                                    AUTH_ATOM_DATA_ITEMS,
                                    AUTH_ATOM_CARTN_DATA_ITEMS)
-    from nmr.AlignUtil import (deepcopy,
-                               getOneLetterCode,
+    from nmr.AlignUtil import (getOneLetterCode,
                                updatePolySeqRstFromAtomSelectionSet)
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance)
@@ -83,6 +83,8 @@ except ImportError:
     from nmr.mr.SchrodingerMRParser import SchrodingerMRParser
     from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
     from nmr.mr.ParserListenerUtil import (toRegEx,
+                                           copyFactor,
+                                           atomKey,
                                            hasInterChainRestraint,
                                            isIdenticalRestraint,
                                            isLongRangeRestraint,
@@ -3472,14 +3474,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                         self.factor = self.doConsumeFactor_expressions(self.factor, cifCheck=True)
 
                         if 'atom_selection' in self.factor:
-                            _refAtomSelection = deepcopy(self.factor['atom_selection'])
-                            for atom in _refAtomSelection:
-                                if 'is_poly' in atom:
-                                    del atom['is_poly']
-                                if 'auth_atom_id' in atom:
-                                    del atom['auth_atom_id']
-                                if 'segment_id' in atom:
-                                    del atom['segment_id']
+                            _refAtomKeys = {atomKey(atom, ('is_poly', 'auth_atom_id', 'segment_id'))
+                                            for atom in self.factor['atom_selection']}
 
                             try:
 
@@ -3496,7 +3492,8 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                 if self.verbose:
                                     self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
-                            self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+                            self.factor['atom_selection'] = [atom for atom in _atomSelection
+                                                             if atomKey(atom) not in _refAtomKeys]
 
                             if len(self.factor['atom_selection']) == 0:
                                 self.factor['atom_id'] = [None]
@@ -3525,18 +3522,11 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                         if self.verbose:
                             self.log.write(f"+{self.class_name__}.exitFactor() ++ Error  - {str(e)}")
 
-                    _refAtomSelection = deepcopy(self.factor['atom_selection'])
-                    for atom in _refAtomSelection:
-                        if 'is_poly' in atom:
-                            del atom['is_poly']
-                        if 'auth_atom_id' in atom:
-                            del atom['auth_atom_id']
-                        if 'segment_id' in atom:
-                            del atom['segment_id']
+                    _refAtomKeys = {atomKey(atom, ('is_poly', 'auth_atom_id', 'segment_id'))
+                                    for atom in self.factor['atom_selection']}
 
-                    _refAtomSelection = [atom for atom in _refAtomSelection if atom in _atomSelection]
-
-                    self.factor['atom_selection'] = [atom for atom in _atomSelection if atom not in _refAtomSelection]
+                    self.factor['atom_selection'] = [atom for atom in _atomSelection
+                                                     if atomKey(atom) not in _refAtomKeys]
 
                     if len(self.factor['atom_selection']) == 0:
                         self.factor['atom_id'] = [None]
@@ -3556,7 +3546,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                                   f"The '{name}' clause has no effect "
                                   "because the internal statement is not set yet.")
                 else:
-                    self.factor = deepcopy(self.storeSet[name])
+                    self.factor = copyFactor(self.storeSet[name])
 
             if self.depth > 0 and self.cur_union_expr:
                 self.unionFactor = self.factor

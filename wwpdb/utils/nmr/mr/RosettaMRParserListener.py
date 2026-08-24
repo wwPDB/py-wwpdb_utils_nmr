@@ -70,8 +70,7 @@ try:
                                                RDC_ERROR_MAX,
                                                CARTN_DATA_ITEMS,
                                                INSTRUCTION_FOR_FULL_SEQUENCE)
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           updatePolySeqRst,
+    from wwpdb.utils.nmr.AlignUtil import (updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
                                            sortPolySeqRst,
@@ -99,6 +98,7 @@ try:
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.RosettaMRParser import RosettaMRParser
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       copyPolySeq,
                                                        extendCoordChainsForExactNoes,
                                                        isIdenticalRestraint,
                                                        isLongRangeRestraint,
@@ -177,8 +177,7 @@ except ImportError:
                                    RDC_ERROR_MAX,
                                    CARTN_DATA_ITEMS,
                                    INSTRUCTION_FOR_FULL_SEQUENCE)
-    from nmr.AlignUtil import (deepcopy,
-                               updatePolySeqRst,
+    from nmr.AlignUtil import (updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
                                sortPolySeqRst,
@@ -206,6 +205,7 @@ except ImportError:
     from nmr.io.CifReader import CifReader
     from nmr.mr.RosettaMRParser import RosettaMRParser
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           copyPolySeq,
                                            extendCoordChainsForExactNoes,
                                            isIdenticalRestraint,
                                            isLongRangeRestraint,
@@ -791,7 +791,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                         _compId = None
                                         for compId in list(compIds):
-                                            _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
+                                            _polySeqRstFailed = copyPolySeq(self.__polySeqRstFailed)
                                             updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                             sortPolySeqRst(_polySeqRstFailed)
                                             _seqAlignFailed, _ = alignPolymerSequence(self.__pA, self.__polySeq, _polySeqRstFailed)
@@ -1103,7 +1103,7 @@ class RosettaMRParserListener(ParseTreeListener):
                    and all('distance' in f for f in self.__f)\
                    and 'label_seq_scheme' in self.reasonsForReParsing:
                     del self.reasonsForReParsing['label_seq_scheme']
-                    __f = deepcopy(self.__f)
+                    __f = self.__f
                     self.__f = []
                     for f in __f:
                         self.__f.append(re.sub(r'\[Anomalous data\]', '[Atom not found]', f, 1))
@@ -2280,7 +2280,7 @@ class RosettaMRParserListener(ParseTreeListener):
                 if not isPolySeq and atomId_[0] in ('Q', 'M') and coordAtomSite is not None:
                     key = (chainId, cifSeqId, cifCompId, atomId_)
                     if key in self.__cachedDictForStarAtom:
-                        _atomId = deepcopy(self.__cachedDictForStarAtom[key])
+                        _atomId = list(self.__cachedDictForStarAtom[key])
                     else:
                         pattern = re.compile(fr'H{atomId_[1:]}\d+') if cifCompId in STD_MON_DICT\
                             else re.compile(fr'H{atomId_[1:]}\S?$')
@@ -2303,7 +2303,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                     modelNumName=self.__modelNumName):
                                         _atomId.append(_atomId_)
                         if len(_atomId) > 1:
-                            self.__cachedDictForStarAtom[key] = deepcopy(_atomId)
+                            self.__cachedDictForStarAtom[key] = list(_atomId)
                 if len(_atomId) > 1:
                     details = None
                 else:
@@ -2387,7 +2387,7 @@ class RosettaMRParserListener(ParseTreeListener):
             if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
                 key = (chainId, cifSeqId, cifCompId, atomId)
                 if key in self.__cachedDictForStarAtom:
-                    _atomId = deepcopy(self.__cachedDictForStarAtom[key])
+                    _atomId = list(self.__cachedDictForStarAtom[key])
                 else:
                     pattern = re.compile(fr'H{atomId[1:]}\d+') if cifCompId in STD_MON_DICT else re.compile(fr'H{atomId[1:]}\S?$')
                     atomIdList = [a for a in coordAtomSite['atom_id'] if re.search(pattern, a) and a[-1] in ('1', '2', '3')]
@@ -2409,7 +2409,7 @@ class RosettaMRParserListener(ParseTreeListener):
                                                 modelNumName=self.__modelNumName):
                                     _atomId.append(_atomId_)
                     if len(_atomId) > 1:
-                        self.__cachedDictForStarAtom[key] = deepcopy(_atomId)
+                        self.__cachedDictForStarAtom[key] = list(_atomId)
             if len(_atomId) > 1:
                 details = None
             else:

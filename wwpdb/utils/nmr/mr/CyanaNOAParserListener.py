@@ -24,7 +24,6 @@ try:
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP)
-    from wwpdb.utils.nmr.AlignUtil import deepcopy
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CyanaNOAParser import CyanaNOAParser
@@ -43,7 +42,6 @@ except ImportError:
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP)
-    from nmr.AlignUtil import deepcopy
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.CyanaNOAParser import CyanaNOAParser
@@ -292,7 +290,8 @@ class CyanaNOAParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 if len(self.atomSelectionSet) < 2:
                     return
 
-                self.noeAssignments.append(deepcopy(self.atomSelectionSet))
+                self.noeAssignments.append([[dict(a) if a.__class__ is dict else a for a in sel]
+                                            for sel in self.atomSelectionSet])
                 self.asisList.append([asis1, asis2])
                 self.weights.append(float(str(ctx.Integer(2))) / 100.0)
 

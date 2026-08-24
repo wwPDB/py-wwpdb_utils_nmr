@@ -37,6 +37,10 @@ except ImportError:
                                    LEN_LARGE_ASYM_ID)
 
 
+# The serialization round-trip is only for deep structures whose copy cost does not matter
+# (see the copyFactor()/copyPolySeq()/list()/dict() call sites for the hot paths, DAOTHER-10315).
+# quickle is unavailable on Python 3.11 or later, where its extension module fails to import
+# ('undefined symbol: _PyFloat_Pack8'), so the pickle branch is what runs there.
 try:
 
     import quickle  # pylint: disable=import-outside-toplevel
@@ -726,7 +730,7 @@ def updatePolySeqRst(polySeqRst: List[dict], chainId: str, seqId: int, compId: s
     if authCompId is None:
         for ps in polySeqRst:
             if 'auth_comp_id' not in ps:
-                ps['auth_comp_id'] = deepcopy(ps['comp_id'])
+                ps['auth_comp_id'] = list(ps['comp_id'])
 
     ps = next((ps for ps in polySeqRst if ps['chain_id'] == chainId), None)
     if ps is None:
@@ -1126,7 +1130,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     if _conflict == 0 and not any(True for i in range(_length - 1)
                                                   if (str(_myAlign[i][0]) == '.' and str(_myAlign[i + 1][1]) == '.')
                                                   or (str(_myAlign[i][1]) == '.' and str(_myAlign[i + 1][0]) == '.')):
-                        myAlign = deepcopy(_myAlign)
+                        myAlign = _myAlign
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
 
@@ -1148,7 +1152,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                     if __matched > _matched and _conflict == 0:
                         not_decided_ps2_comp_id = False
                         polySeqRst[i2]['comp_id'] = ps2['auth_comp_id']
-                        myAlign = deepcopy(_myAlign)
+                        myAlign = _myAlign
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
                         prefer_ps2_auth_comp_id = True
@@ -1193,7 +1197,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                 if myPr0 != '.':
                                     idx1 += 1
 
-                        myAlign = deepcopy(_myAlign)
+                        myAlign = _myAlign
                         length, _matched, unmapped, conflict, offset_1, offset_2 =\
                             _length, __matched, _unmapped, _conflict, _offset_1, _offset_2
                         prefer_ps1_alt_comp_id = True
@@ -1426,7 +1430,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 # cs    PR....NRQPP.PYPLTA    PR....NRQ.PPPYPLTA
                 #               123456                1 2356
                 length1 = len(seq_id1)
-                _seq_id1_ = deepcopy(seq_id1)
+                _seq_id1_ = list(seq_id1)
                 for idx1, _seq_id1 in enumerate(_seq_id1_):
                     if _seq_id1 is None and 1 < idx1 < length1 - 2\
                        and None not in (seq_id1[idx1 - 1], seq_id1[idx1 + 1])\
@@ -1443,7 +1447,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                                     auth_comp_id1.pop(idx1)
 
                 length2 = len(seq_id2)
-                _seq_id2_ = deepcopy(seq_id2)
+                _seq_id2_ = list(seq_id2)
                 for idx2, _seq_id2 in enumerate(_seq_id2_):
                     if _seq_id2 is None and 1 < idx2 < length2 - 2\
                        and None not in (seq_id2[idx2 - 1], seq_id2[idx2 + 1])\
@@ -1586,7 +1590,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
 
             not_decided_ps2_comp_id = any(True for c2 in ps2['comp_id'] if c2.endswith('?'))  # AMBER/GROMACS topology
             if not_decided_ps2_comp_id:
-                ps2 = deepcopy(ps2)
+                ps2 = copy.copy(ps2)
                 ps2['comp_id'] = [c2[:-1] if c2.endswith('?') else c2 for c2 in ps2['comp_id']]
                 if len(ps1['comp_id']) == len(ps2['comp_id']):
                     if not any(cmp2 not in cmp1 for cmp1, cmp2 in zip(ps1['comp_id'], ps2['comp_id'])):
@@ -2594,7 +2598,7 @@ def retrieveAtomIdFromMRMap(ccU, mrAtomNameMapping: List[dict], cifSeqId: int, c
            and len(item['original_atom_id']) > 1
            and item['original_atom_id'][0].isdigit()
            and item['original_atom_id'][1] == 'H'):
-        _mapping = deepcopy(mapping)
+        _mapping = list(mapping)
         for item in mapping:
             if item['original_atom_id'] is not None\
                and len(item['original_atom_id']) > 1\

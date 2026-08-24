@@ -46,8 +46,7 @@ try:
                                                ASSIGNMENT_RESID_PAT,
                                                ASSIGNMENT_HALF_SPIN_NUCLEUS,
                                                INSTRUCTION_FOR_FULL_SEQUENCE)
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           getOneLetterCode,
+    from wwpdb.utils.nmr.AlignUtil import (getOneLetterCode,
                                            updatePolySeqRst,
                                            revertPolySeqRst,
                                            sortPolySeqRst,
@@ -104,8 +103,7 @@ except ImportError:
                                    ASSIGNMENT_RESID_PAT,
                                    ASSIGNMENT_HALF_SPIN_NUCLEUS,
                                    INSTRUCTION_FOR_FULL_SEQUENCE)
-    from nmr.AlignUtil import (deepcopy,
-                               getOneLetterCode,
+    from nmr.AlignUtil import (getOneLetterCode,
                                updatePolySeqRst,
                                revertPolySeqRst,
                                sortPolySeqRst,
@@ -919,7 +917,8 @@ class BaseCSParserListener():
 
                         if len(self.atomSelectionSet) == 1:
                             has_assignments = True
-                            self.atomSelectionSets.append(deepcopy(self.atomSelectionSet))
+                            self.atomSelectionSets.append([[dict(a) if a.__class__ is dict else a for a in sel]
+                                                           for sel in self.atomSelectionSet])
                         else:
                             has_assignments = False
                             break
@@ -3727,7 +3726,7 @@ class BaseCSParserListener():
             if not isPolySeq and atomId[0] in ('Q', 'M') and coordAtomSite is not None:
                 key = (chainId, cifSeqId, compId, atomId)
                 if key in self.__cachedDictForStarAtom:
-                    _atomId = deepcopy(self.__cachedDictForStarAtom[key])
+                    _atomId = list(self.__cachedDictForStarAtom[key])
             if len(_atomId) > 1:
                 details = None
             else:

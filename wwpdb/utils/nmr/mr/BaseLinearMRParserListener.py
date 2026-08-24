@@ -72,8 +72,7 @@ try:
                                                CARTN_DATA_ITEMS,
                                                HEME_LIKE_RES_NAMES,
                                                INSTRUCTION_FOR_FULL_SEQUENCE)
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           updatePolySeqRst,
+    from wwpdb.utils.nmr.AlignUtil import (updatePolySeqRst,
                                            revertPolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -102,6 +101,7 @@ try:
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                                       copyPolySeq,
                                                        extendCoordChainsForExactNoes,
                                                        translateToStdResName,
                                                        translateToStdAtomNameNoRef,
@@ -168,8 +168,7 @@ except ImportError:
                                    CARTN_DATA_ITEMS,
                                    HEME_LIKE_RES_NAMES,
                                    INSTRUCTION_FOR_FULL_SEQUENCE)
-    from nmr.AlignUtil import (deepcopy,
-                               updatePolySeqRst,
+    from nmr.AlignUtil import (updatePolySeqRst,
                                revertPolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -198,6 +197,7 @@ except ImportError:
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
+                                           copyPolySeq,
                                            extendCoordChainsForExactNoes,
                                            translateToStdResName,
                                            translateToStdAtomNameNoRef,
@@ -936,7 +936,7 @@ class BaseLinearMRParserListener():
                                     for seqId, compIds in zip(_ps['seq_id'], _ps['comp_ids']):
                                         _compId = None
                                         for compId in list(compIds):
-                                            _polySeqRstFailed = deepcopy(self.__polySeqRstFailed)
+                                            _polySeqRstFailed = copyPolySeq(self.__polySeqRstFailed)
                                             updatePolySeqRst(_polySeqRstFailed, chainId, seqId, compId)
                                             sortPolySeqRst(_polySeqRstFailed)
                                             _seqAlignFailed, _ = alignPolymerSequence(self.pA, self.polySeq, _polySeqRstFailed)
@@ -1082,7 +1082,7 @@ class BaseLinearMRParserListener():
                         if 'ambig_atom_id_remap' not in self.reasonsForReParsing:
                             self.reasonsForReParsing['ambig_atom_id_remap'] = self.ambigAtomNameMapping
                     if len(self.unambigAtomNameMapping) + len(self.ambigAtomNameMapping) == 0:
-                        __f = deepcopy(self.f)
+                        __f = self.f
                         self.f = []
                         for f in __f:
                             if '[Atom not found]' in f and 'makeDIST_RST' in f:
@@ -4232,7 +4232,7 @@ class BaseLinearMRParserListener():
                 if not isPolySeq and atomId_[0] in ('Q', 'M') and coordAtomSite is not None:
                     key = (chainId, cifSeqId, compId, atomId_)
                     if key in self.__cachedDictForStarAtom:
-                        _atomId = deepcopy(self.__cachedDictForStarAtom[key])
+                        _atomId = list(self.__cachedDictForStarAtom[key])
                     else:
                         pattern = re.compile(fr'H{atomId_[1:]}\d+') if compId in STD_MON_DICT\
                             else re.compile(fr'H{atomId_[1:]}\S?$')
@@ -4255,7 +4255,7 @@ class BaseLinearMRParserListener():
                                                     modelNumName=self.modelNumName):
                                         _atomId.append(_atomId_)
                         if len(_atomId) > 1:
-                            self.__cachedDictForStarAtom[key] = deepcopy(_atomId)
+                            self.__cachedDictForStarAtom[key] = list(_atomId)
                 if len(_atomId) > 1:
                     details = None
                 else:
@@ -4518,7 +4518,7 @@ class BaseLinearMRParserListener():
                 if not isPolySeq and atomId_[0] in ('Q', 'M') and coordAtomSite is not None:
                     key = (chainId, cifSeqId, compId, atomId_)
                     if key in self.__cachedDictForStarAtom:
-                        _atomId = deepcopy(self.__cachedDictForStarAtom[key])
+                        _atomId = list(self.__cachedDictForStarAtom[key])
                     else:
                         pattern = re.compile(fr'H{atomId_[1:]}\d+') if compId in STD_MON_DICT\
                             else re.compile(fr'H{atomId_[1:]}\S?$')
@@ -4541,7 +4541,7 @@ class BaseLinearMRParserListener():
                                                     modelNumName=self.modelNumName):
                                         _atomId.append(_atomId_)
                         if len(_atomId) > 1:
-                            self.__cachedDictForStarAtom[key] = deepcopy(_atomId)
+                            self.__cachedDictForStarAtom[key] = list(_atomId)
                 if len(_atomId) > 1:
                     details = None
                 else:

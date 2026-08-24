@@ -81,8 +81,7 @@ try:
                                                REMEDIATE_BACKBONE_ANGLE_NAME_PAT,
                                                DEFAULT_LIST_ID_COUNTER,
                                                INSTRUCTION_FOR_FULL_SEQUENCE)
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           letterToDigit,
+    from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
                                            getScoreOfSeqAlign)
@@ -132,13 +131,41 @@ except ImportError:
                                    REMEDIATE_BACKBONE_ANGLE_NAME_PAT,
                                    DEFAULT_LIST_ID_COUNTER,
                                    INSTRUCTION_FOR_FULL_SEQUENCE)
-    from nmr.AlignUtil import (deepcopy,
-                               letterToDigit,
+    from nmr.AlignUtil import (letterToDigit,
                                alignPolymerSequence,
                                assignPolymerSequence,
                                getScoreOfSeqAlign)
     from nmr.CifToNmrStar import has_key_value
     from nmr.io.CifReader import to_np_array
+
+
+def atomKey(atom: dict, exclKeys: Tuple[str, ...] = ()) -> tuple:
+    """ Return a hashable canonical form of a given atom, which compares equal exactly when the
+        atom dictionaries compare equal, ignoring the given keys. Let atom selections be compared
+        via a set instead of an O(N*M) list scan (DAOTHER-10315).
+    """
+
+    return tuple(sorted((k, v) for k, v in atom.items() if k not in exclKeys))
+
+
+def copyFactor(factor: dict) -> dict:
+    """ Return a copy of a factor dictionary, which is equivalent to deepcopy() for factor
+        contents: every value is either an immutable scalar, or a list whose elements are
+        immutable scalars ('*' wildcard) or flat atom dictionaries of immutable scalars.
+        About 5-10 times faster than the pickle round-trip of deepcopy() (DAOTHER-10315).
+    """
+
+    return {k: ([dict(a) if a.__class__ is dict else a for a in v] if v.__class__ is list else v)
+            for k, v in factor.items()}
+
+
+def copyPolySeq(polySeq: List[dict]) -> List[dict]:
+    """ Return a copy of a polymer sequence, which is equivalent to deepcopy() for polymer
+        sequence contents: every value is either an immutable scalar or a list of immutable
+        scalars. Much faster than the pickle round-trip of deepcopy() (DAOTHER-10315).
+    """
+
+    return [{k: (list(v) if v.__class__ is list else v) for k, v in ps.items()} for ps in polySeq]
 
 
 def toRegEx(string: str) -> str:
@@ -5216,7 +5243,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
             # PHI or PSI
             if commonSeqId[0][1] == 3 and commonSeqId[1][1] == 1:
-                _atomIds = deepcopy(atomIds)
+                _atomIds = list(atomIds)
 
                 # PHI
                 prevSeqId = commonSeqId[1][0]

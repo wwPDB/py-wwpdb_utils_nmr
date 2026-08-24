@@ -287,6 +287,10 @@
 #                           (NmrDpValidation{Base,Input,Coord,Loop,Nomencl,Cs,Mr,Pk,CoordChk,CsStats,MrStats,OutStats}
 #                           and NmrDpRemediation{Base,Enum,PolySeq,CsLoop,Cs,Mr,Pk,LegacyCs,LegacyMr,LegacyPk,Stats,Merge}),
 #                           no API change
+# 24-Aug-2026  M. Yokochi - replace the deepcopy() serialization round-trip by minimal copies at the call sites
+#                           (copyFactor/copyPolySeq/atomKey in ParserListenerUtil, list()/dict()/copy.copy(),
+#                           or no copy at all where the retrieved object is immutable or never mutated),
+#                           and compare atom selections of the 'not' clause via a hashed key set (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -2893,8 +2897,8 @@ class NmrDpUtility:
                                                 if len(seq_align) == 1:
                                                     sa = seq_align[0]
                                                     if sa['matched'] > sa['conflict'] and sa['conflict'] <= c:
-                                                        _ps1 = copy.deepcopy(ps1)
-                                                        _ps2 = copy.deepcopy(ps2)
+                                                        _ps1 = copy.copy(ps1)
+                                                        _ps2 = copy.copy(ps2)
                                                         _ps1['seq_id'] = sa['test_seq_id']
                                                         _ps1['comp_id'] = sa['ref_comp_id']
                                                         _ps2['seq_id'] = sa['test_seq_id']
@@ -3347,7 +3351,7 @@ class NmrDpUtility:
                 for chain_id in chain_ids:
                     ps = next(ps for ps in poly_seq if ps['chain_id'] == chain_id)
                     if 'alt_comp_id' not in ps or len(ps['alt_comp_id']) != len(ps['comp_id']):
-                        ps['alt_comp_id'] = deepcopy(ps['comp_id'])
+                        ps['alt_comp_id'] = list(ps['comp_id'])
                     for ext_seq_key in ext_seq_key_set:
                         if ext_seq_key[0] != chain_id:
                             continue
@@ -13725,7 +13729,7 @@ class NmrDpUtility:
 
             if content_subtype_len == 1:  # enable to process text data in place
 
-                _reserved_list_ids = deepcopy(reserved_list_ids)
+                _reserved_list_ids = {k: list(v) for k, v in reserved_list_ids.items()}
                 list_id = get_first_sf_tag(sf, 'ID')
                 _reserved_list_ids[content_subtype].remove(int(list_id) if list_id not in EMPTY_VALUE else idx)
 

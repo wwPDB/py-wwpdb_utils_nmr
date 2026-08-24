@@ -838,7 +838,7 @@ class BmrbChemShiftStat:
     @functools.lru_cache(maxsize=128)
     def getPseudoAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False
                        ) -> List[str]:
-        """ Return all pseudo atoms of a give comp_id.
+        """ Return all pseudoatoms of a give comp_id.
         """
 
         if comp_id in EMPTY_VALUE:

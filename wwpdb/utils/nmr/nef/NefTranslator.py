@@ -39,7 +39,7 @@
 # 28-Apr-2020  M. Yokochi - do not throw ValueError for 'range-float' data type (v2.2.9, DAOTHER-5611)
 # 28-Apr-2020  M. Yokochi - extract sequence from CS/MR loop with gap (v2.2.10, DAOTHER-5611)
 # 29-Apr-2020  M. Yokochi - support diagnostic message of PyNMRSTAR v2.6.5.1 or later (v2.2.11, DAOTHER-5611)
-# 30-Apr-2020  M. Yokochi - fix pseudo atom mapping in ligand (v2.2.12, DAOTHER-5611)
+# 30-Apr-2020  M. Yokochi - fix pseudoatom mapping in ligand (v2.2.12, DAOTHER-5611)
 # 14-May-2020  M. Yokochi - revise error message for missing mandatory content (v2.2.13, DAOTHER-5681 and 5682)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (v2.3.0, DAOTHER-5765)
 # 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom (v2.3.1)
@@ -49,7 +49,7 @@
 # 08-Jul-2020  M. Yokochi - add support for _Gen_dist_constraint.Distance_val, _RDC_constraint.RDC_val,
 #                           and _RDC_constraint.RDC_val_err (v2.6.0, DAOTHER-5926)
 # 17-Aug-2020  M. Yokochi - add support for residue variant (v2.7.0, DAOTHER-5906)
-# 14-Sep-2020  M. Yokochi - add support for pseudo atom in NMR-STAR (v2.8.0, DAOTHER-6128)
+# 14-Sep-2020  M. Yokochi - add support for pseudoatom in NMR-STAR (v2.8.0, DAOTHER-6128)
 # 17-Sep-2020  M. Yokochi - do not convert atom name between NEF and NMR-STAR, which ends with apostrophe (v2.8.0, DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (v2.8.1, DAOTHER-6128)
 # 28-Sep-2020  M. Yokochi - fix chain_code mapping in NEF MR loops in case that there is no CS assignment (v2.8.2, DAOTHER-6128)
@@ -120,7 +120,7 @@
 # 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
 # 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
 # 09-Apr-2025  M. Yokochi - permit missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
-# 23-May-2025  M. Yokochi - resolve pseudo atom name of non-standard residue based on local CCD derived from the coordinated
+# 23-May-2025  M. Yokochi - resolve pseudoatom name of non-standard residue based on local CCD derived from the coordinated
 #                           (v4.5.0, DAOTHER-10105)
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
@@ -1608,7 +1608,7 @@ class NefTranslator:
                            ) -> None:
         """ Set chem_comp dictionary derived from ParserListerUtil.coordAssemblyChecker().
             DAOTHER-8817: construct pseudo CCD from the coordinates
-            DAOTHER-10105: add auth_atom_name_to_id to resolve pseudo atom names
+            DAOTHER-10105: add auth_atom_name_to_id to resolve pseudoatom names
         """
 
         if isinstance(chem_comp_atom, dict):
@@ -7865,7 +7865,7 @@ class NefTranslator:
 
         try:
 
-            # DAOTHER-10105: resolve pseudo atom name of non-standard residue
+            # DAOTHER-10105: resolve pseudoatom name of non-standard residue
             if comp_id not in STD_MON_DICT and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId\
                and not self.__annotation_mode:  # and atom_id[0] in ('Q', 'M'):
                 _atom_id = atom_id
@@ -8147,7 +8147,7 @@ class NefTranslator:
 
         try:
 
-            # DAOTHER-10105: resolve pseudo atom name of non-standard residue
+            # DAOTHER-10105: resolve pseudoatom name of non-standard residue
             if comp_id not in STD_MON_DICT and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId\
                and not self.__annotation_mode:  # and atom_id[0] in ('Q', 'M'):
                 _atom_id = atom_id
@@ -8386,7 +8386,7 @@ class NefTranslator:
 
         try:
 
-            # DAOTHER-10105: resolve pseudo atom name of non-standard residue
+            # DAOTHER-10105: resolve pseudoatom name of non-standard residue
             if not is_std_comp_id and self.authAtomNameToId is not None and comp_id in self.authAtomNameToId\
                and not self.__annotation_mode:  # and nef_atom[0] in ('%', '*'):
                 coord_atom_site = {'atom_id': list(self.authAtomNameToId[comp_id].values()),

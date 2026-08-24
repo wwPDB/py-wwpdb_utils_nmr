@@ -209,13 +209,13 @@ class BmrbChemShiftStat:
             return False
 
         if comp_id in self.__cachedDictForPeptideLike:
-            return deepcopy(self.__cachedDictForPeptideLike[comp_id])
+            return self.__cachedDictForPeptideLike[comp_id]
 
         result = self.__ccU.peptideLike(comp_id)
 
         self.__cachedDictForPeptideLike[comp_id] = result
 
-        return deepcopy(result)
+        return result
 
     def getTypeOfCompId(self, comp_id: str
                         ) -> Tuple[bool, bool, bool]:
@@ -233,7 +233,7 @@ class BmrbChemShiftStat:
             return (False, True, False)
 
         if comp_id in self.__cachedDictForTypeOfCompId:
-            return deepcopy(self.__cachedDictForTypeOfCompId[comp_id])
+            return self.__cachedDictForTypeOfCompId[comp_id]
 
         results = self.__ccU.getTypeOfCompId(comp_id)
 
@@ -242,7 +242,7 @@ class BmrbChemShiftStat:
 
         self.__cachedDictForTypeOfCompId[comp_id] = results
 
-        return deepcopy(results)
+        return results
 
     def getSimilarCompIdFromAtomIds(self, atom_ids: List[str]
                                     ) -> Optional[str]:
@@ -252,7 +252,7 @@ class BmrbChemShiftStat:
 
         key = str(atom_ids)
         if key in self.__cachedDictForSimilarCompId:
-            return deepcopy(self.__cachedDictForSimilarCompId[key])
+            return self.__cachedDictForSimilarCompId[key]
 
         aa_bb = {"C", "CA", "CB", "H", "HA", "HA2", "HA3", "N"}
         dn_bb = {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'",
@@ -684,13 +684,13 @@ class BmrbChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForMethylAtoms:
-            return deepcopy(self.__cachedDictForMethylAtoms[comp_id])
+            return list(self.__cachedDictForMethylAtoms[comp_id])
 
         result = self.__ccU.getMethylAtoms(comp_id)
 
         self.__cachedDictForMethylAtoms[comp_id] = result
 
-        return deepcopy(result)
+        return list(result)
 
     def getMethylProtons(self, comp_id: str
                          ) -> List[str]:
@@ -701,13 +701,13 @@ class BmrbChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForMethylProtons:
-            return deepcopy(self.__cachedDictForMethylProtons[comp_id])
+            return list(self.__cachedDictForMethylProtons[comp_id])
 
         result = self.__ccU.getMethylProtons(comp_id)
 
         self.__cachedDictForMethylProtons[comp_id] = result
 
-        return deepcopy(result)
+        return list(result)
 
     def getRepMethylProtons(self, comp_id: str
                             ) -> List[str]:
@@ -718,13 +718,13 @@ class BmrbChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForRepMethylProtons:
-            return deepcopy(self.__cachedDictForRepMethylProtons[comp_id])
+            return list(self.__cachedDictForRepMethylProtons[comp_id])
 
         result = self.__ccU.getRepMethylProtons(comp_id)
 
         self.__cachedDictForRepMethylProtons[comp_id] = result
 
-        return deepcopy(result)
+        return list(result)
 
     def getNonRepMethylProtons(self, comp_id: str
                                ) -> List[str]:
@@ -735,13 +735,13 @@ class BmrbChemShiftStat:
             return []
 
         if comp_id in self.__cachedDictForNonRepMethylProtons:
-            return deepcopy(self.__cachedDictForNonRepMethylProtons[comp_id])
+            return list(self.__cachedDictForNonRepMethylProtons[comp_id])
 
         result = self.__ccU.getNonRepMethylProtons(comp_id)
 
         self.__cachedDictForNonRepMethylProtons[comp_id] = result
 
-        return deepcopy(result)
+        return list(result)
 
     def getProtonsInSameGroup(self, comp_id: str, atom_id: str, excl_self: bool = False
                               ) -> List[str]:
@@ -753,13 +753,13 @@ class BmrbChemShiftStat:
 
         key = (comp_id, atom_id, excl_self)
         if key in self.__cachedDictForProtonInSameGroup:
-            return deepcopy(self.__cachedDictForProtonInSameGroup[key])
+            return list(self.__cachedDictForProtonInSameGroup[key])
 
         result = self.__ccU.getProtonsInSameGroup(comp_id, atom_id, excl_self)
 
         self.__cachedDictForProtonInSameGroup[key] = result
 
-        return deepcopy(result)
+        return list(result)
 
     @functools.lru_cache(maxsize=128)
     def getSideChainAtoms(self, comp_id: str, excl_minor_atom: bool = False, incl_nstd_bb_atom: bool = False,
@@ -838,7 +838,7 @@ class BmrbChemShiftStat:
     @functools.lru_cache(maxsize=128)
     def getPseudoAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False
                        ) -> List[str]:
-        """ Return all pseudo atoms of a give comp_id.
+        """ Return all pseudoatoms of a give comp_id.
         """
 
         if comp_id in EMPTY_VALUE:
@@ -890,7 +890,7 @@ class BmrbChemShiftStat:
             return {'sugar': backbone, 'base': sidechain}
 
         if comp_id in self.__cachedDictForCategorizedAtomIds:
-            return deepcopy(self.__cachedDictForCategorizedAtomIds[comp_id])
+            return {k: list(v) for k, v in self.__cachedDictForCategorizedAtomIds[comp_id].items()}
 
         polypeptide_like, polynucleotide_like, carbohydrates_like = self.__ccU.getTypeOfCompId(comp_id)
 

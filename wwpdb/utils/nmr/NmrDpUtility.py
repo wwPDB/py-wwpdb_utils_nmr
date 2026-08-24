@@ -53,7 +53,7 @@
 # 23-Apr-2020  M. Yokochi - make sure to parse chem_shift_ref saveframe tag (DAOTHER-5610)
 # 23-Apr-2020  M. Yokochi - implement automatic format correction (DAOTHER-5603, 5610)
 # 24-Apr-2020  M. Yokochi - separate format_issue error and missing_mandatory_content error (DAOTHER-5611)
-# 24-Apr-2020  M. Yokochi - support 'QR' pseudo atom name (DAOTHER-5611)
+# 24-Apr-2020  M. Yokochi - support 'QR' pseudoatom name (DAOTHER-5611)
 # 24-Apr-2020  M. Yokochi - allow mandatory value is missing in NMR conventional deposition (DAOTHER-5611)
 # 25-Apr-2020  M. Yokochi - implement automatic format correction for 6NZN, 6PQF, 6PSI entry (DAOTHE-5611)
 # 25-Apr-2020  M. Yokochi - add 'entity' content subtype (DAOTHER-5611)
@@ -98,7 +98,7 @@
 # 20-Aug-2020  M. Yokochi - add 'leave_intl_note' output parameter decides whether to leave internal commentary note
 #                           in processed NMR-STAR file,
 #                           set False for OneDep environment (DAOTHER-6030)
-# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudo atom
+# 10-Sep-2020  M. Yokochi - add 'transl_pseudo_name' input parameter decides whether to translate conventional pseudoatom
 #                           nomenclature in combined NMR-STAR file (DAOTHER-6128)
 # 16-Sep-2020  M. Yokochi - bug fix release based on internal test using BMRB NMR restraint archive of 6.3k entries (DAOTHER-6128)
 # 18-Sep-2020  M. Yokochi - bug fix release for negative sequence numbers (DAOTHER-6128)
@@ -164,7 +164,7 @@
 #                           while upload-conversion of the coordinate file (DAOTHER-7665)
 # 17-Feb-2022  M. Yokochi - do report incompletely assigned chemical shifts for conventional deposition (DAOTHER-7662)
 # 21-Feb-2022  M. Yokochi - verify 'onebond' coherence transfer type using CCD (DAOTHER-7681, issue #2)
-# 21-Feb-2022  M. Yokochi - verify pseudo atom names in NMR restraints are in assigned chemical shifts (DAOTHER-7681, issue #1)
+# 21-Feb-2022  M. Yokochi - verify pseudoatom names in NMR restraints are in assigned chemical shifts (DAOTHER-7681, issue #1)
 # 24-Mar-2022  M. Yokochi - utilize software specific MR parsers for sanity check of NMR restraint files (DAOTHER-7690)
 # 20-Mar-2022  M. Yokochi - add support for _atom_site.label_alt_id (DAOTHER-4060, 7544, NMR restraint remediation)
 # 06-Apr-2022  M. Yokochi - detect other possible MR format if the first parsing fails (DAOTHER-7690)
@@ -287,6 +287,10 @@
 #                           (NmrDpValidation{Base,Input,Coord,Loop,Nomencl,Cs,Mr,Pk,CoordChk,CsStats,MrStats,OutStats}
 #                           and NmrDpRemediation{Base,Enum,PolySeq,CsLoop,Cs,Mr,Pk,LegacyCs,LegacyMr,LegacyPk,Stats,Merge}),
 #                           no API change
+# 24-Aug-2026  M. Yokochi - replace the deepcopy() serialization round-trip by minimal copies at the call sites
+#                           (copyFactor/copyPolySeq/atomKey in ParserListenerUtil, list()/dict()/copy.copy(),
+#                           or no copy at all where the retrieved object is immutable or never mutated),
+#                           and compare atom selections of the 'not' clause via a hashed key set (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -295,7 +299,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.0"
+__version__ = "5.3.1"
 
 import collections
 import copy
@@ -2893,8 +2897,8 @@ class NmrDpUtility:
                                                 if len(seq_align) == 1:
                                                     sa = seq_align[0]
                                                     if sa['matched'] > sa['conflict'] and sa['conflict'] <= c:
-                                                        _ps1 = copy.deepcopy(ps1)
-                                                        _ps2 = copy.deepcopy(ps2)
+                                                        _ps1 = copy.copy(ps1)
+                                                        _ps2 = copy.copy(ps2)
                                                         _ps1['seq_id'] = sa['test_seq_id']
                                                         _ps1['comp_id'] = sa['ref_comp_id']
                                                         _ps2['seq_id'] = sa['test_seq_id']
@@ -3347,7 +3351,7 @@ class NmrDpUtility:
                 for chain_id in chain_ids:
                     ps = next(ps for ps in poly_seq if ps['chain_id'] == chain_id)
                     if 'alt_comp_id' not in ps or len(ps['alt_comp_id']) != len(ps['comp_id']):
-                        ps['alt_comp_id'] = deepcopy(ps['comp_id'])
+                        ps['alt_comp_id'] = list(ps['comp_id'])
                     for ext_seq_key in ext_seq_key_set:
                         if ext_seq_key[0] != chain_id:
                             continue
@@ -6841,7 +6845,7 @@ class NmrDpUtility:
         return self.__reg.report.getTotalErrors() == __errors
 
     def __testCsPseudoAtomNameConsistencyInMrLoop(self) -> bool:
-        """ Perform consistency test on pseudo atom names between assigned chemical shifts and restraints. (DAOTHER-7681, issue #1)
+        """ Perform consistency test on pseudoatom names between assigned chemical shifts and restraints. (DAOTHER-7681, issue #1)
         """
 
         __errors = self.__reg.report.getTotalErrors()
@@ -13725,7 +13729,7 @@ class NmrDpUtility:
 
             if content_subtype_len == 1:  # enable to process text data in place
 
-                _reserved_list_ids = deepcopy(reserved_list_ids)
+                _reserved_list_ids = {k: list(v) for k, v in reserved_list_ids.items()}
                 list_id = get_first_sf_tag(sf, 'ID')
                 _reserved_list_ids[content_subtype].remove(int(list_id) if list_id not in EMPTY_VALUE else idx)
 

@@ -7,7 +7,7 @@ munkres
 numpy
 packaging
 pynmrstar
-quickle
+quickle ; python_version < "3.11"
 rmsd
 scikit-learn
 striprtf

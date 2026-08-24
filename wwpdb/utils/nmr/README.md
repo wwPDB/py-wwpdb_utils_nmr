@@ -63,11 +63,11 @@ name|type|description
 `check_auth_seq`|`param`|Boolean value. False for OneDep system.
 `validation_server`|`param`|Boolean value. False for OneDep system. True for standalone validation server.
 `conversion_server`|`param`|Boolean value, False for OneDep system. True for standalone NMR data conversion server.
-`transl_pseudo_name`|`param`|Boolean value. False for OneDep system. Whether to convert pseudo atom nomenclature in NMR unified data file.
+`transl_pseudo_name`|`param`|Boolean value. False for OneDep system. Whether to convert pseudoatom nomenclature in NMR unified data file.
 `tolerant_seq_align`|`param`|Boolean value. Set True for `nmr-str-consistency-check`, `nmr-str2str-deposit`, `nmr-str2cif-deposit`, `nmr-str2nef-release`, and `nmr-str2cif-annotate` workflow operations. Whether to ignore sequence alignment error due to residue variant.
 `fix_format_issue`|`param`|Boolean value. True for legacy separated file data file deposition or release mode.
 `excl_missing_data`|`param`|Boolean value. True for legacy separated file data file deposition. Whether to exclude missing mandatory data.
-`cmpl_missing_data`|`param`|Boolean value. True for legacy separated file data file deposition. Whether to complement missing data. (add missing pseudo atoms in NMR restraints in actual)
+`cmpl_missing_data`|`param`|Boolean value. True for legacy separated file data file deposition. Whether to complement missing data. (add missing pseudoatoms in NMR restraints in actual)
 `trust_pdbx_nmr_ens`|`param`|Boolean value. True for release mode. Whether to trust pdbx_nmr_ensemble to get total number of models.
 `rmsd_not_superimposed`|`param`|Positive floating-point value. Criterion for detection of not superimposed model. (default value is 2.0 Å)
 `rmsd_overlaid_exactly`|`param`|Positive floating-potnt value. Criterion for detection of exactly overlaid models. (default value is 0.01 Å)
@@ -271,7 +271,7 @@ For example,
 	- packaging
 	- pynmrstar (3.2.0 or later)
 	- python-dateutil
-	- quickle (optional for minor performance improvement)
+	- quickle (optional for minor performance improvement; Python 3.10 or before, the extension module does not import on Python 3.11 or later)
 	- requests
 	- rmsd
 	- scikit-learn

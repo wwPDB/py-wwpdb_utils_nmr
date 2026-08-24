@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.0"
+__version__ = "5.3.1"
 
 from typing import Union
 
@@ -145,7 +145,7 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                and atom_id != atom_id_\
                                and not content_subtype.startswith('spectral_peak'):
 
-                                warn = f"Conventional psuedo atom {comp_id}:{atom_id} is translated to {atom_id_!r} "\
+                                warn = f"Conventional pseudoatom name {comp_id}:{atom_id} is translated to {atom_id_!r} "\
                                     "according to the IUPAC atom nomenclature."
 
                                 self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',
@@ -325,7 +325,7 @@ class NmrDpValidationNomencl(NmrDpValidationBase):
                                 if file_type == 'nmr-star' and self._reg.combined_mode and self._reg.transl_pseudo_name\
                                    and atom_id != atom_id_:
 
-                                    warn = f"Conventional psuedo atom {comp_id}:{atom_id} is translated to {atom_id_!r} "\
+                                    warn = f"Conventional pseudoatom name {comp_id}:{atom_id} is translated to {atom_id_!r} "\
                                         "according to the IUPAC atom nomenclature."
 
                                     self._reg.report.warning.appendDescription('auth_atom_nomenclature_mismatch',

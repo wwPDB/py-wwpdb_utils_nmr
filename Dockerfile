@@ -60,10 +60,10 @@ RUN CS_STAT_REL_DATE_FILE=wwpdb/utils/nmr/bmrb_cs_stat/.cs_stat_rel_date \
     && echo "export CS_STAT_REL=${CS_STAT_REL}" >> ${VER_INFO}
 
 # Install Python dependencies for runtime
-#RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
-#        --no-cache-dir \
-#        --target=/install \
-#        -r standalone_runtime_requirements.txt
+RUN CFLAGS="-Wno-implicit-function-declaration -Wno-int-conversion" pip install \
+        --no-cache-dir \
+        --target=/install \
+        -r standalone_runtime_requirements.txt
 
 # Compile the speedy-antlr-tool C++ parser accelerators, which run the ANTLR4
 # lexer/parser via the C++ target instead of the (much slower) Python runtime.

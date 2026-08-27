@@ -51,7 +51,8 @@ try:
                                                        getRowForStrMr,
                                                        assignCoordPolymerSequenceWithChainId,
                                                        selectCoordAtoms,
-                                                       getPotentialType)
+                                                       getPotentialType,
+                                                       getRdcCode)
     from wwpdb.utils.nmr.NmrDpValidationBase import NmrDpValidationBase
 except ImportError:
     from nmr.NmrDpConstant import (INDEX_TAGS,
@@ -84,7 +85,8 @@ except ImportError:
                                            getRowForStrMr,
                                            assignCoordPolymerSequenceWithChainId,
                                            selectCoordAtoms,
-                                           getPotentialType)
+                                           getPotentialType,
+                                           getRdcCode)
     from nmr.NmrDpValidationBase import NmrDpValidationBase
 
 
@@ -2143,10 +2145,22 @@ class NmrDpValidationMr(NmrDpValidationBase):
                 except ValueError:
                     upper_linear_limit_col = -1
 
+                chain_id_1_col = lp.tags.index(item_names['chain_id_1'])
+                chain_id_2_col = lp.tags.index(item_names['chain_id_2'])
+                seq_id_1_col = lp.tags.index(item_names['seq_id_1'])
+                seq_id_2_col = lp.tags.index(item_names['seq_id_2'])
+                comp_id_1_col = lp.tags.index(item_names['comp_id_1'])
+                comp_id_2_col = lp.tags.index(item_names['comp_id_2'])
+                atom_id_1_col = lp.tags.index(item_names['atom_id_1'])
+                atom_id_2_col = lp.tags.index(item_names['atom_id_2'])
+
                 potential_type = get_first_sf_tag(sf, 'Potential_type')
                 has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
 
-                _potential_type = None
+                details = get_first_sf_tag(sf, 'Details')
+                has_rdc_type = len(details) > 0 and details not in EMPTY_VALUE
+
+                _potential_type = _rdc_type = None
                 count = 0
 
                 prev_id = -1
@@ -2174,8 +2188,29 @@ class NmrDpValidationMr(NmrDpValidationBase):
                             if getPotentialType(file_type, 'rdc', dst_func) != _potential_type:
                                 has_potential_type = True
 
+                    if not has_rdc_type:
+                        try:
+                            atom1 = {'chain_id': row[chain_id_1_col],
+                                     'seq_id': int(row[seq_id_1_col]),
+                                     'comp_id': row[comp_id_1_col],
+                                     'atom_id': row[atom_id_1_col]}
+                            atom2 = {'chain_id': row[chain_id_2_col],
+                                     'seq_id': int(row[seq_id_2_col]),
+                                     'comp_id': row[comp_id_2_col],
+                                     'atom_id': row[atom_id_2_col]}
+                            if _rdc_type is None:
+                                _rdc_type = getRdcCode([atom1, atom2])
+                            else:
+                                if getRdcCode([atom1, atom2]) != _rdc_type:
+                                    has_rdc_type = True
+                        except (ValueError, TypeError):
+                            pass
+
                 if not has_potential_type and _potential_type is not None:
                     set_sf_tag(sf, 'Potential_type', _potential_type)
+
+                if not has_rdc_type and _rdc_type is not None:
+                    set_sf_tag(sf, 'Details', _rdc_type)
 
                 sf_item['id'] = count
 

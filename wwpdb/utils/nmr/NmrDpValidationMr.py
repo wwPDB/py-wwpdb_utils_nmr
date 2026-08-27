@@ -2158,7 +2158,7 @@ class NmrDpValidationMr(NmrDpValidationBase):
                 has_potential_type = len(potential_type) > 0 and potential_type not in EMPTY_VALUE and potential_type != 'unknown'
 
                 details = get_first_sf_tag(sf, 'Details')
-                has_rdc_type = len(details) > 0
+                has_rdc_type = len(details) > 0 and details not in EMPTY_VALUE
 
                 _potential_type = _rdc_type = None
                 count = 0

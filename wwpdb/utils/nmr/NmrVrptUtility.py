@@ -93,7 +93,8 @@ try:
                                               calculate_uninstanced_coord,
                                               to_np_array)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
-                                                       getDistConstraintType)
+                                                       getDistConstraintType,
+                                                       getRdcCode)
     from wwpdb.utils.nmr.rci.RCI import RCI
 except ImportError:
     from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
@@ -141,7 +142,8 @@ except ImportError:
                                   calculate_uninstanced_coord,
                                   to_np_array)
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
-                                           getDistConstraintType)
+                                           getDistConstraintType,
+                                           getRdcCode)
     from nmr.rci.RCI import RCI
 
 
@@ -2902,6 +2904,21 @@ class NmrVrptUtility:
                         skipped = True
                         continue
 
+                    _rdc_type = rdc_type
+                    if rdc_type == 'UNNAMED':
+                        try:
+                            atom1 = {'chain_id': auth_asym_id_1,
+                                     'seq_id': int(auth_seq_id_1),
+                                     'comp_id': comp_id_1,
+                                     'atom_id': atom_id_1}
+                            atom2 = {'chain_id': auth_asym_id_2,
+                                     'seq_id': int(auth_seq_id_2),
+                                     'comp_id': comp_id_2,
+                                     'atom_id': atom_id_2}
+                            _rdc_type = getRdcCode([atom1, atom2])
+                        except (ValueError, TypeError):
+                            pass
+
                     target_value = r['target_value']
                     target_value_uncertainty = r.get('target_value_uncertainty')
                     value = r.get('value')
@@ -2933,7 +2950,7 @@ class NmrVrptUtility:
                                                          'atom_key_2': (auth_asym_id_2, auth_seq_id_2, comp_id_2,
                                                                         atom_id_2, ins_code_2),
                                                          'combination_id': r.get('combination_id'),
-                                                         'rdc_type': rdc_type,
+                                                         'rdc_type': _rdc_type,
                                                          'lower_bound': lower_bound,
                                                          'upper_bound': upper_bound,
                                                          'target_value': target_value,

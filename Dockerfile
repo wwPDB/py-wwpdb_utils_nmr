@@ -113,10 +113,10 @@ COPY --from=builder --chown=appuser:appuser /opt/py-wwpdb_utils_nmr /opt/py-wwpd
 # Create entrypoint script executable with exporting version information
 RUN echo "#!/bin/sh" > /opt/entrypoint.sh && \
     echo "set -e" >> /opt/entrypoint.sh && \
-    cat /opt/py-wwpdb_utils_nmr/.ver_inf >> /opt/entrypoint.sh && \
+    cat /opt/py-wwpdb_utils_nmr/.ver_info >> /opt/entrypoint.sh && \
     echo 'exec "$@"' >> /opt/entrypoint.sh && \
     chmod +x /opt/entrypoint.sh && \
-    rm -f /opt/py-wwpdb_utils_nmr/.ver_inf
+    rm -f /opt/py-wwpdb_utils_nmr/.ver_info
 
 # Set working directory
 WORKDIR /mnt

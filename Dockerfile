@@ -110,17 +110,13 @@ ENV PYTHONPATH=/opt/py-packages:/opt/py-wwpdb_utils_nmr/wwpdb/utils
 # Copy application code with generated ligand_dict
 COPY --from=builder --chown=appuser:appuser /opt/py-wwpdb_utils_nmr /opt/py-wwpdb_utils_nmr
 
-# System version information holder file
-ENV VER_INFO=/opt/py-wwpdb_utils_nmr/.ver_info
-
 # Create entrypoint script executable with exporting version information
 RUN echo "#!/bin/sh" > /opt/entrypoint.sh && \
     echo "set -e" >> /opt/entrypoint.sh && \
-    cat ${VER_INFO} >> /opt/entrypoint.sh && \
+    cat /opt/py-wwpdb_utils_nmr/.ver_inf >> /opt/entrypoint.sh && \
     echo 'exec "$@"' >> /opt/entrypoint.sh && \
     chmod +x /opt/entrypoint.sh && \
-    rm -f ${VER_INFO} && \
-    unset VER_INFO
+    rm -f /opt/py-wwpdb_utils_nmr/.ver_inf
 
 # Set working directory
 WORKDIR /mnt

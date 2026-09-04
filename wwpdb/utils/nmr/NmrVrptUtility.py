@@ -5228,6 +5228,7 @@ class NmrVrptUtility:
 
         if self.__has_prev_results or self.__dihedRestDict is None or len(self.__dihedRestDict) == 0:
             self.__results['angle'] = False
+            self.__results['error_message_angle'] = None
             return True
 
         try:
@@ -5476,6 +5477,7 @@ class NmrVrptUtility:
 
         if self.__has_prev_results or self.__rdcRestDict is None or len(self.__rdcRestDict) == 0:
             self.__results['rdc'] = False
+            self.__results['error_message_rdc'] = None
             return True
 
         try:

@@ -4961,6 +4961,7 @@ class NmrVrptUtility:
         """
 
         if self.__has_prev_results or self.__distRestDict is None or len(self.__distRestDict) == 0:
+            self.__results['distance'] = False
             return True
 
         try:
@@ -5226,6 +5227,7 @@ class NmrVrptUtility:
         """
 
         if self.__has_prev_results or self.__dihedRestDict is None or len(self.__dihedRestDict) == 0:
+            self.__results['angle'] = False
             return True
 
         try:
@@ -5473,6 +5475,7 @@ class NmrVrptUtility:
         """
 
         if self.__has_prev_results or self.__rdcRestDict is None or len(self.__rdcRestDict) == 0:
+            self.__results['rdc'] = False
             return True
 
         try:

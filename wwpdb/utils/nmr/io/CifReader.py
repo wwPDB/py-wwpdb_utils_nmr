@@ -89,7 +89,6 @@ try:
                                                RMSD_OVERLAID_EXACTLY,
                                                RMSD_CUTOFF_FOR_DOMAIN,
                                                CARTN_DATA_ITEMS)
-    from wwpdb.utils.nmr.AlignUtil import deepcopy
 except ImportError:
     from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
                                    EMPTY_VALUE,
@@ -99,7 +98,6 @@ except ImportError:
                                    RMSD_OVERLAID_EXACTLY,
                                    RMSD_CUTOFF_FOR_DOMAIN,
                                    CARTN_DATA_ITEMS)
-    from nmr.AlignUtil import deepcopy
 
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None
@@ -923,7 +921,7 @@ class CifReader:
                                     unmapSeqIds[c].append((row[altDict['seq_id']], compId))
                                     unmapAuthSeqIds[c].append(row[altDict['auth_seq_id']])
                                 if _rowList is None:
-                                    _rowList = deepcopy(rowList)
+                                    _rowList = copy.deepcopy(rowList)
                         continue
                     if 'default' not in keyItems[j]:  # or keyItems[j]['default'] not in EMPTY_VALUE:
                         raise ValueError(f"{keyNames[j]} must not be empty.")
@@ -1089,7 +1087,7 @@ class CifReader:
         polyPeptideChains, polyPeptideLengths = [], []
         polyNucleotideChains, polyNucleotideLengths = [], []
 
-        _seqDict = deepcopy(seqDict)
+        polymerLength = {c: len(seqDict[c]) for c in chainIds}
 
         asm = []  # assembly of a loop
         cluster = None  # cluster analysis
@@ -1361,7 +1359,7 @@ class CifReader:
                         if caRmsd is None:
 
                             polyPeptideChains = [c]
-                            polyPeptideLengths = [len(_seqDict[c])]
+                            polyPeptideLengths = [polymerLength[c]]
 
                             for c2 in chainIds:
 
@@ -1373,7 +1371,7 @@ class CifReader:
 
                                 if etype2 is not None and 'polypeptide' in etype2:
                                     polyPeptideChains.append(c2)
-                                    polyPeptideLengths.append(len(_seqDict[c2]))
+                                    polyPeptideLengths.append(polymerLength[c2])
 
                             ca_atom_sites = self.getDictListWithFilter('atom_site',
                                                                        [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
@@ -1434,7 +1432,7 @@ class CifReader:
                         if pRmsd is None:
 
                             polyNucleotideChains = [c]
-                            polyNucleotideLengths = [len(_seqDict[c])]
+                            polyNucleotideLengths = [polymerLength[c]]
 
                             for c2 in chainIds:
 
@@ -1446,7 +1444,7 @@ class CifReader:
 
                                 if etype2 is not None and 'ribonucleotide' in etype2:
                                     polyNucleotideChains.append(c2)
-                                    polyNucleotideLengths.append(len(_seqDict[c2]))
+                                    polyNucleotideLengths.append(polymerLength[c2])
 
                             p_atom_sites = self.getDictListWithFilter('atom_site',
                                                                       [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},

@@ -104,8 +104,7 @@ try:
                                                NITROOXIDE_ANCHOR_RES_NAMES,
                                                CARTN_DATA_ITEMS,
                                                INSTRUCTION_FOR_FULL_SEQUENCE)
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           indexToLetter,
+    from wwpdb.utils.nmr.AlignUtil import (indexToLetter,
                                            updatePolySeqRst,
                                            updatePolySeqRstAmbig,
                                            mergePolySeqRstAmbig,
@@ -237,8 +236,7 @@ except ImportError:
                                    NITROOXIDE_ANCHOR_RES_NAMES,
                                    CARTN_DATA_ITEMS,
                                    INSTRUCTION_FOR_FULL_SEQUENCE)
-    from nmr.AlignUtil import (deepcopy,
-                               indexToLetter,
+    from nmr.AlignUtil import (indexToLetter,
                                updatePolySeqRst,
                                updatePolySeqRstAmbig,
                                mergePolySeqRstAmbig,
@@ -840,7 +838,7 @@ class BaseStackedMRParserListener():
                 self.nonPolySeq = self.__nonPoly
             else:
                 self.nonPolySeq = self.__branched
-            self.fullPolySeq = deepcopy(self.polySeq)
+            self.fullPolySeq = copy.deepcopy(self.polySeq)
             self.fullPolySeq.extend(self.nonPolySeq)
 
         else:

@@ -230,14 +230,22 @@ def distance(p0: list, p1: list) -> float:
     # single 3-vector (this is the most-called geometry primitive) and numerically
     # identical. p0/p1 are numpy arrays (their difference is a length-3 array).
     d = p0 - p1
-    return math.hypot(d[0], d[1], d[2])
+    try:
+        return math.hypot(d[0], d[1], d[2])
+    except TypeError:
+        # Backward compatibility with Python 3.7 and earlier
+        return numpy.linalg.norm(d)
 
 
 def to_unit_vector(a: list) -> list:
     """ Return unit vector of a given vector.
     """
 
-    return a / math.hypot(a[0], a[1], a[2])
+    try:
+        return a / math.hypot(a[0], a[1], a[2])
+    except TypeError:
+        # Backward compatibility with Python 3.7 and earlier
+        return a / numpy.linalg.norm(a)
 
 
 def dist_inv_6_summed(r_list: List[float]) -> float:

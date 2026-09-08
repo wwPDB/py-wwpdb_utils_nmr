@@ -15316,7 +15316,7 @@ save_peg_gel-1
    _RDC_constraint_list.Tensor_auth_asym_ID  .
    _RDC_constraint_list.Tensor_auth_seq_ID   .
    _RDC_constraint_list.Tensor_auth_comp_ID  .
-   _RDC_constraint_list.Details              .
+   _RDC_constraint_list.Details              RDC_NH
    _RDC_constraint_list.Data_file_name       2la6.nef
    _RDC_constraint_list.ID                   1
    _RDC_constraint_list.Entry_ID             NEED_ACC_NO
@@ -15437,7 +15437,7 @@ save_peg_gel-2
    _RDC_constraint_list.Tensor_auth_asym_ID  .
    _RDC_constraint_list.Tensor_auth_seq_ID   .
    _RDC_constraint_list.Tensor_auth_comp_ID  .
-   _RDC_constraint_list.Details              .
+   _RDC_constraint_list.Details              RDC_NH
    _RDC_constraint_list.Data_file_name       2la6.nef
    _RDC_constraint_list.ID                   2
    _RDC_constraint_list.Entry_ID             NEED_ACC_NO

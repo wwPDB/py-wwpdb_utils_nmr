@@ -58,7 +58,6 @@ try:
                                                CS_STAT_AA_THRESHOLD,
                                                CS_STAT_NA_THRESHOLD,
                                                CS_STAT_MAX_COUNT_THRESHOLD)
-    from wwpdb.utils.nmr.AlignUtil import deepcopy
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.mr.ParserListenerUtil import translateToStdAtomName
 except ImportError:
@@ -73,7 +72,6 @@ except ImportError:
                                    CS_STAT_AA_THRESHOLD,
                                    CS_STAT_NA_THRESHOLD,
                                    CS_STAT_MAX_COUNT_THRESHOLD)
-    from nmr.AlignUtil import deepcopy
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.mr.ParserListenerUtil import translateToStdAtomName
 
@@ -1329,7 +1327,7 @@ class BmrbChemShiftStat:
 
         # DAOTHER-9317: retrieve missing statistics of geminal, aromatic opposit, and gemenal methyl groups
 
-        __atm_list = deepcopy(atm_list)
+        __atm_list = copy.deepcopy(atm_list)
 
         atm_list = []
 

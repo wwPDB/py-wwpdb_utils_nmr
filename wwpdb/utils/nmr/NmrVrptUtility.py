@@ -4535,7 +4535,8 @@ class NmrVrptUtility:
                                            'cs_error': {'CS_OUTLIER': self.__chemShiftOutlier,
                                                         'CS_DUPLICATE': self.__chemShiftDuplicated,
                                                         'CS_VALUE': self.__chemShiftUnparsed,
-                                                        'NO_MAP': self.__chemShiftUnmapped
+                                                        'NO_MAP': self.__chemShiftUnmapped,
+                                                        'NO_MODEL': self.__chemShiftUnmodeled
                                                         }
                                            }
                           }

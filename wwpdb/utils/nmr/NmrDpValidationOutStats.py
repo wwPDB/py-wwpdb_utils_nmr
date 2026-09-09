@@ -1530,7 +1530,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                         for idx, (seq_id, comp_id)\
                                                                 in enumerate(zip(result['seq_id'], item['comp_id'])):
                                                             seq_key = (auth_chain_id, seq_id, comp_id)
-                                                            if seq_key in coord_unobs_res:
+                                                            _seq_key = (auth_chain_id, seq_id)
+                                                            if _seq_key in coord_unobs_res:
                                                                 dom[idx] = -1
                                                             elif seq_key in auth_to_star_seq:
                                                                 for r in cif_ps['well_defined_region']:

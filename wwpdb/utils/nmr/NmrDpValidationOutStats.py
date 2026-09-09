@@ -1447,6 +1447,25 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                         }
                                                 sf_info['chemical_shift_unmapped'].append(item)
 
+                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MODEL']:
+                                        unmapped = vrpt_cs['book_keeping']['cs_error']['NO_MODEL'][list_id]
+
+                                        if len(unmapped) > 0:
+                                            sf_info['chemical_shift_unmodeled'] = []
+                                            for row in unmapped:
+                                                ins_code = None if 'ins_code' not in row or row['ins_code'] in EMPTY_VALUE\
+                                                    else row['ins_code']
+                                                item = {'auth_chain_id': row['auth_chain_id'],
+                                                        'auth_seq_id': row['auth_seq_id'],
+                                                        'ins_code': ins_code,
+                                                        'comp_id': row['comp_id'],
+                                                        'atom_id': row['atom_id'],
+                                                        'value': row['value'],
+                                                        'error': row['error'],
+                                                        'ambig_code': row['ambig_code']
+                                                        }
+                                                sf_info['chemical_shift_unmodeled'].append(item)
+
                                     # modify existing histogram of assigned chemical shift
 
                                     try:

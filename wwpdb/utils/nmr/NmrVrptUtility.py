@@ -2022,17 +2022,17 @@ class NmrVrptUtility:
 
             def get_label_seq_id(auth_chain_id, auth_seq_id):
                 ps = next((ps for ps in self.__caC['polymer_sequence']
-                           if ps['auth_seq_id'] == auth_chain_id and auth_seq_id in ps['auth_seq_id']), None)
+                           if ps['auth_chain_id'] == auth_chain_id and auth_seq_id in ps['auth_seq_id']), None)
                 if ps is not None:
                     return ps['seq_id'][ps['auth_seq_id'].index(auth_seq_id)]
                 if 'branched' in self.__caC and self.__caC['branched'] is not None:
                     br = next((br for br in self.__caC['branched']
-                               if br['auth_seq_id'] == auth_chain_id and auth_seq_id in br['auth_seq_id']), None)
+                               if br['auth_chain_id'] == auth_chain_id and auth_seq_id in br['auth_seq_id']), None)
                     if br is not None:
                         return br['seq_id'][br['auth_seq_id'].index(auth_seq_id)]
                 if 'non_poly' in self.__caC and self.__caC['non_poly'] is not None:
                     np = next((np for np in self.__caC['non_poly']
-                               if np['auth_seq_id'] == auth_chain_id and auth_seq_id in np['auth_seq_id']), None)
+                               if np['auth_chain_id'] == auth_chain_id and auth_seq_id in np['auth_seq_id']), None)
                     if np is not None:
                         return np['seq_id'][np['auth_seq_id'].index(auth_seq_id)]
                 return None
@@ -2045,14 +2045,18 @@ class NmrVrptUtility:
                         continue
                     if auth_chain_id not in self.__entityUninstance:
                         self.__entityUninstance[auth_chain_id] = {}
-                    seq_key = (auth_seq_id, comp_id)
+                    seq_key = (str(auth_seq_id), comp_id)
                     ps = next((ps for ps in self.__caC['polymer_sequence']
                                if ps['auth_seq_id'] == auth_chain_id and auth_seq_id in ps['auth_seq_id']), None)
                     seq_id = get_label_seq_id(auth_chain_id, auth_seq_id)
                     if seq_id is None or not self.__ccU.updateChemCompDict(comp_id):
                         continue
                     self.__entityUninstance[auth_chain_id][seq_key] =\
-                        {'seq_id': seq_id, 'atoms': [['atom_id'] for a in self.__ccU.lastAtomDictList]}
+                        {'seq_id': seq_id, 'atoms': [cca['atom_id'] for cca in self.__ccU.lastAtomDictList
+                                                     if cca['leaving_atom_flag'] != 'Y'
+                                                     or (self.__csStat.peptideLike(comp_id)
+                                                         and cca['n_terminal_atom_flag'] == 'N'
+                                                         and cca['c_terminal_atom_flag'] == 'N')]}
 
             # DAOTHER-10987
             if 'coord_unobs_atom' in self.__caC and self.__caC['coord_unobs_atom'] is not None:
@@ -2062,7 +2066,7 @@ class NmrVrptUtility:
                         continue
                     if auth_chain_id not in self.__entityUninstance:
                         self.__entityUninstance[auth_chain_id] = {}
-                    seq_key = (auth_seq_id, comp_id)
+                    seq_key = (str(auth_seq_id), comp_id)
                     seq_id = get_label_seq_id(auth_chain_id, auth_seq_id)
                     if seq_id is None or not self.__ccU.updateChemCompDict(comp_id):
                         continue
@@ -3283,14 +3287,15 @@ class NmrVrptUtility:
                 else:
                     seq_key = (str(auth_seq_id) + _cs['ins_code'], comp_id)
 
+                # DAOTHER-10987
+                if auth_chain_id in self.__entityUninstance and seq_key in self.__entityUninstance[auth_chain_id]\
+                   and atom_id in self.__entityUninstance[auth_chain_id][seq_key]['atoms']:
+                    if list_id not in self.__chemShiftUnmodeled:
+                        self.__chemShiftUnmodeled[list_id] = []
+                    self.__chemShiftUnmodeled[list_id].append(_cs)
+                    return
+
                 if seq_key not in self.__entityInstance[auth_chain_id]:
-                    # DAOTHER-10987
-                    if auth_chain_id in self.__entityUninstance and seq_key in self.__entityUninstance\
-                       and atom_id in self.__entityUninstance[auth_chain_id][seq_key]['atoms']:
-                        if list_id not in self.__chemShiftUnmodeled:
-                            self.__chemShiftUnmodeled[list_id] = []
-                        self.__chemShiftUnmodeled[list_id].append(_cs)
-                        return
                     if list_id not in self.__chemShiftUnmapped:
                         self.__chemShiftUnmapped[list_id] = []
                     self.__chemShiftUnmapped[list_id].append(_cs)
@@ -3299,14 +3304,6 @@ class NmrVrptUtility:
                 atoms = self.__entityInstance[auth_chain_id][seq_key]['atoms']
 
                 if atom_id in atoms:
-                    return
-
-                # DAOTHER-10987
-                if auth_chain_id in self.__entityUninstance and seq_key in self.__entityUninstance\
-                   and atom_id in self.__entityUninstance[auth_chain_id][seq_key]['atoms']:
-                    if list_id not in self.__chemShiftUnmodeled:
-                        self.__chemShiftUnmodeled[list_id] = []
-                    self.__chemShiftUnmodeled[list_id].append(_cs)
                     return
 
                 if self.__entityInstance[auth_chain_id][seq_key]['seq_id'] == 1\
@@ -4792,7 +4789,7 @@ class NmrVrptUtility:
             unparsed = len(self.__chemShiftUnparsed[list_id])
             unmapped_error = len(self.__chemShiftUnmapped[list_id])
             unmapped_warning = len(self.__chemShiftUnmodeled[list_id])
-            mapped = parsed - unmapped_error
+            mapped = parsed - unmapped_error - unmapped_warning
             shift_summary_table[list_id] = {'block_id': self.__chemShiftMeta[idx][0],
                                             'block_name': self.__chemShiftMeta[idx][1],
                                             'list_id': self.__chemShiftMeta[idx][2],

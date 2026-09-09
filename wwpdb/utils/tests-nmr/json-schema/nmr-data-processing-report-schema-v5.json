@@ -4906,6 +4906,9 @@
                 "$ref": "#/definitions/output_stats_chem_shift_unmapped"
               },
               {
+                "$ref": "#/definitions/output_stats_chem_shift_unmodeled"
+              },
+              {
                 "$ref": "#/definitions/output_stats_chem_shift_histogram"
               },
               {
@@ -6005,6 +6008,25 @@
       "type": "object",
       "properties": {
         "chemical_shift_unmapped": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_error_base"
+              },
+              {
+                "$ref": "#/definitions/output_stats_chem_shift_unmapped_details"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "output_stats_chem_shift_unmodeled": {
+      "description": "Template for unmodeled chemical shifts of output statistics.",
+      "type": "object",
+      "properties": {
+        "chemical_shift_unmodeled": {
           "type": "array",
           "items": {
             "allOf": [

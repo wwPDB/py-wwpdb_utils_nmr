@@ -1379,7 +1379,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                         cif_chain_id, cif_seq_id = auth_to_label_seq[seq_key]
                         cif_comp_id = comp_id
 
-                        if seq_key in coord_unobs_res:  # DAOTHER-7665
+                        _seq_key = (seq_key[0], seq_key[1]) if len(seq_key) > 2 else seq_key
+
+                        if _seq_key in coord_unobs_res:  # DAOTHER-7665
                             continue
 
                 else:
@@ -1387,8 +1389,11 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                     if chain_id in offset:
                         _, seq_key, coord_atom_site_ = get_coord_atom_site_of(cif_chain_id, cif_seq_id + offset[chain_id], comp_id)
 
-                        if seq_key is not None and seq_key in coord_unobs_res:
-                            continue
+                        if seq_key is not None:
+                            _seq_key = (seq_key[0], seq_key[1]) if len(seq_key) > 2 else seq_key
+
+                            if _seq_key in coord_unobs_res:
+                                continue
 
                     elif seq_key is not None:
                         seq_key = (cif_chain_id, cif_seq_id)
@@ -1409,8 +1414,11 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                     seq_key = (cif_chain_id, cif_seq_id)
                                     break
 
-                        if seq_key is not None and seq_key in coord_unobs_res:  # DAOTHER-7665
-                            continue
+                        if seq_key is not None:
+                            _seq_key = (seq_key[0], seq_key[1]) if len(seq_key) > 2 else seq_key
+
+                            if _seq_key in coord_unobs_res:  # DAOTHER-7665
+                                continue
 
                     if file_type == 'nmr-star' and seq_id != alt_seq_id:
 
@@ -1564,7 +1572,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                         coord_issue = True
 
                                 elif 'coord_unobs_atom' in self._reg.caC:
-                                    if seq_key in coord_unobs_atom and atom_id_ in coord_unobs_atom[seq_key]['atom_ids']:
+                                    _seq_key = (seq_key[0], seq_key[1]) if len(seq_key) > 2 else seq_key
+
+                                    if _seq_key in coord_unobs_atom and atom_id_ in coord_unobs_atom[seq_key]['atom_ids']:
                                         coord_issue = True
 
                             _atom_id, _, _ = self._getAtomIdListWithAmbigCode(comp_id, f'{atom_id_}%')

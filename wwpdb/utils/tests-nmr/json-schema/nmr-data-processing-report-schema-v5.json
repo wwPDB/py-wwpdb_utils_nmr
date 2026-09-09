@@ -5716,6 +5716,11 @@
           "type": "integer",
           "minimum": 0
         },
+        "number_of_mapped_to_unmodel": {
+          "description": "Total number of mapped item to unmodeled region (chemical shifts, restraints, spectral peaks).",
+          "type": "integer",
+          "minimum": 0
+        },
         "number_of_unmapped_to_model": {
           "description": "Total number of unmapped item to model (chemical shifts, restraints, spectral peaks).",
           "type": "integer",

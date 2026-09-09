@@ -1301,6 +1301,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                     sf_info['number_of_parsed'] = summary['number_of_parsed_shifts']
                                     sf_info['number_of_unparsed_with_error'] = summary['number_of_unparsed_shifts']
                                     sf_info['number_of_mapped_to_model'] = summary['number_of_mapped_shifts']
+                                    sf_info['number_of_mapped_to_unmodel'] = summary['number_of_warnings_while_mapping']
+                                    # DAOTHER-10987
                                     sf_info['number_of_unmapped_to_model'] = summary['number_of_errors_while_mapping']
 
                                 else:

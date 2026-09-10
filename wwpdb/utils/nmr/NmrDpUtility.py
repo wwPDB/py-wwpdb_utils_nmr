@@ -13584,6 +13584,9 @@ class NmrDpUtility:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).
         """
 
+        if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
+            return False
+
         # This rediculaus reverse implementation is for OneDep only
         if self.__reg.op != 'nmr-cs-mr-merge' and not self.__reg.internal_mode:
 
@@ -13609,9 +13612,6 @@ class NmrDpUtility:
                     master_entry.write_to_file(self.__reg.srcPath, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
 
             return True
-
-        if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
-            return False
 
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()

@@ -3184,19 +3184,28 @@ class NmrVrptUtility:
                         Szz_, Syy_, Sxx_ = Sorder[0], Sorder[1], Sorder[2]
 
                         if Szz_ == abs(Szz):
+                            Szz_ = Szz
                             if Syy_ == abs(Syy):  # zz > yy > xx (as is)
+                                Sxx_, Syy_ = Sxx, Syy
                                 Sxy_, Sxz_, Syz_ = Sxy, Sxz, Syz
                             else:  # zz > xx > yy : x <-> y, z -> -z
+                                Sxx_, Syy_ = Syy, Sxx
                                 Sxy_, Sxz_, Syz_ = Sxy, -Syz, -Sxz
                         elif Szz_ == abs(Syy):
+                            Szz_ = Syy
                             if Syy_ == abs(Szz):  # yy > zz > xx : y <-> z, x -> -x
+                                Sxx_, Syy_ = Sxx, Szz
                                 Sxy_, Sxz_, Syz_ = -Sxz, -Sxy, Syz
                             else:  # yy > xx > zz : y->z, x->y, z->x (rotation)
+                                Sxx_, Syy_ = Szz, Sxx
                                 Sxy_, Sxz_, Syz_ = Syz, Sxy, Sxz
                         else:
+                            Szz_ = Sxx
                             if Syy_ == abs(Szz):  # xx > zz > yy : x->z, z->y, y->x (rotation)
+                                Sxx_, Syy_ = Syy, Szz
                                 Sxy_, Sxz_, Syz_ = Sxz, Syz, Sxy
                             else:  # xx > yy > zz : x <-> z, y -> -y
+                                Sxx_, Syy_ = Szz, Syy
                                 Sxy_, Sxz_, Syz_ = -Syz, Sxz, -Sxy
 
                         eta = (Syy_ - Sxx_) / Szz_
@@ -3205,11 +3214,11 @@ class NmrVrptUtility:
                                                                          'Szz': f'{Szz_:.4e}',
                                                                          'Sxy': f'{Sxy_:.4e}', 'Sxz': f'{Sxz_:.4e}',
                                                                          'Syz': f'{Syz_:.4e}',
-                                                                         'Da': f'{Sxx_ - Syy_:.4e}', 'eta': f'{eta:.4e}',
+                                                                         'eta': f'{eta:.4e}',
                                                                          'Dmax': f'{numpy.mean(dmax):.4e}'}
 
                         assert abs(Szz_) >= abs(Syy_) >= abs(Sxx_)
-                        assert 0 <= eta <= 1.0
+                        assert 0 <= abs(eta) <= 1.0
 
                         b_calc = A @ x
 
@@ -4334,7 +4343,24 @@ class NmrVrptUtility:
                             continue
                         seen_bound_keys.add(bound_key)
 
-                        _error = rdc_error(bound_key[0], bound_key[1], r_calc)
+                        # experimental
+                        if bound_key[0] != bound_key[1] or rest_key not in self.__rdcSyntCalcDict:
+                            _error = rdc_error(bound_key[0], bound_key[1], r_calc)
+
+                        # theoretical
+                        else:
+                            rdc_calc_min = rdc_calc_max = None
+                            _rdc_synt_calcs = []
+                            for v in self.__rdcSyntCalcDict[rest_key].values():
+                                _rdc_synt_calcs.extend(v)
+                            if len(_rdc_synt_calcs) > RDC_MIN_MC_CYCLES:
+                                rdc_synt_calcs = numpy.array(_rdc_synt_calcs, dtype=float) / r['scale_factor']
+                                rdc_calc_min = round(numpy.min(rdc_synt_calcs), 2)
+                                rdc_calc_max = round(numpy.max(rdc_synt_calcs), 2)
+                            if None in (rdc_calc_min, rdc_calc_max):
+                                _error = rdc_error(rdc_calc_min, rdc_calc_max, r_calc)
+                            else:
+                                _error = rdc_error(bound_key[0], bound_key[1], r_calc)
 
                         if error is None or error > _error:
                             error = _error
@@ -4409,7 +4435,7 @@ class NmrVrptUtility:
                 list_ids.add(rest_key[0])
 
             for list_id in sorted(list(list_ids)):
-                rdc_values, rdc_errors, q_scores = {}, {}, {}
+                rdc_values, rdc_errors, rdc_viols, q_scores = {}, {}, {}, {}
 
                 for rest_key, rdc_calc in self.__rdcCalcDict.items():
 
@@ -4422,7 +4448,7 @@ class NmrVrptUtility:
                         rdc_type = r['rdc_type']
 
                         if rdc_type not in rdc_values:
-                            rdc_values[rdc_type], rdc_errors[rdc_type] = [], []
+                            rdc_values[rdc_type], rdc_errors[rdc_type], rdc_viols[rdc_type] = [], [], []
                             q_scores[rdc_type] = {'rdc_exp': [], 'rdc_calc': []}
 
                         ak1 = r['atom_key_1']
@@ -4470,10 +4496,14 @@ class NmrVrptUtility:
                                                      rdc_calc_min,
                                                      rdc_calc_max])
 
-                da_array = numpy.array([float(v['Szz']) * float(v['Dmax'])
+                        if rdc_exp_center < rdc_calc_min - NMR_VTF_RDC_ERR_BINS[1]\
+                           or rdc_exp_center > rdc_calc_max + NMR_VTF_RDC_ERR_BINS[1]:
+                            rdc_viols[rdc_type].append([rdc_exp_center, rdc_calc_center, vector_name])
+
+                da_array = numpy.array([abs(float(v['Szz'])) * float(v['Dmax'])
                                         for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
-                eta_array = numpy.array([float(v['eta']) for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
-                denominator_unit = da_array.mean() ** 2 * (4.0 + 3.0 * eta_array.mean() ** 2) / 5.0
+                eta_array = numpy.array([abs(float(v['eta'])) for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
+                denominator_unit = 2.0 / 5.0 * da_array.mean() ** 2 * (4.0 + 3.0 * eta_array.mean() ** 2)
 
                 for k, v in copy.copy(q_scores).items():
                     rdc_exp_array = numpy.array(v['rdc_exp'], dtype=float)
@@ -4483,6 +4513,9 @@ class NmrVrptUtility:
                     sum_of_squared_errors = ((rdc_exp_array - rdc_calc_array) ** 2).sum()
                     sum_of_squared_values = (rdc_exp_array ** 2).sum()
 
+                    m = numpy.corrcoef(rdc_exp_array, rdc_calc_array)
+
+                    q_scores[k]['r'] = round(m[0, 1], 2)
                     q_scores[k]['r2'] =\
                         round(1.0 - sum_of_squared_errors / total_sum_of_square, 2)\
                         if total_sum_of_square > 0.0 else 1.0
@@ -4496,7 +4529,8 @@ class NmrVrptUtility:
                     del q_scores[k]['rdc_exp']
                     del q_scores[k]['rdc_calc']
 
-                self.__rdcCorrPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors, 'q_scores': q_scores}
+                self.__rdcCorrPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors,
+                                                   'violations': rdc_viols, 'q_scores': q_scores}
 
             return True
 

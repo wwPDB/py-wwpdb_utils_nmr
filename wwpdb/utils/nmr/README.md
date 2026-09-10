@@ -265,6 +265,7 @@ For example,
 	- antlr4-python3-runtime
 	- chardet
 	- datetime
+	- dbscan ; python_version >= '3.9'  # Otherwise, scikit-learn's DBSCAN is used instead
 	- mmcif
 	- munkres
 	- numpy

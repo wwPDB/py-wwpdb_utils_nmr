@@ -271,7 +271,6 @@ For example,
 	- packaging
 	- pynmrstar (3.2.0 or later)
 	- python-dateutil
-	- quickle (optional for minor performance improvement; Python 3.10 or before, the extension module does not import on Python 3.11 or later)
 	- requests
 	- rmsd
 	- scikit-learn

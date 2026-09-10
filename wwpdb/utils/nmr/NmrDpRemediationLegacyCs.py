@@ -26,8 +26,7 @@ try:
                                                SEQ_MISMATCH_WARNING_PAT,
                                                INCONSISTENT_RESTRAINT_WARNING_PAT)
     from wwpdb.utils.nmr.NmrDpMrSplitter import detect_encoding
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           getChemShiftFormatName)
+    from wwpdb.utils.nmr.AlignUtil import getChemShiftFormatName
     from wwpdb.utils.nmr.CifToNmrStar import (has_key_value,
                                               get_first_sf_tag)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import contentSubtypeOf
@@ -48,8 +47,7 @@ except ImportError:
                                    SEQ_MISMATCH_WARNING_PAT,
                                    INCONSISTENT_RESTRAINT_WARNING_PAT)
     from nmr.NmrDpMrSplitter import detect_encoding
-    from nmr.AlignUtil import (deepcopy,
-                               getChemShiftFormatName)
+    from nmr.AlignUtil import getChemShiftFormatName
     from nmr.CifToNmrStar import (has_key_value,
                                   get_first_sf_tag)
     from nmr.mr.ParserListenerUtil import contentSubtypeOf
@@ -206,7 +204,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                     pass
 
         if self._reg.caC is not None:
-            nmr_poly_seq = deepcopy(self._reg.caC['polymer_sequence'])
+            nmr_poly_seq = copy.deepcopy(self._reg.caC['polymer_sequence'])
             if self._reg.caC['branched'] is not None:
                 nmr_poly_seq.extend(self._reg.caC['branched'])
             if self._reg.caC['non_polymer'] is not None:
@@ -595,7 +593,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                     pass
 
         if self._reg.caC is not None:
-            nmr_poly_seq = deepcopy(self._reg.caC['polymer_sequence'])
+            nmr_poly_seq = copy.deepcopy(self._reg.caC['polymer_sequence'])
             if self._reg.caC['branched'] is not None:
                 nmr_poly_seq.extend(self._reg.caC['branched'])
             if self._reg.caC['non_polymer'] is not None:

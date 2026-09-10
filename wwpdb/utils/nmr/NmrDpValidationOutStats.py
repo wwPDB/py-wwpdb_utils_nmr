@@ -1301,6 +1301,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                     sf_info['number_of_parsed'] = summary['number_of_parsed_shifts']
                                     sf_info['number_of_unparsed_with_error'] = summary['number_of_unparsed_shifts']
                                     sf_info['number_of_mapped_to_model'] = summary['number_of_mapped_shifts']
+                                    sf_info['number_of_mapped_to_unmodel'] = summary['number_of_warnings_while_mapping']
+                                    # DAOTHER-10987
                                     sf_info['number_of_unmapped_to_model'] = summary['number_of_errors_while_mapping']
 
                                 else:
@@ -1445,6 +1447,25 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                         }
                                                 sf_info['chemical_shift_unmapped'].append(item)
 
+                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MODEL']:
+                                        unmapped = vrpt_cs['book_keeping']['cs_error']['NO_MODEL'][list_id]
+
+                                        if len(unmapped) > 0:
+                                            sf_info['chemical_shift_unmodeled'] = []
+                                            for row in unmapped:
+                                                ins_code = None if 'ins_code' not in row or row['ins_code'] in EMPTY_VALUE\
+                                                    else row['ins_code']
+                                                item = {'auth_chain_id': row['auth_chain_id'],
+                                                        'auth_seq_id': row['auth_seq_id'],
+                                                        'ins_code': ins_code,
+                                                        'comp_id': row['comp_id'],
+                                                        'atom_id': row['atom_id'],
+                                                        'value': row['value'],
+                                                        'error': row['error'],
+                                                        'ambig_code': row['ambig_code']
+                                                        }
+                                                sf_info['chemical_shift_unmodeled'].append(item)
+
                                     # modify existing histogram of assigned chemical shift
 
                                     try:
@@ -1509,7 +1530,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                         for idx, (seq_id, comp_id)\
                                                                 in enumerate(zip(result['seq_id'], item['comp_id'])):
                                                             seq_key = (auth_chain_id, seq_id, comp_id)
-                                                            if seq_key in coord_unobs_res:
+                                                            _seq_key = (auth_chain_id, seq_id)
+                                                            if _seq_key in coord_unobs_res:
                                                                 dom[idx] = -1
                                                             elif seq_key in auth_to_star_seq:
                                                                 for r in cif_ps['well_defined_region']:

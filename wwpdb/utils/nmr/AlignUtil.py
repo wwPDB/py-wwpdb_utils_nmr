@@ -19,7 +19,7 @@ import os
 import re
 import sys
 from itertools import zip_longest
-from typing import Any, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LOW_SEQ_COVERAGE,
@@ -35,32 +35,6 @@ except ImportError:
                                    STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    LEN_LARGE_ASYM_ID)
-
-
-# The serialization round-trip is only for deep structures whose copy cost does not matter
-# (see the copyFactor()/copyPolySeq()/list()/dict() call sites for the hot paths, DAOTHER-10315).
-# quickle is unavailable on Python 3.11 or later, where its extension module fails to import
-# ('undefined symbol: _PyFloat_Pack8'), so the pickle branch is what runs there.
-try:
-
-    import quickle  # pylint: disable=import-outside-toplevel
-
-    __qklEncoder = quickle.Encoder()
-    __qklDecoder = quickle.Decoder()
-
-    def deepcopy(data: Any) -> Any:
-        """ Quickle-based deepcopy function replacing slow copy.deepcopy().
-        """
-        return __qklDecoder.loads(__qklEncoder.dumps(data))
-
-except ImportError:
-
-    import pickle  # pylint: disable=import-outside-toplevel
-
-    def deepcopy(data: Any) -> Any:
-        """ Pickle-based deepcopy function replacing slow copy.deepcopy().
-        """
-        return pickle.loads(pickle.dumps(data, protocol=pickle.HIGHEST_PROTOCOL))
 
 
 def hasLargeInnerSeqGap(polySeq: dict, seqIdName: str = 'seq_id') -> bool:
@@ -1064,7 +1038,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
 
     truncated = None
 
-    _polySeqRst = deepcopy(polySeqRst)
+    _polySeqRst = copy.deepcopy(polySeqRst)
 
     for i1, ps1 in enumerate(polySeqModel):
         chain_id_name = 'auth_chain_id' if 'auth_chain_id' in ps1 else 'chain_id'

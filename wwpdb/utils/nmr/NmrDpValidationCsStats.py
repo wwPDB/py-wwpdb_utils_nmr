@@ -2087,10 +2087,11 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
                                         for r in cif_ps['well_defined_region']:
                                             seq_key = next((k for k, v in auth_to_star_seq.items()
                                                             if v[0] == chain_id and v[1] == seq_id), None)
-                                            if seq_key in coord_unobs_res:
+                                            _seq_key = (seq_key[0], seq_key[1]) if seq_key is not None else None
+                                            if _seq_key in coord_unobs_res:
                                                 dom[idx] = -1
-                                            elif seq_key is not None:
-                                                if seq_key[1] in r['seq_id']:
+                                            elif _seq_key is not None:
+                                                if _seq_key[1] in r['seq_id']:
                                                     dom[idx] = r['domain_id']
                                                     break
                                             elif dom[idx] is None:

@@ -19,6 +19,8 @@
 # 03-Aug-2026  M. Yokochi - add RDC restraint analysis (DAOTHER-9785, v1.3.0)
 # 18-Aug-2026  M. Yokochi - implement Monte Carlo simulation to estimate uncertainty of calculated RDC values
 #                           (DAOTHER-9785, 10893, v1.3.1)
+# 09-Sep-2026  M. Yokochi - calculate number of chemical shifts mapped to unmodeled residues as unmapped warning
+#                           (DAOTHER-9785, 10987, v1.3.2)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -29,7 +31,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.3.1"
+__version__ = "v1.3.2"
 
 import collections
 import copy
@@ -208,7 +210,6 @@ def write_as_pickle(obj: Any, file_name: str) -> None:
     """
 
     if obj is not None:
-
         with open(file_name, 'wb') as ofh:
             pickle.dump(obj, ofh)
 
@@ -230,14 +231,23 @@ def distance(p0: list, p1: list) -> float:
     # single 3-vector (this is the most-called geometry primitive) and numerically
     # identical. p0/p1 are numpy arrays (their difference is a length-3 array).
     d = p0 - p1
-    return math.hypot(d[0], d[1], d[2])
+
+    try:
+        return math.hypot(d[0], d[1], d[2])
+    except TypeError:
+        # Backward compatibility with Python 3.7 and earlier
+        return numpy.linalg.norm(d)
 
 
 def to_unit_vector(a: list) -> list:
     """ Return unit vector of a given vector.
     """
 
-    return a / math.hypot(a[0], a[1], a[2])
+    try:
+        return a / math.hypot(a[0], a[1], a[2])
+    except TypeError:
+        # Backward compatibility with Python 3.7 and earlier
+        return a / numpy.linalg.norm(a)
 
 
 def dist_inv_6_summed(r_list: List[float]) -> float:
@@ -624,9 +634,8 @@ def get_violation_statistics_for_each_bin(beg_err_bin: Optional[float], end_err_
         The results were summarized against all models and per model, respectively.
     """
 
-    viol_stat_per_model = []
+    viol_stat_per_model, all_err_list = [], []
 
-    all_err_list = []
     for m in eff_model_ids:
         err_list = []
 
@@ -972,6 +981,7 @@ class NmrVrptUtility:
                  '__total_models',
                  '__eff_model_ids',
                  '__entityInstance',
+                 '__entityUninstance',
                  '__atomIdList',
                  '__coordinates',
                  '__chemShiftMeta',
@@ -983,6 +993,7 @@ class NmrVrptUtility:
                  '__chemShiftDuplicated',
                  '__chemShiftUnparsed',
                  '__chemShiftUnmapped',
+                 '__chemShiftUnmodeled',
                  '__distRestDict',
                  '__distRestDictWithCombKey',
                  '__distRestSeqDict',
@@ -1079,6 +1090,8 @@ class NmrVrptUtility:
 
         # entity instances
         self.__entityInstance = None
+        # entity unmodeled (DAOTHER-10987)
+        self.__entityUninstance = None
 
         # atom id list for each model_id and atom key (auth_asym_id, auth_seq_id, auth_comp_id, auth_atom_id, PDB_ins_code)
         self.__atomIdList = None
@@ -1132,6 +1145,8 @@ class NmrVrptUtility:
         self.__chemShiftUnparsed = None
         # list of unmapped chemical shifts for each list_id
         self.__chemShiftUnmapped = None
+        # list of mapped chemical shifts to unmodeled residues for each list_id
+        self.__chemShiftUnmodeled = None
 
         # distance restraint violations for each restraint key
         self.__distRestViolDict = None
@@ -1861,13 +1876,17 @@ class NmrVrptUtility:
         if self.__cifPath is None:
             return False
 
-        vrpt_entity_instance_cache_path = None
+        vrpt_entity_instance_cache_path = vrpt_entity_uninstance_cache_path = None
 
         if self.__cifHashCode is not None:
-            vrpt_entity_instance_cache_path = os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_vrpt_entity_instance.pkl")
+            vrpt_entity_instance_cache_path =\
+                os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_vrpt_entity_instance.pkl")
             self.__entityInstance = load_from_pickle(vrpt_entity_instance_cache_path)
+            vrpt_entity_uninstance_cache_path =\
+                os.path.join(self.__cacheDirPath, f"{self.__cifHashCode}_vrpt_entity_uninstance.pkl")
+            self.__entityUninstance = load_from_pickle(vrpt_entity_uninstance_cache_path)
 
-            if self.__entityInstance is not None:
+            if None not in (self.__entityInstance, self.__entityUninstance):
                 return True
 
         _auth_atom_id = 'pdbx_auth_atom_name'\
@@ -1901,7 +1920,7 @@ class NmrVrptUtility:
             _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,
                                   'fetch_first_match': True})  # to process large assembly avoiding forced timeout
 
-        self.__entityInstance = {}
+        self.__entityInstance, self.__entityUninstance = {}, {}
 
         atom_name_unchecked = comp_name_unchecked = True
         _auth_atom_id_ = 'auth_atom_id'
@@ -2001,8 +2020,65 @@ class NmrVrptUtility:
                 for np in self.__caC['non_poly']:
                     update_entity_instance(np)
 
+            def get_label_seq_id(auth_chain_id, auth_seq_id):
+                ps = next((ps for ps in self.__caC['polymer_sequence']
+                           if ps['auth_chain_id'] == auth_chain_id and auth_seq_id in ps['auth_seq_id']), None)
+                if ps is not None:
+                    return ps['seq_id'][ps['auth_seq_id'].index(auth_seq_id)]
+                if 'branched' in self.__caC and self.__caC['branched'] is not None:
+                    br = next((br for br in self.__caC['branched']
+                               if br['auth_chain_id'] == auth_chain_id and auth_seq_id in br['auth_seq_id']), None)
+                    if br is not None:
+                        return br['seq_id'][br['auth_seq_id'].index(auth_seq_id)]
+                if 'non_poly' in self.__caC and self.__caC['non_poly'] is not None:
+                    np = next((np for np in self.__caC['non_poly']
+                               if np['auth_chain_id'] == auth_chain_id and auth_seq_id in np['auth_seq_id']), None)
+                    if np is not None:
+                        return np['seq_id'][np['auth_seq_id'].index(auth_seq_id)]
+                return None
+
+            # DAOTHER-10987
+            if 'coord_unobs_res' in self.__caC and self.__caC['coord_unobs_res'] is not None:
+                for k, v in self.__caC['coord_unobs_res'].items():
+                    auth_chain_id, auth_seq_id, comp_id = k[0], k[1], v['comp_id']
+                    if comp_id in EMPTY_VALUE:
+                        continue
+                    if auth_chain_id not in self.__entityUninstance:
+                        self.__entityUninstance[auth_chain_id] = {}
+                    seq_key = (str(auth_seq_id), comp_id)
+                    ps = next((ps for ps in self.__caC['polymer_sequence']
+                               if ps['auth_seq_id'] == auth_chain_id and auth_seq_id in ps['auth_seq_id']), None)
+                    seq_id = get_label_seq_id(auth_chain_id, auth_seq_id)
+                    if seq_id is None or not self.__ccU.updateChemCompDict(comp_id):
+                        continue
+                    self.__entityUninstance[auth_chain_id][seq_key] =\
+                        {'seq_id': seq_id, 'atoms': [cca['atom_id'] for cca in self.__ccU.lastAtomDictList
+                                                     if cca['leaving_atom_flag'] != 'Y'
+                                                     or (self.__csStat.peptideLike(comp_id)
+                                                         and cca['n_terminal_atom_flag'] == 'N'
+                                                         and cca['c_terminal_atom_flag'] == 'N')]}
+
+            # DAOTHER-10987
+            if 'coord_unobs_atom' in self.__caC and self.__caC['coord_unobs_atom'] is not None:
+                for k, v in self.__caC['coord_unobs_atom'].items():
+                    auth_chain_id, auth_seq_id, comp_id, atoms = k[0], k[1], v['comp_id'], v['atom_ids']
+                    if comp_id in EMPTY_VALUE or not isinstance(atoms, list) or len(atoms) == 0:
+                        continue
+                    if auth_chain_id not in self.__entityUninstance:
+                        self.__entityUninstance[auth_chain_id] = {}
+                    seq_key = (str(auth_seq_id), comp_id)
+                    seq_id = get_label_seq_id(auth_chain_id, auth_seq_id)
+                    if seq_id is None or not self.__ccU.updateChemCompDict(comp_id):
+                        continue
+                    if seq_key not in self.__entityUninstance[auth_chain_id]:
+                        self.__entityUninstance[auth_chain_id][seq_key] =\
+                            {'seq_id': seq_id, 'atoms': atoms}
+                    else:
+                        self.__entityUninstance[auth_chain_id][seq_key]['atoms'].extend(atoms)
+
             if self.__cifHashCode is not None:
                 write_as_pickle(self.__entityInstance, vrpt_entity_instance_cache_path)
+                write_as_pickle(self.__entityUninstance, vrpt_entity_uninstance_cache_path)
 
             return True
 
@@ -2011,7 +2087,7 @@ class NmrVrptUtility:
                              f"and {os.path.basename(self.__nmrDataPath)}\n")
             self.__log.write(f"+{self.__class_name__}.__extractEntityInstances() ++ Error  - {str(e)}\n")
 
-            self.__entityInstance = None
+            self.__entityInstance = self.__entityUninstance = None
 
         return False
 
@@ -2073,8 +2149,7 @@ class NmrVrptUtility:
             _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,
                                   'fetch_first_match': True})  # to process large assembly avoiding forced timeout
 
-        self.__atomIdList = {}
-        self.__coordinates = {}
+        self.__atomIdList, self.__coordinates = {}, {}
 
         atom_name_unchecked = comp_name_unchecked = True
         _auth_atom_id_ = 'auth_atom_id'
@@ -2167,9 +2242,7 @@ class NmrVrptUtility:
             return False
 
         self.__chemShiftMeta = []
-        self.__chemShiftTotal = {}
-        self.__chemShiftDict = {}
-        self.__chemShiftUnparsed = {}
+        self.__chemShiftTotal, self.__chemShiftDict, self.__chemShiftUnparsed = {}, {}, {}
 
         lp_category = 'Atom_chem_shift'
         sf_category = 'Assigned_chem_shift_list'
@@ -2318,8 +2391,7 @@ class NmrVrptUtility:
         if self.__nmrDataPath is None:
             return False
 
-        self.__distRestDict = {}
-        self.__distRestSeqDict = {}
+        self.__distRestDict, self.__distRestSeqDict = {}, {}
 
         # {comp_id: frozenset(backbone atom_ids)} cache — getBackBoneAtoms() rebuilds
         # a list (and may touch the CCD/CSV) on every call, and comp_id repeats across
@@ -2597,8 +2669,7 @@ class NmrVrptUtility:
         if self.__nmrDataPath is None:
             return False
 
-        self.__dihedRestDict = {}
-        self.__dihedRestSeqDict = {}
+        self.__dihedRestDict, self.__dihedRestSeqDict = {}, {}
 
         lp_category = 'Torsion_angle_constraint'
         sf_category = 'Torsion_angle_constraint_list'
@@ -2791,8 +2862,7 @@ class NmrVrptUtility:
         if self.__nmrDataPath is None:
             return False
 
-        self.__rdcRestDict = {}
-        self.__rdcRestSeqDict = {}
+        self.__rdcRestDict, self.__rdcRestSeqDict = {}, {}
 
         lp_category = 'RDC_constraint'
         sf_category = 'RDC_constraint_list'
@@ -3004,9 +3074,7 @@ class NmrVrptUtility:
               DOI: 10.1006/jmre.1999.1754
         """
 
-        self.__rdcSaupeOrderMatrix = {}
-        self.__rdcCalcDict = {}
-        self.__rdcSyntCalcDict = {}
+        self.__rdcSaupeOrderMatrix, self.__rdcCalcDict, self.__rdcSyntCalcDict = {}, {}, {}
 
         try:
 
@@ -3116,19 +3184,28 @@ class NmrVrptUtility:
                         Szz_, Syy_, Sxx_ = Sorder[0], Sorder[1], Sorder[2]
 
                         if Szz_ == abs(Szz):
+                            Szz_ = Szz
                             if Syy_ == abs(Syy):  # zz > yy > xx (as is)
+                                Sxx_, Syy_ = Sxx, Syy
                                 Sxy_, Sxz_, Syz_ = Sxy, Sxz, Syz
                             else:  # zz > xx > yy : x <-> y, z -> -z
+                                Sxx_, Syy_ = Syy, Sxx
                                 Sxy_, Sxz_, Syz_ = Sxy, -Syz, -Sxz
                         elif Szz_ == abs(Syy):
+                            Szz_ = Syy
                             if Syy_ == abs(Szz):  # yy > zz > xx : y <-> z, x -> -x
+                                Sxx_, Syy_ = Sxx, Szz
                                 Sxy_, Sxz_, Syz_ = -Sxz, -Sxy, Syz
                             else:  # yy > xx > zz : y->z, x->y, z->x (rotation)
+                                Sxx_, Syy_ = Szz, Sxx
                                 Sxy_, Sxz_, Syz_ = Syz, Sxy, Sxz
                         else:
+                            Szz_ = Sxx
                             if Syy_ == abs(Szz):  # xx > zz > yy : x->z, z->y, y->x (rotation)
+                                Sxx_, Syy_ = Syy, Szz
                                 Sxy_, Sxz_, Syz_ = Sxz, Syz, Sxy
                             else:  # xx > yy > zz : x <-> z, y -> -y
+                                Sxx_, Syy_ = Szz, Syy
                                 Sxy_, Sxz_, Syz_ = -Syz, Sxz, -Sxy
 
                         eta = (Syy_ - Sxx_) / Szz_
@@ -3137,11 +3214,11 @@ class NmrVrptUtility:
                                                                          'Szz': f'{Szz_:.4e}',
                                                                          'Sxy': f'{Sxy_:.4e}', 'Sxz': f'{Sxz_:.4e}',
                                                                          'Syz': f'{Syz_:.4e}',
-                                                                         'Da': f'{Sxx_ - Syy_:.4e}', 'eta': f'{eta:.4e}',
+                                                                         'eta': f'{eta:.4e}',
                                                                          'Dmax': f'{numpy.mean(dmax):.4e}'}
 
                         assert abs(Szz_) >= abs(Syy_) >= abs(Sxx_)
-                        assert 0 <= eta <= 1.0
+                        assert 0 <= abs(eta) <= 1.0
 
                         b_calc = A @ x
 
@@ -3196,17 +3273,15 @@ class NmrVrptUtility:
         if self.__coordinates is None:
             return False
 
-        self.__chemShiftUniqDict = {}
-        self.__chemShiftOutlier = {}
-        self.__chemShiftDuplicated = {}
-        self.__chemShiftUnmapped = {}
+        self.__chemShiftUniqDict, self.__chemShiftOutlier, self.__chemShiftDuplicated, \
+            self.__chemShiftUnmapped, self.__chemShiftUnmodeled = {}, {}, {}, {}, {}
 
         try:
 
             def check_entity_instance(list_id, _cs):
                 auth_chain_id = _cs['auth_chain_id']
 
-                if auth_chain_id not in self.__entityInstance:
+                if auth_chain_id not in self.__entityInstance and auth_chain_id not in self.__entityUninstance:
                     if list_id not in self.__chemShiftUnmapped:
                         self.__chemShiftUnmapped[list_id] = []
                     self.__chemShiftUnmapped[list_id].append(_cs)
@@ -3214,11 +3289,20 @@ class NmrVrptUtility:
 
                 auth_seq_id = _cs['auth_seq_id']
                 comp_id = _cs['comp_id']
+                atom_id = _cs['atom_id']
 
                 if 'ins_code' not in _cs or _cs['ins_code'] in EMPTY_VALUE:
                     seq_key = (str(auth_seq_id), comp_id)
                 else:
                     seq_key = (str(auth_seq_id) + _cs['ins_code'], comp_id)
+
+                # DAOTHER-10987
+                if auth_chain_id in self.__entityUninstance and seq_key in self.__entityUninstance[auth_chain_id]\
+                   and atom_id in self.__entityUninstance[auth_chain_id][seq_key]['atoms']:
+                    if list_id not in self.__chemShiftUnmodeled:
+                        self.__chemShiftUnmodeled[list_id] = []
+                    self.__chemShiftUnmodeled[list_id].append(_cs)
+                    return
 
                 if seq_key not in self.__entityInstance[auth_chain_id]:
                     if list_id not in self.__chemShiftUnmapped:
@@ -3226,7 +3310,6 @@ class NmrVrptUtility:
                     self.__chemShiftUnmapped[list_id].append(_cs)
                     return
 
-                atom_id = _cs['atom_id']
                 atoms = self.__entityInstance[auth_chain_id][seq_key]['atoms']
 
                 if atom_id in atoms:
@@ -3248,9 +3331,8 @@ class NmrVrptUtility:
                 has_ins_code = any(True for r in cs_data if 'ins_code' in r and r['ins_code'] not in EMPTY_VALUE)
 
                 self.__chemShiftUniqDict[list_id] = {}
-                self.__chemShiftOutlier[list_id] = []
-                self.__chemShiftDuplicated[list_id] = []
-                self.__chemShiftUnmapped[list_id] = []
+                self.__chemShiftOutlier[list_id], self.__chemShiftDuplicated[list_id], \
+                    self.__chemShiftUnmapped[list_id], self.__chemShiftUnmodeled[list_id] = [], [], [], []
 
                 for cs in cs_data:
                     cs_auth_chain_id = cs['auth_chain_id']
@@ -3335,7 +3417,7 @@ class NmrVrptUtility:
             self.__log.write(f"+{self.__class_name__}.__validateChemicalShifts() ++ Error  - {str(e)}\n")
 
             self.__chemShiftUniqDict = self.__chemShiftOutlier = \
-                self.__chemShiftDuplicated = self.__chemShiftUnmapped = None
+                self.__chemShiftDuplicated = self.__chemShiftUnmapped = self.__chemShiftUnmodeled = None
 
         return False
 
@@ -3769,10 +3851,7 @@ class NmrVrptUtility:
         if self.__coordinates is None:
             return False
 
-        self.__distRestDictWithCombKey = {}
-
-        self.__distRestViolDict = {}
-        self.__distRestViolCombKeyDict = {}
+        self.__distRestDictWithCombKey, self.__distRestViolDict, self.__distRestViolCombKeyDict = {}, {}, {}
         self.__distRestUnmapped = []
 
         if self.__distRestDict is None or self.__has_prev_results:
@@ -4058,10 +4137,7 @@ class NmrVrptUtility:
         if self.__coordinates is None:
             return False
 
-        self.__dihedRestDictWithCombKey = {}
-
-        self.__dihedRestViolDict = {}
-        self.__dihedRestViolCombKeyDict = {}
+        self.__dihedRestDictWithCombKey, self.__dihedRestViolDict, self.__dihedRestViolCombKeyDict = {}, {}, {}
         self.__dihedRestUnmapped = []
 
         if self.__dihedRestDict is None or self.__has_prev_results:
@@ -4070,7 +4146,6 @@ class NmrVrptUtility:
         try:
 
             def calc_dihed_rest_viol(rest_key, restraints):
-
                 model_ids = list(self.__coordinates)              # stable order for stacking
                 coords_by_model = [self.__coordinates[m] for m in model_ids]
 
@@ -4207,13 +4282,9 @@ class NmrVrptUtility:
         if self.__coordinates is None:
             return False
 
-        self.__rdcRestDictWithCombKey = {}  # pylint: disable='unreachable'
-
-        self.__rdcRestViolDict = {}
-        self.__rdcRestViolCombKeyDict = {}
+        self.__rdcRestDictWithCombKey, self.__rdcRestViolDict, self.__rdcRestViolCombKeyDict, \
+            self.__rdcCorrPlotDict = {}, {}, {}, {}  # pylint: disable='unreachable'
         self.__rdcRestUnmapped = []
-
-        self.__rdcCorrPlotDict = {}
 
         if self.__rdcRestDict is None or self.__has_prev_results:
             return True
@@ -4221,7 +4292,6 @@ class NmrVrptUtility:
         try:
 
             def calc_rdc_rest_viol(rest_key, restraints):
-
                 error_per_model = {}
 
                 # __rdcCalcDict[rest_key][model_id] is one calculated RDC per model,
@@ -4273,7 +4343,24 @@ class NmrVrptUtility:
                             continue
                         seen_bound_keys.add(bound_key)
 
-                        _error = rdc_error(bound_key[0], bound_key[1], r_calc)
+                        # experimental
+                        if bound_key[0] != bound_key[1] or rest_key not in self.__rdcSyntCalcDict:
+                            _error = rdc_error(bound_key[0], bound_key[1], r_calc)
+
+                        # theoretical
+                        else:
+                            rdc_calc_min = rdc_calc_max = None
+                            _rdc_synt_calcs = []
+                            for v in self.__rdcSyntCalcDict[rest_key].values():
+                                _rdc_synt_calcs.extend(v)
+                            if len(_rdc_synt_calcs) > RDC_MIN_MC_CYCLES:
+                                rdc_synt_calcs = numpy.array(_rdc_synt_calcs, dtype=float) / r['scale_factor']
+                                rdc_calc_min = round(numpy.min(rdc_synt_calcs), 2)
+                                rdc_calc_max = round(numpy.max(rdc_synt_calcs), 2)
+                            if None in (rdc_calc_min, rdc_calc_max):
+                                _error = rdc_error(rdc_calc_min, rdc_calc_max, r_calc)
+                            else:
+                                _error = rdc_error(bound_key[0], bound_key[1], r_calc)
 
                         if error is None or error > _error:
                             error = _error
@@ -4348,7 +4435,7 @@ class NmrVrptUtility:
                 list_ids.add(rest_key[0])
 
             for list_id in sorted(list(list_ids)):
-                rdc_values, rdc_errors, q_scores = {}, {}, {}
+                rdc_values, rdc_errors, rdc_viols, q_scores = {}, {}, {}, {}
 
                 for rest_key, rdc_calc in self.__rdcCalcDict.items():
 
@@ -4361,8 +4448,7 @@ class NmrVrptUtility:
                         rdc_type = r['rdc_type']
 
                         if rdc_type not in rdc_values:
-                            rdc_values[rdc_type] = []
-                            rdc_errors[rdc_type] = []
+                            rdc_values[rdc_type], rdc_errors[rdc_type], rdc_viols[rdc_type] = [], [], []
                             q_scores[rdc_type] = {'rdc_exp': [], 'rdc_calc': []}
 
                         ak1 = r['atom_key_1']
@@ -4410,10 +4496,14 @@ class NmrVrptUtility:
                                                      rdc_calc_min,
                                                      rdc_calc_max])
 
-                da_array = numpy.array([float(v['Szz']) * float(v['Dmax'])
+                        if rdc_exp_center < rdc_calc_min - NMR_VTF_RDC_ERR_BINS[1]\
+                           or rdc_exp_center > rdc_calc_max + NMR_VTF_RDC_ERR_BINS[1]:
+                            rdc_viols[rdc_type].append([rdc_exp_center, rdc_calc_center, vector_name])
+
+                da_array = numpy.array([abs(float(v['Szz'])) * float(v['Dmax'])
                                         for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
-                eta_array = numpy.array([float(v['eta']) for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
-                denominator_unit = da_array.mean() ** 2 * (4.0 + 3.0 * eta_array.mean() ** 2) / 5.0
+                eta_array = numpy.array([abs(float(v['eta'])) for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
+                denominator_unit = 2.0 / 5.0 * da_array.mean() ** 2 * (4.0 + 3.0 * eta_array.mean() ** 2)
 
                 for k, v in copy.copy(q_scores).items():
                     rdc_exp_array = numpy.array(v['rdc_exp'], dtype=float)
@@ -4423,6 +4513,9 @@ class NmrVrptUtility:
                     sum_of_squared_errors = ((rdc_exp_array - rdc_calc_array) ** 2).sum()
                     sum_of_squared_values = (rdc_exp_array ** 2).sum()
 
+                    m = numpy.corrcoef(rdc_exp_array, rdc_calc_array)
+
+                    q_scores[k]['r'] = round(m[0, 1], 2)
                     q_scores[k]['r2'] =\
                         round(1.0 - sum_of_squared_errors / total_sum_of_square, 2)\
                         if total_sum_of_square > 0.0 else 1.0
@@ -4436,7 +4529,8 @@ class NmrVrptUtility:
                     del q_scores[k]['rdc_exp']
                     del q_scores[k]['rdc_calc']
 
-                self.__rdcCorrPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors, 'q_scores': q_scores}
+                self.__rdcCorrPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors,
+                                                   'violations': rdc_viols, 'q_scores': q_scores}
 
             return True
 
@@ -4472,7 +4566,8 @@ class NmrVrptUtility:
                                            'cs_error': {'CS_OUTLIER': self.__chemShiftOutlier,
                                                         'CS_DUPLICATE': self.__chemShiftDuplicated,
                                                         'CS_VALUE': self.__chemShiftUnparsed,
-                                                        'NO_MAP': self.__chemShiftUnmapped
+                                                        'NO_MAP': self.__chemShiftUnmapped,
+                                                        'NO_MODEL': self.__chemShiftUnmodeled
                                                         }
                                            }
                           }
@@ -4727,7 +4822,8 @@ class NmrVrptUtility:
             parsed = len(self.__chemShiftDict[list_id])
             unparsed = len(self.__chemShiftUnparsed[list_id])
             unmapped_error = len(self.__chemShiftUnmapped[list_id])
-            mapped = parsed - unmapped_error
+            unmapped_warning = len(self.__chemShiftUnmodeled[list_id])
+            mapped = parsed - unmapped_error - unmapped_warning
             shift_summary_table[list_id] = {'block_id': self.__chemShiftMeta[idx][0],
                                             'block_name': self.__chemShiftMeta[idx][1],
                                             'list_id': self.__chemShiftMeta[idx][2],
@@ -4737,8 +4833,8 @@ class NmrVrptUtility:
                                             'number_of_parsed_shifts': parsed,
                                             'number_of_unparsed_shifts': unparsed,
                                             'number_of_mapped_shifts': mapped,
-                                            'number_of_errors_while_mapping': unmapped_error
-                                            # 'number_of_warnings_while_mapping': 0
+                                            'number_of_errors_while_mapping': unmapped_error,
+                                            'number_of_warnings_while_mapping': unmapped_warning
                                             }
 
         self.__results['shift_summary_table'] = shift_summary_table
@@ -4960,7 +5056,10 @@ class NmrVrptUtility:
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
 
-        if self.__has_prev_results or self.__distRestDict is None or len(self.__distRestDict) == 0:
+        if self.__has_prev_results:
+            return True
+
+        if self.__distRestDict is None or len(self.__distRestDict) == 0:
             self.__results['distance'] = False
             return True
 
@@ -4989,21 +5088,16 @@ class NmrVrptUtility:
             # Non-per-model accumulators: build once (were re-created and overwritten
             # inside the per-model loop below, i.e. total_models times).
             for t in distance_type:
-                distance_summary[t] = {}
-                distance_violation[t] = {}
-                consistent_distance_violation[t] = {}
-                distance_violations_vs_models[t] = {}
+                distance_summary[t], distance_violation[t], \
+                    consistent_distance_violation[t], distance_violations_vs_models[t] = {}, {}, {}, {}
 
                 for s in distance_sub_type:
-                    distance_summary[t][s] = {}
-                    distance_violation[t][s] = {}
-                    consistent_distance_violation[t][s] = {}
-                    distance_violations_vs_models[t][s] = {}
+                    distance_summary[t][s], distance_violation[t][s], \
+                        consistent_distance_violation[t][s], distance_violations_vs_models[t][s] = {}, {}, {}, {}
 
                     for b in bond_flag:
-                        distance_summary[t][s][b] = 0
-                        distance_violation[t][s][b] = 0
-                        consistent_distance_violation[t][s][b] = 0
+                        distance_summary[t][s][b] = distance_violation[t][s][b] =\
+                            consistent_distance_violation[t][s][b] = 0
                         distance_violations_vs_models[t][s][b] = [0] * (self.__total_models + 1)
 
             for m in self.__eff_model_ids:
@@ -5226,7 +5320,10 @@ class NmrVrptUtility:
             @change: class method, improve readability of restraints, support combinational restraints, performance optimization
         """
 
-        if self.__has_prev_results or self.__dihedRestDict is None or len(self.__dihedRestDict) == 0:
+        if self.__has_prev_results:
+            return True
+
+        if self.__dihedRestDict is None or len(self.__dihedRestDict) == 0:
             self.__results['angle'] = False
             self.__results['error_message_angle'] = None
             return True
@@ -5475,7 +5572,10 @@ class NmrVrptUtility:
             @author: Masashi Yokochi
         """
 
-        if self.__has_prev_results or self.__rdcRestDict is None or len(self.__rdcRestDict) == 0:
+        if self.__has_prev_results:
+            return True
+
+        if self.__rdcRestDict is None or len(self.__rdcRestDict) == 0:
             self.__results['rdc'] = False
             self.__results['error_message_rdc'] = None
             return True

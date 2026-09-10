@@ -428,8 +428,7 @@ try:
                                              NmrDpReportInputSource)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
-    from wwpdb.utils.nmr.AlignUtil import (deepcopy,
-                                           hasLargeInnerSeqGap,
+    from wwpdb.utils.nmr.AlignUtil import (hasLargeInnerSeqGap,
                                            hasLargeSeqGap,
                                            fillInnerBlankCompId,
                                            fillBlankCompId,
@@ -570,8 +569,7 @@ except ImportError:
                                  NmrDpReportInputSource)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
-    from nmr.AlignUtil import (deepcopy,
-                               hasLargeInnerSeqGap,
+    from nmr.AlignUtil import (hasLargeInnerSeqGap,
                                hasLargeSeqGap,
                                fillInnerBlankCompId,
                                fillBlankCompId,
@@ -1126,7 +1124,7 @@ class NmrDpUtility:
             self.__reg.has_star_chem_shift = True
 
             if self.__inputParamDict__ is None:
-                self.__inputParamDict__ = deepcopy(self.__reg.inputParamDict)
+                self.__inputParamDict__ = copy.deepcopy(self.__reg.inputParamDict)
 
             for v in self.__reg.key_items['nmr-star'].values():
                 if v is None:
@@ -2081,7 +2079,7 @@ class NmrDpUtility:
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
 
-            self.__reg.inputParamDict = deepcopy(self.__inputParamDict__)
+            self.__reg.inputParamDict = copy.deepcopy(self.__inputParamDict__)
 
             self.__initializeDpReport()
             self.__validateInputSource()
@@ -11738,7 +11736,7 @@ class NmrDpUtility:
                             ps1 = __ps1
 
                     if conflict > 0 and 'gap_in_auth_seq' in _ps2 and _ps2['gap_in_auth_seq'] and 'auth_seq_id' in _ps2:
-                        __ps1 = deepcopy(_ps1)
+                        __ps1 = copy.deepcopy(_ps1)
                         for p in range(len(_ps2['auth_seq_id']) - 1):
                             s_p = _ps2['auth_seq_id'][p]
                             s_q = _ps2['auth_seq_id'][p + 1]
@@ -12302,7 +12300,7 @@ class NmrDpUtility:
                             ps2 = __ps2
 
                     if conflict > 0 and 'gap_in_auth_seq' in _ps1 and _ps1['gap_in_auth_seq'] and 'auth_seq_id' in _ps1:
-                        __ps2 = deepcopy(_ps2)
+                        __ps2 = copy.deepcopy(_ps2)
                         for p in range(len(_ps1['auth_seq_id']) - 1):
                             s_p = _ps1['auth_seq_id'][p]
                             s_q = _ps1['auth_seq_id'][p + 1]
@@ -13586,6 +13584,9 @@ class NmrDpUtility:
         """ Remediate raw text data in saveframe of spectral peak list (for NMR data remediation upgrade to Phase 2).
         """
 
+        if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
+            return False
+
         # This rediculaus reverse implementation is for OneDep only
         if self.__reg.op != 'nmr-cs-mr-merge' and not self.__reg.internal_mode:
 
@@ -13611,9 +13612,6 @@ class NmrDpUtility:
                     master_entry.write_to_file(self.__reg.srcPath, show_comments=True, skip_empty_loops=True, skip_empty_tags=False)
 
             return True
-
-        if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
-            return False
 
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()

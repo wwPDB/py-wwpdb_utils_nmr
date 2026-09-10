@@ -1745,6 +1745,9 @@ class CifReader:
 
                 x = numpy.delete(v, numpy.s_[features:], 1)
 
+                if 'complex' in str(x.dtype):
+                    x = x.real
+
                 if min_samples >= features:
                     continue
 
@@ -1759,10 +1762,7 @@ class CifReader:
 
                     if SKLEARN_DBSCAN:
 
-                        try:
-                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
-                        except ValueError:
-                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
 
                         labels = db.labels_
 
@@ -1771,10 +1771,7 @@ class CifReader:
 
                     else:
 
-                        try:
-                            labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
-                        except ValueError:
-                            labels, _ = DBSCAN(numpy.real(x), eps=epsilon, min_samples=min_samples)
+                        labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
 
                     list_labels = list(labels)
                     set_labels = set(labels)
@@ -1952,12 +1949,12 @@ class CifReader:
 
         x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
 
+        if 'complex' in str(x.dtype):
+            x = x.real
+
         if SKLEARN_DBSCAN:
 
-            try:
-                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
-            except ValueError:
-                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
 
             labels = db.labels_
 
@@ -1966,10 +1963,7 @@ class CifReader:
 
         else:
 
-            try:
-                labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
-            except ValueError:
-                labels, _ = DBSCAN(numpy.real(x), eps=min_result['epsilon'], min_samples=min_result['min_samples'])
+            labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
 
         list_labels = list(labels)
         domains = collections.Counter(list_labels).most_common()
@@ -2346,6 +2340,9 @@ class CifReader:
 
                 x = numpy.delete(v, numpy.s_[features:], 1)
 
+                if 'complex' in str(x.dtype):
+                    x = x.real
+
                 if min_samples >= features:
                     continue
 
@@ -2359,10 +2356,7 @@ class CifReader:
 
                         if SKLEARN_DBSCAN:
 
-                            try:
-                                db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
-                            except ValueError:
-                                db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
 
                             labels = db.labels_
 
@@ -2371,10 +2365,7 @@ class CifReader:
 
                         else:
 
-                            try:
-                                labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
-                            except ValueError:
-                                labels, _ = DBSCAN(numpy.real(x), eps=epsilon, min_samples=min_samples)
+                            labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
 
                         list_labels = list(labels)
                         set_labels = set(labels)
@@ -2471,10 +2462,7 @@ class CifReader:
                         with warnings.catch_warnings():
                             warnings.simplefilter("ignore", category=RuntimeWarning)
 
-                            try:
-                                db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(x)
-                            except ValueError:
-                                db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(numpy.real(x))
+                            db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(x)
 
                         labels = db.labels_
 
@@ -2569,14 +2557,14 @@ class CifReader:
         if min_result is not None:
             x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
 
+            if 'complex' in str(x.dtype):
+                x = x.real
+
             if MODEL_CLUSTERING_WITH_DBSCAN:
 
                 if SKLEARN_DBSCAN:
 
-                    try:
-                        db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
-                    except ValueError:
-                        db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+                    db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
 
                     labels = db.labels_
 
@@ -2585,17 +2573,11 @@ class CifReader:
 
                 else:
 
-                    try:
-                        labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
-                    except ValueError:
-                        labels, _ = DBSCAN(numpy.real(x), eps=min_result['epsilon'], min_samples=min_result['min_samples'])
+                    labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
 
             else:
 
-                try:
-                    db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(x)
-                except ValueError:
-                    db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(numpy.real(x))
+                db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(x)
 
                 labels = db.labels_
 

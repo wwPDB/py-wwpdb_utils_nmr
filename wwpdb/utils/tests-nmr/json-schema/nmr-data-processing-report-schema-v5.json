@@ -777,7 +777,7 @@
                   },
                   "number_of_monomers": {
                     "type": "integer",
-                    "minimum": 4
+                    "minimum": 2
                   },
                   "percent_of_core": {
                     "type": "number",
@@ -947,7 +947,7 @@
         },
         "number_of_monomers": {
           "type": "integer",
-          "minimum": 4
+          "minimum": 2
         },
         "number_of_gaps": {
           "type": "integer",
@@ -3822,6 +3822,9 @@
             "errors": {
               "$ref": "#/definitions/rdc_plot_errors"
             },
+            "violations": {
+              "$ref": "#/definitions/rdc_plot_values"
+            },
             "q_scores": {
               "$ref": "#/definitions/rdc_plot_q_scores"
             }
@@ -5584,6 +5587,10 @@
           "type": "string",
           "minLength": 1
         },
+        "rdc_type": {
+          "type": "string",
+          "minLength": 1
+        },
         "total_violated_models": {
           "type": "integer",
           "minimum": 2
@@ -5672,6 +5679,10 @@
           "minLength": 1
         },
         "dihedral_angle_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rdc_type": {
           "type": "string",
           "minLength": 1
         },

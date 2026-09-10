@@ -1572,9 +1572,9 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                                         coord_issue = True
 
                                 elif 'coord_unobs_atom' in self._reg.caC:
-                                    _seq_key = (seq_key[0], seq_key[1]) if len(seq_key) > 2 else seq_key
+                                    _seq_key = (seq_key[0], seq_key[1]) if seq_key is not None and len(seq_key) > 2 else seq_key
 
-                                    if _seq_key in coord_unobs_atom and atom_id_ in coord_unobs_atom[seq_key]['atom_ids']:
+                                    if _seq_key in coord_unobs_atom and atom_id_ in coord_unobs_atom[_seq_key]['atom_ids']:
                                         coord_issue = True
 
                             _atom_id, _, _ = self._getAtomIdListWithAmbigCode(comp_id, f'{atom_id_}%')

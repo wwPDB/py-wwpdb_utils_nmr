@@ -42,6 +42,7 @@
 # 10-Jul-2026 - my  - fill single gap in a domain (v1.0.8, 8vrc)
 # 13-Jul-2026 - my  - implement ensemble composition analysis including cluster analysis (v1.0.9)
 # 05-Aug-2026 - my  - performance enhancement on RMSD calculation (v1.1.0)
+# 10-Sep-2026 - my  - run garbage collection periodically, add dbscan dependency if available (v1.2.0)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -49,10 +50,12 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 import collections
 import copy
+import ctypes
+import gc
 import hashlib
 import inspect
 import itertools
@@ -78,7 +81,11 @@ from rmsd.calculate_rmsd import (centroid, check_reflections,  # noqa: F401,E501
 
 from scipy.spatial.distance import pdist, squareform
 
-from sklearn.cluster import (DBSCAN, KMeans)
+try:
+    from dbscan import DBSCAN
+    from sklearn.cluster import KMeans
+except ImportError:
+    from sklearn.cluster import (DBSCAN, KMeans)
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
@@ -127,6 +134,9 @@ CIF_ITEM_TYPES = ('str', 'bool',
 
 # whether to apply DBSCAN method for clustering analysis of the ensemble, otherwise KMeans method is applied (default)
 MODEL_CLUSTERING_WITH_DBSCAN = True
+
+# threshold for garbage collection for high memory usage of scikit-learn DBSCAN
+GARBAGE_COLLECTION_CYCLES = 32
 
 
 def M(axis: list, theta: float) -> list:
@@ -1722,6 +1732,8 @@ class CifReader:
 
         stop_min_samples = -1
 
+        cycle = 0
+
         for min_samples in reversed(range(self.__min_samples_for_clustering, self.__max_samples_for_clustering + 1)):
 
             if min_samples == stop_min_samples:
@@ -1739,6 +1751,8 @@ class CifReader:
                     if abort:
                         break
 
+                    cycle += 1
+
                     epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
                     try:
@@ -1750,6 +1764,21 @@ class CifReader:
 
                     list_labels = list(labels)
                     set_labels = set(labels)
+
+                    # Explicitly clear from memory
+                    del db
+                    del labels
+
+                    if cycle % GARBAGE_COLLECTION_CYCLES == 0:
+                        gc.collect()  # Forces immediate garbage collection
+
+                        try:
+                            # Forces glibc to release cached memory pools back to the OS
+                            ctypes.CDLL("libc.so.6").malloc_trim(0)
+                        except (AttributeError, OSError):
+                            pass  # Fallback for non-Linux platforms
+
+                        cycle = 0
 
                     n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                     n_noise = list_labels.count(-1)
@@ -2076,6 +2105,11 @@ class CifReader:
                 for chain_id in dst_chain_ids:
                     rlist[chain_ids.index(chain_id)].append(item)
 
+        del db
+        del labels
+
+        cycle += 1
+
         # well-defined regions
 
         dlist = []
@@ -2290,6 +2324,8 @@ class CifReader:
                 if min_samples >= features:
                     continue
 
+                cycle += 1
+
                 if MODEL_CLUSTERING_WITH_DBSCAN:
 
                     for _epsilon in range(2, 11):
@@ -2318,6 +2354,21 @@ class CifReader:
                         if reset_label:
                             list_labels = list(labels)
                             set_labels = set(labels)
+
+                        # Explicitly clear from memory
+                        del db
+                        del labels
+
+                        if cycle % GARBAGE_COLLECTION_CYCLES == 0:
+                            gc.collect()  # Forces immediate garbage collection cycle
+
+                            try:
+                                # Forces glibc to release cached memory pools back to the OS
+                                ctypes.CDLL("libc.so.6").malloc_trim(0)
+                            except (AttributeError, OSError):
+                                pass  # Fallback for non-Linux platforms
+
+                            cycle = 0
 
                         n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                         n_noise = list_labels.count(-1)
@@ -2406,6 +2457,21 @@ class CifReader:
                         if reset_label:
                             list_labels = list(labels)
                             set_labels = set(labels)
+
+                        # Explicitly clear from memory
+                        del db
+                        del labels
+
+                        if cycle % GARBAGE_COLLECTION_CYCLES == 0:
+                            gc.collect()  # Forces immediate garbage collection cycle
+
+                            try:
+                                # Forces glibc to release cached memory pools back to the OS
+                                ctypes.CDLL("libc.so.6").malloc_trim(0)
+                            except (AttributeError, OSError):
+                                pass  # Fallback for non-Linux platforms
+
+                            cycle = 0
 
                         _n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                         n_noise = list_labels.count(-1)
@@ -2497,6 +2563,11 @@ class CifReader:
                 list_labels = list(labels)
                 set_labels = set(labels)
 
+            del db
+            del labels
+
+            cycle += 1
+
             n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
 
             if self.__verbose and self.__debug:
@@ -2587,5 +2658,14 @@ class CifReader:
 
             if self.__verbose and self.__debug:
                 self.__log.write(f'{clist}')
+
+        if cycle > GARBAGE_COLLECTION_CYCLES / 4:
+            gc.collect()  # Forces immediate garbage collection cycle
+
+            try:
+                # Forces glibc to release cached memory pools back to the OS
+                ctypes.CDLL("libc.so.6").malloc_trim(0)
+            except (AttributeError, OSError):
+                pass  # Fallback for non-Linux platforms
 
         return rlist, dlist, clist

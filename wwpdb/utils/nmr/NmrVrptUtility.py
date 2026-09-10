@@ -4530,7 +4530,10 @@ class NmrVrptUtility:
                     del q_scores[k]['rdc_calc']
 
                 self.__rdcCorrPlotDict[list_id] = {'values': rdc_values, 'errors': rdc_errors,
-                                                   'violations': rdc_viols, 'q_scores': q_scores}
+                                                   'q_scores': q_scores}
+
+                if len(rdc_viols) > 0:
+                    self.__rdcCorrPlotDict[list_id]['violations'] = rdc_viols
 
             return True
 

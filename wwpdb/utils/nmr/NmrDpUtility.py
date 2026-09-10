@@ -9116,7 +9116,7 @@ class NmrDpUtility:
 
                     for dim in range(1, max_dim):
                         freq = row[dim - 1]
-                        if isinstance(freq, str):
+                        if isinstance(freq, str) and freq not in EMPTY_VALUE:
                             freq = float(freq)
                         cur_spectral_dim[dim]['freq_hint'].append(freq)
 
@@ -9146,7 +9146,7 @@ class NmrDpUtility:
                         dim, freq = row
                         if isinstance(dim, str):
                             dim = int(dim)
-                        if isinstance(freq, str):
+                        if isinstance(freq, str) and freq not in EMPTY_VALUE:
                             freq = float(freq)
                         cur_spectral_dim[dim]['freq_hint'].append(freq)
 

@@ -42,6 +42,7 @@
 # 10-Jul-2026 - my  - fill single gap in a domain (v1.0.8, 8vrc)
 # 13-Jul-2026 - my  - implement ensemble composition analysis including cluster analysis (v1.0.9)
 # 05-Aug-2026 - my  - performance enhancement on RMSD calculation (v1.1.0)
+# 10-Sep-2026 - my  - run garbage collection periodically, add dbscan dependency if available (v1.2.0)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -49,10 +50,12 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 import collections
 import copy
+import ctypes
+import gc
 import hashlib
 import inspect
 import itertools
@@ -78,7 +81,13 @@ from rmsd.calculate_rmsd import (centroid, check_reflections,  # noqa: F401,E501
 
 from scipy.spatial.distance import pdist, squareform
 
-from sklearn.cluster import (DBSCAN, KMeans)
+try:
+    from dbscan import DBSCAN
+    from sklearn.cluster import KMeans
+    SKLEARN_DBSCAN = False
+except ImportError:
+    from sklearn.cluster import (DBSCAN, KMeans)
+    SKLEARN_DBSCAN = True
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
@@ -127,6 +136,9 @@ CIF_ITEM_TYPES = ('str', 'bool',
 
 # whether to apply DBSCAN method for clustering analysis of the ensemble, otherwise KMeans method is applied (default)
 MODEL_CLUSTERING_WITH_DBSCAN = True
+
+# threshold for garbage collection for high memory usage of DBSCAN
+GARBAGE_COLLECTION_CYCLES = 32 if SKLEARN_DBSCAN else 128
 
 
 def M(axis: list, theta: float) -> list:
@@ -1722,6 +1734,8 @@ class CifReader:
 
         stop_min_samples = -1
 
+        cycle = 0
+
         for min_samples in reversed(range(self.__min_samples_for_clustering, self.__max_samples_for_clustering + 1)):
 
             if min_samples == stop_min_samples:
@@ -1731,6 +1745,9 @@ class CifReader:
 
                 x = numpy.delete(v, numpy.s_[features:], 1)
 
+                if 'complex' in str(x.dtype):
+                    x = x.real
+
                 if min_samples >= features:
                     continue
 
@@ -1739,17 +1756,39 @@ class CifReader:
                     if abort:
                         break
 
+                    cycle += 1
+
                     epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
-                    try:
-                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
-                    except ValueError:
-                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+                    if SKLEARN_DBSCAN:
 
-                    labels = db.labels_
+                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
+
+                        labels = db.labels_
+
+                        # Explicitly clear from memory
+                        del db
+
+                    else:
+
+                        labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
 
                     list_labels = list(labels)
                     set_labels = set(labels)
+
+                    # Explicitly clear from memory
+                    del labels
+
+                    if cycle % GARBAGE_COLLECTION_CYCLES == 0:
+                        gc.collect()  # Forces immediate garbage collection
+
+                        try:
+                            # Forces glibc to release cached memory pools back to the OS
+                            ctypes.CDLL("libc.so.6").malloc_trim(0)
+                        except (AttributeError, OSError):
+                            pass  # Fallback for non-Linux platforms
+
+                        cycle = 0
 
                     n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                     n_noise = list_labels.count(-1)
@@ -1910,12 +1949,21 @@ class CifReader:
 
         x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
 
-        try:
-            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
-        except ValueError:
-            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+        if 'complex' in str(x.dtype):
+            x = x.real
 
-        labels = db.labels_
+        if SKLEARN_DBSCAN:
+
+            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
+
+            labels = db.labels_
+
+            # Explicitly clear from memory
+            del db
+
+        else:
+
+            labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
 
         list_labels = list(labels)
         domains = collections.Counter(list_labels).most_common()
@@ -2075,6 +2123,11 @@ class CifReader:
                     item['exactly_overlaid_model'] = exact_overlaid_model_ids
                 for chain_id in dst_chain_ids:
                     rlist[chain_ids.index(chain_id)].append(item)
+
+        # Explicitly clear from memory
+        del labels
+
+        cycle += 1
 
         # well-defined regions
 
@@ -2287,8 +2340,13 @@ class CifReader:
 
                 x = numpy.delete(v, numpy.s_[features:], 1)
 
+                if 'complex' in str(x.dtype):
+                    x = x.real
+
                 if min_samples >= features:
                     continue
+
+                cycle += 1
 
                 if MODEL_CLUSTERING_WITH_DBSCAN:
 
@@ -2296,12 +2354,18 @@ class CifReader:
 
                         epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
-                        try:
-                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
-                        except ValueError:
-                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+                        if SKLEARN_DBSCAN:
 
-                        labels = db.labels_
+                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
+
+                            labels = db.labels_
+
+                            # Explicitly clear from memory
+                            del db
+
+                        else:
+
+                            labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
 
                         list_labels = list(labels)
                         set_labels = set(labels)
@@ -2318,6 +2382,20 @@ class CifReader:
                         if reset_label:
                             list_labels = list(labels)
                             set_labels = set(labels)
+
+                        # Explicitly clear from memory
+                        del labels
+
+                        if cycle % GARBAGE_COLLECTION_CYCLES == 0:
+                            gc.collect()  # Forces immediate garbage collection cycle
+
+                            try:
+                                # Forces glibc to release cached memory pools back to the OS
+                                ctypes.CDLL("libc.so.6").malloc_trim(0)
+                            except (AttributeError, OSError):
+                                pass  # Fallback for non-Linux platforms
+
+                            cycle = 0
 
                         n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                         n_noise = list_labels.count(-1)
@@ -2384,12 +2462,12 @@ class CifReader:
                         with warnings.catch_warnings():
                             warnings.simplefilter("ignore", category=RuntimeWarning)
 
-                            try:
-                                db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(x)
-                            except ValueError:
-                                db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(numpy.real(x))
+                            db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(x)
 
                         labels = db.labels_
+
+                        # Explicitly clear from memory
+                        del db
 
                         list_labels = list(labels)
                         set_labels = set(labels)
@@ -2406,6 +2484,20 @@ class CifReader:
                         if reset_label:
                             list_labels = list(labels)
                             set_labels = set(labels)
+
+                        # Explicitly clear from memory
+                        del labels
+
+                        if cycle % GARBAGE_COLLECTION_CYCLES == 0:
+                            gc.collect()  # Forces immediate garbage collection cycle
+
+                            try:
+                                # Forces glibc to release cached memory pools back to the OS
+                                ctypes.CDLL("libc.so.6").malloc_trim(0)
+                            except (AttributeError, OSError):
+                                pass  # Fallback for non-Linux platforms
+
+                            cycle = 0
 
                         _n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
                         n_noise = list_labels.count(-1)
@@ -2465,21 +2557,32 @@ class CifReader:
         if min_result is not None:
             x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
 
+            if 'complex' in str(x.dtype):
+                x = x.real
+
             if MODEL_CLUSTERING_WITH_DBSCAN:
 
-                try:
+                if SKLEARN_DBSCAN:
+
                     db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
-                except ValueError:
-                    db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+
+                    labels = db.labels_
+
+                    # Explicitly clear from memory
+                    del db
+
+                else:
+
+                    labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
 
             else:
 
-                try:
-                    db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(x)
-                except ValueError:
-                    db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(numpy.real(x))
+                db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(x)
 
-            labels = db.labels_
+                labels = db.labels_
+
+                # Explicitly clear from memory
+                del db
 
             list_labels = list(labels)
             set_labels = set(labels)
@@ -2496,6 +2599,11 @@ class CifReader:
             if reset_label:
                 list_labels = list(labels)
                 set_labels = set(labels)
+
+            # Explicitly clear from memory
+            del labels
+
+            cycle += 1
 
             n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
 
@@ -2587,5 +2695,14 @@ class CifReader:
 
             if self.__verbose and self.__debug:
                 self.__log.write(f'{clist}')
+
+        if cycle > GARBAGE_COLLECTION_CYCLES / 4:
+            gc.collect()  # Forces immediate garbage collection cycle
+
+            try:
+                # Forces glibc to release cached memory pools back to the OS
+                ctypes.CDLL("libc.so.6").malloc_trim(0)
+            except (AttributeError, OSError):
+                pass  # Fallback for non-Linux platforms
 
         return rlist, dlist, clist

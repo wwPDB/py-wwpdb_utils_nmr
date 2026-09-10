@@ -205,7 +205,8 @@ class BmrbAnnTasks:
                         for _idx in dup_idx:
                             del lp.data[_idx]
 
-                lp.renumber_rows('ID')
+                if 'ID' in lp.tags:
+                    lp.renumber_rows('ID')
 
             except KeyError:
                 pass
@@ -234,7 +235,8 @@ class BmrbAnnTasks:
                         for _idx in dup_idx:
                             del lp.data[_idx]
 
-                lp.renumber_rows('Ordinal')
+                if 'Ordinal' in lp.tags:
+                    lp.renumber_rows('Ordinal')
 
             except KeyError:
                 pass

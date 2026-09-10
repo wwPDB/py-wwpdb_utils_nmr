@@ -84,8 +84,10 @@ from scipy.spatial.distance import pdist, squareform
 try:
     from dbscan import DBSCAN
     from sklearn.cluster import KMeans
+    SKLEARN_DBSCAN = False
 except ImportError:
     from sklearn.cluster import (DBSCAN, KMeans)
+    SKLEARN_DBSCAN = True
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
@@ -135,8 +137,8 @@ CIF_ITEM_TYPES = ('str', 'bool',
 # whether to apply DBSCAN method for clustering analysis of the ensemble, otherwise KMeans method is applied (default)
 MODEL_CLUSTERING_WITH_DBSCAN = True
 
-# threshold for garbage collection for high memory usage of scikit-learn DBSCAN
-GARBAGE_COLLECTION_CYCLES = 32
+# threshold for garbage collection for high memory usage of DBSCAN
+GARBAGE_COLLECTION_CYCLES = 32 if SKLEARN_DBSCAN else 128
 
 
 def M(axis: list, theta: float) -> list:
@@ -1755,18 +1757,29 @@ class CifReader:
 
                     epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
-                    try:
-                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
-                    except ValueError:
-                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+                    if SKLEARN_DBSCAN:
 
-                    labels = db.labels_
+                        try:
+                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
+                        except ValueError:
+                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+
+                        labels = db.labels_
+
+                        # Explicitly clear from memory
+                        del db
+
+                    else:
+
+                        try:
+                            labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
+                        except ValueError:
+                            labels, _ = DBSCAN(numpy.real(x), eps=epsilon, min_samples=min_samples)
 
                     list_labels = list(labels)
                     set_labels = set(labels)
 
                     # Explicitly clear from memory
-                    del db
                     del labels
 
                     if cycle % GARBAGE_COLLECTION_CYCLES == 0:
@@ -1939,12 +1952,24 @@ class CifReader:
 
         x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
 
-        try:
-            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
-        except ValueError:
-            db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+        if SKLEARN_DBSCAN:
 
-        labels = db.labels_
+            try:
+                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
+            except ValueError:
+                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+
+            labels = db.labels_
+
+            # Explicitly clear from memory
+            del db
+
+        else:
+
+            try:
+                labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
+            except ValueError:
+                labels, _ = DBSCAN(numpy.real(x), eps=min_result['epsilon'], min_samples=min_result['min_samples'])
 
         list_labels = list(labels)
         domains = collections.Counter(list_labels).most_common()
@@ -2105,7 +2130,7 @@ class CifReader:
                 for chain_id in dst_chain_ids:
                     rlist[chain_ids.index(chain_id)].append(item)
 
-        del db
+        # Explicitly clear from memory
         del labels
 
         cycle += 1
@@ -2332,12 +2357,24 @@ class CifReader:
 
                         epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
-                        try:
-                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
-                        except ValueError:
-                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+                        if SKLEARN_DBSCAN:
 
-                        labels = db.labels_
+                            try:
+                                db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
+                            except ValueError:
+                                db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(numpy.real(x))
+
+                            labels = db.labels_
+
+                            # Explicitly clear from memory
+                            del db
+
+                        else:
+
+                            try:
+                                labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
+                            except ValueError:
+                                labels, _ = DBSCAN(numpy.real(x), eps=epsilon, min_samples=min_samples)
 
                         list_labels = list(labels)
                         set_labels = set(labels)
@@ -2356,7 +2393,6 @@ class CifReader:
                             set_labels = set(labels)
 
                         # Explicitly clear from memory
-                        del db
                         del labels
 
                         if cycle % GARBAGE_COLLECTION_CYCLES == 0:
@@ -2442,6 +2478,9 @@ class CifReader:
 
                         labels = db.labels_
 
+                        # Explicitly clear from memory
+                        del db
+
                         list_labels = list(labels)
                         set_labels = set(labels)
 
@@ -2459,7 +2498,6 @@ class CifReader:
                             set_labels = set(labels)
 
                         # Explicitly clear from memory
-                        del db
                         del labels
 
                         if cycle % GARBAGE_COLLECTION_CYCLES == 0:
@@ -2533,10 +2571,24 @@ class CifReader:
 
             if MODEL_CLUSTERING_WITH_DBSCAN:
 
-                try:
-                    db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
-                except ValueError:
-                    db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+                if SKLEARN_DBSCAN:
+
+                    try:
+                        db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
+                    except ValueError:
+                        db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(numpy.real(x))
+
+                    labels = db.labels_
+
+                    # Explicitly clear from memory
+                    del db
+
+                else:
+
+                    try:
+                        labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
+                    except ValueError:
+                        labels, _ = DBSCAN(numpy.real(x), eps=min_result['epsilon'], min_samples=min_result['min_samples'])
 
             else:
 
@@ -2545,7 +2597,10 @@ class CifReader:
                 except ValueError:
                     db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(numpy.real(x))
 
-            labels = db.labels_
+                labels = db.labels_
+
+                # Explicitly clear from memory
+                del db
 
             list_labels = list(labels)
             set_labels = set(labels)
@@ -2563,7 +2618,7 @@ class CifReader:
                 list_labels = list(labels)
                 set_labels = set(labels)
 
-            del db
+            # Explicitly clear from memory
             del labels
 
             cycle += 1

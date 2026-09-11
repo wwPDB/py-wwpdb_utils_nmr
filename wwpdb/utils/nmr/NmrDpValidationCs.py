@@ -1864,6 +1864,9 @@ class NmrDpValidationCs(NmrDpValidationBase):
             @return: the nearest aromatic ring
         """
 
+        if not self._reg.cifChecked:
+            return None
+
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
         if cif_ps is None:
@@ -2225,6 +2228,9 @@ class NmrDpValidationCs(NmrDpValidationBase):
         """ Return the nearest paramagnetic/ferromagnetic atom around a given atom.
             @return: the nearest paramagnetic/ferromagnetic atom
         """
+
+        if not self._reg.cifChecked:
+            return None
 
         if self._reg.report.isDiamagnetic():
             return None

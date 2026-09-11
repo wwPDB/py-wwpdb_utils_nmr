@@ -6677,45 +6677,51 @@ class NefTranslator:
                         bad_ids.add(idx)
                 else:
                     for col, dat in enumerate(row):
-                        dat_type = key_types[col]
 
-                        if dat_type == 'bool':
-                            try:
-                                bool(dat)
-                            except (ValueError, TypeError):
-                                if idx < len_loop:
-                                    bad_ids.add(idx)
+                        try:
 
-                        elif 'int' in dat_type or dat_type == 'pointer-index':
-                            try:
-                                int(dat)
-                            except ValueError:
-                                if idx < len_loop:
-                                    bad_ids.add(idx)
-                            except TypeError:
-                                # DAOTHER-10661
-                                if is_cs_lp and key_names[col] in ('sequence_code', 'Comp_index_ID'):
-                                    pass
-                                else:
+                            dat_type = key_types[col]
+
+                            if dat_type == 'bool':
+                                try:
+                                    bool(dat)
+                                except (ValueError, TypeError):
                                     if idx < len_loop:
                                         bad_ids.add(idx)
 
-                        elif 'float' in dat_type:
-                            try:
-                                val = float(dat)
-                                if is_cs_lp and val == 0.0 and key_names[col] in ('value', 'Val'):
-                                    comp_id = row[key_names.index('residue_name' if 'nef' in lp_category else 'Comp_ID')]
-                                    atom_id = row[key_names.index('atom_name' if 'nef' in lp_category else 'Atom_ID')]
-                                    atom_ids, _, details =\
-                                        self.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)
-                                    methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
-                                    if details is None or (len(methyl_atoms) == 0
-                                                           or not any(methyl_atom in atom_ids for methyl_atom in methyl_atoms)):
+                            elif 'int' in dat_type or dat_type == 'pointer-index':
+                                try:
+                                    int(dat)
+                                except ValueError:
+                                    if idx < len_loop:
+                                        bad_ids.add(idx)
+                                except TypeError:
+                                    # DAOTHER-10661
+                                    if is_cs_lp and key_names[col] in ('sequence_code', 'Comp_index_ID'):
+                                        pass
+                                    else:
                                         if idx < len_loop:
                                             bad_ids.add(idx)
-                            except (ValueError, TypeError):
-                                if idx < len_loop:
-                                    bad_ids.add(idx)
+
+                            elif 'float' in dat_type:
+                                try:
+                                    val = float(dat)
+                                    if is_cs_lp and val == 0.0 and key_names[col] in ('value', 'Val'):
+                                        comp_id = row[key_names.index('residue_name' if 'nef' in lp_category else 'Comp_ID')]
+                                        atom_id = row[key_names.index('atom_name' if 'nef' in lp_category else 'Atom_ID')]
+                                        atom_ids, _, details =\
+                                            self.get_valid_star_atom_in_xplor(comp_id, atom_id, leave_unmatched=False)
+                                        methyl_atoms = self.__csStat.getMethylAtoms(comp_id)
+                                        if details is None or (len(methyl_atoms) == 0
+                                                               or not any(methyl_atom in atom_ids for methyl_atom in methyl_atoms)):
+                                            if idx < len_loop:
+                                                bad_ids.add(idx)
+                                except (ValueError, TypeError):
+                                    if idx < len_loop:
+                                        bad_ids.add(idx)
+
+                        except IndexError:
+                            pass
 
             data.append(sorted(bad_ids, reverse=True))
 

@@ -358,8 +358,6 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
             except KeyError:
                 pass
 
-            has_coordinate = self._reg.cifChecked
-
             cif_poly_seq = None
 
             src_id = self._reg.report.getInputSourceIdOfCoord()
@@ -389,7 +387,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
             # model
 
-            if has_coordinate:
+            if self._reg.cifChecked:
                 model_info = {'file_name': os.path.basename(self._reg.cifPath),
                               'file_type': 'pdbx',
                               'file_size': os.path.getsize(self._reg.cifPath),
@@ -450,13 +448,17 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                     vrpt_util.addInput(name='report_file_path', value=fPath, type='file')
 
             vrpt_cs = vrpt_util.op('nmr-cs-validation')
+
+            if vrpt_cs is not None and 'completeness' not in vrpt_cs:
+                vrpt_cs = None
+
             vrpt_mr = vrpt_util.op('nmr-mr-validation')
 
             if vrpt_cs is not None:
                 completeness = vrpt_cs['completeness']
 
                 cs_summary = {}
-                if has_coordinate and completeness['well_defined'][1] > 0:
+                if self._reg.cifChecked and completeness['well_defined'][1] > 0:
                     cs_summary['number_of_target_shifts_in_well_defined_region'] =\
                         completeness['well_defined'][1]
                     cs_summary['number_of_assigned_shifts_in_well_defined_region'] =\
@@ -1290,7 +1292,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                         sf_info['number_of_parsed'] = len(consist_ids)
 
-                        if has_coordinate:
+                        if self._reg.cifChecked:
 
                             if content_subtype == 'chem_shift':
 

@@ -9145,7 +9145,10 @@ class NmrDpUtility:
                     for row in dat:
                         dim, freq = row
                         if isinstance(dim, str):
-                            dim = int(dim)
+                            try:
+                                dim = int(dim)
+                            except ValueError:
+                                continue
                         if isinstance(freq, str) and freq not in EMPTY_VALUE:
                             freq = float(freq)
                         cur_spectral_dim[dim]['freq_hint'].append(freq)

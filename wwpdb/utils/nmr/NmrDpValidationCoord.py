@@ -56,6 +56,9 @@ class NmrDpValidationCoord(NmrDpValidationBase):
             @return: True for cyclic polymer, False otherwise
         """
 
+        if not self._reg.cifChecked:
+            return False
+
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
         if cif_ps is None:
@@ -162,6 +165,9 @@ class NmrDpValidationCoord(NmrDpValidationBase):
             @return: True for cis peptide conformer, False otherwise
         """
 
+        if not self._reg.cifChecked:
+            return False
+
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
         if cif_ps is None:
@@ -224,6 +230,9 @@ class NmrDpValidationCoord(NmrDpValidationBase):
     def testTautomerOfHistidinePerModel(self) -> bool:
         """ Check tautomeric state of a given histidine per model. (DAOTHER-9252)
         """
+
+        if not self._reg.cifChecked:
+            return False
 
         src_id = self._reg.report.getInputSourceIdOfCoord()
 

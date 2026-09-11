@@ -429,6 +429,9 @@ class NmrDpValidationBase:
             @return: the bond length
         """
 
+        if not self._reg.cifChecked:
+            return None
+
         try:
 
             model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self._reg.coord_atom_site_tags else 'ndb_model'
@@ -765,6 +768,12 @@ class NmrDpValidationBase:
             @return: One of 'biprotonated', 'tau-tautomer', 'pi-tautomer', 'unknown'
         """
 
+        if not self._reg.cifChecked:
+            return 'unknown'
+
+        if self._reg.report.isDiamagnetic():
+            return 'unknown'
+
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
         if cif_ps is None:
@@ -855,6 +864,9 @@ class NmrDpValidationBase:
         """
 
         none = [{'name': 'chi1', 'unknown': 1.0}]
+
+        if not self._reg.cifChecked:
+            return none
 
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
@@ -967,6 +979,9 @@ class NmrDpValidationBase:
         """
 
         none = [{'name': 'chi1', 'unknown': 1.0}, {'name': 'chi2', 'unknown': 1.0}]
+
+        if not self._reg.cifChecked:
+            return none
 
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 
@@ -1100,6 +1115,9 @@ class NmrDpValidationBase:
         """
 
         none = [{'name': 'chi1', 'unknown': 1.0}, {'name': 'chi2', 'unknown': 1.0}]
+
+        if not self._reg.cifChecked:
+            return none
 
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)
 

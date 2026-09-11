@@ -90,6 +90,8 @@ jobs:
   deploy:
     needs: build
     runs-on: self-hosted
+    permissions:
+      contents: read
     steps:
       - name: Deployment and rolling update to self-hosted servers
         shell: bash

@@ -9116,7 +9116,9 @@ class NmrDpUtility:
 
                     for dim in range(1, max_dim):
                         freq = row[dim - 1]
-                        if isinstance(freq, str) and freq not in EMPTY_VALUE:
+                        if freq in EMPTY_VALUE:
+                            continue
+                        if isinstance(freq, str):
                             freq = float(freq)
                         cur_spectral_dim[dim]['freq_hint'].append(freq)
 
@@ -9149,7 +9151,9 @@ class NmrDpUtility:
                                 dim = int(dim)
                             except ValueError:
                                 continue
-                        if isinstance(freq, str) and freq not in EMPTY_VALUE:
+                        if freq in EMPTY_VALUE:
+                            continue
+                        if isinstance(freq, str):
                             freq = float(freq)
                         cur_spectral_dim[dim]['freq_hint'].append(freq)
 
@@ -11255,8 +11259,8 @@ class NmrDpUtility:
 
                             ent_asm_id_map[row[0]] = row[1]
 
-                    if len(ent_asm_id_map) + len(ign_chain_ids) != len(dat):
-                        ent_asm_id_map = {}
+                        if len(ent_asm_id_map) + len(ign_chain_ids) != len(dat):
+                            ent_asm_id_map = {}
 
                 except (IndexError, KeyError):
                     pass

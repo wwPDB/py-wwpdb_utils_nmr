@@ -448,6 +448,10 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                     vrpt_util.addInput(name='report_file_path', value=fPath, type='file')
 
             vrpt_cs = vrpt_util.op('nmr-cs-validation')
+
+            if 'completeness' not in vrpt_cs:
+                vrpt_cs = None
+
             vrpt_mr = vrpt_util.op('nmr-mr-validation')
 
             if vrpt_cs is not None:

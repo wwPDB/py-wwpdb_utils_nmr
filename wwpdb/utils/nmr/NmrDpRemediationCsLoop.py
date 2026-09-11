@@ -192,8 +192,6 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                 if _idx - offset >= 0:
                     yield loop.data[_idx - offset]
 
-        has_coordinate = self._reg.report.getInputSourceIdOfCoord() >= 0
-
         input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
@@ -2363,7 +2361,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                             except (ValueError, TypeError):
                                 seq_id = None
 
-                        if not resolved and seq_id is not None and has_coordinate:
+                        if not resolved and seq_id is not None and self._reg.cifChecked:
 
                             def test_seq_id_offset(lp, index, row, _row, _idx, chain_id, seq_id, comp_id, offset):
                                 _found = _resolved = _reparse = False
@@ -2628,7 +2626,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                                                         comp_id, atom_id, loop, idx)
                                     reparse_request |= reparse
 
-                            if not resolved and seq_id is not None and has_coordinate:
+                            if not resolved and seq_id is not None and self._reg.cifChecked:
 
                                 can_auth_asym_id_mapping_failed = True  # DAOTHER-9158
 
@@ -2728,7 +2726,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                 except (ValueError, TypeError):
                                     entity_id = None
 
-                            if not has_coordinate:
+                            if not self._reg.cifChecked:
                                 seq_id = int(row[seq_id_col])
 
                             _row[CS_ENT_ASM_ID], _row[CS_ENTITY_ID], _row[CS_COMP_ID] = chain_id, entity_id, comp_id

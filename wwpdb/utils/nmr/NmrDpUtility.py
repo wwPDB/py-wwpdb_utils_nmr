@@ -13415,9 +13415,7 @@ class NmrDpUtility:
             self.__extractToNmrIf__()
             self.__reg.dpR.cleanUpSf()
 
-        src_id = self.__reg.report.getInputSourceIdOfCoord()
-
-        if src_id < 0:
+        if not self.__reg.cifChecked:
             return self.__remediateCsLoop__()
 
         if self.__reg.caC is None:

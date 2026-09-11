@@ -69,7 +69,7 @@ class NmrDpRemediationStats(NmrDpRemediationBase):
         if (not self._reg.combined_mode and not self._reg.remediation_mode)\
            or self._reg.dstPath is None\
            or self._reg.release_mode\
-           or self._reg.report.getInputSourceIdOfCoord() < 0:
+           or not self._reg.cifChecked:
             return True
 
         input_source = self._reg.report.input_sources[0]

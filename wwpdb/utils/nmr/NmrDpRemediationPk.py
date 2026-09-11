@@ -715,9 +715,7 @@ class NmrDpRemediationPk(NmrDpRemediationBase):
         if MR_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
             return True
 
-        src_id = self._reg.report.getInputSourceIdOfCoord()
-
-        if src_id < 0:
+        if not self._reg.cifChecked:
             return False
 
         if self._reg.pk_sf_holder is None:

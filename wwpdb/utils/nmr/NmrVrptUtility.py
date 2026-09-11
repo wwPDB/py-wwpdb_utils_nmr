@@ -4471,9 +4471,6 @@ class NmrVrptUtility:
                             if len(_rdc_synt_calcs) > RDC_MIN_MC_CYCLES:
                                 rdc_synt_calcs = numpy.array(_rdc_synt_calcs, dtype=float) / r['scale_factor']
 
-                                # rdc_synt_std = numpy.std(rdc_synt_calcs)
-                                # rdc_calc_min = round(rdc_calc_mean - rdc_synt_std, 2)
-                                # rdc_calc_max = round(rdc_calc_mean + rdc_synt_std, 2)
                                 rdc_calc_min = round(numpy.min(rdc_synt_calcs), 2)
                                 rdc_calc_max = round(numpy.max(rdc_synt_calcs), 2)
 
@@ -4503,7 +4500,7 @@ class NmrVrptUtility:
                 da_array = numpy.array([abs(float(v['Szz'])) * float(v['Dmax'])
                                         for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
                 eta_array = numpy.array([abs(float(v['eta'])) for v in self.__rdcSaupeOrderMatrix[list_id].values()], dtype=float)
-                denominator_unit = 2.0 / 5.0 * da_array.mean() ** 2 * (4.0 + 3.0 * eta_array.mean() ** 2)
+                denominator_unit = 0.4 * da_array.mean() ** 2 * (4.0 + 3.0 * eta_array.mean() ** 2)
 
                 for k, v in copy.copy(q_scores).items():
                     rdc_exp_array = numpy.array(v['rdc_exp'], dtype=float)

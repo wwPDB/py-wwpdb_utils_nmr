@@ -449,7 +449,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
             vrpt_cs = vrpt_util.op('nmr-cs-validation')
 
-            if 'completeness' not in vrpt_cs:
+            if vrpt_cs is not None and 'completeness' not in vrpt_cs:
                 vrpt_cs = None
 
             vrpt_mr = vrpt_util.op('nmr-mr-validation')

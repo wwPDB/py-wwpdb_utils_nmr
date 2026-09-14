@@ -1913,7 +1913,8 @@ class NmrVrptUtility:
             data_items.append({'name': 'pdbx_auth_comp_id', 'type': 'str', 'alt_name': 'alt_auth_comp_id'})
 
         _filter_items = [{'name': 'type_symbol', 'type': 'enum', 'enum': NMR_OBS_NUCS},
-                         {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)},
+                         # remove label_alt_id filter because of missing of ayth_asym_id: B (2n2k)
+                         # {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)},
                          {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': self.__eff_model_ids[0]}]
 
         if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
@@ -4493,8 +4494,9 @@ class NmrVrptUtility:
                                                      rdc_calc_min,
                                                      rdc_calc_max])
 
-                        if rdc_exp_center < rdc_calc_min - NMR_VTF_RDC_ERR_BINS[1]\
-                           or rdc_exp_center > rdc_calc_max + NMR_VTF_RDC_ERR_BINS[1]:
+                        if None not in (rdc_calc_min, rdc_calc_max)\
+                           and (rdc_exp_center < rdc_calc_min - NMR_VTF_RDC_ERR_BINS[1]
+                                or rdc_exp_center > rdc_calc_max + NMR_VTF_RDC_ERR_BINS[1]):
                             rdc_viols[rdc_type].append([rdc_exp_center, rdc_calc_center, vector_name])
 
                 da_array = numpy.array([abs(float(v['Szz'])) * float(v['Dmax'])

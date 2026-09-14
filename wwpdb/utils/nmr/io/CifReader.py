@@ -65,7 +65,6 @@ import pickle
 import random
 import re
 import sys
-import warnings
 from operator import itemgetter
 from typing import IO, List, Optional, Tuple
 
@@ -83,10 +82,9 @@ from scipy.spatial.distance import pdist, squareform
 
 try:
     from dbscan import DBSCAN
-    from sklearn.cluster import KMeans
     SKLEARN_DBSCAN = False
 except ImportError:
-    from sklearn.cluster import (DBSCAN, KMeans)
+    from sklearn.cluster import DBSCAN
     SKLEARN_DBSCAN = True
 
 try:
@@ -133,9 +131,6 @@ CIF_ITEM_TYPES = ('str', 'bool',
                   'int', 'range-int', 'abs-int', 'range-abs-int',
                   'float', 'range-float', 'abs-float', 'range-abs-float',
                   'enum', 'enum-int', 'starts-with-alnum')
-
-# whether to apply DBSCAN method for clustering analysis of the ensemble, otherwise KMeans method is applied (default)
-MODEL_CLUSTERING_WITH_DBSCAN = True
 
 # threshold for garbage collection for high memory usage of DBSCAN
 GARBAGE_COLLECTION_CYCLES = 32 if SKLEARN_DBSCAN else 128
@@ -1724,6 +1719,15 @@ class CifReader:
 
         _, v = numpy.linalg.eig(d_ord)
 
+        def run_gc():
+            gc.collect()  # Forces immediate garbage collection
+
+            try:
+                # Forces glibc to release cached memory pools back to the OS
+                ctypes.CDLL("libc.so.6").malloc_trim(0)
+            except (AttributeError, OSError):
+                pass  # Fallback for non-Linux platforms
+
         md5_set = set()
 
         abort = False
@@ -1780,13 +1784,7 @@ class CifReader:
                     del labels
 
                     if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                        gc.collect()  # Forces immediate garbage collection
-
-                        try:
-                            # Forces glibc to release cached memory pools back to the OS
-                            ctypes.CDLL("libc.so.6").malloc_trim(0)
-                        except (AttributeError, OSError):
-                            pass  # Fallback for non-Linux platforms
+                        run_gc()
 
                         cycle = 0
 
@@ -2348,211 +2346,104 @@ class CifReader:
 
                 cycle += 1
 
-                if MODEL_CLUSTERING_WITH_DBSCAN:
+                for _epsilon in range(2, 11):
 
-                    for _epsilon in range(2, 11):
+                    epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
 
-                        epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
+                    if SKLEARN_DBSCAN:
 
-                        if SKLEARN_DBSCAN:
-
-                            db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
-
-                            labels = db.labels_
-
-                            # Explicitly clear from memory
-                            del db
-
-                        else:
-
-                            labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
-
-                        list_labels = list(labels)
-                        set_labels = set(labels)
-
-                        # single-model cluster should not have effective cluster number
-                        reset_label = False
-                        for label in set_labels:
-                            if label != -1 and list_labels.count(label) < 2:
-                                for idx, _label in enumerate(list_labels):
-                                    if _label == label:
-                                        labels[idx] = -1
-                                reset_label = True
-
-                        if reset_label:
-                            list_labels = list(labels)
-                            set_labels = set(labels)
-
-                        # Explicitly clear from memory
-                        del labels
-
-                        if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                            gc.collect()  # Forces immediate garbage collection cycle
-
-                            try:
-                                # Forces glibc to release cached memory pools back to the OS
-                                ctypes.CDLL("libc.so.6").malloc_trim(0)
-                            except (AttributeError, OSError):
-                                pass  # Fallback for non-Linux platforms
-
-                            cycle = 0
-
-                        n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
-                        n_noise = list_labels.count(-1)
-
-                        if n_clusters == 0:  # or n_clusters >= features - 2:
-                            continue
-
-                        md5 = hashlib.md5(str(list_labels).encode('utf-8'))
-
-                        if md5 in md5_set:
-                            continue
-
-                        md5_set.add(md5)
-
-                        result = {'features': features, 'min_samples': min_samples, 'epsilon': epsilon,
-                                  'clusters': n_clusters, 'noise': n_noise}
-
-                        score = 0.0
-
-                        for label in set_labels:
-
-                            fraction = float(list_labels.count(label)) / _total_models
-
-                            if label == -1:
-                                score += RMSD_CUTOFF_FOR_DOMAIN * fraction
-                                continue
-
-                            _rmsd = []
-
-                            label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
-
-                            for i, j in itertools.combinations(label_idx, 2):
-                                if i >= j:
-                                    continue
-                                _rmsd.append(d_avr[i, j])
-
-                            if len(_rmsd) == 0:
-                                score = -1.0
-                                break
-
-                            mean_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
-
-                            score += mean_rmsd * fraction
-
-                        if score <= 0.0:
-                            continue
-
-                        result['score'] = score
-
-                        if n_clusters > 0 and stop_min_samples == -1:
-                            stop_min_samples = min_samples - 2
-
-                        if self.__verbose and self.__debug:
-                            self.__log.write(f'{result}\n')
-
-                        if score < min_score or (n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY):
-                            min_score = score
-                            min_result = result
-
-                else:
-
-                    for n_clusters in range(1, _total_models):
-
-                        with warnings.catch_warnings():
-                            warnings.simplefilter("ignore", category=RuntimeWarning)
-
-                            db = KMeans(n_clusters=n_clusters, random_state=0, n_init="auto").fit(x)
+                        db = DBSCAN(eps=epsilon, min_samples=min_samples).fit(x)
 
                         labels = db.labels_
 
                         # Explicitly clear from memory
                         del db
 
+                    else:
+
+                        labels, _ = DBSCAN(x, eps=epsilon, min_samples=min_samples)
+
+                    list_labels = list(labels)
+                    set_labels = set(labels)
+
+                    # single-model cluster should not have effective cluster number
+                    reset_label = False
+                    for label in set_labels:
+                        if label != -1 and list_labels.count(label) < 2:
+                            for idx, _label in enumerate(list_labels):
+                                if _label == label:
+                                    labels[idx] = -1
+                            reset_label = True
+
+                    if reset_label:
                         list_labels = list(labels)
                         set_labels = set(labels)
 
-                        # single-model cluster should not have effective cluster number
-                        reset_label = False
-                        for label in set_labels:
-                            if label != -1 and list_labels.count(label) < 2:
-                                for idx, _label in enumerate(list_labels):
-                                    if _label == label:
-                                        labels[idx] = -1
-                                reset_label = True
+                    # Explicitly clear from memory
+                    del labels
 
-                        if reset_label:
-                            list_labels = list(labels)
-                            set_labels = set(labels)
+                    if cycle % GARBAGE_COLLECTION_CYCLES == 0:
+                        run_gc()
 
-                        # Explicitly clear from memory
-                        del labels
+                        cycle = 0
 
-                        if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                            gc.collect()  # Forces immediate garbage collection cycle
+                    n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
+                    n_noise = list_labels.count(-1)
 
-                            try:
-                                # Forces glibc to release cached memory pools back to the OS
-                                ctypes.CDLL("libc.so.6").malloc_trim(0)
-                            except (AttributeError, OSError):
-                                pass  # Fallback for non-Linux platforms
+                    if n_clusters == 0:  # or n_clusters >= features - 2:
+                        continue
 
-                            cycle = 0
+                    md5 = hashlib.md5(str(list_labels).encode('utf-8'))
 
-                        _n_clusters = len(set_labels) - (1 if -1 in set_labels else 0)
-                        n_noise = list_labels.count(-1)
+                    if md5 in md5_set:
+                        continue
 
-                        md5 = hashlib.md5(str(list_labels).encode('utf-8'))
+                    md5_set.add(md5)
 
-                        if md5 in md5_set:
+                    result = {'features': features, 'min_samples': min_samples, 'epsilon': epsilon,
+                              'clusters': n_clusters, 'noise': n_noise}
+
+                    score = 0.0
+
+                    for label in set_labels:
+
+                        fraction = float(list_labels.count(label)) / _total_models
+
+                        if label == -1:
+                            score += RMSD_CUTOFF_FOR_DOMAIN * fraction
                             continue
 
-                        md5_set.add(md5)
+                        _rmsd = []
 
-                        result = {'features': features, 'min_samples': min_samples,
-                                  'clusters': n_clusters, 'noise': n_noise}
+                        label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
 
-                        score = 0.0
-
-                        for label in set_labels:
-
-                            fraction = float(list_labels.count(label)) / _total_models
-
-                            if label == -1:
-                                score += RMSD_CUTOFF_FOR_DOMAIN * fraction
+                        for i, j in itertools.combinations(label_idx, 2):
+                            if i >= j:
                                 continue
+                            _rmsd.append(d_avr[i, j])
 
-                            _rmsd = []
-
-                            label_idx = [idx for idx, _label in enumerate(list_labels) if _label == label]
-
-                            for i, j in itertools.combinations(label_idx, 2):
-                                if i >= j:
-                                    continue
-                                _rmsd.append(d_avr[i, j])
-
-                            if len(_rmsd) == 0:
-                                score = -1.0
-                                break
-
-                            mean_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
-
-                            score += mean_rmsd * fraction
-
-                        if score <= 0.0:
+                        if len(_rmsd) == 0:
+                            score = -1.0
                             break
 
-                        result['score'] = score
+                        mean_rmsd = numpy.mean(numpy.array(_rmsd, dtype=float))
 
-                        if _n_clusters > 0 and stop_min_samples == -1:
-                            stop_min_samples = min_samples - 2
+                        score += mean_rmsd * fraction
 
-                        if self.__verbose and self.__debug:
-                            self.__log.write(f'{result}\n')
+                    if score <= 0.0:
+                        continue
 
-                        if score < min_score or (n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY):
-                            min_score = score
-                            min_result = result
+                    result['score'] = score
+
+                    if n_clusters > 0 and stop_min_samples == -1:
+                        stop_min_samples = min_samples - 2
+
+                    if self.__verbose and self.__debug:
+                        self.__log.write(f'{result}\n')
+
+                    if score < min_score or (n_noise == 0 and min_score < RMSD_OVERLAID_EXACTLY):
+                        min_score = score
+                        min_result = result
 
         if min_result is not None:
             x = numpy.delete(v, numpy.s_[min_result['features']:], 1)
@@ -2560,29 +2451,18 @@ class CifReader:
             if 'complex' in str(x.dtype):
                 x = x.real
 
-            if MODEL_CLUSTERING_WITH_DBSCAN:
+            if SKLEARN_DBSCAN:
 
-                if SKLEARN_DBSCAN:
-
-                    db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
-
-                    labels = db.labels_
-
-                    # Explicitly clear from memory
-                    del db
-
-                else:
-
-                    labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
-
-            else:
-
-                db = KMeans(n_clusters=min_result['clusters'], random_state=0, n_init="auto").fit(x)
+                db = DBSCAN(eps=min_result['epsilon'], min_samples=min_result['min_samples']).fit(x)
 
                 labels = db.labels_
 
                 # Explicitly clear from memory
                 del db
+
+            else:
+
+                labels, _ = DBSCAN(x, eps=min_result['epsilon'], min_samples=min_result['min_samples'])
 
             list_labels = list(labels)
             set_labels = set(labels)
@@ -2697,12 +2577,6 @@ class CifReader:
                 self.__log.write(f'{clist}')
 
         if cycle > GARBAGE_COLLECTION_CYCLES / 4:
-            gc.collect()  # Forces immediate garbage collection cycle
-
-            try:
-                # Forces glibc to release cached memory pools back to the OS
-                ctypes.CDLL("libc.so.6").malloc_trim(0)
-            except (AttributeError, OSError):
-                pass  # Fallback for non-Linux platforms
+            run_gc()
 
         return rlist, dlist, clist

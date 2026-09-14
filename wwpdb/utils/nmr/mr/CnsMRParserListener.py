@@ -4699,7 +4699,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         if 'atom_selection' in self.factor:
                             _refAtomKeys = {atomKey(atom, ('is_poly', 'auth_atom_id', 'segment_id'))
-                                            for atom in self.factor['atom_selection']}
+                                            for atom in self.factor['atom_selection']
+                                            if isinstance(atom, dict)}
 
                             try:
 
@@ -4747,7 +4748,8 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             self.log.write(f"+{self.__class_name__}.exitFactor() ++ Error  - {str(e)}")
 
                     _refAtomKeys = {atomKey(atom, ('is_poly', 'auth_atom_id', 'segment_id'))
-                                    for atom in self.factor['atom_selection']}
+                                    for atom in self.factor['atom_selection']
+                                    if isinstance(atom, dict)}
 
                     self.factor['atom_selection'] = [atom for atom in _atomSelection
                                                      if atomKey(atom) not in _refAtomKeys]

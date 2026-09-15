@@ -109,7 +109,7 @@ class BmrbAnnTasks:
 
         self.__reg = registry
 
-        # provenance information to be included in _Related_entries loop if it is not exists
+        # provenance information to be included in _Related_entries loop if it does not exist
         self.__derivedEntryId = None
         self.__derivedEntryTitle = None
 
@@ -310,7 +310,7 @@ class BmrbAnnTasks:
                     except ImportError:
                         pass
 
-        # generate/upadte deposited_data_files saveframe in standalone NMR data conversion service (DAOTHER-9785)
+        # generate/update deposited_data_files saveframe in standalone NMR data conversion service (DAOTHER-9785)
         if self.__reg.conversion_server and self.__reg.op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs',
                                                               'nmr-nef2str-deposit', 'nmr-str2str-deposit'):
 

@@ -348,7 +348,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                     and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 2lgm exclude H5 for segment identifier via DT:H5
                 return f'H6{atomId[-1]}'
             elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
-                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 fir segment identifier via DT:H5
+                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 for segment identifier via DT:H5
                 return f'H2{atomId[-1]}'
             elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
                     and atomId[-1] in ('1', '2'):
@@ -1038,7 +1038,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                     and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 2lgm exclude H5 for segment identifier via DT:H5
                 return f'H6{atomId[-1]}'
             elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
-                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 fir segment identifier via DT:H5
+                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 for segment identifier via DT:H5
                 return f'H2{atomId[-1]}'
             elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
                     and atomId[-1] in ('1', '2'):
@@ -2418,7 +2418,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          prevResult: Optional[dict] = None,
                          nmrPolySeq: Optional[List[dict]] = None, fullCheck: bool = True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
-        @return: properties about of the assembly of the coordinates
+        @return: properties of the assembly of the coordinates
     """
 
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
@@ -3413,7 +3413,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     compIds = list(set(c['comp_id'] for c in coord
                                        if c['chain_id'] == chainId and c['seq_id'] is not None
                                        and c['seq_id'] == seqId))
-                    if len(compIds) > 1:  # 2kny: split implict ins_code of atom_site
+                    if len(compIds) > 1:  # 2kny: split implicit ins_code of atom_site
                         coordAtomSite[seqKey]['split_comp_id'] = compIds
                         for compId in compIds:
                             seqKey = (chainId, seqId, compId)
@@ -5074,8 +5074,8 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
 
 def hasIntraChainRestraint(atomSelectionSet: List[List[dict]]
                            ) -> Tuple[bool, Optional[set]]:
-    """ Return whether intra-chain distance restraints in the atom selection.
-        @return: whether intra-chain distrance restraints, representative set of chain_id
+    """ Return whether there are intra-chain distance restraints in the atom selection.
+        @return: whether intra-chain distance restraints, representative set of chain_id
     """
 
     for atom1, atom2 in itertools.product(atomSelectionSet[0],
@@ -5087,7 +5087,7 @@ def hasIntraChainRestraint(atomSelectionSet: List[List[dict]]
 
 
 def hasInterChainRestraint(atomSelectionSet: List[List[dict]]) -> bool:
-    """ Return whether inter-chain distance restraints in the atom selection.
+    """ Return whether there are inter-chain distance restraints in the atom selection.
     """
 
     for atom1, atom2 in itertools.product(atomSelectionSet[0],
@@ -5369,7 +5369,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
         elif lenCommonSeqId == 2:
 
-            # ALPHA or EPSILON or ZETA or THETA or or THETA'
+            # ALPHA or EPSILON or ZETA or THETA or THETA'
             testDataType = ['ALPHA', 'EPSILON', 'ZETA', 'THETA', "THETA'"]
 
             for dataType in testDataType:
@@ -5657,7 +5657,7 @@ def fixBackboneAtomsOfDihedralRestraint(angleName: str, atoms: List[dict], curre
 
 
 def isLikePheOrTyr(compId: str, ccU) -> bool:
-    """ Return whether a given comp_id is amino acid with flippable symmetrical ring like phenylalanine or tryrosine.
+    """ Return whether a given comp_id is amino acid with flippable symmetrical ring like phenylalanine or tyrosine.
     """
 
     if compId in ('PHE', 'TYR'):
@@ -5677,7 +5677,7 @@ def isLikePheOrTyr(compId: str, ccU) -> bool:
 
 
 def isLikeHis(compId: str, ccU) -> bool:
-    """ Return whether a given comp_id is like histigine.
+    """ Return whether a given comp_id is like histidine.
     """
 
     if compId == 'HIS':
@@ -5854,7 +5854,7 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
 def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = None
                       ) -> Optional[List[dict]]:
     """ Return structurally connected partner residues for a given residue.
-        @return: list of partner residues for a given residue descrived in struct_conn loop
+        @return: list of partner residues for a given residue described in struct_conn loop
     """
 
     if cR is None or not cR.hasCategory('struct_conn'):
@@ -9323,7 +9323,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
                      modelNumName: str = 'PDB_model_num', offset: int = 1
                      ) -> Tuple[List[dict], str]:
     """ Select atoms of the coordinates.
-        @return atom selection, warning mesage (None for valid case)
+        @return atom selection, warning message (None for valid case)
     """
 
     atomSelection = []
@@ -9605,7 +9605,7 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                                enableWarning: bool = True
                                ) -> Optional[str]:
     """ Check existence of specified atom in the coordinates.
-        @return: waring message (None for valid case)
+        @return: warning message (None for valid case)
     """
 
     found = False

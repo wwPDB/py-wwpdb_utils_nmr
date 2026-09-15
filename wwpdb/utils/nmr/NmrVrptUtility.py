@@ -470,7 +470,7 @@ def angle_target_values(target_value: Optional[float], target_value_uncertainty:
 
                 target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
 
-            else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
+            else:  # estimate target value by comparing lower_limit and upper_limit value (CYANA)
                 target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
 
         except TypeError:
@@ -844,7 +844,7 @@ def predict_tautomer_state_of_histidine(cg_chem_shift: Optional[float], cd2_chem
 
 def predict_rotamer_state_of_leucine(cd1_chem_shift: Optional[float], cd2_chem_shift: Optional[float]
                                      ) -> Tuple[float, float]:
-    """ Return prediction of rotermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
+    """ Return prediction of rotameric state of Leucine using assigned CD1 and CD2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
@@ -889,7 +889,7 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift: Optional[float], cd2_chem_s
 
 def predict_rotamer_state_of_valine(cg1_chem_shift: Optional[float], cg2_chem_shift: Optional[float]
                                     ) -> Tuple[float, float]:
-    """ Return prediction of rotermeric state of Valine using assigned CG1 and CG2 chemical shifts.
+    """ Return prediction of rotameric state of Valine using assigned CG1 and CG2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
@@ -931,7 +931,7 @@ def predict_rotamer_state_of_valine(cg1_chem_shift: Optional[float], cg2_chem_sh
 
 def predict_rotamer_state_of_isoleucine(cd1_chem_shift: Optional[float]
                                         ) -> Tuple[float, float, float]:
-    """ Return prediction of rotermeric state of Isoleucine using assigned CD1 chemical shift.
+    """ Return prediction of rotameric state of Isoleucine using assigned CD1 chemical shift.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Determination of Isoleucine Side-Chain Conformations in Ground and Excited States of Proteins from Chemical Shifts.
@@ -2236,7 +2236,7 @@ class NmrVrptUtility:
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftAnalysis.get_chemical_shifts,
                    written by Aleksandras Gutmanas, Kumaran Baskaran
-            @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of chemical shifts,
+            @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of chemical shifts
         """
 
         if self.__has_prev_results:

@@ -84,11 +84,11 @@ class IsdMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.software_name = 'ISD'
 
     def enterIsd_mr(self, ctx: IsdMRParser.Isd_mrContext):  # pylint: disable=unused-argument
-        """ Enter a parse tree produced by IsdMRParser#biosym_mr.
+        """ Enter a parse tree produced by IsdMRParser#isd_mr.
         """
 
     def exitIsd_mr(self, ctx: IsdMRParser.Isd_mrContext):  # pylint: disable=unused-argument
-        """ Exit a parse tree produced by IsdMRParser#biosym_mr.
+        """ Exit a parse tree produced by IsdMRParser#isd_mr.
         """
 
         self.exit()

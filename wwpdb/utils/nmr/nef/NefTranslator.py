@@ -13,7 +13,7 @@
 # 05-Feb-2020  M. Yokochi - add 'circular-shift' to relax dihedral angle constraint range error (v2.0.3)
 # 05-Feb-2020  M. Yokochi - convert 'HN' in amino acids to 'H' while NEF->NMR-STAR translation (v2.0.3)
 # 05-Feb-2020  M. Yokochi - rescue NEF atom_id w/o wild card notation in methyl group (v2.0.3)
-# 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methyne/methyl group (v2.0.3)
+# 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methine/methyl group (v2.0.3)
 # 26-Feb-2020  M. Yokochi - additional support for abnormal NEF atom nomenclature,
 #                           e.g. HDy% in ASN, HEy% in GLN, seen in CCPN_2mtv_docr.nef (v2.0.4)
 # 04-Mar-2020  M. Yokochi - support 'default' of key items and 'default-from' of data items (v2.0.4)
@@ -42,7 +42,7 @@
 # 30-Apr-2020  M. Yokochi - fix pseudoatom mapping in ligand (v2.2.12, DAOTHER-5611)
 # 14-May-2020  M. Yokochi - revise error message for missing mandatory content (v2.2.13, DAOTHER-5681 and 5682)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (v2.3.0, DAOTHER-5765)
-# 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom (v2.3.1)
+# 19-Jun-2020  M. Yokochi - do not generate invalid restraints that include self atom (v2.3.1)
 # 26-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_covalent_links and _Bond (v2.4.0)
 # 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (v2.5.0, DAOTHER-5896)
 # 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
@@ -120,7 +120,7 @@
 # 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
 # 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
 # 09-Apr-2025  M. Yokochi - permit missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
-# 23-May-2025  M. Yokochi - resolve pseudoatom name of non-standard residue based on local CCD derived from the coordinated
+# 23-May-2025  M. Yokochi - resolve pseudoatom name of non-standard residue based on local CCD derived from the coordinates
 #                           (v4.5.0, DAOTHER-10105)
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
@@ -4589,7 +4589,7 @@ class NefTranslator:
                                    lp_category: str, atom_type_name: str, isotope_number_name: str, atom_id_name: str,
                                    allow_empty: bool
                                    ) -> List[List[dict]]:
-        """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-STAR file.
+        """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of atom_type, isotope number, and atom_id for each CS loop
         """

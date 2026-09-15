@@ -2113,7 +2113,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
 
             sf.add_loop(lp)
 
-            # update _Datum loopa
+            # update _Datum loop
 
             lp_category = '_Datum'
 

@@ -426,7 +426,7 @@ class OneDepAnnTasks:
                             '_Software', 'Details', 1, None),
                            ('pdbx_nmr_software', 'details',
                             '_Spectral_peak_list', 'Text_data_format', 1, None),
-                           # map_code '-11' indicates children loops has metadata to be merged
+                           # map_code '-11' indicates child loops have metadata to be merged
                            ('pdbx_nmr_software', 'name',
                             '_Software', 'Name', -11, None),
                            # ('pdbx_nmr_software', 'name',

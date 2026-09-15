@@ -1,5 +1,5 @@
 ##
-# File: ParserErrorListner.py
+# File: ParserErrorListener.py
 # Date: 11-Feb-2022
 #
 # Updates:

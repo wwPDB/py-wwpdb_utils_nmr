@@ -69,7 +69,7 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         """
 
     def exitNmrpipe_pk(self, ctx: NmrPipePKParser.Nmrpipe_pkContext):  # pylint: disable=unused-argument
-        """ Exit a parse tree produced by NmrPipePKParser#dynamo_mr.
+        """ Exit a parse tree produced by NmrPipePKParser#nmrpipe_pk.
         """
 
         self.exit()

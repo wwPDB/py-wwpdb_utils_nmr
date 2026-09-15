@@ -87,7 +87,7 @@
 # 05-Jun-2020  M. Yokochi - be compatible with wwpdb.utils.align.alignlib using Python 3 (DAOTHER-5766)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (DAOTHER-5765)
 # 12-Jun-2020  M. Yokochi - overall performance improvement by reusing cached data and code revision
-# 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom
+# 19-Jun-2020  M. Yokochi - do not generate invalid restraints that include self atom
 # 26-Jun-2020  M. Yokochi - add support for covalent bond information (_nef_covalent_links and _Bond categories)
 # 30-Jun-2020  M. Yokochi - ignore third party loops and items gracefully (DAOTHER-5896)
 # 30-Jun-2020  M. Yokochi - prevent pynmrstar's exception due to empty string (DAOTHER-5894)
@@ -216,7 +216,7 @@
 #                           (NMR restraint remediation, 6fw4)
 # 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any'
 #                           occasionally matches with 'nm-res-cya' (DAOTHER-9425)
-# 11-Jun-2024  M. Yokcohi - add support for ligand remapping in annotation process (DAOTHER-9286)
+# 11-Jun-2024  M. Yokochi - add support for ligand remapping in annotation process (DAOTHER-9286)
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 # 28-Jun-2024  M. Yokochi - ignore extraneous input value for numeric tags and replace statistics of chemical shifts
 #                           using remediated loop (DAOTHER-9520)
@@ -277,7 +277,7 @@
 #                           and NmrDpRemediation classes, v5.0.0)
 # 27-Jan-2026  M. Yokochi - raise error when entity exists and sequence inconsistency between the entity and loops,
 #                           instead of warning, do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
-# 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and chache file directory (DAOTHER-9785)
+# 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and cache file directory (DAOTHER-9785)
 # 30-Jun-2026  M. Yokochi - add support for chemical shift perturbation experiment by adding 'nm-csp-*' file types (DAOTHER-9785)
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 # 13-Jul-2026  M. Yokochi - implement ensemble composition analysis including cluster analysis (DAOTHER-9785)
@@ -5723,7 +5723,7 @@ class NmrDpUtility:
                         if lp_category is None:
                             continue
 
-                        # main content of loop has been processed in_testDataConsistencyInLoop()
+                        # main content of loop has been processed in __testDataConsistencyInLoop()
                         if lp_category in LP_CATEGORIES[file_type][content_subtype]:
                             continue
 
@@ -8628,7 +8628,7 @@ class NmrDpUtility:
 
             if self.__reg.dstPath is not None:
 
-                # __validateStrPk() will do the same task in later
+                # __validateStrPk() will do the same task later
                 if not any(content_subtype in PK_CONTENT_SUBTYPES for content_type in input_source_dic['content_subtype']):
 
                     if not self.__reg.annotation_mode:
@@ -9040,7 +9040,7 @@ class NmrDpUtility:
         sf_list = self.__reg.star_data[0].get_saveframes_by_category(sf_category)
 
         if len(sf_list) == 0:
-            return False  # raised proper recomendation already
+            return False  # raised proper recommendation already
 
         solid_state_nmr = self.__reg.exptl_method == 'SOLID-STATE NMR'
 
@@ -11090,7 +11090,7 @@ class NmrDpUtility:
         return True
 
     def __compensateLadderHistidinTag__(self, chain_id: str, ps1: dict, ps2: dict) -> dict:
-        """ Compensate ladder-like Histidin tag in polymer sequence 2.
+        """ Compensate ladder-like Histidine tag in polymer sequence 2.
         """
 
         self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
@@ -13592,7 +13592,7 @@ class NmrDpUtility:
         if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
             return False
 
-        # This rediculaus reverse implementation is for OneDep only
+        # This ridiculous reverse implementation is for OneDep only
         if self.__reg.op != 'nmr-cs-mr-merge' and not self.__reg.internal_mode:
 
             if self.__reg.bmrb_only:
@@ -16598,8 +16598,8 @@ class NmrDpUtility:
         return is_done
 
     def __discardPeakListRemediation(self) -> bool:
-        """ Discard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep enviromment
-            @note: This rediculaus reverse implementation is for OneDep only
+        """ Discard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep environment
+            @note: This ridiculous reverse implementation is for OneDep only
         """
 
         if self.__reg.native_combined or not self.__reg.merge_any_pk_as_is:

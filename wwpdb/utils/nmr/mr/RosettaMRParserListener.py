@@ -324,7 +324,7 @@ class RosettaMRParserListener(ParseTreeListener):
     __cur_subtype = ''
     __cur_comment_inlined = False
 
-    # whether to allow extended sequence temporary
+    # whether to allow extended sequence temporarily
     __allow_ext_seq = False
 
     # stack of function

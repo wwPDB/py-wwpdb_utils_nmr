@@ -174,7 +174,7 @@ class BaseCSParserListener():
     __debug = False
     __verbose_debug = False
 
-    # whether to output contest as csp (chemical shift perturbation)
+    # whether to output content as csp (chemical shift perturbation)
     __csp = False
 
     __createSfDict = False
@@ -197,10 +197,10 @@ class BaseCSParserListener():
     cur_list_id = -1
     cur_line_num = -1
 
-    # whether to allow extended sequence temporary
+    # whether to allow extended sequence temporarily
     __allow_ext_seq = False
 
-    # whether current assignment derived not from unreliable extra comment
+    # whether current assignment is not derived from unreliable extra comment
     no_extra_comment = False
 
     # collection of atom selection set for multiple assignments
@@ -330,7 +330,7 @@ class BaseCSParserListener():
 
     @property
     def verbose_debug(self) -> bool:
-        """ Retrieve vebose debug mode.
+        """ Retrieve verbose debug mode.
         """
 
         return self.__verbose_debug

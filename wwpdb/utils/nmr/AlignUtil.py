@@ -316,7 +316,7 @@ def getMiddleCode(compIdCode1: str, compIdCode2: str) -> str:
 
 
 def getGaugeCode(seqIdList: List[int], offset: int = 0) -> str:
-    """ Return gauge code for a give sequence.
+    """ Return gauge code for a given sequence.
     """
 
     if offset > 0:
@@ -761,7 +761,7 @@ def updatePolySeqRstAmbig(polySeqRstAmb: List[dict], chainId: str, seqId: int, c
 
 
 def mergePolySeqRstAmbig(polySeqRst: List[dict], polySeqRstAmb: List[dict]) -> None:
-    """ Merge polymer sequence and ambiguous polymer sequence of the curent MR file.
+    """ Merge polymer sequence and ambiguous polymer sequence of the current MR file.
     """
 
     if len(polySeqRstAmb) == 0:

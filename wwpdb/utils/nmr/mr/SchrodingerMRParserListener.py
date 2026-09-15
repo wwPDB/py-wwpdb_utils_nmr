@@ -389,7 +389,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.numberSelection.clear()
 
     def enterDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext):
-        """ Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
+        """ Enter a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
         """
 
         self.distRestraints += 1

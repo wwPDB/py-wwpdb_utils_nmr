@@ -24,6 +24,7 @@
 # 01-Jun-2026  M. Yokochi - add getQuaternaryNitrogensIfNoProtonIsBonded() (DAOTHER-9785)
 # 25-Jun-2026  M. Yokochi - check _chem_comp_atom.pdbx_component_atom_id to support PTM remediation
 #                         - fix getBackBoneAtoms(), 5MC:HO3' should be in backbone/sugar group
+# 15-Sep-2026  M. Yokochi - fix AttributeError in getPseudoAtoms() caused by misspelled str.startswith()
 ##
 """ Wrapper class for retrieving BMRB chemical shift statistics.
     @author: Masashi Yokochi
@@ -836,7 +837,7 @@ class BmrbChemShiftStat:
     @functools.lru_cache(maxsize=128)
     def getPseudoAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False
                        ) -> List[str]:
-        """ Return all pseudoatoms of a give comp_id.
+        """ Return all pseudoatoms of a given comp_id.
         """
 
         if comp_id in EMPTY_VALUE:
@@ -853,7 +854,7 @@ class BmrbChemShiftStat:
         if comp_id in self.__std_comp_ids or primary:
             return [item['atom_id'] for item in cs_stat
                     if (('methyl' in item['desc'] and item['atom_id'][0] in PROTON_BEGIN_CODE)
-                        or 'geminal' in item['desc'] or item['desc'].sratswith('aroma-opposite'))
+                        or 'geminal' in item['desc'] or item['desc'].startswith('aroma-opposite'))
                     and (not excl_minor_atom or (excl_minor_atom and item['primary']))]
 
         return [item['atom_id'] for item in cs_stat
@@ -1325,7 +1326,7 @@ class BmrbChemShiftStat:
 
         self.__detectMajorResonance(comp_ids, atm_list, primary_th, secondary_th)
 
-        # DAOTHER-9317: retrieve missing statistics of geminal, aromatic opposit, and gemenal methyl groups
+        # DAOTHER-9317: retrieve missing statistics of geminal, aromatic opposite, and geminal methyl groups
 
         __atm_list = copy.deepcopy(atm_list)
 
@@ -1688,7 +1689,7 @@ class BmrbChemShiftStat:
 
                     if len(_atom_id) > 2 and has_aroma_opposit_stat:
                         _item = next(item for item in prev_atm_list
-                                     if item['atom_id'] == _atom_id and 'avg' in item and item['desc'].startswith('aroma-opposit'))
+                                     if item['atom_id'] == _atom_id and 'avg' in item and item['desc'].startswith('aroma-opposite'))
                         other = next((item['atom_id'] for item in prev_atm_list
                                       if item['desc'] == _item['desc'] and item['atom_id'].startswith(_item['atom_id'][:-1])
                                       and item['atom_id'] != _item['atom_id']), None)

@@ -42,6 +42,7 @@ import pickle
 import sys
 import tempfile
 import time
+import warningsnnnn
 from operator import itemgetter
 from typing import Any, IO, List, Optional, Tuple
 
@@ -148,6 +149,8 @@ except ImportError:
                                            getRdcCode)
     from nmr.rci.RCI import RCI
 
+
+warnings.filterwarnings('error', category=RuntimeWarning)
 
 NMR_VTF_DIST_VIOL_CUTOFF = 0.1
 NMR_VTF_DIHED_VIOL_CUTOFF = 1.0

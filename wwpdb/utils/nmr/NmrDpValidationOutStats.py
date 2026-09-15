@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.3.2"
 
 import copy
 import hashlib
@@ -69,13 +69,15 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
         __errors = self._reg.report.getTotalErrors()
 
+        __srcPath = self._reg.dstPath if self._reg.dstPath is not None else self._reg.srcPath
+
         master_entry = self._reg.star_data[0]
 
         file_type = 'nef' if master_entry.frame_list[0].category.startswith('nef') else 'nmr-star'
 
         self._reg.output_statistics = NmrDpReportOutputStatistics(self._reg.verbose, self._reg.log)
 
-        self._reg.output_statistics.setItemValue('file_name', os.path.basename(self._reg.dstPath))
+        self._reg.output_statistics.setItemValue('file_name', os.path.basename(__srcPath))
         self._reg.output_statistics.setItemValue('file_type', file_type)
         self._reg.output_statistics.setItemValue('entry_id', self._reg.entry_id)
         self._reg.output_statistics.setItemValue('processed_date', datetime.today().strftime('%Y-%m-%d'))
@@ -85,8 +87,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
             if isinstance(_service_host, str) and _service_host not in EMPTY_VALUE:
                 service_host = _service_host
         self._reg.output_statistics.setItemValue('processed_site', service_host)
-        self._reg.output_statistics.setItemValue('file_size', os.path.getsize(self._reg.dstPath))
-        with open(self._reg.dstPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+        self._reg.output_statistics.setItemValue('file_size', os.path.getsize(__srcPath))
+        with open(__srcPath, 'r', encoding='utf-8', errors='ignore') as ifh:
             self._reg.output_statistics.setItemValue('md5_checksum', hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
 
         entry_title = entry_authors = submission_date = None

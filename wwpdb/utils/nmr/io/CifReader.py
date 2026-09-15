@@ -65,6 +65,7 @@ import pickle
 import random
 import re
 import sys
+import warnings
 from operator import itemgetter
 from typing import IO, List, Optional, Tuple
 
@@ -106,6 +107,8 @@ except ImportError:
                                    RMSD_CUTOFF_FOR_DOMAIN,
                                    CARTN_DATA_ITEMS)
 
+
+warnings.filterwarnings('error', category=RuntimeWarning, module='CifReader')
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None
 # kabsch_rmsd is a fully-vectorized Kabsch (P.T@Q matmul + 3x3 SVD); it scales

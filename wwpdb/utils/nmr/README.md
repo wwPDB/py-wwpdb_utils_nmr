@@ -92,6 +92,7 @@ name|type|description
 `retain_original`|`param`|Boolean value. True by default. Whether to retain original content if possible.
 `leave_intl_note`|`param`|Boolean value. True by default. Whether to leave internal commentary note in processed NMR-STAR file.
 `reduced_atom_notation`|`param`|Boolean value. True by default. Whether to use reduced atom notation in warning/error message.
+`calc_output_stats'|`param`|Boolean value. False by default. Whether to calculate output statistics in case of nmr-str-consistency-check workflow operation and the previous report file is available. It enables to generate data processing report in standalone NMR data conversion service (replace_cs or bmrbdep mode)
 
 5. Invoke defined workflow operation
 

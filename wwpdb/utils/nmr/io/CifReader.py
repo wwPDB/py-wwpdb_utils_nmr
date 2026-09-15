@@ -108,7 +108,7 @@ except ImportError:
                                    CARTN_DATA_ITEMS)
 
 
-warnings.filterwarnings('error', category=RuntimeWarning)
+warnings.filterwarnings('error', category=RuntimeWarning, module='CifReader')
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None
 # kabsch_rmsd is a fully-vectorized Kabsch (P.T@Q matmul + 3x3 SVD); it scales

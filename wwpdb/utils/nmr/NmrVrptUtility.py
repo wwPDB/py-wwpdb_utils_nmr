@@ -150,7 +150,7 @@ except ImportError:
     from nmr.rci.RCI import RCI
 
 
-warnings.filterwarnings('error', category=RuntimeWarning)
+warnings.filterwarnings('error', category=RuntimeWarning, module='NmrVrptUtility')
 
 NMR_VTF_DIST_VIOL_CUTOFF = 0.1
 NMR_VTF_DIHED_VIOL_CUTOFF = 1.0

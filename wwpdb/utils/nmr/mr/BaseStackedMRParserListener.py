@@ -527,7 +527,7 @@ class BaseStackedMRParserListener():
     # has Gd3+
     has_gd = False
 
-    # has lanthanoide
+    # has lanthanoid
     has_la = False
 
     depth = 0
@@ -968,7 +968,7 @@ class BaseStackedMRParserListener():
         self.dihedRestraints = 0     # Dihedral angle restraints
         self.rdcRestraints = 0       # Residual dipolar coupling restraints
         self.planeRestraints = 0     # Planarity restraints
-        self.adistRestraints = 0     # Antidiatance restraints
+        self.adistRestraints = 0     # Antidistance restraints
         self.jcoupRestraints = 0     # Scalar J-coupling restraints
         self.hvycsRestraints = 0     # Carbon chemical shift restraints
         self.procsRestraints = 0     # Proton chemical shift restraints
@@ -989,7 +989,7 @@ class BaseStackedMRParserListener():
         self.dihedStatements = 0     # Dihedral angle statements
         self.rdcStatements = 0       # Residual dipolar coupling statements
         self.planeStatements = 0     # Planarity statements
-        self.adistStatements = 0     # Antidiatance statements
+        self.adistStatements = 0     # Antidistance statements
         self.jcoupStatements = 0     # Scalar J-coupling statements
         self.hvycsStatements = 0     # Carbon chemical shift statements
         self.procsStatements = 0     # Proton chemical shift statements
@@ -7612,7 +7612,7 @@ class BaseStackedMRParserListener():
 
     def getOrigSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True
                      ) -> Optional[int]:
-        """ Return a original sequence code for a given polymer sequence and sequence code.
+        """ Return an original sequence code for a given polymer sequence and sequence code.
         """
 
         offset = 0
@@ -7797,7 +7797,7 @@ class BaseStackedMRParserListener():
 
     @functools.lru_cache(maxsize=128)
     def getRealChainId(self, chainId: str, hint: str = None) -> str:
-        """ Return a realistic chain ID for geven conditions.
+        """ Return a realistic chain ID for given conditions.
         """
 
         if self.reasons is not None and 'segment_id_mismatch' in self.reasons and chainId in self.reasons['segment_id_mismatch']:

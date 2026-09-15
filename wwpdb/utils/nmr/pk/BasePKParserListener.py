@@ -260,7 +260,7 @@ DIM_TRANSFER_PAT_4D = (((0, 1), (2, 3)), ((0, 2), (1, 3)), ((0, 3), (1, 2)))
 
 
 def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, d: int, cur_spectral_dim: dict) -> str:
-    """ Return expected primary dimensional transfer type from a given frequencies.
+    """ Return expected primary dimensional transfer type from given frequencies.
     """
 
     file_name = data_file_name.lower()
@@ -708,7 +708,7 @@ def guess_primary_dim_transfer_type(solid_state_nmr: bool, data_file_name: str, 
 
     # relayed-alternate: 'Relayed transfer where peaks from an odd resp. even number of transfer steps have opposite sign'
 
-    # through-space: 'Any transfer that does not go through the covalent bonded skeleton
+    # through-space: 'Any transfer that does not go through the covalent bonded skeleton'
     if 'noe' in file_name or 'roe' in file_name:
         for _dim_id1, _dict1 in cur_spectral_dim.items():
             _region1 = _dict1['_spectral_region']
@@ -1248,7 +1248,7 @@ class BasePKParserListener():
 
     @property
     def verbose_debug(self) -> bool:
-        """ Retrieve vebose debug mode.
+        """ Retrieve verbose debug mode.
         """
 
         return self.__verbose_debug
@@ -2471,7 +2471,7 @@ class BasePKParserListener():
                     # relayed-alternate: 'Relayed transfer where peaks from an odd resp.
                     # even number of transfer steps have opposite sign'
 
-                    # through-space: 'Any transfer that does not go through the covalent bonded skeleton
+                    # through-space: 'Any transfer that does not go through the covalent bonded skeleton'
                     if any('noe' in n for n in _file_names) or any('roe' in n for n in _file_names):
                         for _dim_id1, _dict1 in cur_spectral_dim.items():
                             _region1 = _dict1['_spectral_region']
@@ -3353,7 +3353,7 @@ class BasePKParserListener():
 
     def __remediateIncompletePeakAssignment(self, num_of_dim: int, use_peak_row_format: bool, loop: pynmrstar.Loop  # noqa: E501, pylint: disable=no-self-use,line-too-long
                                             ) -> None:
-        """ Remediate imcomplete peak assignment.
+        """ Remediate incomplete peak assignment.
         """
 
         del_idx_list = []
@@ -6372,7 +6372,7 @@ class BasePKParserListener():
     def addAssignedPkRow2D(self, index: int, dstFunc: dict, has_assignments: bool, has_multiple_assignments: bool,
                            asis1: Optional[bool], asis2: Optional[bool],
                            debug_label: Optional[str], details: Optional[str]) -> None:
-        """ Add assigned peak list row (22D).
+        """ Add assigned peak list row (2D).
         """
 
         if self.__debug:

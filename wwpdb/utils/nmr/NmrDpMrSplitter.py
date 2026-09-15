@@ -353,7 +353,7 @@ def is_star_file(fPath: str) -> bool:
 
 
 def is_amb_top_file(fPath: str) -> bool:
-    """ Check if a given file contains AMBER topology/patemeter syntax.
+    """ Check if a given file contains AMBER topology/parameter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -377,7 +377,7 @@ def is_amb_rst_file(fPath: str) -> bool:
 
 
 def is_cha_top_file(fPath: str) -> bool:
-    """ Check if a given file contains CHARMM topology/patemeter syntax.
+    """ Check if a given file contains CHARMM topology/parameter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -401,7 +401,7 @@ def is_cha_rst_file(fPath: str) -> bool:
 
 
 def is_gro_top_file(fPath: str) -> bool:
-    """ Check if a given file contains GROMACS topology/patemeter syntax.
+    """ Check if a given file contains GROMACS topology/parameter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -425,7 +425,7 @@ def is_gro_rst_file(fPath: str) -> bool:
 
 
 def is_pdb_top_file(fPath: str) -> bool:
-    """ Check if a given file contains PDB-line topology/patemeter syntax.
+    """ Check if a given file contains PDB-line topology/parameter syntax.
     """
 
     with open(fPath, "r", encoding='utf-8', errors='ignore') as ifh:
@@ -529,7 +529,7 @@ def concat_restraint_names(content_subtype: Optional[str]) -> str:
 
 def get_peak_list_format(fPath: str, asCode: bool = False
                          ) -> Optional[str]:
-    """ Return peak list format for a input file.
+    """ Return peak list format for an input file.
     """
 
     if not os.path.exists(fPath):
@@ -1018,7 +1018,7 @@ def get_peak_list_format_from_string(string: str, header: Optional[str] = None, 
 
 def get_number_of_dimensions_of_peak_list(fPath: str, file_format: Optional[str]
                                           ) -> Optional[int]:
-    """ Return number of dimensions for a input peak list file.
+    """ Return number of dimensions for an input peak list file.
     """
 
     if file_format is None or not os.path.exists(fPath):
@@ -2228,7 +2228,7 @@ class NmrDpMrSplitter:
 
                     file_path = self.testPathWithSuffix(file_path, '-corrected')
 
-                    # use ANTLR SSL prediction mode for performance gain if restaurants have deep
+                    # use ANTLR SLL prediction mode for performance gain if restraints have deep
                     # but simple atom selection (DAOTHER-10315)
                     if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
                         has_deep_l_pattern = False
@@ -4034,7 +4034,7 @@ class NmrDpMrSplitter:
 
             mr_core_path = dst_file
 
-            # has no MR haeder
+            # has no MR header
             if not has_mr_header:
 
                 dst_name_prefix = os.path.splitext(os.path.basename(dst_file))[0]

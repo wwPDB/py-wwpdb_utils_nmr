@@ -5,7 +5,7 @@
 # Updates:
 # 09-Oct-2019  M. Yokochi - add setCorrectedError() to catch missing mandatory saveframe tag
 # 10-Oct-2019  M. Yokochi - add 'enum_failure_ignorable' warning type
-# 15-Oct-2019  M. Yokochi - add 'encouragement' waring type
+# 15-Oct-2019  M. Yokochi - add 'encouragement' warning type
 # 27-Jan-2020  M. Yokochi - change warning type 'enum_failure' to 'enum_mismatch'
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 # 10-Feb-2020  M. Yokochi - add methods to retrieve polymer sequence for sample sequence alignment
@@ -1564,7 +1564,7 @@ class NmrDpReport:
                               "++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def setDiamagnetic(self, diamagnetic: bool) -> None:
-        """ Set diamagetism of molecular assembly.
+        """ Set diamagnetism of molecular assembly.
         """
 
         if isinstance(diamagnetic, bool):
@@ -1594,7 +1594,7 @@ class NmrDpReport:
                               "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
     def setOtherBond(self, other_bond: bool) -> None:
-        """ Set whether molecular assemble has an other bond at least or not.
+        """ Set whether molecular assembly has an other bond at least or not.
         """
 
         if isinstance(other_bond, bool):
@@ -1609,7 +1609,7 @@ class NmrDpReport:
                               "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
     def setCyclicPolymer(self, cyclic_polymer: bool) -> None:
-        """ Set whether molecular assemble contains a cyclic polymer or not.
+        """ Set whether molecular assembly contains a cyclic polymer or not.
         """
 
         if isinstance(cyclic_polymer, bool):
@@ -2308,7 +2308,7 @@ class NmrDpReportError:
         self.chk_rows_pat = re.compile(r'\[Check rows of ([^\[]*)\] (.*)$')
 
     def appendDescription(self, item: str, value: Any) -> None:
-        """ Append an error with a give description.
+        """ Append an error with a given description.
         """
 
         if item in self.items:
@@ -2700,7 +2700,7 @@ class NmrDpReportWarning:
         self.chk_rows_pat = re.compile(r'\[Check rows of ([^\[]*)\] (.*)$')
 
     def appendDescription(self, item: str, value: Any) -> None:
-        """ Append a warning with a give description.
+        """ Append a warning with a given description.
         """
 
         if item in self.items:

@@ -836,7 +836,7 @@ class BmrbChemShiftStat:
     @functools.lru_cache(maxsize=128)
     def getPseudoAtoms(self, comp_id: str, excl_minor_atom: bool = False, primary: bool = False
                        ) -> List[str]:
-        """ Return all pseudoatoms of a give comp_id.
+        """ Return all pseudoatoms of a given comp_id.
         """
 
         if comp_id in EMPTY_VALUE:
@@ -1325,7 +1325,7 @@ class BmrbChemShiftStat:
 
         self.__detectMajorResonance(comp_ids, atm_list, primary_th, secondary_th)
 
-        # DAOTHER-9317: retrieve missing statistics of geminal, aromatic opposit, and gemenal methyl groups
+        # DAOTHER-9317: retrieve missing statistics of geminal, aromatic opposite, and geminal methyl groups
 
         __atm_list = copy.deepcopy(atm_list)
 

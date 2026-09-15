@@ -3901,7 +3901,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         or attr_prop.startswith('qcom')\
                         or attr_prop.startswith('xcom')\
                         or attr_prop.startswith('ycom')\
-                        or attr_prop.startswith('zcom'):  # BCOMP, QCOMP, XCOMP, YCOMP, ZCOM`
+                        or attr_prop.startswith('zcom'):  # BCOMP, QCOMP, XCOMP, YCOMP, ZCOMP
                     self.factor['atom_id'] = [None]
                     self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                   f"The attribute property {_attr_prop!r} "

@@ -1533,7 +1533,7 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                             and atom_id_ == 'P':
                         continue
 
-                    elif ca['conflict'] == 0:  # no conflict in sequenc alignment
+                    elif ca['conflict'] == 0:  # no conflict in sequence alignment
 
                         if comp_id in STD_MON_DICT:
 

@@ -31,10 +31,10 @@ __adapterCache = {}
 # message, ParserErrorListener tests "at input").
 LEXER_ERROR_PREFIX = 'token recognition error'
 
-# ANTLR's C++ target escapes '?' as '?' in its literal-token table, to keep
+# ANTLR's C++ target escapes '?' as '\u003F' in its literal-token table, to keep
 # the generated C++ clear of trigraphs. That escape leaks verbatim into the
 # "expecting {...}" part of a parser error message, so an SLL parse of an XPLOR
-# restraint file reports "'?'" where the Python runtime reports "'?'".
+# restraint file reports "'\u003F'" where the Python runtime reports "'?'".
 # Undo any such escape so both paths produce byte-identical reports.
 unicode_escape_pattern = re.compile(r'\\u([0-9A-Fa-f]{4})')
 

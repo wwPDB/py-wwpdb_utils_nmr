@@ -106,7 +106,7 @@ def is_like_planality_boundary(row: dict, lower_limit_name: str, upper_limit_nam
 def get_atom_name_mapping(lp: pynmrstar.Loop, list_of_tags: List[List[str]]
                           ) -> Optional[List[dict]]:
     """ Return atom name mapping history for each comp_id.
-        Each tags should be array of 'comp_id', 'atom_id', and 'atom_name'.
+        Each tag should be an array of 'comp_id', 'atom_id', and 'atom_name'.
     """
 
     mapping, identity_mapping = [], []
@@ -186,7 +186,7 @@ class NmrDpValidationBase:
 
     def getChemCompNameAndStatusOf(self, comp_id: str
                                    ) -> Tuple[bool, Optional[str], Optional[str]]:
-        """ Return _chem_comp.name and release status a given CCD ID, if possible.
+        """ Return _chem_comp.name and release status of a given CCD ID, if possible.
         """
 
         cc_name = cc_rel_status = processing_site = None
@@ -280,7 +280,7 @@ class NmrDpValidationBase:
         return f"{chain_id_name} {chain_id}, {seq_id_name} {seq_id}, {comp_id_name} {comp_id}, {atom_id_name} {atom_id}"
 
     def _getReducedAtomNotations(self, key_items: List[dict], row_data: dict) -> str:
-        """ Return reduced from of series of atom notations.
+        """ Return reduced form of series of atom notations.
         """
 
         msg = ''

@@ -1,5 +1,5 @@
 ##
-# File: NmrUtilConstant.py
+# File: NmrDpConstant.py
 # Date: 07-Jan-2026
 #
 # Updates:
@@ -1207,7 +1207,7 @@ CS_UNUSUAL_ERROR_SCALED_BY_SIGMA = 5.0
 # criterion on chemical shift difference error scaled by its sigma
 CS_DIFF_ERROR_SCALED_BY_SIGMA = 10.0
 
-# hardware limit of NMR prove design in Hz (DAOTHER-7389, issue #1)
+# hardware limit of NMR probe design in Hz (DAOTHER-7389, issue #1)
 HARD_PROBE_LIMIT = 250000
 
 # maximum number of lines as spacer for recognition of MR files

@@ -341,7 +341,7 @@ class BaseLinearMRParserListener():
     # column_order of distance restraints with chain
     col_order_of_dist_w_chain = {}
 
-    # whether to allow extended sequence temporary
+    # whether to allow extended sequence temporarily
     allow_ext_seq = False
 
     # RDC parameter dictionary (CYANA specific)

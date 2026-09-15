@@ -2138,7 +2138,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
 
     def _hasCoordSeq(self, nmr_chain_id: str, nmr_seq_id: str) -> bool:
         """ Return whether a given sequence is in the coordinates.
-            @return: True for corresponding sequence in the coordinates exist, False otherwise
+            @return: True for corresponding sequence in the coordinates exists, False otherwise
         """
 
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)

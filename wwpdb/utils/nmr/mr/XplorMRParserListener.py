@@ -5395,7 +5395,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 atom_id_5 = None
 
                 try:
-                    # check whether if carbon shift restraints or not
+                    # check whether carbon shift restraints or not
                     atom_id_5 = self.atomSelectionSet[4][0]['atom_id']
                 except IndexError:
                     if not self.with_axis:
@@ -5410,7 +5410,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         return
 
                 try:
-                    # check whether if carbon shift restraints or not
+                    # check whether carbon shift restraints or not
                     atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
                     atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
                     atom_id_3 = self.atomSelectionSet[2][0]['atom_id']

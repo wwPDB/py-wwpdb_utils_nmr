@@ -437,7 +437,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                   'version': vrpt_util.version,
                                   'classification': 'workflow that performs chemical shift and restraint validations'})
 
-            if self.cifChecked:
+            if self._reg.cifChecked:
                 software_info.append({'name': 'wwpdb.utils.io.CifReader',
                                       'version': self._reg.cR.version,
                                       'classification': 'PDBx/mmCIF parser, domain recognition, '

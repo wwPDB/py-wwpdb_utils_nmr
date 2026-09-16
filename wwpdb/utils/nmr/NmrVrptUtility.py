@@ -150,6 +150,7 @@ except ImportError:
     from nmr.rci.RCI import RCI
 
 
+# throw RuntimeWarning as error for bug tracking, any runtimewarning should be handled
 warnings.filterwarnings('error', category=RuntimeWarning, module='NmrVrptUtility')
 
 NMR_VTF_DIST_VIOL_CUTOFF = 0.1
@@ -4515,9 +4516,11 @@ class NmrVrptUtility:
                     sum_of_squared_errors = ((rdc_exp_array - rdc_calc_array) ** 2).sum()
                     sum_of_squared_values = (rdc_exp_array ** 2).sum()
 
-                    m = numpy.corrcoef(rdc_exp_array, rdc_calc_array)
-
-                    q_scores[k]['r'] = round(m[0, 1], 2)
+                    if rdc_exp_array.std() == 0.0 or rdc_calc_array.std() == 0.0:
+                        q_scores[k]['r'] = None
+                    else:
+                        m = numpy.corrcoef(rdc_exp_array, rdc_calc_array)
+                        q_scores[k]['r'] = round(m[0, 1], 2)
                     q_scores[k]['r2'] =\
                         round(1.0 - sum_of_squared_errors / total_sum_of_square, 2)\
                         if total_sum_of_square > 0.0 else 1.0

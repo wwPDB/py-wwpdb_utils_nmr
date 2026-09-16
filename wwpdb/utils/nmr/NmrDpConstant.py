@@ -62,7 +62,6 @@ DP_INPUT_FILE_DICT_KEYS = (CS_FILE_PATH_LIST_KEY,
 
 # supported output param names for NmrDpUtility class
 DP_OUTPUT_PARAM_KEYS = ('entry_id', 'retain_original', 'leave_intl_note', 'reduced_atom_notation',
-                        'calc_output_stats',  # used only for standalone NMR data conversion service
                         'insert_entry_id_to_loops')  # add 'insert_entry_id_to_loops' for backward compatibility
 
 # supported output file names for NmrDpUtility class

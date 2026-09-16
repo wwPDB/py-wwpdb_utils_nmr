@@ -108,6 +108,7 @@ except ImportError:
                                    CARTN_DATA_ITEMS)
 
 
+# throw RuntimeWarning as error for bug tracking, any runtimewarning should be handled
 warnings.filterwarnings('error', category=RuntimeWarning, module='CifReader')
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None

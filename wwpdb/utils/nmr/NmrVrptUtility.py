@@ -1495,7 +1495,7 @@ class NmrVrptUtility:
             self.__cifPath = self.__cR.getFilePath()
 
             if self.__cifPath is None:
-                return False
+                return True
 
             if self.__use_cache:
 
@@ -2124,8 +2124,8 @@ class NmrVrptUtility:
 
                 for row in self.__rR.getDictList(lp_category, datablock_name):
                     auth_chain_id = row['Entity_assembly_ID']
-                    seq_id = int(row['Comp_index_ID'])
-                    auth_seq_id = int(row['Seq_ID'])
+                    seq_id = row['Comp_index_ID']
+                    auth_seq_id = row['Seq_ID']
                     comp_id = row['Comp_ID']
 
                     seq_key = (auth_seq_id, comp_id)
@@ -2193,17 +2193,17 @@ class NmrVrptUtility:
                             continue
 
                         for row in self.__rR.getDictList(lp_category, datablock_name):
-                            seq_id = int(row['ID'])
+                            seq_id = row['ID']
                             auth_seq_id = row['Auth_seq_ID']
                             comp_id = row['Comp_ID']
                             entity_id = row['Entity_ID']
 
-                            if auth_seq_id not in EMPTY_VALUE and auth_seq_id.isdigit():
-                                auth_seq_id = int(auth_seq_id)
-                            else:
+                            if auth_seq_id in EMPTY_VALUE or not auth_seq_id.isdigit():
                                 auth_seq_id = seq_id
 
                             if entity_id in entity_id_mapping:
+                                auth_chain_id = entity_id_mapping[entity_id]
+
                                 if auth_chain_id not in self.__entityInstance:
                                     self.__entityInstance[auth_chain_id] = {}
 
@@ -2226,14 +2226,12 @@ class NmrVrptUtility:
 
                 for row in self.__rR.getDictList(lp_category, datablock_name):
                     auth_chain_id = row['Entity_assembly_ID']
-                    seq_id = int(row['Comp_index_ID'])
+                    seq_id = row['Comp_index_ID']
                     auth_seq_id = row['Seq_ID']
                     comp_id = row['Comp_ID']
                     atom_id = row['Atom_ID']
 
-                    if auth_seq_id not in EMPTY_VALUE and auth_seq_id.isdigit():
-                        auth_seq_id = int(auth_seq_id)
-                    else:
+                    if auth_seq_id in EMPTY_VALUE or not auth_seq_id.isdigit():
                         auth_seq_id = seq_id
 
                     if auth_chain_id not in self.__entityUninstance:
@@ -2245,6 +2243,8 @@ class NmrVrptUtility:
                         self.__entityUninstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
 
                     self.__entityUninstance[auth_chain_id][seq_key]['atoms'].append(atom_id)
+
+            return len(self.__entityInstance) > 0
 
         except Exception as e:  # pylint: disable=broad-exception-caught
             self.__log.write(f"Exception occurred while processing {os.path.basename(self.__nmrDataPath)}\n")
@@ -2267,7 +2267,7 @@ class NmrVrptUtility:
             return True
 
         if self.__cifPath is None:
-            return False
+            return True
 
         vrpt_atom_id_cache_path = vrpt_atom_site_cache_path = None
 
@@ -4751,6 +4751,8 @@ class NmrVrptUtility:
             self.__log.write("There are no assigned chemical shifts that need to be analyzed.\n")
             return False
 
+        has_coord = self.__coordinates is not None
+
         # metadata, bookkeeping
 
         self.__results = {'meta_data': (os.path.basename(self.__nmrDataPath), self.__chemShiftMeta),
@@ -4766,7 +4768,13 @@ class NmrVrptUtility:
 
         # solid-state NMR
 
-        if self.__coordinates is None:
+        if has_coord:
+            exptl = self.__cR.getDictList('exptl')
+
+            self.__results['ssnmr'] =\
+                exptl[0]['method'] == 'SOLID-STATE NMR' if len(exptl) > 0 and 'method' in exptl[0] else False
+
+        else:
             self.__results['ssnmr'] = False
 
             if self.__rR.hasItem('Entry', 'Experimental_method_subtype'):
@@ -4775,12 +4783,6 @@ class NmrVrptUtility:
                 self.__results['ssnmr'] =\
                     entry[0]['Experimental_method_subtype'] == 'solid-state'\
                     if len(entry) > 0 and 'Experimental_method_subtype' in entry[0] else False
-
-        else:
-            exptl = self.__cR.getDictList('exptl')
-
-            self.__results['ssnmr'] =\
-                exptl[0]['method'] == 'SOLID-STATE NMR' if len(exptl) > 0 and 'method' in exptl[0] else False
 
         # completeness of assigned chemical shifts
 
@@ -4885,7 +4887,7 @@ class NmrVrptUtility:
 
                 output[task_key]['stereomethyl'][1] += 1
 
-        if self.__inputReport is None and self.__coordinates is not None:
+        if self.__inputReport is None and has_coord:
             polySeq = []
 
             polySeqPdbMonIdName = 'pdb_mon_id' if self.__cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
@@ -4963,7 +4965,7 @@ class NmrVrptUtility:
             for auth_chain_id, v in self.__entityInstance.items():
                 well_defined_region = []
 
-                if self.__inputReport is None:
+                if self.__inputReport is None and has_coord:
                     cif_ps = next((ps for ps in polySeq if ps['auth_chain_id'] == auth_chain_id), None)
 
                     if cif_ps is not None:
@@ -4972,7 +4974,8 @@ class NmrVrptUtility:
                                 well_defined_region.extend(item['seq_id'])
 
                 else:
-                    cif_ps = self.__inputReport.getModelPolymerSequenceOf(auth_chain_id, label_scheme=False)
+                    cif_ps = self.__inputReport.getModelPolymerSequenceOf(auth_chain_id, label_scheme=False)\
+                        if has_coord else self.__inputReport.getNmrPolymerSequenceOf(auth_chain_id)
 
                     if cif_ps is not None:
                         if 'well_defined_region' in cif_ps:
@@ -5058,14 +5061,17 @@ class NmrVrptUtility:
             auth_chain_ids = list(set(cs_key[0] for cs_key in cs_data))
 
             for auth_chain_id in auth_chain_ids:
-                ps = next((ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id), None)
+                if has_coord:
+                    ps = next((ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id), None)
+                elif self.__inputReport is not None:
+                    ps = self.__inputReport.getNmrPolymerSequenceOf(auth_chain_id)
 
                 if ps is None:
                     continue
 
                 rci_residues, rci_assignments, seq_ids_wo_assign, oxidized_cys_seq_ids = [], [], [], []
 
-                for auth_seq_id, comp_id in zip(ps['auth_seq_id'], ps['comp_id']):
+                for auth_seq_id, comp_id in zip(ps['auth_seq_id'] if 'auth_seq_id' in ps else ps['seq_id'], ps['comp_id']):
 
                     if comp_id not in EMPTY_VALUE:
                         if comp_id not in STD_MON_DICT:

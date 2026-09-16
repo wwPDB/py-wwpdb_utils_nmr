@@ -1294,7 +1294,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                         sf_info['number_of_parsed'] = len(consist_ids)
 
-                        if self._reg.cifChecked:
+                        if self._reg.cifChecked or not self._reg.cifChecked:
 
                             if content_subtype == 'chem_shift':
 
@@ -1343,7 +1343,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                         src_item = vrpt_cs['completeness_items'][list_id]['full_length']
                                         sf_info['completeness_in_full_length_region'] = map_completeness_of(src_item)
 
-                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER']:
+                                    if 'book_keeping' in vrpt_cs\
+                                       and list_id in vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER']:
                                         outlier = vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER'][list_id]
 
                                         if len(outlier) > 0:
@@ -1369,7 +1370,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                                         sf_info['number_of_outliers'] = len(outlier)
 
-                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['CS_VALUE']:
+                                    if 'book_keeping' in vrpt_cs\
+                                       and list_id in vrpt_cs['book_keeping']['cs_error']['CS_VALUE']:
                                         unparsed = vrpt_cs['book_keeping']['cs_error']['CS_VALUE'][list_id]
 
                                         if len(unparsed) > 0:
@@ -1411,7 +1413,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                         }
                                                 sf_info['chemical_shift_unparsed'].append(item)
 
-                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE']:
+                                    if 'book_keeping' in vrpt_cs\
+                                       and list_id in vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE']:
                                         duplicated = vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE'][list_id]
 
                                         if len(duplicated) > 0:
@@ -1432,7 +1435,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                         }
                                                 sf_info['chemical_shift_duplicated'].append(item)
 
-                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MAP']:
+                                    if 'book_keeping' in vrpt_cs\
+                                       and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MAP']:
                                         unmapped = vrpt_cs['book_keeping']['cs_error']['NO_MAP'][list_id]
 
                                         if len(unmapped) > 0:
@@ -1451,7 +1455,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                         }
                                                 sf_info['chemical_shift_unmapped'].append(item)
 
-                                    if 'book_keeping' in vrpt_cs and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MODEL']:
+                                    if 'book_keeping' in vrpt_cs\
+                                       and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MODEL']:
                                         unmapped = vrpt_cs['book_keeping']['cs_error']['NO_MODEL'][list_id]
 
                                         if len(unmapped) > 0:
@@ -1474,8 +1479,13 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                                     try:
 
-                                        item = next(item for item in self._reg.report_prev.getNmrStatsOfExptlData(content_subtype)
-                                                    if item['list_id'] == list_id)
+                                        if not self._reg.cifChecked:
+                                            item = next(item for item in self._reg.report.getNmrStatsOfExptlData(content_subtype)
+                                                        if item['list_id'] == list_id)
+                                        else:
+                                            item = next(item
+                                                        for item in self._reg.report_prev.getNmrStatsOfExptlData(content_subtype)
+                                                        if item['list_id'] == list_id)
 
                                         sf_info['histogram'] = copy.deepcopy(item['histogram'])
                                         if len(sf_info['histogram']['annotations']) > 0 and self._reg.caC is not None:
@@ -1507,7 +1517,9 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                         's2': result['s2']}
 
                                                 cif_ps = None
-                                                if cif_poly_seq is not None:
+                                                if not self._reg.cifChecked:
+                                                    cif_ps = self._reg.report.getNmrPolymerSequenceOf(auth_chain_id)
+                                                elif cif_poly_seq is not None:
                                                     cif_ps = next((ps for ps in cif_poly_seq
                                                                    if ps['auth_chain_id'] == auth_chain_id), None)
 
@@ -1517,7 +1529,11 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                                     if has_struct_conf:
                                                         item['struct_conf'] = []
                                                     for auth_seq_id in result['seq_id']:
-                                                        if auth_seq_id in cif_ps['auth_seq_id']:
+                                                        if not self._reg.cifChecked:
+                                                            if auth_seq_id in cif_ps['seq_id']:
+                                                                idx = cif_ps['seq_id'].index(auth_seq_id)
+                                                                item['comp_id'].append(cif_ps['comp_id'][idx])
+                                                        elif auth_seq_id in cif_ps['auth_seq_id']:
                                                             idx = cif_ps['auth_seq_id'].index(auth_seq_id)
                                                             item['comp_id'].append(cif_ps['comp_id'][idx])
                                                             if has_struct_conf:
@@ -1873,7 +1889,8 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                                 tags = [consist_id_tag]
                                 for j in range(1, max_dim):
-                                    tags.extend([f'Auth_asym_ID_{j}', f'Auth_seq_ID_{j}', f'Auth_comp_ID_{j}', f'Auth_atom_ID_{j}'])
+                                    tags.extend([f'Auth_asym_ID_{j}', f'Auth_seq_ID_{j}',
+                                                 f'Auth_comp_ID_{j}', f'Auth_atom_ID_{j}'])
 
                                 if set(tags) & set(lp.tags) != set(tags):
                                     sf_info['number_of_mapped_to_model'] = 0

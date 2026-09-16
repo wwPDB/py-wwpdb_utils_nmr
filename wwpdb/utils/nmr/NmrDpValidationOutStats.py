@@ -437,10 +437,11 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                   'version': vrpt_util.version,
                                   'classification': 'workflow that performs chemical shift and restraint validations'})
 
-            software_info.append({'name': 'wwpdb.utils.io.CifReader',
-                                  'version': self._reg.cR.version,
-                                  'classification': 'PDBx/mmCIF parser, domain recognition, '
-                                                    'and clustering analysis of the ensemble structure'})
+            if self.cifChecked:
+                software_info.append({'name': 'wwpdb.utils.io.CifReader',
+                                      'version': self._reg.cR.version,
+                                      'classification': 'PDBx/mmCIF parser, domain recognition, '
+                                                        'and clustering analysis of the ensemble structure'})
 
             vrpt_util.addInput(name='pynmrstar_object', value=self._reg.star_data[0], type='param')
 
@@ -1294,489 +1295,411 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                         sf_info['number_of_parsed'] = len(consist_ids)
 
-                        if self._reg.cifChecked or not self._reg.cifChecked:
+                        if content_subtype == 'chem_shift':
 
-                            if content_subtype == 'chem_shift':
+                            if vrpt_cs is not None and 'shift_summary_table' in vrpt_cs\
+                               and list_id in vrpt_cs['shift_summary_table']:
+                                summary = vrpt_cs['shift_summary_table'][list_id]
 
-                                if vrpt_cs is not None and 'shift_summary_table' in vrpt_cs\
-                                   and list_id in vrpt_cs['shift_summary_table']:
-                                    summary = vrpt_cs['shift_summary_table'][list_id]
+                                sf_info['number_of_parsed'] = summary['number_of_parsed_shifts']
+                                sf_info['number_of_unparsed_with_error'] = summary['number_of_unparsed_shifts']
+                                sf_info['number_of_mapped_to_model'] = summary['number_of_mapped_shifts']
+                                sf_info['number_of_mapped_to_unmodel'] = summary['number_of_warnings_while_mapping']
+                                # DAOTHER-10987
+                                sf_info['number_of_unmapped_to_model'] = summary['number_of_errors_while_mapping']
 
-                                    sf_info['number_of_parsed'] = summary['number_of_parsed_shifts']
-                                    sf_info['number_of_unparsed_with_error'] = summary['number_of_unparsed_shifts']
-                                    sf_info['number_of_mapped_to_model'] = summary['number_of_mapped_shifts']
-                                    sf_info['number_of_mapped_to_unmodel'] = summary['number_of_warnings_while_mapping']
-                                    # DAOTHER-10987
-                                    sf_info['number_of_unmapped_to_model'] = summary['number_of_errors_while_mapping']
+                            else:
+
+                                tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
+
+                                if set(tags) & set(lp.tags) != set(tags):
+                                    sf_info['number_of_mapped_to_model'] = 0
+                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
 
                                 else:
 
-                                    tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
+                                    dat = lp.get_tag(tags)
 
-                                    if set(tags) & set(lp.tags) != set(tags):
-                                        sf_info['number_of_mapped_to_model'] = 0
-                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                                    mapped_ids = set()
+                                    for row in dat:
 
+                                        if row[5] == 'UNMAPPED':
+                                            continue
+
+                                        if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
+                                            mapped_ids.add(row[0])
+
+                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                    sf_info['number_of_unmapped_to_model'] =\
+                                        sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                            if vrpt_cs is not None:
+                                if 'completeness_items' in vrpt_cs\
+                                   and list_id in vrpt_cs['completeness_items']:
+                                    src_item = vrpt_cs['completeness_items'][list_id]['well_defined']
+                                    sf_info['completeness_in_well_defined_region'] = map_completeness_of(src_item)
+
+                                    src_item = vrpt_cs['completeness_items'][list_id]['full_length']
+                                    sf_info['completeness_in_full_length_region'] = map_completeness_of(src_item)
+
+                                if 'book_keeping' in vrpt_cs\
+                                   and list_id in vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER']:
+                                    outlier = vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER'][list_id]
+
+                                    if len(outlier) > 0:
+                                        sf_info['chemical_shift_outlier'] = []
+                                        for row in outlier:
+                                            auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
+                                                else int(re.findall(r'\d+', row[1])[0])
+                                            ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
+                                                else row[1][len(str(auth_seq_id)):]
+                                            item = {'auth_chain_id': row[0],
+                                                    'auth_seq_id': auth_seq_id,
+                                                    'ins_code': ins_code,
+                                                    'comp_id': row[2],
+                                                    'atom_id': row[3],
+                                                    'value': row[4],
+                                                    'ambig_code': row[5],
+                                                    'z_score': row[6],
+                                                    'expected_range': {'min_value': row[7],
+                                                                       'max_value': row[8]},
+                                                    'details': row[9] if len(row) > 9 else None
+                                                    }
+                                            sf_info['chemical_shift_outlier'].append(item)
+
+                                    sf_info['number_of_outliers'] = len(outlier)
+
+                                if 'book_keeping' in vrpt_cs\
+                                   and list_id in vrpt_cs['book_keeping']['cs_error']['CS_VALUE']:
+                                    unparsed = vrpt_cs['book_keeping']['cs_error']['CS_VALUE'][list_id]
+
+                                    if len(unparsed) > 0:
+                                        sf_info['chemical_shift_unparsed'] = []
+                                        for row in unparsed:
+                                            auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
+                                                else int(re.findall(r'\d+', row[1])[0])
+                                            ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
+                                                else row[1][len(str(auth_seq_id)):]
+                                            if row[4] in EMPTY_VALUE:
+                                                value = None
+                                            else:
+                                                try:
+                                                    value = float(row[4])
+                                                except ValueError:
+                                                    value = row[4]
+                                            if row[5] in EMPTY_VALUE:
+                                                error = None
+                                            else:
+                                                try:
+                                                    error = float(row[5])
+                                                except ValueError:
+                                                    error = row[5]
+                                            if row[6] in EMPTY_VALUE:
+                                                ambig_code = None
+                                            else:
+                                                try:
+                                                    ambig_code = int(row[6])
+                                                except ValueError:
+                                                    ambig_code = row[6]
+                                            item = {'auth_chain_id': row[0],
+                                                    'auth_seq_id': auth_seq_id,
+                                                    'ins_code': ins_code,
+                                                    'comp_id': row[2],
+                                                    'atom_id': row[3],
+                                                    'value': value,
+                                                    'error': error,
+                                                    'ambig_code': ambig_code
+                                                    }
+                                            sf_info['chemical_shift_unparsed'].append(item)
+
+                                if 'book_keeping' in vrpt_cs\
+                                   and list_id in vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE']:
+                                    duplicated = vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE'][list_id]
+
+                                    if len(duplicated) > 0:
+                                        sf_info['chemical_shift_duplicated'] = []
+                                        for row in duplicated:
+                                            auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
+                                                else int(re.findall(r'\d+', row[1])[0])
+                                            ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
+                                                else row[1][len(str(auth_seq_id)):]
+                                            item = {'auth_chain_id': row[0],
+                                                    'auth_seq_id': auth_seq_id,
+                                                    'ins_code': ins_code,
+                                                    'comp_id': row[2],
+                                                    'atom_id': row[3],
+                                                    'value': row[4],
+                                                    'error': row[5],
+                                                    'ambig_code': row[6]
+                                                    }
+                                            sf_info['chemical_shift_duplicated'].append(item)
+
+                                if 'book_keeping' in vrpt_cs\
+                                   and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MAP']:
+                                    unmapped = vrpt_cs['book_keeping']['cs_error']['NO_MAP'][list_id]
+
+                                    if len(unmapped) > 0:
+                                        sf_info['chemical_shift_unmapped'] = []
+                                        for row in unmapped:
+                                            ins_code = None if 'ins_code' not in row or row['ins_code'] in EMPTY_VALUE\
+                                                else row['ins_code']
+                                            item = {'auth_chain_id': row['auth_chain_id'],
+                                                    'auth_seq_id': row['auth_seq_id'],
+                                                    'ins_code': ins_code,
+                                                    'comp_id': row['comp_id'],
+                                                    'atom_id': row['atom_id'],
+                                                    'value': row['value'],
+                                                    'error': row['error'],
+                                                    'ambig_code': row['ambig_code']
+                                                    }
+                                            sf_info['chemical_shift_unmapped'].append(item)
+
+                                if 'book_keeping' in vrpt_cs\
+                                   and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MODEL']:
+                                    unmapped = vrpt_cs['book_keeping']['cs_error']['NO_MODEL'][list_id]
+
+                                    if len(unmapped) > 0:
+                                        sf_info['chemical_shift_unmodeled'] = []
+                                        for row in unmapped:
+                                            ins_code = None if 'ins_code' not in row or row['ins_code'] in EMPTY_VALUE\
+                                                else row['ins_code']
+                                            item = {'auth_chain_id': row['auth_chain_id'],
+                                                    'auth_seq_id': row['auth_seq_id'],
+                                                    'ins_code': ins_code,
+                                                    'comp_id': row['comp_id'],
+                                                    'atom_id': row['atom_id'],
+                                                    'value': row['value'],
+                                                    'error': row['error'],
+                                                    'ambig_code': row['ambig_code']
+                                                    }
+                                            sf_info['chemical_shift_unmodeled'].append(item)
+
+                                # modify existing histogram of assigned chemical shift
+
+                                try:
+
+                                    if not self._reg.cifChecked:
+                                        item = next(item for item in self._reg.report.getNmrStatsOfExptlData(content_subtype)
+                                                    if item['list_id'] == list_id)
                                     else:
+                                        item = next(item
+                                                    for item in self._reg.report_prev.getNmrStatsOfExptlData(content_subtype)
+                                                    if item['list_id'] == list_id)
 
-                                        dat = lp.get_tag(tags)
+                                    sf_info['histogram'] = copy.deepcopy(item['histogram'])
+                                    if len(sf_info['histogram']['annotations']) > 0 and self._reg.caC is not None:
+                                        auth_to_star_seq = self._reg.caC['auth_to_star_seq']
+                                        for ann in sf_info['histogram']['annotations']:
+                                            chain_id = ann['chain_id']
+                                            if isinstance(chain_id, str) and chain_id.isdigit():
+                                                chain_id = int(chain_id)
+                                            seq_id = ann['seq_id']
+                                            seq_key = next((k for k, v in auth_to_star_seq.items()
+                                                            if v[0] == chain_id and v[1] == seq_id), None)
+                                            if seq_key is not None:
+                                                ann['chain_id'] = seq_key[0]
+                                                ann['seq_id'] = seq_key[1]
 
-                                        mapped_ids = set()
-                                        for row in dat:
+                                except (StopIteration, KeyError, TypeError):
+                                    sf_info['histogram'] = None
 
-                                            if row[5] == 'UNMAPPED':
-                                                continue
+                                if 'rci' in vrpt_cs and list_id in vrpt_cs['rci']:
+                                    rci = vrpt_cs['rci'][list_id]
 
-                                            if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
-                                                mapped_ids.add(row[0])
+                                    if len(rci) > 0:
+                                        sf_info['random_coil_index'] = []
+                                        for auth_chain_id, result in rci.items():
+                                            item = {'auth_chain_id': auth_chain_id,
+                                                    'auth_seq_id': result['seq_id'],
+                                                    'rci': result['rci'],
+                                                    'nmr_rmsd': result['nmr_rmsd'],
+                                                    's2': result['s2']}
 
-                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                        sf_info['number_of_unmapped_to_model'] =\
-                                            sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+                                            cif_ps = None
+                                            if not self._reg.cifChecked:
+                                                cif_ps = self._reg.report.getNmrPolymerSequenceOf(auth_chain_id)
+                                            elif cif_poly_seq is not None:
+                                                cif_ps = next((ps for ps in cif_poly_seq
+                                                               if ps['auth_chain_id'] == auth_chain_id), None)
 
-                                if vrpt_cs is not None:
-                                    if 'completeness_items' in vrpt_cs\
-                                       and list_id in vrpt_cs['completeness_items']:
-                                        src_item = vrpt_cs['completeness_items'][list_id]['well_defined']
-                                        sf_info['completeness_in_well_defined_region'] = map_completeness_of(src_item)
-
-                                        src_item = vrpt_cs['completeness_items'][list_id]['full_length']
-                                        sf_info['completeness_in_full_length_region'] = map_completeness_of(src_item)
-
-                                    if 'book_keeping' in vrpt_cs\
-                                       and list_id in vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER']:
-                                        outlier = vrpt_cs['book_keeping']['cs_error']['CS_OUTLIER'][list_id]
-
-                                        if len(outlier) > 0:
-                                            sf_info['chemical_shift_outlier'] = []
-                                            for row in outlier:
-                                                auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
-                                                    else int(re.findall(r'\d+', row[1])[0])
-                                                ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
-                                                    else row[1][len(str(auth_seq_id)):]
-                                                item = {'auth_chain_id': row[0],
-                                                        'auth_seq_id': auth_seq_id,
-                                                        'ins_code': ins_code,
-                                                        'comp_id': row[2],
-                                                        'atom_id': row[3],
-                                                        'value': row[4],
-                                                        'ambig_code': row[5],
-                                                        'z_score': row[6],
-                                                        'expected_range': {'min_value': row[7],
-                                                                           'max_value': row[8]},
-                                                        'details': row[9] if len(row) > 9 else None
-                                                        }
-                                                sf_info['chemical_shift_outlier'].append(item)
-
-                                        sf_info['number_of_outliers'] = len(outlier)
-
-                                    if 'book_keeping' in vrpt_cs\
-                                       and list_id in vrpt_cs['book_keeping']['cs_error']['CS_VALUE']:
-                                        unparsed = vrpt_cs['book_keeping']['cs_error']['CS_VALUE'][list_id]
-
-                                        if len(unparsed) > 0:
-                                            sf_info['chemical_shift_unparsed'] = []
-                                            for row in unparsed:
-                                                auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
-                                                    else int(re.findall(r'\d+', row[1])[0])
-                                                ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
-                                                    else row[1][len(str(auth_seq_id)):]
-                                                if row[4] in EMPTY_VALUE:
-                                                    value = None
-                                                else:
-                                                    try:
-                                                        value = float(row[4])
-                                                    except ValueError:
-                                                        value = row[4]
-                                                if row[5] in EMPTY_VALUE:
-                                                    error = None
-                                                else:
-                                                    try:
-                                                        error = float(row[5])
-                                                    except ValueError:
-                                                        error = row[5]
-                                                if row[6] in EMPTY_VALUE:
-                                                    ambig_code = None
-                                                else:
-                                                    try:
-                                                        ambig_code = int(row[6])
-                                                    except ValueError:
-                                                        ambig_code = row[6]
-                                                item = {'auth_chain_id': row[0],
-                                                        'auth_seq_id': auth_seq_id,
-                                                        'ins_code': ins_code,
-                                                        'comp_id': row[2],
-                                                        'atom_id': row[3],
-                                                        'value': value,
-                                                        'error': error,
-                                                        'ambig_code': ambig_code
-                                                        }
-                                                sf_info['chemical_shift_unparsed'].append(item)
-
-                                    if 'book_keeping' in vrpt_cs\
-                                       and list_id in vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE']:
-                                        duplicated = vrpt_cs['book_keeping']['cs_error']['CS_DUPLICATE'][list_id]
-
-                                        if len(duplicated) > 0:
-                                            sf_info['chemical_shift_duplicated'] = []
-                                            for row in duplicated:
-                                                auth_seq_id = None if row[1] in EMPTY_VALUE else int(row[1]) if row[1].isdigit()\
-                                                    else int(re.findall(r'\d+', row[1])[0])
-                                                ins_code = None if row[1] in EMPTY_VALUE or row[1].isdigit()\
-                                                    else row[1][len(str(auth_seq_id)):]
-                                                item = {'auth_chain_id': row[0],
-                                                        'auth_seq_id': auth_seq_id,
-                                                        'ins_code': ins_code,
-                                                        'comp_id': row[2],
-                                                        'atom_id': row[3],
-                                                        'value': row[4],
-                                                        'error': row[5],
-                                                        'ambig_code': row[6]
-                                                        }
-                                                sf_info['chemical_shift_duplicated'].append(item)
-
-                                    if 'book_keeping' in vrpt_cs\
-                                       and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MAP']:
-                                        unmapped = vrpt_cs['book_keeping']['cs_error']['NO_MAP'][list_id]
-
-                                        if len(unmapped) > 0:
-                                            sf_info['chemical_shift_unmapped'] = []
-                                            for row in unmapped:
-                                                ins_code = None if 'ins_code' not in row or row['ins_code'] in EMPTY_VALUE\
-                                                    else row['ins_code']
-                                                item = {'auth_chain_id': row['auth_chain_id'],
-                                                        'auth_seq_id': row['auth_seq_id'],
-                                                        'ins_code': ins_code,
-                                                        'comp_id': row['comp_id'],
-                                                        'atom_id': row['atom_id'],
-                                                        'value': row['value'],
-                                                        'error': row['error'],
-                                                        'ambig_code': row['ambig_code']
-                                                        }
-                                                sf_info['chemical_shift_unmapped'].append(item)
-
-                                    if 'book_keeping' in vrpt_cs\
-                                       and list_id in vrpt_cs['book_keeping']['cs_error']['NO_MODEL']:
-                                        unmapped = vrpt_cs['book_keeping']['cs_error']['NO_MODEL'][list_id]
-
-                                        if len(unmapped) > 0:
-                                            sf_info['chemical_shift_unmodeled'] = []
-                                            for row in unmapped:
-                                                ins_code = None if 'ins_code' not in row or row['ins_code'] in EMPTY_VALUE\
-                                                    else row['ins_code']
-                                                item = {'auth_chain_id': row['auth_chain_id'],
-                                                        'auth_seq_id': row['auth_seq_id'],
-                                                        'ins_code': ins_code,
-                                                        'comp_id': row['comp_id'],
-                                                        'atom_id': row['atom_id'],
-                                                        'value': row['value'],
-                                                        'error': row['error'],
-                                                        'ambig_code': row['ambig_code']
-                                                        }
-                                                sf_info['chemical_shift_unmodeled'].append(item)
-
-                                    # modify existing histogram of assigned chemical shift
-
-                                    try:
-
-                                        if not self._reg.cifChecked:
-                                            item = next(item for item in self._reg.report.getNmrStatsOfExptlData(content_subtype)
-                                                        if item['list_id'] == list_id)
-                                        else:
-                                            item = next(item
-                                                        for item in self._reg.report_prev.getNmrStatsOfExptlData(content_subtype)
-                                                        if item['list_id'] == list_id)
-
-                                        sf_info['histogram'] = copy.deepcopy(item['histogram'])
-                                        if len(sf_info['histogram']['annotations']) > 0 and self._reg.caC is not None:
-                                            auth_to_star_seq = self._reg.caC['auth_to_star_seq']
-                                            for ann in sf_info['histogram']['annotations']:
-                                                chain_id = ann['chain_id']
-                                                if isinstance(chain_id, str) and chain_id.isdigit():
-                                                    chain_id = int(chain_id)
-                                                seq_id = ann['seq_id']
-                                                seq_key = next((k for k, v in auth_to_star_seq.items()
-                                                                if v[0] == chain_id and v[1] == seq_id), None)
-                                                if seq_key is not None:
-                                                    ann['chain_id'] = seq_key[0]
-                                                    ann['seq_id'] = seq_key[1]
-
-                                    except (StopIteration, KeyError, TypeError):
-                                        sf_info['histogram'] = None
-
-                                    if 'rci' in vrpt_cs and list_id in vrpt_cs['rci']:
-                                        rci = vrpt_cs['rci'][list_id]
-
-                                        if len(rci) > 0:
-                                            sf_info['random_coil_index'] = []
-                                            for auth_chain_id, result in rci.items():
-                                                item = {'auth_chain_id': auth_chain_id,
-                                                        'auth_seq_id': result['seq_id'],
-                                                        'rci': result['rci'],
-                                                        'nmr_rmsd': result['nmr_rmsd'],
-                                                        's2': result['s2']}
-
-                                                cif_ps = None
-                                                if not self._reg.cifChecked:
-                                                    cif_ps = self._reg.report.getNmrPolymerSequenceOf(auth_chain_id)
-                                                elif cif_poly_seq is not None:
-                                                    cif_ps = next((ps for ps in cif_poly_seq
-                                                                   if ps['auth_chain_id'] == auth_chain_id), None)
-
-                                                if cif_ps is not None:
-                                                    item['comp_id'] = []
-                                                    has_struct_conf = 'struct_conf' in cif_ps
-                                                    if has_struct_conf:
-                                                        item['struct_conf'] = []
-                                                    for auth_seq_id in result['seq_id']:
-                                                        if not self._reg.cifChecked:
-                                                            if auth_seq_id in cif_ps['seq_id']:
-                                                                idx = cif_ps['seq_id'].index(auth_seq_id)
-                                                                item['comp_id'].append(cif_ps['comp_id'][idx])
-                                                        elif auth_seq_id in cif_ps['auth_seq_id']:
-                                                            idx = cif_ps['auth_seq_id'].index(auth_seq_id)
+                                            if cif_ps is not None:
+                                                item['comp_id'] = []
+                                                has_struct_conf = 'struct_conf' in cif_ps
+                                                if has_struct_conf:
+                                                    item['struct_conf'] = []
+                                                for auth_seq_id in result['seq_id']:
+                                                    if not self._reg.cifChecked:
+                                                        if auth_seq_id in cif_ps['seq_id']:
+                                                            idx = cif_ps['seq_id'].index(auth_seq_id)
                                                             item['comp_id'].append(cif_ps['comp_id'][idx])
-                                                            if has_struct_conf:
-                                                                item['struct_conf'].append(cif_ps['struct_conf'][idx])
+                                                    elif auth_seq_id in cif_ps['auth_seq_id']:
+                                                        idx = cif_ps['auth_seq_id'].index(auth_seq_id)
+                                                        item['comp_id'].append(cif_ps['comp_id'][idx])
+                                                        if has_struct_conf:
+                                                            item['struct_conf'].append(cif_ps['struct_conf'][idx])
+                                                    else:
+                                                        item['comp_id'].append(None)
+                                                        if has_struct_conf:
+                                                            item['struct_conf'].append(None)
+
+                                                if 'well_defined_region' in cif_ps:
+                                                    auth_to_star_seq = self._reg.caC['auth_to_star_seq']
+                                                    coord_unobs_res = self._reg.caC['coord_unobs_res']
+                                                    dom = [None] * len(result['rci'])
+                                                    for idx, (seq_id, comp_id)\
+                                                            in enumerate(zip(result['seq_id'], item['comp_id'])):
+                                                        seq_key = (auth_chain_id, seq_id, comp_id)
+                                                        _seq_key = (auth_chain_id, seq_id)
+                                                        if _seq_key in coord_unobs_res:
+                                                            dom[idx] = -1
+                                                        elif seq_key in auth_to_star_seq:
+                                                            for r in cif_ps['well_defined_region']:
+                                                                if seq_id in r['seq_id']:
+                                                                    dom[idx] = r['domain_id']
+                                                                    break
                                                         else:
-                                                            item['comp_id'].append(None)
-                                                            if has_struct_conf:
-                                                                item['struct_conf'].append(None)
+                                                            dom[idx] = -1
+                                                    item['domain_id'] = dom
 
-                                                    if 'well_defined_region' in cif_ps:
-                                                        auth_to_star_seq = self._reg.caC['auth_to_star_seq']
-                                                        coord_unobs_res = self._reg.caC['coord_unobs_res']
-                                                        dom = [None] * len(result['rci'])
-                                                        for idx, (seq_id, comp_id)\
-                                                                in enumerate(zip(result['seq_id'], item['comp_id'])):
-                                                            seq_key = (auth_chain_id, seq_id, comp_id)
-                                                            _seq_key = (auth_chain_id, seq_id)
-                                                            if _seq_key in coord_unobs_res:
-                                                                dom[idx] = -1
-                                                            elif seq_key in auth_to_star_seq:
-                                                                for r in cif_ps['well_defined_region']:
-                                                                    if seq_id in r['seq_id']:
-                                                                        dom[idx] = r['domain_id']
-                                                                        break
-                                                            else:
-                                                                dom[idx] = -1
-                                                        item['domain_id'] = dom
+                                                    _score = 0.0
+                                                    dom_idx = -1
 
-                                                        _score = 0.0
-                                                        dom_idx = -1
+                                                    for i, r in enumerate(cif_ps['well_defined_region']):
+                                                        try:
+                                                            score = r['percent_of_core']\
+                                                                / max(r['medoid_rmsd'], 1.0)
+                                                            if score > _score:
+                                                                _score = score
+                                                                dom_idx = i
+                                                        except Exception:  # pylint: disable=broad-exception-caught
+                                                            continue
 
-                                                        for i, r in enumerate(cif_ps['well_defined_region']):
-                                                            try:
-                                                                score = r['percent_of_core']\
-                                                                    / max(r['medoid_rmsd'], 1.0)
-                                                                if score > _score:
-                                                                    _score = score
-                                                                    dom_idx = i
-                                                            except Exception:  # pylint: disable=broad-exception-caught
-                                                                continue
+                                                    if dom_idx != -1:
+                                                        item['rmsd_in_well_defined_region'] =\
+                                                            cif_ps['well_defined_region'][dom_idx]['medoid_rmsd']
 
-                                                        if dom_idx != -1:
-                                                            item['rmsd_in_well_defined_region'] =\
-                                                                cif_ps['well_defined_region'][dom_idx]['medoid_rmsd']
+                                            sf_info['random_coil_index'].append(item)
 
-                                                sf_info['random_coil_index'].append(item)
+                        elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
 
-                            elif _content_subtype in ('dist_restraint', 'dihed_restraint', 'rdc_restraint', 'spectral_peak'):
+                            if list_id == 1:
 
-                                if list_id == 1:
-
-                                    if _content_subtype == 'dist_restraint':
-                                        if has_dist:
-                                            dist_summary = vrpt_mr['distance_summary']
-                                            rest_summary = {}
-                                            rest_summary['total_distance_restraints'] =\
-                                                sum(v[None] for v in dist_summary['total'].values())
-                                            rest_summary['intra-residue'] =\
-                                                sum(v[None] for v in dist_summary['intraresidue'].values())
-                                            rest_summary['sequential'] =\
-                                                sum(v[None] for v in dist_summary['sequential'].values())
-                                            rest_summary['medium_range'] =\
-                                                sum(v[None] for v in dist_summary['medium'].values())
-                                            rest_summary['long_range'] =\
-                                                sum(v[None] for v in dist_summary['long'].values())
-                                            rest_summary['inter-chain'] =\
-                                                sum(v[None] for v in dist_summary['interchain'].values())
-                                            rest_summary['hydrogen_bond_restraints'] =\
-                                                sum(v['hbond'] for v in dist_summary['total'].values())
-                                            if rest_summary['hydrogen_bond_restraints'] > 0:
-                                                rest_summary['hydrogen_bond_dist_types'] =\
-                                                    ','.join(dist_type_abbrs[dist_types.index(d_type)]
-                                                             for d_type in dist_types
-                                                             if d_type != dist_any_type
-                                                             and d_type in dist_summary
-                                                             and any(True for s_type in dist_sub_types
-                                                                     if dist_summary[d_type][s_type]['hbond'] > 0))
-                                            rest_summary['disulfide_bond_restraints'] =\
-                                                sum(v['sbond'] for v in dist_summary['total'].values())
-                                            if rest_summary['disulfide_bond_restraints'] == 0:
-                                                if not has_cysteine:
-                                                    del rest_summary['disulfide_bond_restraints']
-                                            else:
-                                                rest_summary['disulfide_bond_dist_types'] =\
-                                                    ','.join(dist_type_abbrs[dist_types.index(d_type)]
-                                                             for d_type in dist_types
-                                                             if d_type != dist_any_type
-                                                             and d_type in dist_summary
-                                                             and any(True for s_type in dist_sub_types
-                                                                     if dist_summary[d_type][s_type]['sbond'] > 0))
-                                            rest_summary['diselenide_bond_restraints'] =\
-                                                sum(v['sebond'] for v in dist_summary['total'].values())
-                                            if rest_summary['diselenide_bond_restraints'] == 0:
-                                                del rest_summary['diselenide_bond_restraints']
-                                            else:
-                                                rest_summary['diselenide_bond_dist_types'] =\
-                                                    ','.join(dist_type_abbrs[dist_types.index(d_type)]
-                                                             for d_type in dist_types
-                                                             if d_type != dist_any_type
-                                                             and d_type in dist_summary
-                                                             and any(True for s_type in dist_sub_types
-                                                                     if dist_summary[d_type][s_type]['sebond'] > 0))
-                                            rest_summary['metal_coordination_restraints'] =\
-                                                sum(v['metal'] for v in dist_summary['total'].values())
-                                            if rest_summary['metal_coordination_restraints'] == 0:
-                                                del rest_summary['metal_coordination_restraints']
-                                            else:
-                                                rest_summary['metal_coordination_dist_types'] =\
-                                                    ','.join(dist_type_abbrs[dist_types.index(d_type)]
-                                                             for d_type in dist_types
-                                                             if d_type != dist_any_type
-                                                             and d_type in dist_summary
-                                                             and any(True for s_type in dist_sub_types
-                                                                     if dist_summary[d_type][s_type]['metal'] > 0))
-                                            if has_dihed:
-                                                rest_summary['total_dihedral_angle_restraints'] = total_dihed_restraint_count
-                                            if has_rdc:
-                                                rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
-                                            all_unmapped = len(vrpt_mr['unmapped_dist'])
-                                            if 'unmapped_angle' in vrpt_mr:
-                                                all_unmapped += len(vrpt_mr['unmapped_angle'])
-                                            if 'unmapped_rdc' in vrpt_mr:
-                                                all_unmapped += len(vrpt_mr['unmapped_rdc'])
-                                            rest_summary['number_of_unmapped_restraints'] = all_unmapped
-                                            all_total = total_dist_restraint_count\
-                                                + total_dihed_restraint_count\
-                                                + total_rdc_restraint_count
-                                            rest_summary['number_of_restraints_per_residue'] = \
-                                                round(float(all_total) / vrpt_mr['seq_length'], 1)
-                                            rest_summary['number_of_long_range_restraints_per_residue'] =\
-                                                round(float(sum(sum(v.values()) for v in dist_summary['long'].values()))
-                                                      / vrpt_mr['seq_length'], 1)
-
-                                            rest_summary['average_number_of_dist_violations_per_model'] =\
-                                                get_dist_violations_per_model()
-
-                                            if 'residual_angle_violation' in vrpt_mr:
-                                                rest_summary['average_number_of_dihed_violations_per_model'] =\
-                                                    get_dihed_violation_per_model()
-
-                                            if 'residual_rdc_violation' in vrpt_mr:
-                                                rest_summary['average_number_of_rdc_violations_per_model'] =\
-                                                    get_rdc_violation_per_model()
-
-                                            if total_dist_restraint_count > 0:
-                                                rest_summary['dist_violation_summary'] =\
-                                                    get_dist_violation_summary()
-
-                                                rest_summary['dist_violation_for_each_model'] =\
-                                                    get_dist_violation_for_each_model()
-
-                                                rest_summary['dist_violation_for_ensemble'] =\
-                                                    get_dist_violation_for_ensemble()
-
-                                                rest_summary['most_violated_dist_restraints'] =\
-                                                    get_most_violated_dist_restraints()
-
-                                                if rest_summary['most_violated_dist_restraints'] is None:
-                                                    del rest_summary['most_violated_dist_restraints']
-
-                                                rest_summary['all_dist_violations'] =\
-                                                    get_all_dist_violations()
-
-                                                if rest_summary['all_dist_violations'] is None:
-                                                    del rest_summary['all_dist_violations']
-
-                                            if total_dihed_restraint_count > 0:
-                                                rest_summary['dihed_violation_summary'] =\
-                                                    get_dihed_violation_summary()
-
-                                                rest_summary['dihed_violation_for_each_model'] =\
-                                                    get_dihed_violation_for_each_model()
-
-                                                rest_summary['dihed_violation_for_ensemble'] =\
-                                                    get_dihed_violation_for_ensemble()
-
-                                                rest_summary['most_violated_dihed_restraints'] =\
-                                                    get_most_violated_dihed_restraints()
-
-                                                if rest_summary['most_violated_dihed_restraints'] is None:
-                                                    del rest_summary['most_violated_dihed_restraints']
-
-                                                rest_summary['all_dihed_violations'] =\
-                                                    get_all_dihed_violations()
-
-                                                if rest_summary['all_dihed_violations'] is None:
-                                                    del rest_summary['all_dihed_violations']
-
-                                            if total_rdc_restraint_count > 0:
-                                                rest_summary['rdc_violation_summary'] =\
-                                                    get_rdc_violation_summary()
-
-                                                rest_summary['rdc_violation_for_each_model'] =\
-                                                    get_rdc_violation_for_each_model()
-
-                                                rest_summary['rdc_violation_for_ensemble'] =\
-                                                    get_rdc_violation_for_ensemble()
-
-                                                rest_summary['most_violated_rdc_restraints'] =\
-                                                    get_most_violated_rdc_restraints()
-
-                                                if rest_summary['most_violated_rdc_restraints'] is None:
-                                                    del rest_summary['most_violated_rdc_restraints']
-
-                                                rest_summary['all_rdc_violations'] =\
-                                                    get_all_rdc_violations()
-
-                                                if rest_summary['all_rdc_violations'] is None:
-                                                    del rest_summary['all_rdc_violations']
-
-                                            self._reg.output_statistics.setItemValue('restraint_summary', rest_summary)
-
-                                    if _content_subtype == 'dihed_restraint':
-                                        if has_dihed and not has_dist:
-                                            rest_summary = {}
-                                            rest_summary['total_distance_restraints'] = 0
-                                            rest_summary['intra-residue'] = 0
-                                            rest_summary['sequential'] = 0
-                                            rest_summary['medium_range'] = 0
-                                            rest_summary['long_range'] = 0
-                                            rest_summary['inter-chain'] = 0
-                                            rest_summary['hydrogen_bond_restraints'] = 0
-                                            if has_cysteine:
-                                                rest_summary['disulfide_bond_restraints'] = 0
+                                if _content_subtype == 'dist_restraint':
+                                    if has_dist:
+                                        dist_summary = vrpt_mr['distance_summary']
+                                        rest_summary = {}
+                                        rest_summary['total_distance_restraints'] =\
+                                            sum(v[None] for v in dist_summary['total'].values())
+                                        rest_summary['intra-residue'] =\
+                                            sum(v[None] for v in dist_summary['intraresidue'].values())
+                                        rest_summary['sequential'] =\
+                                            sum(v[None] for v in dist_summary['sequential'].values())
+                                        rest_summary['medium_range'] =\
+                                            sum(v[None] for v in dist_summary['medium'].values())
+                                        rest_summary['long_range'] =\
+                                            sum(v[None] for v in dist_summary['long'].values())
+                                        rest_summary['inter-chain'] =\
+                                            sum(v[None] for v in dist_summary['interchain'].values())
+                                        rest_summary['hydrogen_bond_restraints'] =\
+                                            sum(v['hbond'] for v in dist_summary['total'].values())
+                                        if rest_summary['hydrogen_bond_restraints'] > 0:
+                                            rest_summary['hydrogen_bond_dist_types'] =\
+                                                ','.join(dist_type_abbrs[dist_types.index(d_type)]
+                                                         for d_type in dist_types
+                                                         if d_type != dist_any_type
+                                                         and d_type in dist_summary
+                                                         and any(True for s_type in dist_sub_types
+                                                                 if dist_summary[d_type][s_type]['hbond'] > 0))
+                                        rest_summary['disulfide_bond_restraints'] =\
+                                            sum(v['sbond'] for v in dist_summary['total'].values())
+                                        if rest_summary['disulfide_bond_restraints'] == 0:
+                                            if not has_cysteine:
+                                                del rest_summary['disulfide_bond_restraints']
+                                        else:
+                                            rest_summary['disulfide_bond_dist_types'] =\
+                                                ','.join(dist_type_abbrs[dist_types.index(d_type)]
+                                                         for d_type in dist_types
+                                                         if d_type != dist_any_type
+                                                         and d_type in dist_summary
+                                                         and any(True for s_type in dist_sub_types
+                                                                 if dist_summary[d_type][s_type]['sbond'] > 0))
+                                        rest_summary['diselenide_bond_restraints'] =\
+                                            sum(v['sebond'] for v in dist_summary['total'].values())
+                                        if rest_summary['diselenide_bond_restraints'] == 0:
+                                            del rest_summary['diselenide_bond_restraints']
+                                        else:
+                                            rest_summary['diselenide_bond_dist_types'] =\
+                                                ','.join(dist_type_abbrs[dist_types.index(d_type)]
+                                                         for d_type in dist_types
+                                                         if d_type != dist_any_type
+                                                         and d_type in dist_summary
+                                                         and any(True for s_type in dist_sub_types
+                                                                 if dist_summary[d_type][s_type]['sebond'] > 0))
+                                        rest_summary['metal_coordination_restraints'] =\
+                                            sum(v['metal'] for v in dist_summary['total'].values())
+                                        if rest_summary['metal_coordination_restraints'] == 0:
+                                            del rest_summary['metal_coordination_restraints']
+                                        else:
+                                            rest_summary['metal_coordination_dist_types'] =\
+                                                ','.join(dist_type_abbrs[dist_types.index(d_type)]
+                                                         for d_type in dist_types
+                                                         if d_type != dist_any_type
+                                                         and d_type in dist_summary
+                                                         and any(True for s_type in dist_sub_types
+                                                                 if dist_summary[d_type][s_type]['metal'] > 0))
+                                        if has_dihed:
                                             rest_summary['total_dihedral_angle_restraints'] = total_dihed_restraint_count
-                                            if has_rdc:
-                                                rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
-                                            all_unmapped = len(vrpt_mr['unmapped_angle'])
-                                            if 'unmapped_rdc' in vrpt_mr:
-                                                all_unmapped += len(vrpt_mr['unmapped_rdc'])
-                                            rest_summary['number_of_unmapped_restraints'] = all_unmapped
-                                            all_total = total_dihed_restraint_count + total_rdc_restraint_count
-                                            rest_summary['number_of_restraints_per_residue'] = \
-                                                round(float(all_total) / vrpt_mr['seq_length'], 1)
-                                            rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
+                                        if has_rdc:
+                                            rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
+                                        all_unmapped = len(vrpt_mr['unmapped_dist'])
+                                        if 'unmapped_angle' in vrpt_mr:
+                                            all_unmapped += len(vrpt_mr['unmapped_angle'])
+                                        if 'unmapped_rdc' in vrpt_mr:
+                                            all_unmapped += len(vrpt_mr['unmapped_rdc'])
+                                        rest_summary['number_of_unmapped_restraints'] = all_unmapped
+                                        all_total = total_dist_restraint_count\
+                                            + total_dihed_restraint_count\
+                                            + total_rdc_restraint_count
+                                        rest_summary['number_of_restraints_per_residue'] = \
+                                            round(float(all_total) / vrpt_mr['seq_length'], 1)
+                                        rest_summary['number_of_long_range_restraints_per_residue'] =\
+                                            round(float(sum(sum(v.values()) for v in dist_summary['long'].values()))
+                                                  / vrpt_mr['seq_length'], 1)
 
+                                        rest_summary['average_number_of_dist_violations_per_model'] =\
+                                            get_dist_violations_per_model()
+
+                                        if 'residual_angle_violation' in vrpt_mr:
                                             rest_summary['average_number_of_dihed_violations_per_model'] =\
                                                 get_dihed_violation_per_model()
 
-                                            if 'residual_rdc_violation' in vrpt_mr:
-                                                rest_summary['average_number_of_rdc_violations_per_model'] =\
-                                                    get_rdc_violation_per_model()
+                                        if 'residual_rdc_violation' in vrpt_mr:
+                                            rest_summary['average_number_of_rdc_violations_per_model'] =\
+                                                get_rdc_violation_per_model()
 
+                                        if total_dist_restraint_count > 0:
+                                            rest_summary['dist_violation_summary'] =\
+                                                get_dist_violation_summary()
+
+                                            rest_summary['dist_violation_for_each_model'] =\
+                                                get_dist_violation_for_each_model()
+
+                                            rest_summary['dist_violation_for_ensemble'] =\
+                                                get_dist_violation_for_ensemble()
+
+                                            rest_summary['most_violated_dist_restraints'] =\
+                                                get_most_violated_dist_restraints()
+
+                                            if rest_summary['most_violated_dist_restraints'] is None:
+                                                del rest_summary['most_violated_dist_restraints']
+
+                                            rest_summary['all_dist_violations'] =\
+                                                get_all_dist_violations()
+
+                                            if rest_summary['all_dist_violations'] is None:
+                                                del rest_summary['all_dist_violations']
+
+                                        if total_dihed_restraint_count > 0:
                                             rest_summary['dihed_violation_summary'] =\
                                                 get_dihed_violation_summary()
 
@@ -1798,51 +1721,7 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                             if rest_summary['all_dihed_violations'] is None:
                                                 del rest_summary['all_dihed_violations']
 
-                                            if total_rdc_restraint_count > 0:
-                                                rest_summary['rdc_violation_summary'] =\
-                                                    get_rdc_violation_summary()
-
-                                                rest_summary['rdc_violation_for_each_model'] =\
-                                                    get_rdc_violation_for_each_model()
-
-                                                rest_summary['rdc_violation_for_ensemble'] =\
-                                                    get_rdc_violation_for_ensemble()
-
-                                                rest_summary['most_violated_rdc_restraints'] =\
-                                                    get_most_violated_rdc_restraints()
-
-                                                if rest_summary['most_violated_rdc_restraints'] is None:
-                                                    del rest_summary['most_violated_rdc_restraints']
-
-                                                rest_summary['all_rdc_violations'] =\
-                                                    get_all_rdc_violations()
-
-                                                if rest_summary['all_rdc_violations'] is None:
-                                                    del rest_summary['all_rdc_violations']
-
-                                            self._reg.output_statistics.setItemValue('restraint_summary', rest_summary)
-
-                                    if _content_subtype == 'rdc_restraint':
-                                        if has_rdc and not has_dist and not has_dihed:
-                                            rest_summary = {}
-                                            rest_summary['total_distance_restraints'] = 0
-                                            rest_summary['intra-residue'] = 0
-                                            rest_summary['sequential'] = 0
-                                            rest_summary['medium_range'] = 0
-                                            rest_summary['long_range'] = 0
-                                            rest_summary['inter-chain'] = 0
-                                            rest_summary['hydrogen_bond_restraints'] = 0
-                                            if has_cysteine:
-                                                rest_summary['disulfide_bond_restraints'] = 0
-                                            rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
-                                            rest_summary['number_of_unmapped_restraints'] = len(vrpt_mr['unmapped_rdc'])
-                                            rest_summary['number_of_restraints_per_residue'] = \
-                                                round(float(total_rdc_restraint_count) / vrpt_mr['seq_length'], 1)
-                                            rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
-
-                                            rest_summary['average_number_of_rdc_violations_per_model'] =\
-                                                get_rdc_violation_per_model()
-
+                                        if total_rdc_restraint_count > 0:
                                             rest_summary['rdc_violation_summary'] =\
                                                 get_rdc_violation_summary()
 
@@ -1864,54 +1743,135 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                             if rest_summary['all_rdc_violations'] is None:
                                                 del rest_summary['all_rdc_violations']
 
-                                            self._reg.output_statistics.setItemValue('restraint_summary', rest_summary)
+                                        self._reg.output_statistics.setItemValue('restraint_summary', rest_summary)
 
-                                if content_subtype in ('dist_restraint', 'rdc_restraint'):
-                                    max_dim = 3
+                                if _content_subtype == 'dihed_restraint':
+                                    if has_dihed and not has_dist:
+                                        rest_summary = {}
+                                        rest_summary['total_distance_restraints'] = 0
+                                        rest_summary['intra-residue'] = 0
+                                        rest_summary['sequential'] = 0
+                                        rest_summary['medium_range'] = 0
+                                        rest_summary['long_range'] = 0
+                                        rest_summary['inter-chain'] = 0
+                                        rest_summary['hydrogen_bond_restraints'] = 0
+                                        if has_cysteine:
+                                            rest_summary['disulfide_bond_restraints'] = 0
+                                        rest_summary['total_dihedral_angle_restraints'] = total_dihed_restraint_count
+                                        if has_rdc:
+                                            rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
+                                        all_unmapped = len(vrpt_mr['unmapped_angle'])
+                                        if 'unmapped_rdc' in vrpt_mr:
+                                            all_unmapped += len(vrpt_mr['unmapped_rdc'])
+                                        rest_summary['number_of_unmapped_restraints'] = all_unmapped
+                                        all_total = total_dihed_restraint_count + total_rdc_restraint_count
+                                        rest_summary['number_of_restraints_per_residue'] = \
+                                            round(float(all_total) / vrpt_mr['seq_length'], 1)
+                                        rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
 
-                                elif content_subtype == 'dihed_restraint':
-                                    max_dim = 5
+                                        rest_summary['average_number_of_dihed_violations_per_model'] =\
+                                            get_dihed_violation_per_model()
 
-                                else:  # 'spectral_peak'
+                                        if 'residual_rdc_violation' in vrpt_mr:
+                                            rest_summary['average_number_of_rdc_violations_per_model'] =\
+                                                get_rdc_violation_per_model()
 
-                                    try:
+                                        rest_summary['dihed_violation_summary'] =\
+                                            get_dihed_violation_summary()
 
-                                        _num_dim = get_first_sf_tag(sf, NUM_DIM_ITEMS[file_type])
-                                        num_dim = int(_num_dim)
+                                        rest_summary['dihed_violation_for_each_model'] =\
+                                            get_dihed_violation_for_each_model()
 
-                                        if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
-                                            raise ValueError()
+                                        rest_summary['dihed_violation_for_ensemble'] =\
+                                            get_dihed_violation_for_ensemble()
 
-                                    except ValueError:  # raised error already at __testIndexConsistency()
-                                        continue
+                                        rest_summary['most_violated_dihed_restraints'] =\
+                                            get_most_violated_dihed_restraints()
 
-                                    max_dim = num_dim + 1
+                                        if rest_summary['most_violated_dihed_restraints'] is None:
+                                            del rest_summary['most_violated_dihed_restraints']
 
-                                tags = [consist_id_tag]
-                                for j in range(1, max_dim):
-                                    tags.extend([f'Auth_asym_ID_{j}', f'Auth_seq_ID_{j}',
-                                                 f'Auth_comp_ID_{j}', f'Auth_atom_ID_{j}'])
+                                        rest_summary['all_dihed_violations'] =\
+                                            get_all_dihed_violations()
 
-                                if set(tags) & set(lp.tags) != set(tags):
-                                    sf_info['number_of_mapped_to_model'] = 0
-                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                                        if rest_summary['all_dihed_violations'] is None:
+                                            del rest_summary['all_dihed_violations']
 
-                                else:
+                                        if total_rdc_restraint_count > 0:
+                                            rest_summary['rdc_violation_summary'] =\
+                                                get_rdc_violation_summary()
 
-                                    max_col = (max_dim - 1) * 4 + 1
+                                            rest_summary['rdc_violation_for_each_model'] =\
+                                                get_rdc_violation_for_each_model()
 
-                                    dat = lp.get_tag(tags)
+                                            rest_summary['rdc_violation_for_ensemble'] =\
+                                                get_rdc_violation_for_ensemble()
 
-                                    mapped_ids = set()
-                                    for row in dat:
-                                        if all(row[col] not in EMPTY_VALUE for col in range(1, max_col)):
-                                            mapped_ids.add(row[0])
+                                            rest_summary['most_violated_rdc_restraints'] =\
+                                                get_most_violated_rdc_restraints()
 
-                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                    sf_info['number_of_unmapped_to_model'] =\
-                                        sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+                                            if rest_summary['most_violated_rdc_restraints'] is None:
+                                                del rest_summary['most_violated_rdc_restraints']
 
-                            else:  # 'spectral_peak_alt'
+                                            rest_summary['all_rdc_violations'] =\
+                                                get_all_rdc_violations()
+
+                                            if rest_summary['all_rdc_violations'] is None:
+                                                del rest_summary['all_rdc_violations']
+
+                                        self._reg.output_statistics.setItemValue('restraint_summary', rest_summary)
+
+                                if _content_subtype == 'rdc_restraint':
+                                    if has_rdc and not has_dist and not has_dihed:
+                                        rest_summary = {}
+                                        rest_summary['total_distance_restraints'] = 0
+                                        rest_summary['intra-residue'] = 0
+                                        rest_summary['sequential'] = 0
+                                        rest_summary['medium_range'] = 0
+                                        rest_summary['long_range'] = 0
+                                        rest_summary['inter-chain'] = 0
+                                        rest_summary['hydrogen_bond_restraints'] = 0
+                                        if has_cysteine:
+                                            rest_summary['disulfide_bond_restraints'] = 0
+                                        rest_summary['total_rdc_restraints'] = total_rdc_restraint_count
+                                        rest_summary['number_of_unmapped_restraints'] = len(vrpt_mr['unmapped_rdc'])
+                                        rest_summary['number_of_restraints_per_residue'] = \
+                                            round(float(total_rdc_restraint_count) / vrpt_mr['seq_length'], 1)
+                                        rest_summary['number_of_long_range_restraints_per_residue'] = 0.0
+
+                                        rest_summary['average_number_of_rdc_violations_per_model'] =\
+                                            get_rdc_violation_per_model()
+
+                                        rest_summary['rdc_violation_summary'] =\
+                                            get_rdc_violation_summary()
+
+                                        rest_summary['rdc_violation_for_each_model'] =\
+                                            get_rdc_violation_for_each_model()
+
+                                        rest_summary['rdc_violation_for_ensemble'] =\
+                                            get_rdc_violation_for_ensemble()
+
+                                        rest_summary['most_violated_rdc_restraints'] =\
+                                            get_most_violated_rdc_restraints()
+
+                                        if rest_summary['most_violated_rdc_restraints'] is None:
+                                            del rest_summary['most_violated_rdc_restraints']
+
+                                        rest_summary['all_rdc_violations'] =\
+                                            get_all_rdc_violations()
+
+                                        if rest_summary['all_rdc_violations'] is None:
+                                            del rest_summary['all_rdc_violations']
+
+                                        self._reg.output_statistics.setItemValue('restraint_summary', rest_summary)
+
+                            if content_subtype in ('dist_restraint', 'rdc_restraint'):
+                                max_dim = 3
+
+                            elif content_subtype == 'dihed_restraint':
+                                max_dim = 5
+
+                            else:  # 'spectral_peak'
 
                                 try:
 
@@ -1926,39 +1886,75 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                                 max_dim = num_dim + 1
 
-                                try:
+                            tags = [consist_id_tag]
+                            for j in range(1, max_dim):
+                                tags.extend([f'Auth_asym_ID_{j}', f'Auth_seq_ID_{j}',
+                                             f'Auth_comp_ID_{j}', f'Auth_atom_ID_{j}'])
 
-                                    lp = sf.get_loop('_Assigned_peak_chem_shift')
+                            if set(tags) & set(lp.tags) != set(tags):
+                                sf_info['number_of_mapped_to_model'] = 0
+                                sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
 
-                                    tags = ['Peak_ID', 'Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID']
+                            else:
 
-                                    if set(tags) & set(lp.tags) != set(tags):
-                                        sf_info['number_of_mapped_to_model'] = 0
-                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                                max_col = (max_dim - 1) * 4 + 1
 
-                                    else:
+                                dat = lp.get_tag(tags)
 
-                                        dat = lp.get_tag(tags)
+                                mapped_ids = set()
+                                for row in dat:
+                                    if all(row[col] not in EMPTY_VALUE for col in range(1, max_col)):
+                                        mapped_ids.add(row[0])
 
-                                        mapped_ids = set()
-                                        unmapped_ids = set()
-                                        for row in dat:
-                                            if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
-                                                mapped_ids.add(row[0])
-                                            else:
-                                                unmapped_ids.add(row[0])
+                                sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                sf_info['number_of_unmapped_to_model'] =\
+                                    sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
 
-                                        sf_info['number_of_mapped_to_model'] =\
-                                            len(mapped_ids) - len(unmapped_ids)
-                                        sf_info['number_of_unmapped_to_model'] =\
-                                            sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+                        else:  # 'spectral_peak_alt'
 
-                                except KeyError:
+                            try:
+
+                                _num_dim = get_first_sf_tag(sf, NUM_DIM_ITEMS[file_type])
+                                num_dim = int(_num_dim)
+
+                                if num_dim not in range(1, MAX_DIM_NUM_OF_SPECTRA):
+                                    raise ValueError()
+
+                            except ValueError:  # raised error already at __testIndexConsistency()
+                                continue
+
+                            max_dim = num_dim + 1
+
+                            try:
+
+                                lp = sf.get_loop('_Assigned_peak_chem_shift')
+
+                                tags = ['Peak_ID', 'Auth_entity_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID']
+
+                                if set(tags) & set(lp.tags) != set(tags):
                                     sf_info['number_of_mapped_to_model'] = 0
                                     sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
 
-                        else:
-                            sf_info['number_of_mapped_to_model'] = sf_info['number_of_unmapped_to_model'] = 0
+                                else:
+
+                                    dat = lp.get_tag(tags)
+
+                                    mapped_ids = set()
+                                    unmapped_ids = set()
+                                    for row in dat:
+                                        if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
+                                            mapped_ids.add(row[0])
+                                        else:
+                                            unmapped_ids.add(row[0])
+
+                                    sf_info['number_of_mapped_to_model'] =\
+                                        len(mapped_ids) - len(unmapped_ids)
+                                    sf_info['number_of_unmapped_to_model'] =\
+                                        sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+
+                            except KeyError:
+                                sf_info['number_of_mapped_to_model'] = 0
+                                sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
 
                         if content_subtype != 'chem_shift' or vrpt_cs is None:
                             errors = self._reg.report.error.getInheritableDictBySf(sf_framecode)

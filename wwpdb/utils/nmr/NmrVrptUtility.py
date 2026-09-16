@@ -21,6 +21,7 @@
 #                           (DAOTHER-9785, 10893, v1.3.1)
 # 09-Sep-2026  M. Yokochi - calculate number of chemical shifts mapped to unmodeled residues as unmapped warning
 #                           (DAOTHER-9785, 10987, v1.3.2)
+# 16-Sep-2026  M. Yokochi - allow to run chemical shift analysis without coordinates (DAOTHER-9785, v1.3.3)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -31,7 +32,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.3.2"
+__version__ = "v1.3.3"
 
 import collections
 import copy
@@ -1880,8 +1881,8 @@ class NmrVrptUtility:
         if self.__has_prev_results:
             return True
 
-        if self.__cifPath is None:
-            return False
+        if self.__coordinates is None:
+            return self.__extractEntityInstancesFromNmr()
 
         vrpt_entity_instance_cache_path = vrpt_entity_uninstance_cache_path = None
 
@@ -2099,6 +2100,160 @@ class NmrVrptUtility:
 
         return False
 
+    def __extractEntityInstancesFromNmr(self) -> bool:
+        """ Extract entity instances of NMR data file.
+            @author: Masashi Yokochi
+        """
+
+        self.__entityInstance, self.__entityUninstance = {}, {}
+
+        NMR_OBS_NUCS = set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys())
+
+        try:
+
+            has_chem_comp_assembly = False
+
+            lp_category = 'Chem_comp_assembly'
+
+            for datablock_name in self.__rR.getDataBlockNameList():
+
+                if not self.__rR.hasCategory(lp_category, datablock_name):
+                    continue
+
+                has_chem_comp_assembly = True
+
+                for row in self.__rR.getDictList(lp_category, datablock_name):
+                    auth_chain_id = row['Entity_assembly_ID']
+                    seq_id = int(row['Comp_index_ID'])
+                    auth_seq_id = int(row['Seq_ID'])
+                    comp_id = row['Comp_ID']
+
+                    seq_key = (auth_seq_id, comp_id)
+
+                    if auth_chain_id not in self.__entityInstance:
+                        self.__entityInstance[auth_chain_id] = {}
+
+                    if seq_key not in self.__entityInstance[auth_chain_id]:
+                        self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                    if self.__ccU.updateChemCompDict(comp_id):
+                        for cca in self.__ccU.lastAtomDictList:
+                            if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
+
+                    if 'Auth_variant_ID' in row:
+                        variant_id = row['Auth_variant_ID']
+
+                        if variant_id in EMPTY_VALUE:
+                            continue
+
+                        variants = variant_id.split(',')
+
+                        for v in variants:
+                            v = v.strip()
+
+                            if not v.startswith('-'):
+                                continue
+
+                            if auth_chain_id not in self.__entityUninstance:
+                                self.__entityUninstance[auth_chain_id] = {}
+
+                            if seq_key not in self.__entityUninstance[auth_chain_id]:
+                                self.__entityUninstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                            self.__entityUninstance[auth_chain_id][seq_key]['atoms'].append(v[1:])
+
+            if not has_chem_comp_assembly:
+
+                lp_category = 'Entity_assembly'
+
+                entity_id_mapping = {}
+
+                for datablock_name in self.__rR.getDataBlockNameList():
+
+                    if not self.__rR.hasCategory(lp_category, datablock_name):
+                        continue
+
+                    for row in self.__rR.getDictList(lp_category, datablock_name):
+                        auth_chain_id = row['ID']
+                        entity_id = row['Entity_ID']
+
+                        if auth_chain_id in EMPTY_VALUE or entity_id in EMPTY_VALUE:
+                            continue
+
+                        entity_id_mapping[entity_id] = auth_chain_id
+
+                if len(entity_id_mapping) > 0:
+
+                    lp_category = 'Entity_comp_index'
+
+                    for datablock_name in self.__rR.getDataBlockNameList():
+
+                        if not self.__rR.hasCategory(lp_category, datablock_name):
+                            continue
+
+                        for row in self.__rR.getDictList(lp_category, datablock_name):
+                            seq_id = int(row['ID'])
+                            auth_seq_id = row['Auth_seq_ID']
+                            comp_id = row['Comp_ID']
+                            entity_id = row['Entity_ID']
+
+                            if auth_seq_id not in EMPTY_VALUE and auth_seq_id.isdigit():
+                                auth_seq_id = int(auth_seq_id)
+                            else:
+                                auth_seq_id = seq_id
+
+                            if entity_id in entity_id_mapping:
+                                if auth_chain_id not in self.__entityInstance:
+                                    self.__entityInstance[auth_chain_id] = {}
+
+                                seq_key = (auth_seq_id, comp_id)
+
+                                if seq_key not in self.__entityInstance[auth_chain_id]:
+                                    self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                                if self.__ccU.updateChemCompDict(comp_id):
+                                    for cca in self.__ccU.lastAtomDictList:
+                                        if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                            self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
+
+            lp_category = 'Entity_deleted_atom'
+
+            for datablock_name in self.__rR.getDataBlockNameList():
+
+                if not self.__rR.hasCategory(lp_category, datablock_name):
+                    continue
+
+                for row in self.__rR.getDictList(lp_category, datablock_name):
+                    auth_chain_id = row['Entity_assembly_ID']
+                    seq_id = int(row['Comp_index_ID'])
+                    auth_seq_id = row['Seq_ID']
+                    comp_id = row['Comp_ID']
+                    atom_id = row['Atom_ID']
+
+                    if auth_seq_id not in EMPTY_VALUE and auth_seq_id.isdigit():
+                        auth_seq_id = int(auth_seq_id)
+                    else:
+                        auth_seq_id = seq_id
+
+                    if auth_chain_id not in self.__entityUninstance:
+                        self.__entityUninstance[auth_chain_id] = {}
+
+                    seq_key = (auth_seq_id, comp_id)
+
+                    if seq_key not in self.__entityUninstance[auth_chain_id]:
+                        self.__entityUninstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                    self.__entityUninstance[auth_chain_id][seq_key]['atoms'].append(atom_id)
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractEntityInstancesFromNmr() ++ Error  - {str(e)}\n")
+
+            self.__entityInstance = self.__entityUninstance = None
+
+        return False
+
     def __extractCoordAtomSites(self) -> bool:
         """ Extract atom_site of coordinate file.
             @author: Masashi Yokochi
@@ -2249,6 +2404,8 @@ class NmrVrptUtility:
         if self.__nmrDataPath is None:
             return False
 
+        has_coord = self.__coordinates is not None
+
         self.__chemShiftMeta = []
         self.__chemShiftTotal, self.__chemShiftDict, self.__chemShiftUnparsed = {}, {}, {}
 
@@ -2270,16 +2427,28 @@ class NmrVrptUtility:
                 self.__chemShiftMeta.append((idx, sf_framecode, list_id))
                 self.__chemShiftTotal[list_id] = self.__rR.getRowLength(lp_category, datablock_name)
 
-                data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
-                              {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                              {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                              {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
-                              {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
-                              {'name': 'Val', 'type': 'float', 'alt_name': 'value'},
-                              {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
-                              {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
-                               'enum': ALLOWED_AMBIGUITY_CODES},
-                              ]
+                if has_coord:
+                    data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                  {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                  {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                  {'name': 'Val', 'type': 'float', 'alt_name': 'value'},
+                                  {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
+                                  {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
+                                   'enum': ALLOWED_AMBIGUITY_CODES},
+                                  ]
+                else:
+                    data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                  {'name': 'Entity_assembly_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'Comp_index_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                  {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                  {'name': 'Val', 'type': 'float', 'alt_name': 'value'},
+                                  {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
+                                  {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
+                                   'enum': ALLOWED_AMBIGUITY_CODES},
+                                  ]
 
                 tags = self.__rR.getAttributeList(lp_category, datablock_name)
 
@@ -2304,15 +2473,26 @@ class NmrVrptUtility:
 
                     if self.__chemShiftTotal[list_id] > len(data):
 
-                        data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
-                                      {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                      {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                      {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
-                                      {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
-                                      {'name': 'Val', 'type': 'str', 'alt_name': 'value'},
-                                      {'name': 'Val_err', 'type': 'str', 'alt_name': 'error'},
-                                      {'name': 'Ambiguity_code', 'type': 'str', 'alt_name': 'ambig_code'}
-                                      ]
+                        if has_coord:
+                            data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                          {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                          {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                          {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                          {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                          {'name': 'Val', 'type': 'str', 'alt_name': 'value'},
+                                          {'name': 'Val_err', 'type': 'str', 'alt_name': 'error'},
+                                          {'name': 'Ambiguity_code', 'type': 'str', 'alt_name': 'ambig_code'}
+                                          ]
+                        else:
+                            data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                          {'name': 'Entity_assembly_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                          {'name': 'Comp_index_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                          {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                          {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                          {'name': 'Val', 'type': 'str', 'alt_name': 'value'},
+                                          {'name': 'Val_err', 'type': 'str', 'alt_name': 'error'},
+                                          {'name': 'Ambiguity_code', 'type': 'str', 'alt_name': 'ambig_code'}
+                                          ]
 
                         if 'PDB_ins_code' in tags:
                             data_items.append({'name': 'PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'})
@@ -3278,11 +3458,10 @@ class NmrVrptUtility:
         if self.__chemShiftDict is None or len(self.__chemShiftDict) == 0 or self.__has_prev_results:
             return True
 
-        if self.__coordinates is None:
-            return False
-
         self.__chemShiftUniqDict, self.__chemShiftOutlier, self.__chemShiftDuplicated, \
             self.__chemShiftUnmapped, self.__chemShiftUnmodeled = {}, {}, {}, {}, {}
+
+        has_coord = self.__coordinates is not None
 
         try:
 
@@ -3380,29 +3559,31 @@ class NmrVrptUtility:
                         z_score = round((cs['value'] - avg_value) / std_value, 2)
 
                         if abs(z_score) > 5.0:
-                            na = self.__getNearestAromaticRing(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
-                            pa = self.__getNearestParaFerroMagneticAtom(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
-
                             details = None
-                            if na is None and pa is None:
-                                pass
-                            elif pa is None:
-                                if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0 or na['ring_distance'] > VICINITY_AROMATIC:
+
+                            if has_coord:
+                                na = self.__getNearestAromaticRing(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
+                                pa = self.__getNearestParaFerroMagneticAtom(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
+
+                                if na is None and pa is None:
                                     pass
+                                elif pa is None:
+                                    if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0 or na['ring_distance'] > VICINITY_AROMATIC:
+                                        pass
+                                    else:
+                                        details = "The nearest aromatic ring "\
+                                            f"({na['auth_chain_id']}:{na['auth_seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                            f"is located at a distance of {na['ring_distance']}Å, "\
+                                            f"and has an elevation angle of {na['ring_angle']}° with the ring plane. "\
+                                            "It may explain a primary factor behind the outlier."
                                 else:
-                                    details = "The nearest aromatic ring "\
-                                        f"({na['auth_chain_id']}:{na['auth_seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
-                                        f"is located at a distance of {na['ring_distance']}Å, "\
-                                        f"and has an elevation angle of {na['ring_angle']}° with the ring plane. "\
-                                        "It may explain a primary factor behind the outlier."
-                            else:
-                                if pa['distance'] > VICINITY_PARAMAGNETIC:
-                                    pass
-                                else:
-                                    details = "The nearest paramagnetic/ferromagnetic atom "\
-                                        f"({pa['auth_chain_id']}:{pa['auth_seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
-                                        f"is located at a distance of {pa['distance']}Å. "\
-                                        "It may explain a primary factor behind the outlier."
+                                    if pa['distance'] > VICINITY_PARAMAGNETIC:
+                                        pass
+                                    else:
+                                        details = "The nearest paramagnetic/ferromagnetic atom "\
+                                            f"({pa['auth_chain_id']}:{pa['auth_seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                            f"is located at a distance of {pa['distance']}Å. "\
+                                            "It may explain a primary factor behind the outlier."
 
                             out_cs_values = list(cs_key)
                             out_cs_values.extend([cs_value, ambig_code, z_score,
@@ -4585,10 +4766,21 @@ class NmrVrptUtility:
 
         # solid-state NMR
 
-        exptl = self.__cR.getDictList('exptl')
+        if self.__coordinates is None:
+            self.__results['ssnmr'] = False
 
-        self.__results['ssnmr'] =\
-            exptl[0]['method'] == 'SOLID-STATE NMR' if len(exptl) > 0 and 'method' in exptl[0] else False
+            if self.__rR.hasItem('Entry', 'Experimental_method_subtype'):
+                entry = self.__rR.getDictList('Entry')
+
+                self.__results['ssnmr'] =\
+                    entry[0]['Experimental_method_subtype'] == 'solid-state'\
+                    if len(entry) > 0 and 'Experimental_method_subtype' in entry[0] else False
+
+        else:
+            exptl = self.__cR.getDictList('exptl')
+
+            self.__results['ssnmr'] =\
+                exptl[0]['method'] == 'SOLID-STATE NMR' if len(exptl) > 0 and 'method' in exptl[0] else False
 
         # completeness of assigned chemical shifts
 
@@ -4693,7 +4885,7 @@ class NmrVrptUtility:
 
                 output[task_key]['stereomethyl'][1] += 1
 
-        if self.__inputReport is None:
+        if self.__inputReport is None and self.__coordinates is not None:
             polySeq = []
 
             polySeqPdbMonIdName = 'pdb_mon_id' if self.__cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'

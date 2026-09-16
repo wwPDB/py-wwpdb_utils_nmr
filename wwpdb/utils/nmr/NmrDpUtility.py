@@ -614,7 +614,6 @@ class NmrDpUtility:
                  '__procTasksDict',
                  '__alt_chain',
                  '__valid_seq',
-                 '__calc_output_stats',
                  '__remediation_loop_count',
                  '__ensemble_composition',
                  '__dstPath__',
@@ -864,10 +863,6 @@ class NmrDpUtility:
         # internal statuses
         self.__alt_chain: bool = False
         self.__valid_seq: bool = False
-
-        # calculate output statistics in case of 'nmr-str-consistency-check' workflow and the previous report file is available
-        # this enables to generate data processing report in standalone NMR data conversion service (replace_cs or bmrbdep mode)
-        self.__calc_output_stats: bool = False
 
         # loop count of remediation
         self.__remediation_loop_count: int = 0
@@ -1391,12 +1386,6 @@ class NmrDpUtility:
                 self.__reg.reduced_atom_notation = self.__reg.outputParamDict['reduced_atom_notation']
             else:
                 self.__reg.reduced_atom_notation = self.__reg.outputParamDict['reduced_atom_notation'] in TRUE_VALUE
-
-        if has_key_value(self.__reg.outputParamDict, 'calc_output_stats'):
-            if isinstance(self.__reg.outputParamDict['calc_output_stats'], bool):
-                self.__calc_output_stats = self.__reg.outputParamDict['calc_output_stats']
-            else:
-                self.__calc_output_stats = self.__reg.outputParamDict['calc_output_stats'] in TRUE_VALUE
 
         self.__reg.op = op
 
@@ -9027,7 +9016,7 @@ class NmrDpUtility:
 
             input_source.setItemValue('stats_of_exptl_data', stats)
 
-            if self.__reg.op == 'nmr-str-consistency-check' and self.__reg.combined_mode and self.__calc_output_stats\
+            if self.__reg.op == 'nmr-str-consistency-check' and self.__reg.combined_mode\
                and REPORT_FILE_PATH_KEY in self.__reg.inputParamDict:
                 fPath = self.__reg.inputParamDict[REPORT_FILE_PATH_KEY]
 

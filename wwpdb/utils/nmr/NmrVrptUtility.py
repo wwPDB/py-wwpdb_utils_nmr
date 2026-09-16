@@ -1376,7 +1376,7 @@ class NmrVrptUtility:
         """ Parse coordinates.
         """
 
-        def extract_emsemble():
+        def extract_ensemble():
 
             try:
 
@@ -1493,6 +1493,9 @@ class NmrVrptUtility:
 
             self.__cifPath = self.__cR.getFilePath()
 
+            if self.__cifPath is None:
+                return False
+
             if self.__use_cache:
 
                 if self.__dirPath is None:
@@ -1506,7 +1509,7 @@ class NmrVrptUtility:
 
                 self.__cifHashCode = self.__cR.getHashCode()
 
-            extract_emsemble()
+            extract_ensemble()
 
             return True
 
@@ -1532,7 +1535,7 @@ class NmrVrptUtility:
 
             return False
 
-        extract_emsemble()
+        extract_ensemble()
 
         return True
 

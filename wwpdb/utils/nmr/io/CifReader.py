@@ -2266,6 +2266,9 @@ class CifReader:
 
         # cluster analysis
 
+        # relax too strict RMSD cutoff for clustering analysis < 1.0 (6osw)
+        rmsd_cutoff_for_clustering = max(rmsd_cutoff_for_clustering, 1.0)
+
         if self.__verbose and self.__debug:
             self.__log.write(f'rmsd cutoff for clustering: {rmsd_cutoff_for_clustering}\n')
 

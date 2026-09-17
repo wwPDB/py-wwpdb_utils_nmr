@@ -97,7 +97,6 @@ try:
                                                LEN_MAJOR_ASYM_ID,
                                                RMSD_OVERLAID_EXACTLY,
                                                RMSD_CUTOFF_FOR_DOMAIN,
-                                               RMSD_CUTOFF_FOR_CLUSTERING,
                                                CARTN_DATA_ITEMS)
 except ImportError:
     from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
@@ -107,7 +106,6 @@ except ImportError:
                                    LEN_MAJOR_ASYM_ID,
                                    RMSD_OVERLAID_EXACTLY,
                                    RMSD_CUTOFF_FOR_DOMAIN,
-                                   RMSD_CUTOFF_FOR_CLUSTERING,
                                    CARTN_DATA_ITEMS)
 
 
@@ -2010,7 +2008,8 @@ class CifReader:
         if self.__verbose and self.__debug:
             self.__log.write(f"feature: {min_result['features']}, "
                              f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
-                             f"clusters: {n_clusters} (effective domains: {len(eff_labels)}), score: {min_score}\n")
+                             f"clusters: {n_clusters} (effective domains: {len(eff_labels)}), noise: {list_labels.count(-1)}, "
+                             f"score: {min_score}\n")
 
         _chain_ids = [a['chain_id'] for a in _atom_site_dict[1]]
         _seq_ids = [a['seq_id'] for a in _atom_site_dict[1]]
@@ -2126,6 +2125,10 @@ class CifReader:
 
         # well-defined regions
 
+        eff_size = size - sum(count for label, count in domains if label not in eff_labels)
+
+        rmsd_cutoff_for_clustering = 0.0
+
         dlist = []
         for chain_id in chain_ids:
             dlist.append([])
@@ -2147,6 +2150,8 @@ class CifReader:
             bb_of = {m: [_a for _a in _bb_atom_site_dict[m]
                          if (_a['chain_id'], _a['seq_id']) in _seq_keys]
                      for m in eff_model_ids}
+
+            fraction = len(_seq_keys) / eff_size
 
             for ref_model_id in range(1, _total_models):
 
@@ -2177,6 +2182,7 @@ class CifReader:
 
             if len(_rmsd) > 0:
                 item['mean_rmsd'] = round(numpy.mean(numpy.array(_rmsd, dtype=float)), 4)
+                rmsd_cutoff_for_clustering += item['mean_rmsd'] * fraction
 
             _, v = numpy.linalg.eig(r)
             x = numpy.delete(numpy.abs(v), numpy.s_[1:], 1)
@@ -2260,13 +2266,14 @@ class CifReader:
 
         # cluster analysis
 
+        if self.__verbose and self.__debug:
+            self.__log.write(f'rmsd cutoff for clustering: {rmsd_cutoff_for_clustering}\n')
+
         clist = []
 
         matrix_size = (_total_models, _total_models)
 
         d_avr = numpy.zeros(matrix_size, dtype=float)
-
-        eff_size = size - sum(count for label, count in domains if label not in eff_labels)
 
         for label in eff_labels:  # balancing among domains with fraction (2jt8)
 
@@ -2309,7 +2316,7 @@ class CifReader:
                     d_avr[ref_idx, test_idx] += _rmsd_
                     d_avr[test_idx, ref_idx] = d_avr[ref_idx, test_idx]
 
-        max_d_avr = min(numpy.max(d_var), RMSD_CUTOFF_FOR_CLUSTERING)
+        max_d_avr = min(numpy.max(d_var), rmsd_cutoff_for_clustering)
 
         d_ord = numpy.ones(matrix_size, dtype=float)
 
@@ -2414,7 +2421,7 @@ class CifReader:
                         fraction = float(list_labels.count(label)) / _total_models
 
                         if label == -1:
-                            score += RMSD_CUTOFF_FOR_CLUSTERING * fraction
+                            score += rmsd_cutoff_for_clustering * fraction
                             continue
 
                         _rmsd = []
@@ -2494,7 +2501,7 @@ class CifReader:
             if self.__verbose and self.__debug:
                 self.__log.write(f"feature: {min_result['features']}, "
                                  f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
-                                 f"clusters: {n_clusters}, score: {min_score}\n")
+                                 f"clusters: {n_clusters}, noise: {list_labels.count(-1)}, score: {min_score}\n")
 
             most_comon = collections.Counter(list_labels).most_common()
 

@@ -51,7 +51,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 import collections
 import copy
@@ -97,6 +97,7 @@ try:
                                                LEN_MAJOR_ASYM_ID,
                                                RMSD_OVERLAID_EXACTLY,
                                                RMSD_CUTOFF_FOR_DOMAIN,
+                                               RMSD_CUTOFF_FOR_CLUSTERING,
                                                CARTN_DATA_ITEMS)
 except ImportError:
     from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
@@ -106,6 +107,7 @@ except ImportError:
                                    LEN_MAJOR_ASYM_ID,
                                    RMSD_OVERLAID_EXACTLY,
                                    RMSD_CUTOFF_FOR_DOMAIN,
+                                   RMSD_CUTOFF_FOR_CLUSTERING,
                                    CARTN_DATA_ITEMS)
 
 
@@ -2264,6 +2266,8 @@ class CifReader:
 
         d_avr = numpy.zeros(matrix_size, dtype=float)
 
+        eff_size = size - sum(count for label, count in domains if label not in eff_labels)
+
         for label in eff_labels:  # balancing among domains with fraction (2jt8)
 
             # seq_keys (atoms in the effective domains) is model-independent;
@@ -2274,7 +2278,7 @@ class CifReader:
                          if (_a['chain_id'], _a['seq_id']) in _seq_keys]
                      for m in eff_model_ids}
 
-            fraction = len(_seq_keys) / size
+            fraction = len(_seq_keys) / eff_size
 
             for ref_model_id in range(1, total_models):
 
@@ -2305,7 +2309,7 @@ class CifReader:
                     d_avr[ref_idx, test_idx] += _rmsd_
                     d_avr[test_idx, ref_idx] = d_avr[ref_idx, test_idx]
 
-        max_d_avr = min(numpy.max(d_var), RMSD_CUTOFF_FOR_DOMAIN)
+        max_d_avr = min(numpy.max(d_var), RMSD_CUTOFF_FOR_CLUSTERING)
 
         d_ord = numpy.ones(matrix_size, dtype=float)
 
@@ -2346,9 +2350,9 @@ class CifReader:
 
                 cycle += 1
 
-                for _epsilon in range(2, 11):
+                for _epsilon in range(2, 15):
 
-                    epsilon = 2.0 ** (_epsilon / 2.0) / 50.0  # epsilon travels from 0.02 to 0.16 (2jt8)
+                    epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.02 to 1.28 (2jt8)
 
                     if SKLEARN_DBSCAN:
 
@@ -2410,7 +2414,7 @@ class CifReader:
                         fraction = float(list_labels.count(label)) / _total_models
 
                         if label == -1:
-                            score += RMSD_CUTOFF_FOR_DOMAIN * fraction
+                            score += RMSD_CUTOFF_FOR_CLUSTERING * fraction
                             continue
 
                         _rmsd = []
@@ -2506,8 +2510,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': round((numpy.dot(d_ord[idx], v[0])).real, 4),
-                            'pc2': round((numpy.dot(d_ord[idx], v[1])).real, 4)
+                            'pc1': round((numpy.dot(v[0], d_ord[idx])).real, 4),
+                            'pc2': round((numpy.dot(v[1], d_ord[idx])).real, 4)
                             }
                     pc.append(item)
 
@@ -2560,8 +2564,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': round((numpy.dot(d_ord[idx], v[0])).real, 4),
-                            'pc2': round((numpy.dot(d_ord[idx], v[1])).real, 4)
+                            'pc1': round((numpy.dot(v[0], d_ord[idx])).real, 4),
+                            'pc2': round((numpy.dot(v[1], d_ord[idx])).real, 4)
                             }
                     pc.append(item)
 

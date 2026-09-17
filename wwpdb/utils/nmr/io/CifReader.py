@@ -43,6 +43,7 @@
 # 13-Jul-2026 - my  - implement ensemble composition analysis including cluster analysis (v1.0.9)
 # 05-Aug-2026 - my  - performance enhancement on RMSD calculation (v1.1.0)
 # 10-Sep-2026 - my  - run garbage collection periodically, add dbscan dependency if available (v1.2.0)
+# 17-Sep-2026 - my  - revise cluster analysis incorporating multi-domain conformers like Calmodulin (v1.2.1, 2jt8)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -1428,6 +1429,7 @@ class CifReader:
                                                                          'enum': ['C', 'N']}])
 
                             bb_atom_sites.extend(ca_atom_sites)
+
                             caRmsd, caWellDefinedRegion, cluster =\
                                 self.__calculateRmsd(polyPeptideChains, polyPeptideLengths,
                                                      totalModels, effModelIds,
@@ -1887,18 +1889,7 @@ class CifReader:
 
                         _atom_site_ref = _atom_site_dict[1]
                         _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
-                        # """
-                        # gaps = 0
-                        # if label != -1:
-                        #     for chain_id in chain_ids:
-                        #         seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p if a['chain_id'] == chain_id))
-                        #         if len(seq_ids) > 0:
-                        #             gaps = max(seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids), gaps)
-                        #
-                        # if gaps > monomers * 2:  # 2mze
-                        #     score = 0.0
-                        #     break
-                        # """
+
                         for model_id in range(2, total_models + 1):
 
                             if model_id not in eff_model_ids:
@@ -2273,41 +2264,46 @@ class CifReader:
 
         d_avr = numpy.zeros(matrix_size, dtype=float)
 
-        # seq_keys (atoms in the effective domains) is model-independent;
-        # precompute the backbone atom list per model once.
-        _seq_keys = frozenset((_a['chain_id'], _a['seq_id'])
-                              for _a, _l in zip(_atom_site_dict[1], list_labels) if _l in eff_labels)
-        bb_of = {m: [_a for _a in _bb_atom_site_dict[m]
-                     if (_a['chain_id'], _a['seq_id']) in _seq_keys]
-                 for m in eff_model_ids}
+        for label in eff_labels:  # balancing among domains with fraction (2jt8)
 
-        for ref_model_id in range(1, total_models):
+            # seq_keys (atoms in the effective domains) is model-independent;
+            # precompute the backbone atom list per model once.
+            _seq_keys = frozenset((_a['chain_id'], _a['seq_id'])
+                                  for _a, _l in zip(_atom_site_dict[1], list_labels) if _l == label)
+            bb_of = {m: [_a for _a in _bb_atom_site_dict[m]
+                         if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+                     for m in eff_model_ids}
 
-            if ref_model_id not in eff_model_ids:
-                continue
+            fraction = len(_seq_keys) / size
 
-            ref_idx = eff_model_ids.index(ref_model_id)
+            for ref_model_id in range(1, total_models):
 
-            _bb_atom_site_p = bb_of[ref_model_id]
-
-            if len(_bb_atom_site_p) == 0:
-                continue
-
-            for test_model_id in range(ref_model_id + 1, total_models + 1):
-
-                if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
+                if ref_model_id not in eff_model_ids:
                     continue
 
-                test_idx = eff_model_ids.index(test_model_id)
+                ref_idx = eff_model_ids.index(ref_model_id)
 
-                _bb_atom_site_q = bb_of[test_model_id]
+                _bb_atom_site_p = bb_of[ref_model_id]
 
-                if len(_bb_atom_site_p) != len(_bb_atom_site_q):
+                if len(_bb_atom_site_p) == 0:
                     continue
 
-                _rmsd_ = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q)
+                for test_model_id in range(ref_model_id + 1, total_models + 1):
 
-                d_avr[ref_idx, test_idx] = d_avr[test_idx, ref_idx] = _rmsd_
+                    if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
+                        continue
+
+                    test_idx = eff_model_ids.index(test_model_id)
+
+                    _bb_atom_site_q = bb_of[test_model_id]
+
+                    if len(_bb_atom_site_p) != len(_bb_atom_site_q):
+                        continue
+
+                    _rmsd_ = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q) * fraction
+
+                    d_avr[ref_idx, test_idx] += _rmsd_
+                    d_avr[test_idx, ref_idx] = d_avr[ref_idx, test_idx]
 
         max_d_avr = min(numpy.max(d_var), RMSD_CUTOFF_FOR_DOMAIN)
 
@@ -2352,7 +2348,7 @@ class CifReader:
 
                 for _epsilon in range(2, 11):
 
-                    epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
+                    epsilon = 2.0 ** (_epsilon / 2.0) / 50.0  # epsilon travels from 0.02 to 0.16 (2jt8)
 
                     if SKLEARN_DBSCAN:
 

@@ -1186,6 +1186,8 @@ RMSD_NOT_SUPERIMPOSED = 2.0
 RMSD_OVERLAID_EXACTLY = 0.01
 # criterion for detection for domain recognition in RMSD value
 RMSD_CUTOFF_FOR_DOMAIN = 3.5
+# criterion for detection for clustering analysis of models in the ensemble
+RMSD_CUTOFF_FOR_CLUSTERING = 1.0
 
 # criterion for covalent bond length
 CUTOFF_BOND_LENGTH = 3.5

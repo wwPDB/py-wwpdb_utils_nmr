@@ -4,6 +4,9 @@
 # Updates:
 # 18-Sep-2026  M. Yokochi - decompose detectContentSubTypeOfLegacyMr() into per-phase methods,
 #                           extract the auxiliary topology detectors, and speed up the text scans
+# 18-Sep-2026  M. Yokochi - fix CHARMM topology detection, whose '{Number of atoms} EXT' header test
+#                           compared a single character and so never matched, and name CHARMM rather
+#                           than GROMACS in its content_mismatch message
 ##
 """ File splitter for public PDB-MR formatted restraint file.
     @author: Masashi Yokochi
@@ -490,10 +493,9 @@ class ChaTopScanner:
         """
 
         if 'EXT' in line:
-            _line = ' '.join(line.split())
+            l_split = line.split()
 
-            # NOTE: _line is a string, so _line[1] is a single character and never equals 'EXT'
-            if len(_line) > 1 and _line[0].isdigit() and _line[1] == 'EXT':
+            if len(l_split) > 1 and l_split[0].isdigit() and l_split[1] == 'EXT':
                 self.__has_ext = self.__in_atoms = True
                 return True
 
@@ -2080,8 +2082,13 @@ class NmrDpMrSplitter:
                         if name not in _names or len(_names) > 1:
                             atom_likes += 1
                             _names.append(name)
-                        # NOTE: '_names' is a list, so this test is never true; the equivalent tests
-                        # in __scanXplorCnsMr() and in the nm-res-oth rescan below use the token
+                        # NOTE: '_names' is a list, so this test is never true, which makes
+                        # has_chem_shift unreachable here. Do not "fix" it to the token without
+                        # tightening the predicate below: CS_RANGE (-300..300) contains DIST_RANGE
+                        # (0..101), so 'cs_atom_likes == 1 and cs_range_like' then shadows the
+                        # distance-restraint arm. Measured over tests-nmr/mock-data*: has_chem_shift
+                        # turns on for 982 of 1683 (file, file_type) pairs and 56 pairs lose
+                        # has_dist_restraint. __scanXplorCnsMr() also requires resid_likes == 1.
                         if _names in cs_atom_like_names:
                             cs_atom_likes += 1
 
@@ -2646,12 +2653,11 @@ class NmrDpMrSplitter:
                 "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} "\
                 "{Cartn_x} {Cartn_y} {Cartn_z} {segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
 
-            # NOTE: the closing sentence names GROMACS, as in the original code
             self.__report('content_mismatch', file_name,
                           f"{file_name!r} is not CHARMM topology (aka. CRD or CHARM CARD file) "
                           f"{self.__concatDetectedSubtypeNames(flags)}."
                           f"{hint} Did you accidentally select wrong format? "
-                          "Please re-upload the GROMACS topology file.")
+                          "Please re-upload the CHARMM topology file.")
 
         elif file_type == 'nm-aux-gro' and not flags.has_topology:
 

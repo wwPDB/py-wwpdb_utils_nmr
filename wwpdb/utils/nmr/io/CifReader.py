@@ -44,6 +44,8 @@
 # 05-Aug-2026 - my  - performance enhancement on RMSD calculation (v1.1.0)
 # 10-Sep-2026 - my  - run garbage collection periodically, add dbscan dependency if available (v1.2.0)
 # 17-Sep-2026 - my  - revise cluster analysis incorporating multi-domain conformers like Calmodulin (v1.2.1, 2jt8)
+# 18-Sep-2026 - my  - compile data/filter items once per call and index column values of a category
+#                     in getDictListWithFilter() (performance enhancement)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -68,7 +70,7 @@ import re
 import sys
 import warnings
 from operator import itemgetter
-from typing import IO, List, Optional, Tuple
+from typing import Any, IO, List, Optional, Tuple
 
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
@@ -136,6 +138,46 @@ CIF_ITEM_TYPES = ('str', 'bool',
                   'int', 'range-int', 'abs-int', 'range-abs-int',
                   'float', 'range-float', 'abs-float', 'range-abs-float',
                   'enum', 'enum-int', 'starts-with-alnum')
+
+# item types whose filter item carries a 'range' dictionary
+CIF_RANGE_ITEM_TYPES = ('range-int', 'range-abs-int', 'range-float', 'range-abs-float')
+
+# value conversion applied to a row value before the post check of a filter item
+CONV_NONE, CONV_ALNUM, CONV_BOOL, CONV_INT, CONV_FLOAT, CONV_ABS_INT, CONV_ABS_FLOAT = range(7)
+
+# conversion of each filter item type, CONV_ABS_FLOAT being the fall-through
+CIF_FILTER_CONVERSIONS = {'str': CONV_NONE,
+                          'enum': CONV_NONE,
+                          'starts-with-alnum': CONV_ALNUM,
+                          'bool': CONV_BOOL,
+                          'int': CONV_INT,
+                          'enum-int': CONV_INT,
+                          'float': CONV_FLOAT,
+                          'abs-int': CONV_ABS_INT,
+                          'range-abs-int': CONV_ABS_INT}
+
+# post check of a filter item
+POST_RANGE, POST_ENUM, POST_EQUAL = range(3)
+
+# value conversion applied to a data item value
+DATA_STR, DATA_ALNUM, DATA_BOOL, DATA_INT, DATA_FLOAT = range(5)
+
+# conversion of each data item type, DATA_FLOAT being the fall-through
+CIF_DATA_CONVERSIONS = {'str': DATA_STR,
+                        'enum': DATA_STR,
+                        'starts-with-alnum': DATA_ALNUM,
+                        'bool': DATA_BOOL,
+                        'int': DATA_INT,
+                        'enum-int': DATA_INT}
+
+# set of empty values, for O(1) membership test in the row loops
+EMPTY_VALUE_SET = frozenset(EMPTY_VALUE)
+
+# minimum number of rows of a category before a column value index is built
+MIN_ROWS_FOR_COLUMN_INDEX = 1000
+
+# maximum number of indexed columns per category
+MAX_INDEXED_COLUMNS_PER_CATEGORY = 8
 
 # threshold for garbage collection for high memory usage of DBSCAN
 GARBAGE_COLLECTION_CYCLES = 32 if SKLEARN_DBSCAN else 128
@@ -284,6 +326,7 @@ class CifReader:
                  '__dBlockNameList',
                  '__dBlock',
                  '__categoryNameList',
+                 '__valueIndex',
                  '__hashCode',
                  '__cachePath',
                  '__random_rotaion_test',
@@ -326,6 +369,9 @@ class CifReader:
 
         # the category name list
         self.__categoryNameList = None
+
+        # column value indices of the current datablock, {(category name, column index, conversion): {value: [row]}}
+        self.__valueIndex = {}
 
         # hash code of current cif file
         self.__hashCode = None
@@ -390,6 +436,7 @@ class CifReader:
         self.__dBlockList = None
         self.__dBlockNameList = None
         self.__categoryNameList = None
+        self.__valueIndex = {}
 
         self.__dBlock = None
         self.__hashCode = None
@@ -478,6 +525,8 @@ class CifReader:
         """ Assigns the input datablock as the active internal datablock.
             @return: True for success or False otherwise
         """
+
+        self.__valueIndex = {}
 
         try:
 
@@ -706,15 +755,9 @@ class CifReader:
             return []
 
         # get column name index
-        colDict, fcolDict, fetchDict = {}, {}, {}  # 'fetch_first_match': True
-
         iList = catObj.getAttributeList()
 
-        for idxIt, itName in enumerate(iList):
-            if itName in dataNames:
-                colDict[itName] = idxIt
-            if filterNames is not None and itName in filterNames:
-                fcolDict[itName] = idxIt
+        colDict = {itName: idxIt for idxIt, itName in enumerate(iList)}
 
         if set(dataNames) & set(iList) != set(dataNames):
             raise LookupError(f"Missing one of data items {dataNames}.")
@@ -722,128 +765,333 @@ class CifReader:
         if filterItems is not None and set(filterNames) & set(iList) != set(filterNames):
             raise LookupError(f"Missing one of filter items {filterNames}.")
 
+        rowList = catObj.getRowList()
+
+        if filterItems:
+
+            plan = self.__compileFilterPlan(filterItems, colDict)
+
+            if plan is None:  # 'fetch_first_match' filter, or a filter item that lacks its 'value'
+                rowList = self.__filterRowsRowWise(rowList, filterItems, colDict)
+
+            else:
+                rowList, plan = self.__narrowRowsByColumnIndex(catName, rowList, plan)
+
+                for idxIt, conv, post, payload, emptyRejects in plan:
+                    if len(rowList) == 0:
+                        break
+                    rowList = self.__filterRows(rowList, idxIt, conv, post, payload, emptyRejects)
+
+        return self.__buildDictList(rowList, dataItems, colDict, set(dataNames))
+
+    def __compileFilterPlan(self, filterItems: List[dict], colDict: dict) -> Optional[List[tuple]]:
+        """ Compile filter items to a list of (column index, value conversion, post check, payload,
+            whether an empty value is rejected), so that the per-item decisions are made once per call
+            instead of once per row.
+            @return: the compiled filter plan, None if the filter items must be processed row-wise
+        """
+
+        plan = []
+
+        for filterItem in filterItems:
+
+            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                return None  # 'abort' depends on the row order
+
+            filterItemType = filterItem['type']
+
+            # CONV_ABS_FLOAT is the fall-through of the row-wise code path,
+            # which therefore also covers 'range-float' and 'range-int'
+            conv = CIF_FILTER_CONVERSIONS.get(filterItemType, CONV_ABS_FLOAT)
+
+            if filterItemType in CIF_RANGE_ITEM_TYPES:
+                post, payload = POST_RANGE, filterItem['range']
+            elif filterItemType in ('enum', 'enum-int'):
+                post, payload = POST_ENUM, frozenset(filterItem['enum'])
+            elif 'value' not in filterItem:
+                return None  # the row-wise code path raises KeyError, but only once a row reaches the comparison
+            else:
+                post, payload = POST_EQUAL, filterItem['value']
+
+            plan.append((colDict[filterItem['name']], conv, post, payload,
+                         'value' in filterItem and filterItem['value'] not in EMPTY_VALUE_SET))
+
+        return plan
+
+    def __filterRows(self, rowList: List[list], idxIt: int, conv: int, post: int, payload: Any,
+                     emptyRejects: bool) -> List[list]:
+        """ Return rows that satisfy a compiled filter item.
+        """
+
+        if conv == CONV_NONE:  # no value conversion, which is the common case
+
+            if post == POST_EQUAL:
+                if emptyRejects:
+                    return [row for row in rowList if row[idxIt] == payload]
+                return [row for row in rowList if row[idxIt] in EMPTY_VALUE_SET]
+
+            if post == POST_ENUM:
+                enum = payload - EMPTY_VALUE_SET
+                if emptyRejects:
+                    return [row for row in rowList if row[idxIt] in enum]
+                return [row for row in rowList if row[idxIt] in enum or row[idxIt] in EMPTY_VALUE_SET]
+
+        _rowList = []
+
+        for row in rowList:
+            val = row[idxIt]
+
+            if val in EMPTY_VALUE_SET:
+                if not emptyRejects:
+                    _rowList.append(row)
+                continue
+
+            if conv == CONV_ALNUM:
+                if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
+                    continue
+            elif conv == CONV_BOOL:
+                val = val.lower() in TRUE_VALUE
+            elif conv != CONV_NONE:
+                try:
+                    if conv == CONV_INT:
+                        val = int(val)
+                    elif conv == CONV_FLOAT:
+                        val = float(val)
+                    elif conv == CONV_ABS_INT:
+                        val = abs(int(val))
+                    else:
+                        val = abs(float(val))
+                except ValueError:
+                    continue
+
+            if post == POST_RANGE:
+                if ('min_exclusive' in payload and val <= payload['min_exclusive'])\
+                   or ('min_inclusive' in payload and val < payload['min_inclusive'])\
+                   or ('max_inclusive' in payload and val > payload['max_inclusive'])\
+                   or ('max_exclusive' in payload and val >= payload['max_exclusive'])\
+                   or ('not_equal_to' in payload and val == payload['not_equal_to']):
+                    continue
+            elif post == POST_ENUM:
+                if val not in payload:
+                    continue
+            elif val != payload:
+                continue
+
+            _rowList.append(row)
+
+        return _rowList
+
+    def __filterRowsRowWise(self, rowList: List[list], filterItems: List[dict], colDict: dict) -> List[list]:
+        """ Return rows that satisfy filter items, evaluating the filter items in order for each row.
+            Required by the 'fetch_first_match' filter, whose 'abort' depends on the row order.
+        """
+
+        fetchDict = {}  # 'fetch_first_match': True
+
         abort = False
 
-        dList = []
-        for row in catObj.getRowList():
+        _rowList = []
+
+        for row in rowList:
             keep = True
-            if filterItems is not None:
-                for filterItem in filterItems:
-                    name = filterItem['name']
-                    val = row[fcolDict[name]]
-                    if val in EMPTY_VALUE:
-                        if 'value' in filterItem and filterItem['value'] not in EMPTY_VALUE:
+            for filterItem in filterItems:
+                name = filterItem['name']
+                val = row[colDict[name]]
+                if val in EMPTY_VALUE:
+                    if 'value' in filterItem and filterItem['value'] not in EMPTY_VALUE:
+                        keep = False
+                        break
+                else:
+                    filterItemType = filterItem['type']
+                    if filterItemType in ('str', 'enum'):
+                        pass
+                    elif filterItemType == 'starts-with-alnum':
+                        if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
                             keep = False
                             break
+                    elif filterItemType == 'bool':
+                        val = val.lower() in TRUE_VALUE
+                    elif filterItemType in ('int', 'enum-int'):
+                        try:
+                            val = int(val)
+                        except ValueError:
+                            keep = False
+                            break
+                    elif filterItemType == 'float':
+                        try:
+                            val = float(val)
+                        except ValueError:
+                            keep = False
+                            break
+                    elif filterItemType in ('abs-int', 'range-abs-int'):
+                        try:
+                            val = abs(int(val))
+                        except ValueError:
+                            keep = False
+                            break
+                    else:  # 'range-float', 'range-abs-float'
+                        try:
+                            val = abs(float(val))
+                        except ValueError:
+                            keep = False
+                            break
+                    if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
+                        _range = filterItem['range']
+                        if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
+                           or ('min_inclusive' in _range and val < _range['min_inclusive'])\
+                           or ('max_inclusive' in _range and val > _range['max_inclusive'])\
+                           or ('max_exclusive' in _range and val >= _range['max_exclusive'])\
+                           or ('not_equal_to' in _range and val == _range['not_equal_to']):
+                            keep = False
+                            break
+                    elif filterItemType == 'enum':
+                        if val not in filterItem['enum']:
+                            keep = False
+                            break
+                        if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                            if name not in fetchDict:
+                                fetchDict[name] = val
+                            elif val != fetchDict[name]:
+                                keep = False
+                                abort = True
+                                break
+                    elif filterItemType == 'enum-int':
+                        if val not in filterItem['enum']:
+                            keep = False
+                            break
+                        if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                            if name not in fetchDict:
+                                fetchDict[name] = val
+                            elif val != fetchDict[name]:
+                                keep = False
+                                abort = True
+                                break
                     else:
-                        filterItemType = filterItem['type']
-                        if filterItemType in ('str', 'enum'):
-                            pass
-                        elif filterItemType == 'starts-with-alnum':
-                            if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
+                        if val != filterItem['value']:
+                            keep = False
+                            break
+                        if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                            if name not in fetchDict:
+                                fetchDict[name] = val
+                            elif val != fetchDict[name]:
                                 keep = False
+                                abort = True
                                 break
-                        elif filterItemType == 'bool':
-                            val = val.lower() in TRUE_VALUE
-                        elif filterItemType in ('int', 'enum-int'):
-                            try:
-                                val = int(val)
-                            except ValueError:
-                                keep = False
-                                break
-                        elif filterItemType == 'float':
-                            try:
-                                val = float(val)
-                            except ValueError:
-                                keep = False
-                                break
-                        elif filterItemType in ('abs-int', 'range-abs-int'):
-                            try:
-                                val = abs(int(val))
-                            except ValueError:
-                                keep = False
-                                break
-                        else:  # 'range-float', 'range-abs-float'
-                            try:
-                                val = abs(float(val))
-                            except ValueError:
-                                keep = False
-                                break
-                        if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
-                            _range = filterItem['range']
-                            if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
-                               or ('min_inclusive' in _range and val < _range['min_inclusive'])\
-                               or ('max_inclusive' in _range and val > _range['max_inclusive'])\
-                               or ('max_exclusive' in _range and val >= _range['max_exclusive'])\
-                               or ('not_equal_to' in _range and val == _range['not_equal_to']):
-                                keep = False
-                                break
-                        elif filterItemType == 'enum':
-                            if val not in filterItem['enum']:
-                                keep = False
-                                break
-                            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
-                                if name not in fetchDict:
-                                    fetchDict[name] = val
-                                elif val != fetchDict[name]:
-                                    keep = False
-                                    abort = True
-                                    break
-                        elif filterItemType == 'enum-int':
-                            if val not in filterItem['enum']:
-                                keep = False
-                                break
-                            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
-                                if name not in fetchDict:
-                                    fetchDict[name] = val
-                                elif val != fetchDict[name]:
-                                    keep = False
-                                    abort = True
-                                    break
-                        else:
-                            if val != filterItem['value']:
-                                keep = False
-                                break
-                            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
-                                if name not in fetchDict:
-                                    fetchDict[name] = val
-                                elif val != fetchDict[name]:
-                                    keep = False
-                                    abort = True
-                                    break
 
             if keep:
-                tD = {}
-                for dataItem in dataItems:
-                    val = row[colDict[dataItem['name']]]
-                    if val in EMPTY_VALUE:
-                        if 'default-from' in dataItem and dataItem['default-from'] in colDict:
-                            val = row[colDict[dataItem['default-from']]]
-                        else:
-                            val = dataItem.get('default')
-                    dataItemType = dataItem['type']
-                    if dataItemType in ('str', 'enum'):
-                        pass
-                    elif dataItemType == 'starts-with-alnum':
-                        if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
-                            val = None
-                    elif dataItemType == 'bool':
-                        val = val.lower() in TRUE_VALUE
-                    elif dataItemType in ('int', 'enum-int') and val is not None:
+                _rowList.append(row)
+
+            elif abort:
+                break
+
+        return _rowList
+
+    def __narrowRowsByColumnIndex(self, catName: str, rowList: List[list], plan: List[tuple]
+                                  ) -> Tuple[List[list], List[tuple]]:
+        """ Narrow candidate rows using a cached column value index of the most selective equality filter.
+            @return: the candidate rows and the remaining filter plan
+        """
+
+        if len(rowList) < MIN_ROWS_FOR_COLUMN_INDEX:
+            return rowList, plan
+
+        best, bestRowList = -1, None
+
+        for idx, (idxIt, conv, post, payload, emptyRejects) in enumerate(plan):
+
+            # a single value lookup preserves the row order of the category, a union of values would not
+            if post != POST_EQUAL or not emptyRejects or conv not in (CONV_NONE, CONV_INT, CONV_FLOAT):
+                continue
+
+            valueIndex = self.__getColumnIndex(catName, rowList, idxIt, conv)
+
+            if valueIndex is None:
+                continue
+
+            try:
+                _rowList = valueIndex.get(payload, [])
+            except TypeError:  # unhashable filter value, which never matches a row value
+                continue
+
+            if bestRowList is None or len(_rowList) < len(bestRowList):
+                best, bestRowList = idx, _rowList
+
+        if bestRowList is None:
+            return rowList, plan
+
+        return bestRowList, plan[:best] + plan[best + 1:]
+
+    def __getColumnIndex(self, catName: str, rowList: List[list], idxIt: int, conv: int) -> Optional[dict]:
+        """ Return a value to rows index of a given column, building it on the first use.
+            @return: the column value index, None if the category has too many indexed columns already
+        """
+
+        key = (catName, idxIt, conv)
+
+        if key in self.__valueIndex:
+            return self.__valueIndex[key]
+
+        if sum(1 for _catName, _, _ in self.__valueIndex if _catName == catName) >= MAX_INDEXED_COLUMNS_PER_CATEGORY:
+            return None
+
+        valueIndex = {}
+
+        for row in rowList:
+            val = row[idxIt]
+            if conv != CONV_NONE:
+                if val in EMPTY_VALUE_SET:
+                    continue
+                try:
+                    val = int(val) if conv == CONV_INT else float(val)
+                except ValueError:
+                    continue
+            if val in valueIndex:
+                valueIndex[val].append(row)
+            else:
+                valueIndex[val] = [row]
+
+        self.__valueIndex[key] = valueIndex
+
+        return valueIndex
+
+    def __buildDictList(self, rowList: List[list], dataItems: List[dict], colDict: dict, dataNames: set
+                        ) -> List[dict]:
+        """ Return a list of dictionaries of given rows.
+        """
+
+        plan = []
+
+        for dataItem in dataItems:
+            defaultFrom = dataItem.get('default-from')
+            plan.append((dataItem['alt_name'] if 'alt_name' in dataItem else dataItem['name'],
+                         colDict[dataItem['name']],
+                         CIF_DATA_CONVERSIONS.get(dataItem['type'], DATA_FLOAT),
+                         colDict[defaultFrom] if defaultFrom in dataNames else None,
+                         dataItem.get('default')))
+
+        dList = []
+
+        for row in rowList:
+            tD = {}
+            for name, idxIt, conv, defaultFrom, default in plan:
+                val = row[idxIt]
+                if val in EMPTY_VALUE_SET:
+                    val = row[defaultFrom] if defaultFrom is not None else default
+                if conv == DATA_ALNUM:
+                    if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
+                        val = None
+                elif conv == DATA_BOOL:
+                    val = val.lower() in TRUE_VALUE
+                elif conv == DATA_INT:
+                    if val is not None:
                         try:
                             val = int(val)
                         except ValueError:
                             val = None
-                    elif val is not None:
-                        val = float(val)
-                    if 'alt_name' in dataItem:
-                        tD[dataItem['alt_name']] = val
-                    else:
-                        tD[dataItem['name']] = val
-                dList.append(tD)
-
-            elif abort:
-                break
+                elif conv == DATA_FLOAT and val is not None:
+                    val = float(val)
+                tD[name] = val
+            dList.append(tD)
 
         return dList
 

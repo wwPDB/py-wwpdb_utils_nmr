@@ -46,6 +46,8 @@
 # 17-Sep-2026 - my  - revise cluster analysis incorporating multi-domain conformers like Calmodulin (v1.2.1, 2jt8)
 # 18-Sep-2026 - my  - compile data/filter items once per call and index column values of a category
 #                     in getDictListWithFilter() (performance enhancement)
+# 18-Sep-2026 - my  - stop taking the absolute value of 'range-float' and 'range-int' filter items,
+#                     which discarded row values outside the mirrored range
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -152,7 +154,9 @@ CIF_FILTER_CONVERSIONS = {'str': CONV_NONE,
                           'bool': CONV_BOOL,
                           'int': CONV_INT,
                           'enum-int': CONV_INT,
+                          'range-int': CONV_INT,
                           'float': CONV_FLOAT,
+                          'range-float': CONV_FLOAT,
                           'abs-int': CONV_ABS_INT,
                           'range-abs-int': CONV_ABS_INT}
 
@@ -800,8 +804,7 @@ class CifReader:
 
             filterItemType = filterItem['type']
 
-            # CONV_ABS_FLOAT is the fall-through of the row-wise code path,
-            # which therefore also covers 'range-float' and 'range-int'
+            # CONV_ABS_FLOAT is the fall-through, which covers 'abs-float' and 'range-abs-float'
             conv = CIF_FILTER_CONVERSIONS.get(filterItemType, CONV_ABS_FLOAT)
 
             if filterItemType in CIF_RANGE_ITEM_TYPES:
@@ -911,13 +914,13 @@ class CifReader:
                             break
                     elif filterItemType == 'bool':
                         val = val.lower() in TRUE_VALUE
-                    elif filterItemType in ('int', 'enum-int'):
+                    elif filterItemType in ('int', 'enum-int', 'range-int'):
                         try:
                             val = int(val)
                         except ValueError:
                             keep = False
                             break
-                    elif filterItemType == 'float':
+                    elif filterItemType in ('float', 'range-float'):
                         try:
                             val = float(val)
                         except ValueError:
@@ -929,7 +932,7 @@ class CifReader:
                         except ValueError:
                             keep = False
                             break
-                    else:  # 'range-float', 'range-abs-float'
+                    else:  # 'abs-float', 'range-abs-float'
                         try:
                             val = abs(float(val))
                         except ValueError:

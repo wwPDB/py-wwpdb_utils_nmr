@@ -1999,8 +1999,13 @@ class NmrVrptUtility:
                         self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
 
                         if self.__ccU.updateChemCompDict(comp_id):
+                            peptide_like = self.__csStat.peptideLike(comp_id)
                             for cca in self.__ccU.lastAtomDictList:
-                                if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                if cca['type_symbol'] in NMR_OBS_NUCS\
+                                   and (cca['leaving_atom_flag'] != 'Y'
+                                        or (peptide_like
+                                            and cca['n_terminal_atom_flag'] == 'N'
+                                            and cca['c_terminal_atom_flag'] == 'N')):
                                     self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
 
                 else:
@@ -2014,8 +2019,13 @@ class NmrVrptUtility:
                         self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
 
                         if self.__ccU.updateChemCompDict(comp_id):
+                            peptide_like = self.__csStat.peptideLike(comp_id)
                             for cca in self.__ccU.lastAtomDictList:
-                                if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                if cca['type_symbol'] in NMR_OBS_NUCS\
+                                   and (cca['leaving_atom_flag'] != 'Y'
+                                        or (peptide_like
+                                            and cca['n_terminal_atom_flag'] == 'N'
+                                            and cca['c_terminal_atom_flag'] == 'N')):
                                     self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
 
             for ps in self.__caC['polymer_sequence']:
@@ -2061,11 +2071,12 @@ class NmrVrptUtility:
                     if seq_id is None or not self.__ccU.updateChemCompDict(comp_id):
                         continue
                     self.__entityUninstance[auth_chain_id][seq_key] =\
-                        {'seq_id': seq_id, 'atoms': [cca['atom_id'] for cca in self.__ccU.lastAtomDictList
-                                                     if cca['leaving_atom_flag'] != 'Y'
-                                                     or (self.__csStat.peptideLike(comp_id)
-                                                         and cca['n_terminal_atom_flag'] == 'N'
-                                                         and cca['c_terminal_atom_flag'] == 'N')]}
+                        {'seq_id': seq_id,
+                         'atoms': [cca['atom_id'] for cca in self.__ccU.lastAtomDictList
+                                   if cca['leaving_atom_flag'] != 'Y'
+                                   or (self.__csStat.peptideLike(comp_id)
+                                       and cca['n_terminal_atom_flag'] == 'N'
+                                       and cca['c_terminal_atom_flag'] == 'N')]}
 
             # DAOTHER-10987
             if 'coord_unobs_atom' in self.__caC and self.__caC['coord_unobs_atom'] is not None:
@@ -2137,8 +2148,13 @@ class NmrVrptUtility:
                         self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
 
                     if self.__ccU.updateChemCompDict(comp_id):
+                        peptide_like = self.__csStat.peptideLike(comp_id)
                         for cca in self.__ccU.lastAtomDictList:
-                            if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                            if cca['type_symbol'] in NMR_OBS_NUCS\
+                               and (cca['leaving_atom_flag'] != 'Y'
+                                    or (peptide_like
+                                        and cca['n_terminal_atom_flag'] == 'N'
+                                        and cca['c_terminal_atom_flag'] == 'N')):
                                 self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
 
                     if 'Auth_variant_ID' in row:
@@ -2213,8 +2229,13 @@ class NmrVrptUtility:
                                     self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
 
                                 if self.__ccU.updateChemCompDict(comp_id):
+                                    peptide_like = self.__csStat.peptideLike(comp_id)
                                     for cca in self.__ccU.lastAtomDictList:
-                                        if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                        if cca['type_symbol'] in NMR_OBS_NUCS\
+                                           and (cca['leaving_atom_flag'] != 'Y'
+                                                or (peptide_like
+                                                    and cca['n_terminal_atom_flag'] == 'N'
+                                                    and cca['c_terminal_atom_flag'] == 'N')):
                                             self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
 
             lp_category = 'Entity_deleted_atom'

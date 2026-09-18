@@ -2,6 +2,11 @@
 # Date: 07-Jan-2026
 #
 # Updates:
+# 18-Sep-2026  M. Yokochi - decompose detectContentSubTypeOfLegacyMr() into per-phase methods,
+#                           extract the auxiliary topology detectors, and speed up the text scans
+# 18-Sep-2026  M. Yokochi - fix CHARMM topology detection, whose '{Number of atoms} EXT' header test
+#                           compared a single character and so never matched, and name CHARMM rather
+#                           than GROMACS in its content_mismatch message
 ##
 """ File splitter for public PDB-MR formatted restraint file.
     @author: Masashi Yokochi
@@ -19,7 +24,7 @@ import os
 import re
 import shutil
 from operator import itemgetter
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Set, Tuple
 
 import chardet
 
@@ -251,6 +256,398 @@ DEEP_R_PARENS_PAT = re.compile(r'.*\)\s*\)\s*\)\s*\).*')
 POTENTIAL_TYPO_FOR_COMMENT_OUT_PAT = re.compile(r'\s*([13])$')
 
 COMMENT_CODE_MIXED_SET = {'#', '!'}
+
+COMMENT_CODE_SEMICOLON_SET = frozenset(('#', '!', ';'))
+
+PAREN_SPLIT_PAT = re.compile('[ ()]')
+
+# File types whose content subtype is guessed by the light-weight text scan of
+# NmrDpMrSplitter.detectContentSubTypeOfLegacyMr(), rather than by a format-specific state machine.
+LIGHT_MR_FILE_TYPES = ('nm-res-ari', 'nm-res-bar', 'nm-res-bio', 'nm-res-cya',
+                       'nm-res-dyn', 'nm-res-isd', 'nm-res-noa', 'nm-res-syb',
+                       'nm-res-ros', 'nm-res-oth')
+
+# Auxiliary molecular topology file types, sharing the light-weight text scan.
+AUX_TOP_FILE_TYPES = ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb')
+
+# One-letter codes of the standard monomers. STD_MON_DICT.values() is a view, on which
+# membership is a linear scan, and the light-weight text scan tests it once per token.
+STD_MON_ONE_LETTER_CODES = frozenset(STD_MON_DICT.values())
+
+HBOND_DA_ATOM_TYPES = ('O', 'N', 'F')
+RDC_ORIGIN_ATOM_NAMES = ('OO', 'X', 'Y', 'Z')
+
+# Content subtypes detected by the text scan, as (MrContentFlags attribute, label),
+# used to compose the "It looks like to have ... instead" part of a content_mismatch message.
+DETECTED_SUBTYPE_LABELS = (('has_chem_shift', 'Assigned chemical shifts'),
+                           ('has_dist_restraint', 'Distance restraints'),
+                           ('has_dihed_restraint', 'Dihedral angle restraints'),
+                           ('has_rdc_restraint', 'RDC restraints'),
+                           ('has_plane_restraint', 'Planarity restraints'),
+                           ('has_hbond_restraint', 'Hydrogen bond restraints'),
+                           ('has_ssbond_restraint', 'Disulfide bond restraints'))
+
+
+def file_md5(fPath: str) -> str:
+    """ Return the MD5 digest of the text content of a given file.
+    """
+
+    with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+        return hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
+
+
+def first_index_map(tokens: List[str]) -> dict:
+    """ Return a map from token to the position of its first occurrence, which is what
+        list.index() reports, without its per-token linear scan.
+    """
+
+    first_col = {}
+
+    for col, token in enumerate(tokens):
+        if token not in first_col:
+            first_col[token] = col
+
+    return first_col
+
+
+class MrAtomNames:
+    """ Atom name sets the text scans of detectContentSubTypeOfLegacyMr() rely on.
+    """
+
+    __slots__ = ('atom_like', 'cs_atom_like', 'atom_like_oth', 'cs_atom_like_oth')
+
+    def __init__(self, atom_like: Set[str], cs_atom_like: List[str],
+                 atom_like_oth: Set[str], cs_atom_like_oth: Set[str]) -> None:
+        self.atom_like = atom_like
+        self.cs_atom_like = cs_atom_like
+        self.atom_like_oth = atom_like_oth
+        self.cs_atom_like_oth = cs_atom_like_oth
+
+
+class MrContentFlags:
+    """ Content subtype indicators collected while scanning a legacy restraint file.
+        Passed by reference through the scan and report phases of
+        NmrDpMrSplitter.detectContentSubTypeOfLegacyMr().
+    """
+
+    __slots__ = ('has_chem_shift', 'has_dist_restraint', 'has_dihed_restraint', 'has_rdc_restraint',
+                 'has_plane_restraint', 'has_hbond_restraint', 'has_ssbond_restraint', 'has_rdc_origins',
+                 'has_spectral_peak', 'has_coordinate', 'has_amb_coord', 'has_amb_inpcrd', 'has_ens_coord',
+                 'has_topology', 'has_first_atom')
+
+    def __init__(self) -> None:
+        self.has_chem_shift = self.has_dist_restraint = self.has_dihed_restraint = self.has_rdc_restraint =\
+            self.has_plane_restraint = self.has_hbond_restraint = self.has_ssbond_restraint =\
+            self.has_rdc_origins = self.has_spectral_peak = self.has_coordinate = self.has_amb_coord =\
+            self.has_amb_inpcrd = self.has_ens_coord = self.has_topology = self.has_first_atom = False
+
+    def hasAnyRestraint(self) -> bool:
+        """ Return whether any restraint subtype has been detected.
+        """
+        return self.has_dist_restraint or self.has_dihed_restraint or self.has_rdc_restraint\
+            or self.has_plane_restraint or self.has_hbond_restraint or self.has_ssbond_restraint
+
+    def sniffCoordinateLine(self, line: str) -> Optional[str]:
+        """ Update the coordinate indicators for a given line.
+            @return: 'atom' for a coordinate record, 'model' for an ensemble marker, None otherwise
+        """
+
+        if line.startswith('ATOM ') and line.count('.') >= 3:
+            self.has_coordinate = True
+            if PDB_FIRST_ATOM_PAT.match(line):
+                if self.has_first_atom:
+                    self.has_ens_coord = True
+                self.has_first_atom = True
+            return 'atom'
+
+        if line.startswith('MODEL') or line.startswith('ENDMDL')\
+                or line.startswith('_atom_site.pdbx_PDB_model_num')\
+                or line.startswith('_atom_site.ndb_model'):
+            self.has_ens_coord = True
+            return 'model'
+
+        return None
+
+
+class AmbTopScanner:
+    """ AMBER topology (.prmtop) detector. All four sections must be present, each with a
+        parsable %FORMAT header and at least one value. Also recognizes an AMBER restart
+        (aka. .crd or .rst) file, whose header is a title line, an atom count, then coordinates.
+    """
+
+    # (%FLAG keyword, %FORMAT pattern, whether the values are integers)
+    SECTIONS = (('%FLAG ATOM_NAME', AMBER_A_FORMAT_PAT, False),
+                ('%FLAG RESIDUE_LABEL', AMBER_A_FORMAT_PAT, False),
+                ('%FLAG RESIDUE_POINTER', AMBER_I_FORMAT_PAT, True),
+                ('%FLAG AMBER_ATOM_TYPE', AMBER_A_FORMAT_PAT, False))
+
+    __slots__ = ('__has_section', '__chk_format', '__in_section', '__values', '__max_cols', '__max_char')
+
+    def __init__(self, atom_like_names: Set[str]) -> None:  # pylint: disable=unused-argument
+        self.__has_section = [False] * len(self.SECTIONS)
+        self.__chk_format = [False] * len(self.SECTIONS)
+        self.__in_section = [False] * len(self.SECTIONS)
+        self.__values = [0] * len(self.SECTIONS)
+        self.__max_cols = self.__max_char = 0
+
+    def __columns(self, line: str):
+        """ Yield the fixed-width fields of a line, as declared by the last %FORMAT header.
+        """
+
+        len_line = len(line)
+        begin = col = 0
+        end = self.__max_char
+
+        while col < self.__max_cols and end < len_line:
+            yield line[begin:end]
+            begin = end
+            end += self.__max_char
+            col += 1
+
+    def feed(self, line: str, pos: int, flags: MrContentFlags) -> bool:
+        """ Consume a line of an AMBER topology file.
+            @return: whether the line has been consumed, i.e. must not be scanned further
+        """
+
+        if pos == 1 and not line.isdigit():
+            flags.has_amb_inpcrd = True
+
+        elif pos == 2 and flags.has_amb_inpcrd:
+            try:
+                int(line.lstrip().split()[0])
+            except (ValueError, IndexError):
+                flags.has_amb_inpcrd = False
+
+        elif pos == 3 and flags.has_amb_inpcrd:
+            if line.count('.') != 6:
+                flags.has_amb_inpcrd = False
+
+        if line.startswith('%FLAG'):
+            # NOTE: AMBER_ATOM_TYPE is deliberately not reset here, as in the original code
+            self.__in_section[0] = self.__in_section[1] = self.__in_section[2] = False
+
+            for idx, (keyword, _, _) in enumerate(self.SECTIONS):
+                if line.startswith(keyword):
+                    self.__has_section[idx] = self.__chk_format[idx] = True
+                    break
+
+            return False
+
+        for idx, (_, format_pat, _) in enumerate(self.SECTIONS):
+
+            if not self.__chk_format[idx]:
+                continue
+
+            g = format_pat.match(line)
+
+            if g:
+                self.__in_section[idx] = True
+                self.__max_cols, self.__max_char = int(g.group(1)), int(g.group(2))
+            else:
+                self.__has_section[idx] = False
+
+            self.__chk_format[idx] = False
+
+            return False
+
+        for idx, (_, _, as_int) in enumerate(self.SECTIONS):
+
+            if not self.__in_section[idx]:
+                continue
+
+            for field in self.__columns(line):
+                if as_int:
+                    try:
+                        int(field.lstrip())
+                    except ValueError:
+                        continue
+                    self.__values[idx] += 1
+                elif len(field.rstrip()) > 0:
+                    self.__values[idx] += 1
+
+            return False
+
+        return False
+
+    def isTopology(self) -> bool:
+        """ Return whether a complete AMBER topology has been found.
+        """
+        return all(self.__has_section) and all(value > 0 for value in self.__values)
+
+
+class ChaTopScanner:
+    """ CHARMM topology (aka. CRD or CHARMM CARD file) detector, keyed on the
+        '{Number of atoms} EXT' header followed by atom records.
+    """
+
+    __slots__ = ('__atom_like_names', '__has_ext', '__in_atoms', '__atom_names')
+
+    def __init__(self, atom_like_names: Set[str]) -> None:
+        self.__atom_like_names = atom_like_names
+        self.__has_ext = self.__in_atoms = False
+        self.__atom_names = 0
+
+    def feed(self, line: str, pos: int, flags: MrContentFlags) -> bool:  # pylint: disable=unused-argument
+        """ Consume a line of a CHARMM topology file.
+            @return: whether the line has been consumed, i.e. must not be scanned further
+        """
+
+        if 'EXT' in line:
+            l_split = line.split()
+
+            if len(l_split) > 1 and l_split[0].isdigit() and l_split[1] == 'EXT':
+                self.__has_ext = self.__in_atoms = True
+                return True
+
+        elif self.__in_atoms:
+            l_split = line.split()
+            _line = ' '.join(l_split)
+
+            if len(_line) == 0 or _line[0] in COMMENT_CODE_SEMICOLON_SET:
+                return True
+
+            if len(l_split) >= 10:
+                try:
+                    atom_num = int(l_split[0])
+                    seq_id = int(l_split[8])
+                    comp_id = l_split[2]
+                    atom_id = l_split[3]
+                    if atom_num > 0 and seq_id > 0 and comp_id in STD_MON_DICT\
+                       and atom_id in self.__atom_like_names:
+                        self.__atom_names += 1
+                except ValueError:
+                    pass
+
+        return False
+
+    def isTopology(self) -> bool:
+        """ Return whether a complete CHARMM topology has been found.
+        """
+        return self.__has_ext and self.__atom_names > 0
+
+
+class GroTopScanner:
+    """ GROMACS topology detector, requiring non-empty '[ system ]', '[ molecules ]',
+        and '[ atoms ]' sections.
+    """
+
+    __slots__ = ('__atom_like_names', '__has_system', '__has_molecules', '__has_atoms',
+                 '__in_system', '__in_molecules', '__in_atoms',
+                 '__system_names', '__molecule_names', '__atom_names')
+
+    def __init__(self, atom_like_names: Set[str]) -> None:
+        self.__atom_like_names = atom_like_names
+        self.__has_system = self.__has_molecules = self.__has_atoms = False
+        self.__in_system = self.__in_molecules = self.__in_atoms = False
+        self.__system_names = self.__molecule_names = self.__atom_names = 0
+
+    def feed(self, line: str, pos: int, flags: MrContentFlags) -> bool:  # pylint: disable=unused-argument
+        """ Consume a line of a GROMACS topology file.
+            @return: whether the line has been consumed, i.e. must not be scanned further
+        """
+
+        if line.startswith('['):
+            self.__in_system = self.__in_molecules = self.__in_atoms = False
+
+            if line.startswith('[ system ]'):
+                self.__has_system = self.__in_system = True
+
+            elif line.startswith('[ molecules ]'):
+                self.__has_molecules = self.__in_molecules = True
+
+            elif line.startswith('[ atoms ]'):
+                self.__has_atoms = self.__in_atoms = True
+
+        elif self.__in_system or self.__in_molecules or self.__in_atoms:
+            l_split = line.split()
+            _line = ' '.join(l_split)
+
+            if len(_line) == 0 or _line[0] in COMMENT_CODE_SEMICOLON_SET:
+                return True
+
+            if self.__in_system:
+                self.__system_names += 1
+
+            elif self.__in_molecules:
+                if len(l_split) == 2:
+                    try:
+                        num = int(l_split[1])
+                        if num > 0 and l_split[0].isalnum():
+                            self.__molecule_names += 1
+                    except ValueError:
+                        pass
+
+            else:  # [ atoms ]
+                if len(l_split) > 6:
+                    try:
+                        atom_num = int(l_split[0])
+                        seq_id = int(l_split[2])
+                        comp_id = l_split[3]
+                        atom_id = l_split[4]
+                        if atom_num > 0 and seq_id > 0 and comp_id in STD_MON_DICT\
+                           and atom_id in self.__atom_like_names:
+                            self.__atom_names += 1
+                    except ValueError:
+                        pass
+
+        return False
+
+    def isTopology(self) -> bool:
+        """ Return whether a complete GROMACS topology has been found.
+        """
+        return self.__has_system and self.__has_molecules and self.__has_atoms\
+            and self.__system_names > 0 and self.__molecule_names > 0 and self.__atom_names > 0
+
+
+class PdbTopScanner:
+    """ PDB topology detector, counting atom records whose comp_id and atom_id are recognized.
+    """
+
+    __slots__ = ('__atom_like_names', '__atom_names')
+
+    def __init__(self, atom_like_names: Set[str]) -> None:
+        self.__atom_like_names = atom_like_names
+        self.__atom_names = 0
+
+    def feed(self, line: str, pos: int, flags: MrContentFlags) -> bool:  # pylint: disable=unused-argument
+        """ Consume a line of a PDB topology file.
+            @return: whether the line has been consumed, i.e. must not be scanned further
+        """
+
+        l_split = line.split()
+        _line = ' '.join(l_split)
+
+        if len(_line) == 0 or _line[0] in COMMENT_CODE_SEMICOLON_SET:
+            return True
+
+        if len(l_split) >= 10:
+            try:
+                atom_num = int(l_split[1])
+                seq_id = int(l_split[4] if l_split[4].isdigit() else l_split[5])
+                comp_id = l_split[3]
+                atom_id = l_split[2]
+                if atom_num > 0 and seq_id > 0 and comp_id in STD_MON_DICT\
+                   and atom_id in self.__atom_like_names:
+                    # if atom_num == 1:
+                    #     has_top_num = True
+                    self.__atom_names += 1
+            except ValueError:
+                pass
+
+        return False
+
+    def isTopology(self) -> bool:
+        """ Return whether a PDB topology has been found.
+        """
+        return self.__atom_names > 0
+
+
+# Topology detector per auxiliary file type. Every detector is constructed with the atom name
+# set of the non-standard residues, and exposes feed() and isTopology().
+AUX_TOP_SCANNERS = {'nm-aux-amb': AmbTopScanner,
+                    'nm-aux-cha': ChaTopScanner,
+                    'nm-aux-gro': GroTopScanner,
+                    'nm-aux-pdb': PdbTopScanner}
 
 
 def detect_bom(fPath: str, default: str = 'utf-8') -> str:
@@ -1230,22 +1627,1156 @@ class NmrDpMrSplitter:
 
         return chk_path if defer_check or os.path.exists(chk_path) else src_path
 
+    def __report(self, code: str, file_name: str, description: str, warning: bool = False) -> None:
+        """ Append a description to the report and echo it to the log in verbose mode.
+        """
+
+        if warning:
+            self.__reg.report.warning.appendDescription(code, {'file_name': file_name, 'description': description})
+        else:
+            self.__reg.report.error.appendDescription(code, {'file_name': file_name, 'description': description})
+
+        if self.__reg.verbose:
+            self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
+                                 f"++ {'Warning' if warning else 'Error'}  - {description}\n")
+
+    def __suspendReport(self, code: str, file_name: str, description: str, warning: bool = False) -> None:
+        """ Defer a description for lazy evaluation and echo it to the log in verbose mode.
+        """
+
+        holder = self.__reg.suspended_warnings_for_lazy_eval if warning else self.__reg.suspended_errors_for_lazy_eval
+        holder.append({code: {'file_name': file_name, 'description': description}})
+
+        if self.__reg.verbose:
+            self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
+                                 f"++ {'Warning' if warning else 'Error'}  - {description}\n")
+
+    def __concatDetectedSubtypeNames(self, flags: MrContentFlags, incl_amb_inpcrd: bool = False) -> str:
+        """ Return the "It looks like to have ... instead" clause for the detected content subtypes.
+        """
+
+        names = [label for attr, label in DETECTED_SUBTYPE_LABELS if getattr(flags, attr)]
+
+        if incl_amb_inpcrd and flags.has_amb_inpcrd:
+            names.append('AMBER restart coordinates (aka. .crd or .rst file)')
+
+        return f". It looks like to have {', '.join(names)} instead" if len(names) > 0 else ''
+
+    def __legacyMrAtomNames(self, file_type: str, cache: dict) -> MrAtomNames:
+        """ Return the atom name sets the text scan of a given file type relies on.
+            @param cache: memo shared by the input files of a single invocation, as
+                          BmrbChemShiftStat.getAtomLikeNameSet() rebuilds its set on every call
+        """
+
+        minimum_len = 2 if file_type in ('nm-res-ari', 'nm-res-bar', 'nm-res-bio', 'nm-res-dyn',
+                                         'nm-res-isd', 'nm-res-ros', 'nm-res-syb', 'nm-res-oth')\
+            or file_type in AUX_TOP_FILE_TYPES else 1
+
+        if minimum_len not in cache:
+            atom_like = self.__reg.csStat.getAtomLikeNameSet(minimum_len=minimum_len)
+            cache[minimum_len] = (atom_like, list(filter(is_half_spin_nuclei, atom_like)))  # DAOTHER-7491
+
+        if 'oth' not in cache:
+            atom_like_oth = self.__reg.csStat.getAtomLikeNameSet(1)
+            cache['oth'] = (atom_like_oth, frozenset(filter(is_half_spin_nuclei, atom_like_oth)))  # DAOTHER-7491
+
+        return MrAtomNames(*cache[minimum_len], *cache['oth'])
+
+    def __scanXplorCnsMr(self, file_path: str, names: MrAtomNames, flags: MrContentFlags) -> None:
+        """ Detect content subtypes of an XPLOR-NIH/CNS restraint file by scanning its text.
+        """
+
+        atom_like_names = names.atom_like
+        cs_atom_like_names = frozenset(names.cs_atom_like)
+
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+            atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
+            _names, resids = [], []
+            cs_range_like = dist_range_like = dihed_range_like = rdc_range_like = False
+
+            rdc_atom_names = set()
+
+            for line in ifh:
+
+                flags.sniffCoordinateLine(line)
+
+                _t_lower = ''
+
+                for t in line.replace('(', ' ').replace(')', ' ').split():
+
+                    if t[0] in COMMENT_CODE_MIXED_SET:
+                        break
+
+                    t_lower = t.lower()
+
+                    if t_lower.startswith('assi') or (real_likes == 3 and t_lower.startswith('weight')):
+
+                        if cs_atom_likes == 1 and resid_likes == 1 and cs_range_like:
+                            flags.has_chem_shift = True
+
+                        elif (atom_likes == 2 or (atom_likes > 0 and resid_likes == 2)) and dist_range_like:
+                            flags.has_dist_restraint = True
+
+                        elif atom_likes == 4 and dihed_range_like:
+                            flags.has_dihed_restraint = True
+
+                        elif cs_atom_likes + atom_unlikes == 6 and rdc_range_like:
+                            flags.has_rdc_restraint = True
+
+                        elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like
+                                                      or rdc_range_like or flags.has_hbond_restraint)\
+                                and _names[0][0] in HBOND_DA_ATOM_TYPES and _names[1][0] in PROTON_BEGIN_CODE\
+                                and _names[2][0] in HBOND_DA_ATOM_TYPES:
+                            flags.has_hbond_restraint = True
+
+                        atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
+                        _names, resids = [], []
+                        cs_range_like = dist_range_like = dihed_range_like = rdc_range_like = False
+
+                    elif _t_lower == 'name':
+                        name = t.upper()
+                        if name in atom_like_names:
+                            if name not in _names or len(_names) > 1:
+                                atom_likes += 1
+                                _names.append(name)
+                            if name in cs_atom_like_names:
+                                cs_atom_likes += 1
+                        else:
+                            atom_unlikes += 1
+                            if not flags.has_rdc_origins and name in RDC_ORIGIN_ATOM_NAMES:
+                                rdc_atom_names.add(name)
+                                if len(rdc_atom_names) == 4:
+                                    flags.has_rdc_origins = True
+
+                    elif _t_lower == 'resid':
+                        try:
+                            v = int(t)
+                            if v not in resids:
+                                resid_likes += 1
+                                resids.append(v)
+                        except ValueError:
+                            pass
+
+                    elif '.' in t:
+                        try:
+                            v = float(t)
+                            if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
+                                cs_range_like = True
+                            if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
+                                dist_range_like = True
+                            if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
+                                dihed_range_like = True
+                            if RDC_RANGE_MIN <= v <= RDC_RANGE_MAX:
+                                rdc_range_like = True
+                            real_likes += 1
+                        except ValueError:
+                            pass
+
+                    _t_lower = t_lower
+
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+            atom_likes = 0
+            _names = []
+            has_rest = has_plan = has_grou = has_sele = has_resi = False
+
+            for line in ifh:
+
+                _t_lower = ''
+
+                for t in line.replace('(', ' ').replace(')', ' ').replace('=', ' ').split():
+
+                    if t[0] in COMMENT_CODE_MIXED_SET:
+                        break
+
+                    t_lower = t.lower()
+
+                    if t_lower.startswith('rest'):
+                        has_rest = True
+
+                    elif t_lower.startswith('plan'):
+                        has_plan = True
+
+                    elif has_rest and has_plan:
+
+                        if t_lower.startswith('grou'):
+                            has_grou = True
+
+                        elif t_lower.startswith('sele'):
+                            has_sele = True
+
+                            atom_likes = 0
+                            _names = []
+
+                        elif _t_lower == 'name':
+                            name = t.upper()
+                            if name in atom_like_names:
+                                if name not in _names or len(_names) > 1:
+                                    atom_likes += 1
+                                    _names.append(name)
+
+                        elif t_lower.startswith('resi'):
+                            has_resi = True
+
+                        elif has_grou and has_sele and has_resi and not flags.has_plane_restraint\
+                                and _t_lower.startswith('weig'):
+                            if atom_likes > 0:
+                                try:
+                                    v = float(t)
+                                    if WEIGHT_RANGE_MIN <= v <= WEIGHT_RANGE_MAX:
+                                        flags.has_plane_restraint = True
+                                except ValueError:
+                                    pass
+
+                        elif t_lower == 'end':
+                            has_grou = has_sele = has_resi = False
+
+                    _t_lower = t_lower
+
+                if flags.has_plane_restraint:
+                    break  # this pass sets no other indicator, so nothing can change any more
+
+    def __scanAmberMr(self, file_path: str, flags: MrContentFlags) -> None:
+        """ Detect content subtypes of an AMBER restraint file by scanning its text.
+        """
+
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+            in_rst = in_iat = in_igr1 = in_igr2 =\
+                dist_range_like = dihed_range_like = rdc_range_like = False
+
+            names, values = [], []
+
+            pos = 0
+
+            for line in ifh:
+
+                flags.sniffCoordinateLine(line)
+
+                pos += 1
+
+                if pos == 1 and not line.isdigit():
+                    flags.has_amb_inpcrd = True
+
+                elif pos == 2 and flags.has_amb_inpcrd:
+                    try:
+                        int(line.lstrip().split()[0])
+                    except (ValueError, IndexError):
+                        flags.has_amb_inpcrd = False
+
+                elif pos == 3 and flags.has_amb_inpcrd:
+                    if line.count('.') != 6:
+                        flags.has_amb_inpcrd = False
+
+                if '&rst ' in line:
+                    line = line.replace('&rst ', '&rst,')
+
+                elif '&end' in line:
+                    line = line.replace('&end', ',&end')
+
+                elif '/' in line:
+                    line = line.replace('/', ',&end')
+
+                _line = ' '.join(line.split())
+
+                if len(_line) == 0 or _line[0] in COMMENT_CODE_MIXED_SET:
+                    continue
+
+                for t in WS_PAT.sub('', _line).lower().split(','):
+
+                    if len(t) == 0:
+                        continue
+
+                    if t[0] in COMMENT_CODE_MIXED_SET:
+                        break
+
+                    if t == '&rst':
+                        in_rst = True
+
+                    elif in_rst:
+
+                        if t == '&end':
+
+                            atom_likes = atom_unlikes = 0
+
+                            for name in names:
+
+                                if isinstance(name, int):
+                                    if name != -1:
+                                        atom_likes += 1
+                                    else:
+                                        atom_unlikes += 1
+
+                                if isinstance(name, list):
+
+                                    if any(True for n in name if n != -1):
+                                        atom_likes += 1
+                                    else:
+                                        atom_unlikes += 1
+
+                            if len(values) == 4:
+                                v = (values[1] + values[2]) / 2.0
+
+                                if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
+                                    dist_range_like = True
+                                if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
+                                    dihed_range_like = True
+                                if RDC_RANGE_MIN <= v <= RDC_RANGE_MAX:
+                                    rdc_range_like = True
+
+                                if atom_likes == 2 and dist_range_like:
+                                    flags.has_dist_restraint = True
+
+                                elif atom_likes == 4 and dihed_range_like:
+                                    flags.has_dihed_restraint = True
+
+                                elif atom_likes + atom_unlikes == 6 and rdc_range_like:
+                                    flags.has_rdc_restraint = True
+
+                            names, values = [], []
+
+                            in_rst = in_iat = in_igr1 = in_igr2 = False
+
+                        elif t.startswith('iat='):
+                            in_iat = True
+                            try:
+                                iat = int(t[4:])
+                                names.append(iat)
+                            except ValueError:
+                                pass
+
+                            in_igr1 = in_igr2 = False
+
+                        elif '=' not in t and in_iat:
+                            try:
+                                iat = int(t)
+                                names.append(iat)
+                            except ValueError:
+                                pass
+
+                        elif AMBER_R_PAT.match(t):
+                            len_values = len(values)
+                            g = AMBER_R_PAT.match(t).groups()
+                            try:
+                                r_idx = int(g[0]) - 1
+                                v = float(g[1])
+                                if len_values == r_idx:
+                                    values.append(v)
+                                elif len_values > r_idx:
+                                    values.insert(r_idx, v)
+                                else:
+                                    while len(values) < r_idx:
+                                        values.append(None)
+                                    values.append(v)
+                            except ValueError:
+                                pass
+
+                            in_iat = in_igr1 = in_igr2 = False
+
+                        elif t.startswith('igr1'):
+                            in_igr1 = True
+                            try:
+                                iat = int(t[5:])
+                                names.insert(0, [iat])
+                            except ValueError:
+                                pass
+
+                            in_iat = in_igr2 = False
+
+                        elif '=' not in t and in_igr1:
+                            try:
+                                iat = int(t)
+                                g = names[0]
+                                g.append(iat)
+                            except ValueError:
+                                pass
+
+                        elif t.startswith('igr2'):
+                            in_igr2 = True
+                            try:
+                                iat = int(t[5:])
+                                names.insert(1, [iat])
+                            except ValueError:
+                                pass
+
+                            in_iat = in_igr1 = False
+
+                        elif '=' not in t and in_igr2:
+                            try:
+                                iat = int(t)
+                                g = names[1]
+                                g.append(iat)
+                            except ValueError:
+                                pass
+
+                        elif '=' in t:
+                            in_iat = in_igr1 = in_igr2 = False
+
+    def __classifyLightMrCounts(self, cs_atom_likes: int, atom_likes: int, res_like: bool, angle_like: bool,
+                                cs_range_like: bool, dist_range_like: bool, dihed_range_like: bool,
+                                flags: MrContentFlags) -> None:
+        """ Record the content subtype implied by the token counts of a single line.
+        """
+
+        if cs_atom_likes == 1 and cs_range_like:
+            flags.has_chem_shift = True
+
+        elif atom_likes == 2 and dist_range_like:
+            flags.has_dist_restraint = True
+
+        elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
+            flags.has_dihed_restraint = True
+
+    def __scanLightMrAndAuxTop(self, file_path: str, file_type: str, names: MrAtomNames,
+                               flags: MrContentFlags) -> None:
+        """ Detect content subtypes of a light-weight restraint file or of an auxiliary topology
+            file by scanning its text.
+        """
+
+        atom_like_names = names.atom_like
+        cs_atom_like_names = names.cs_atom_like
+        atom_like_names_oth = names.atom_like_oth
+        cs_atom_like_names_oth = names.cs_atom_like_oth
+
+        scanner = AUX_TOP_SCANNERS[file_type](atom_like_names_oth) if file_type in AUX_TOP_SCANNERS else None
+
+        prohibited_col = set()
+
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+            for pos, line in enumerate(ifh, start=1):
+
+                sniffed = flags.sniffCoordinateLine(line)
+
+                if sniffed == 'atom':
+                    if file_type == 'nm-aux-amb':
+                        flags.has_amb_coord = True
+
+                elif sniffed is None and scanner is not None and scanner.feed(line, pos, flags):
+                    continue
+
+                _line = ' '.join(line.split())
+
+                if len(_line) == 0 or _line[0] in COMMENT_CODE_SEMICOLON_SET:
+                    continue
+
+                s = PAREN_SPLIT_PAT.split(_line)
+
+                atom_likes = cs_atom_likes = 0
+                _names = []
+                res_like = angle_like = cs_range_like = dist_range_like = dihed_range_like = False
+
+                first_col = None
+
+                for t in s:
+
+                    if len(t) == 0:
+                        continue
+
+                    if t[0] in COMMENT_CODE_SEMICOLON_SET:
+                        break
+
+                    name = t.upper()
+
+                    if name in atom_like_names:
+                        if name not in _names or len(_names) > 1:
+                            atom_likes += 1
+                            _names.append(name)
+                        # NOTE: '_names' is a list, so this test is never true, which makes
+                        # has_chem_shift unreachable here. Do not "fix" it to the token without
+                        # tightening the predicate below: CS_RANGE (-300..300) contains DIST_RANGE
+                        # (0..101), so 'cs_atom_likes == 1 and cs_range_like' then shadows the
+                        # distance-restraint arm. Measured over tests-nmr/mock-data*: has_chem_shift
+                        # turns on for 982 of 1683 (file, file_type) pairs and 56 pairs lose
+                        # has_dist_restraint. __scanXplorCnsMr() also requires resid_likes == 1.
+                        if _names in cs_atom_like_names:
+                            cs_atom_likes += 1
+
+                    elif name in STD_MON_ONE_LETTER_CODES and name not in atom_like_names_oth:
+                        if first_col is None:
+                            first_col = first_index_map(s)
+                        prohibited_col.add(first_col[t])
+
+                    elif '.' in t:
+                        try:
+                            v = float(t)
+                            if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
+                                cs_range_like = True
+                            if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
+                                dist_range_like = True
+                            if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
+                                dihed_range_like = True
+                        except ValueError:
+                            pass
+
+                    elif name in STD_MON_DICT:
+                        res_like = True
+
+                    elif name in KNOWN_ANGLE_NAMES:
+                        angle_like = True
+
+                self.__classifyLightMrCounts(cs_atom_likes, atom_likes, res_like, angle_like,
+                                             cs_range_like, dist_range_like, dihed_range_like, flags)
+
+        if file_type == 'nm-res-oth' and flags.has_chem_shift\
+           and not flags.has_dist_restraint and not flags.has_dihed_restraint:
+
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+                for line in ifh:
+
+                    _line = ' '.join(line.split())
+
+                    if len(_line) == 0 or _line[0] in COMMENT_CODE_MIXED_SET:
+                        continue
+
+                    s = PAREN_SPLIT_PAT.split(_line)
+
+                    atom_likes = cs_atom_likes = 0
+                    _names = []
+                    res_like = angle_like = cs_range_like = dist_range_like = dihed_range_like = False
+
+                    first_col = first_index_map(s)
+
+                    for t in s:
+
+                        if len(t) == 0:
+                            continue
+
+                        if t[0] in COMMENT_CODE_MIXED_SET:
+                            break
+
+                        if first_col[t] in prohibited_col:
+                            continue
+
+                        name = t.upper()
+
+                        if name in atom_like_names_oth:
+                            if name not in _names or len(_names) > 1:
+                                atom_likes += 1
+                                _names.append(name)
+                            if name in cs_atom_like_names_oth:
+                                cs_atom_likes += 1
+
+                        elif '.' in t:
+                            try:
+                                v = float(t)
+                                if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
+                                    cs_range_like = True
+                                if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
+                                    dist_range_like = True
+                                if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
+                                    dihed_range_like = True
+                            except ValueError:
+                                pass
+
+                        elif name in STD_MON_DICT:
+                            res_like = True
+
+                        elif name in KNOWN_ANGLE_NAMES:
+                            angle_like = True
+
+                    self.__classifyLightMrCounts(cs_atom_likes, atom_likes, res_like, angle_like,
+                                                 cs_range_like, dist_range_like, dihed_range_like, flags)
+
+        if file_type == 'nm-res-oth':
+
+            flags.has_spectral_peak = get_peak_list_format(file_path) is not None
+
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+                for pos, line in enumerate(ifh, start=1):
+                    if pos == 1:
+                        if 'Structures from CYANA' not in line:
+                            break
+                    elif pos == 2:
+                        if 'CYANA' not in line:
+                            break
+                    elif pos == 3:
+                        if line.count('Number') < 3:
+                            break
+                    elif pos == 4:
+                        if line.count('.') >= 3:
+                            flags.has_coordinate = True
+                        break
+
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+                for pos, line in enumerate(ifh, start=1):
+                    if pos == 1:
+                        if line.isdigit():
+                            break
+                    elif pos == 2:
+                        try:
+                            int(line.lstrip().split()[0])
+                        except (ValueError, IndexError):
+                            break
+                    elif pos == 3:
+                        if line.count('.') == 6:
+                            flags.has_coordinate = True
+                        break
+
+        if scanner is not None:
+
+            flags.has_topology = scanner.isTopology()
+
+            if file_type == 'nm-aux-amb' and flags.has_amb_coord\
+               and (not flags.has_first_atom or flags.has_ens_coord):
+                flags.has_amb_coord = False
+
+    def __scanLightMrDistFallback(self, file_path: str, names: MrAtomNames, flags: MrContentFlags) -> None:
+        """ Sniff a light-weight restraint file for a plain '{seq} {comp} {atom}' distance restraint
+            layout that the token-count heuristics above do not recognize (DAOTHER-7491).
+        """
+
+        atom_like_names = names.atom_like
+
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+            for line in ifh:
+
+                _line = ' '.join(line.split())
+
+                if len(_line) == 0 or _line[0] in COMMENT_CODE_MIXED_SET:
+                    continue
+
+                s = PAREN_SPLIT_PAT.split(_line)
+
+                if len(s) < 7:
+                    continue
+
+                try:
+                    int(s[0])
+                    int(s[3])
+                    v = float(s[6])
+                    if v < DIST_RANGE_MIN or DIST_RANGE_MAX < v:
+                        continue
+                except ValueError:
+                    continue
+
+                if s[1].isalnum():
+                    comp_id = s[1].upper()
+                    atom_id = s[2].upper()
+
+                    if comp_id in STD_MON_DICT:
+                        if atom_id not in atom_like_names:
+                            continue
+
+                    elif len(comp_id) > 3:
+                        continue
+
+                    elif not self.__reg.ccU.updateChemCompDict(comp_id):
+                        continue
+
+                if s[4].isalnum():
+                    comp_id = s[4].upper()
+                    atom_id = s[5].upper()
+
+                    if comp_id in STD_MON_DICT:
+                        if atom_id not in atom_like_names:
+                            continue
+
+                    elif len(comp_id) > 3:
+                        continue
+
+                    elif not self.__reg.ccU.updateChemCompDict(comp_id):
+                        continue
+
+                flags.has_dist_restraint = True
+
+                break
+
+    def __detectPromptDumpFile(self, file_path: str, file_type: str, file_name: str,
+                               mr_format_name: str) -> bool:
+        """ Report a restraint file that is binary, or that is a dump of an interactive prompt.
+            @return: whether the file is still worth parsing
+        """
+
+        prompt_type = None
+        valid = True
+
+        try:
+
+            with open(file_path, 'r', encoding='utf-8') as ifh:
+                for idx, line in enumerate(ifh):
+                    if line.isspace():
+                        continue
+                    prompt_type = get_prompt_file_format(line)
+                    if prompt_type is not None:
+                        break
+                    if idx >= MR_MAX_SPACER_LINES:
+                        break
+
+        except UnicodeDecodeError as e:  # catch exception due to binary format (DAOTHER-9425)
+
+            if file_type != 'nm-aux-pdb':
+
+                self.__report('format_issue', file_name,
+                              f"The {mr_format_name} restraint file {file_name!r} is not a plain text file. {str(e)}")
+
+                valid = False
+
+        if prompt_type is not None:
+
+            self.__report('format_issue', file_name,
+                          f"The {mr_format_name} restraint file {file_name!r} appears to be {prompt_type} "
+                          "prompt message dump file. Did you accidentally upload the wrong file? "
+                          f"Please re-upload valid {mr_format_name} restraint file(s) "
+                          "used for the structure determination.")
+
+            valid = False
+
+        return valid
+
+    def __useSllPrediction(self, file_path: str, file_type: str) -> bool:
+        """ Return whether to use the ANTLR SLL prediction mode, which is a performance gain when
+            restraints have a deep but simple atom selection (DAOTHER-10315).
+        """
+
+        sll_pred = False
+        if file_path in self.__reg.sll_pred_holder and file_type in self.__reg.sll_pred_holder[file_path]:
+            sll_pred = self.__reg.sll_pred_holder[file_path][file_type]
+
+        if file_type not in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
+            return sll_pred
+
+        has_deep_l_pattern = False
+
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+            for idx, line in enumerate(ifh):
+                if DEEP_L_PARENS_PAT.match(line):
+                    has_deep_l_pattern = True
+                if has_deep_l_pattern and DEEP_R_PARENS_PAT.match(line):
+                    self.__reg.sll_pred_forced.append(file_path)
+                    sll_pred = True
+                    break
+                if idx >= 40:
+                    break
+
+        return sll_pred
+
+    def __parseLegacyMrWithAntlr(self, ar: dict, file_path: str, file_type: str, file_name: str,
+                                 a_mr_format_name: str, valid: bool, remediation_loop_count: int,
+                                 flags: MrContentFlags) -> Tuple[Optional[dict], bool, bool]:
+        """ Parse a legacy restraint file with its format reader and report any syntax or data issue.
+            @return: (content subtype, whether the file is valid, whether the file has been rewritten)
+        """
+
+        content_subtype = None
+        corrected = div_test = False
+
+        try:
+
+            if file_type in PARSABLE_MR_FILE_TYPES and valid:
+
+                file_path = self.testPathWithSuffix(file_path, '-corrected')
+
+                sll_pred = self.__useSllPrediction(file_path, file_type)
+
+                reader = self.getSimpleFileReader(file_type, self.__reg.verbose, sll_pred=sll_pred)
+
+                listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                if listener is not None and file_type in RETRIAL_MR_FILE_TYPES:
+                    reasons = listener.getReasonsForReparsing()
+
+                    if reasons is not None:
+                        reader = self.getSimpleFileReader(file_type, self.__reg.verbose, sll_pred=sll_pred, reasons=reasons)
+
+                        listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
+
+                err = ''
+                err_lines = []
+
+                has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
+                has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
+
+                content_subtype = listener.getContentSubtype() if listener is not None else None
+                if content_subtype is not None and len(content_subtype) == 0:
+                    content_subtype = None
+                elif file_type in AUX_TOP_FILE_TYPES:
+                    flags.has_topology = True
+                    content_subtype = {'topology': 1}
+
+                has_content = content_subtype is not None
+
+                if has_lexer_error and has_parser_error and has_content:
+                    # parser error occurs before occurrence of lexer error that implies mixing of different MR formats in a file
+                    if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
+                        corrected |= self.__stripLegacyMrIfNecessary(file_path, file_type,
+                                                                     parser_err_listener.getMessageList()[0],
+                                                                     str(file_path), 0)
+                        div_test = True
+
+                fixed_line_num = -1
+
+                if has_lexer_error:
+                    messageList = lexer_err_listener.getMessageList()
+
+                    for description in messageList:
+                        err_lines.append(description['line_number'])
+                        err += f"[Syntax error] line {description['line_number']}:{description['column_position']} "\
+                            f"{description['message']}\n"
+                        if 'input' in description:
+                            enc = detect_encoding(description['input'])
+                            is_not_ascii = False
+                            if enc is not None and enc != 'ascii':
+                                err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
+                                is_not_ascii = True
+                            else:
+                                err += f"{description['input']}\n"
+                            err += f"{description['marker']}\n"
+                            if is_not_ascii:
+                                err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} "\
+                                    "and must be 'ascii'.\n"
+                            elif not div_test and has_content and self.__reg.remediation_mode:
+                                fixed = self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                corrected |= fixed
+                                if fixed:
+                                    fixed_line_num = description['line_number']
+                                div_test = file_type != 'nm-res-amb'  # remediate missing comma issue in AMBER MR
+
+                if has_parser_error:
+                    total_line = -1
+                    if os.path.exists(file_path):
+                        with open(file_path, 'r', encoding='utf-8', errors='replace') as ifh:
+                            total_line = sum(1 for _ in ifh)
+
+                    messageList = parser_err_listener.getMessageList()
+
+                    for description in messageList:
+                        # ignore noeol error for linear mr file formats
+                        if description['line_number'] == total_line and file_type in LINEAR_MR_FILE_TYPES:
+                            continue
+                        err_lines.append(description['line_number'])
+                        err += f"[Syntax error] line {description['line_number']}:{description['column_position']} "\
+                            f"{description['message']}\n"
+                        len_err = len(err)
+                        if 0 < fixed_line_num <= description['line_number']:
+                            div_test = True
+                        if 'input' in description:
+                            err += f"{description['input']}\n"
+                            err += f"{description['marker']}\n"
+                            if not div_test and has_content and self.__reg.remediation_mode:
+                                corrected |=\
+                                    self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
+                                div_test = True
+                        elif not div_test and has_content and self.__reg.remediation_mode:
+                            corrected |= self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
+                            div_test = True
+
+                        _err = next((_description.get('previous_input') for _description in self.__reg.divide_mr_error_message
+                                     if _description['file_path'] == description['file_path']
+                                     and _description['line_number'] == description['line_number']
+                                     and _description['message'] == description['message']), None)
+
+                        if _err is not None and not COMMENT_PAT.match(_err) and not _err.isspace():
+                            s = '. ' if _err.startswith('Do you') else ':\n'
+                            err = err[:len_err] +\
+                                ("However, the error may be due to missing statement "
+                                 "(e.g. 'noe', 'restraint dihedral', 'sanisotropy') "
+                                 f"at the beginning of {_err.strip().split(' ')[0]!r} "
+                                 "and note that the statement should be ended with 'end' tag "
+                                 if _err.lower().strip().startswith('class')
+                                 else "However, the error may be due to the previous input ") +\
+                                f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
+
+                if len(err) > 0:
+                    valid = False
+
+                    err = f"Could not interpret {file_name!r} as {a_mr_format_name} file:\n{err[0:-1]}"
+
+                    ar['format_mismatch'], _err, _, _ =\
+                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr(file_path, file_name, file_type, err_lines)
+
+                    if ar['format_mismatch']:
+                        err += '\n' + _err
+
+                    self.__reg.report.error.appendDescription('format_issue',
+                                                              {'file_name': file_name, 'description': err})
+
+                    if not self.__reg.remediation_mode or remediation_loop_count > 0:
+                        self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - "
+                                             f"{file_type} {file_name} {err}\n")
+
+                    flags.has_dist_restraint = flags.has_dihed_restraint = flags.has_rdc_restraint = False
+
+                elif listener is not None:
+
+                    if listener.warningMessage is not None:
+
+                        messages = [msg for msg in listener.warningMessage
+                                    if 'warning' not in msg and 'Unsupported' not in msg
+                                    and 'Redundant' not in msg
+                                    and ((self.__reg.remediation_mode and 'Range value error' not in msg)
+                                         or not self.__reg.remediation_mode)]
+
+                        if len(messages) > 0:
+                            valid = False
+
+                            if len(messages) > 5:
+                                messages = messages[:5]
+                                msg = '\n'.join(messages)
+                                msg += '\nThose similar errors may continue...'
+                            else:
+                                msg = '\n'.join(messages)
+                            err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
+
+                            self.__reg.report.error.appendDescription('format_issue',
+                                                                      {'file_name': file_name, 'description': err})
+
+                            if not self.__reg.remediation_mode or remediation_loop_count > 0:
+                                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - "
+                                                     f"{file_type} {file_name} {err}\n")
+
+                    if valid:
+
+                        flags.has_chem_shift = flags.has_coordinate = False
+
+                        if content_subtype is not None:
+                            flags.has_dist_restraint = 'dist_restraint' in content_subtype
+                            flags.has_dihed_restraint = 'dihed_restraint' in content_subtype
+                            flags.has_rdc_restraint = 'rdc_restraint' in content_subtype
+                            flags.has_plane_restraint = 'plane_restraint' in content_subtype
+                            flags.has_hbond_restraint = 'hbond_restraint' in content_subtype
+                            flags.has_ssbond_restraint = 'ssbond_restraint' in content_subtype
+
+                            if file_type == 'nm-res-cya' and flags.has_dist_restraint:
+                                ar['dist_type'] = listener.getTypeOfDistanceRestraints()
+                            if file_type == 'nm-res-amb':
+                                ar['has_comments'] = listener.hasComments()
+
+                            ar['is_valid'] = True
+
+            elif file_type == 'nm-res-oth':
+                if not (self.__reg.remediation_mode and file_path.endswith('-div_ext.mr')):
+                    ar['format_mismatch'], _, _, _ =\
+                        self.__detectOtherPossibleFormatAsErrorOfLegacyMr(file_path, file_name, file_type, [])
+
+        except ValueError as e:
+
+            self.__reg.report.error.appendDescription('internal_error',
+                                                      f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
+                                                      "++ Error  - " + str(e))
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {str(e)}\n")
+
+        return content_subtype, valid, corrected
+
+    def __reportContentMismatch(self, file_type: str, file_name: str, mr_format_name: str,
+                                valid: bool, flags: MrContentFlags) -> None:
+        """ Report content that does not belong in a restraint or topology file of the given format.
+        """
+
+        kind = 'topology' if file_type in AUX_TOP_FILE_TYPES else 'restraint'
+
+        if flags.has_coordinate and not flags.hasAnyRestraint():
+
+            self.__report('content_mismatch', file_name,
+                          f"The {mr_format_name} {kind} file includes coordinates. "
+                          "Did you accidentally select wrong format? Please re-upload the restraint file.")
+
+            flags.has_chem_shift = False
+
+        elif flags.has_chem_shift and not flags.has_coordinate and not flags.has_amb_inpcrd\
+                and not flags.hasAnyRestraint():
+
+            if flags.has_rdc_origins:
+
+                hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) "\
+                    "( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
+
+                self.__report('content_mismatch', file_name,
+                              f"The restraint file {file_name!r} may be a malformed XPLOR-NIH RDC restraint file. "
+                              f"Tips for XPLOR-NIH RDC restraints: {hint!r} pattern must be present in the file. "
+                              "Did you accidentally select wrong format? Please re-upload the restraint file.")
+
+                flags.has_chem_shift = False
+
+            elif valid:
+
+                self.__report('content_mismatch', file_name,
+                              f"The {mr_format_name} {kind} file includes assigned chemical shifts. "
+                              "Did you accidentally select wrong format? Please re-upload the restraint file.")
+
+        elif flags.has_chem_shift:
+            flags.has_chem_shift = False
+
+        if flags.has_spectral_peak:
+
+            self.__report('content_mismatch', file_name,
+                          f"The {mr_format_name} restraint file includes spectral peak list. "
+                          "Did you accidentally select wrong format? "
+                          "Please re-upload the file as spectral peak list file.")
+
+    def __reportUnidentifiedContent(self, file_type: str, file_name: str, mr_format_name: str,
+                                    content_subtype: dict, valid: bool, flags: MrContentFlags) -> None:
+        """ Report a restraint file whose content subtype could not be identified, or an auxiliary
+            file in which no molecular topology could be found.
+        """
+
+        if file_type not in AUX_TOP_FILE_TYPES and not flags.has_chem_shift\
+           and not flags.hasAnyRestraint() and not valid:
+
+            hint = ''
+            if len(concat_restraint_names(content_subtype)) == 0:
+                if file_type in ('nm-res-xpl', 'nm-res-cns') and not flags.has_rdc_origins:
+                    hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
+                elif file_type == 'nm-res-amb':
+                    hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
+
+            if len(hint) > 0:
+                hint = f" Tips for {mr_format_name} restraints: {hint!r} pattern must be present in the file."
+
+            self.__report('missing_content', file_name,
+                          f"Constraint type of the restraint file ({mr_format_name}) could not be identified."
+                          f"{hint} Did you accidentally select wrong format?", warning=True)
+
+        elif file_type == 'nm-aux-amb' and not flags.has_amb_coord and not flags.has_topology:
+
+            hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', "\
+                "'%FLAG RESIDUE_POINTER', and '%FLAG AMBER_ATOM_TYPE' lines must be present in the file."
+
+            if flags.has_coordinate:
+                hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command "\
+                    "and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, "\
+                    "referred as 'iat' in the AMBER restraint file, are preserved in the file."
+
+            self.__report('content_mismatch', file_name,
+                          f"{file_name!r} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb)"
+                          f"{self.__concatDetectedSubtypeNames(flags, incl_amb_inpcrd=True)}."
+                          f"{hint} Did you accidentally select wrong format? "
+                          "Please re-upload the AMBER topology file.")
+
+        elif file_type == 'nm-aux-cha' and not flags.has_topology:
+
+            hint = " Tips for CHARMM topology: '{Number of atoms} EXT' header line must be present in the file. "\
+                "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} "\
+                "{Cartn_x} {Cartn_y} {Cartn_z} {segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
+
+            self.__report('content_mismatch', file_name,
+                          f"{file_name!r} is not CHARMM topology (aka. CRD or CHARM CARD file) "
+                          f"{self.__concatDetectedSubtypeNames(flags)}."
+                          f"{hint} Did you accidentally select wrong format? "
+                          "Please re-upload the CHARMM topology file.")
+
+        elif file_type == 'nm-aux-gro' and not flags.has_topology:
+
+            hint = " Tips for GROMACS topology: Proper contents starting with '[ system ]', '[ molecules ]', "\
+                "and '[ atoms ]' lines must be present in the file."
+
+            self.__report('content_mismatch', file_name,
+                          f"{file_name!r} is not GROMACS topology "
+                          f"{self.__concatDetectedSubtypeNames(flags)}."
+                          f"{hint} Did you accidentally select wrong format? "
+                          "Please re-upload the GROMACS topology file.")
+
+    def __checkMandatoryDistRestraint(self) -> None:
+        """ Report the absence of distance restraints across the whole set of uploaded restraint files.
+        """
+
+        fileListId = self.__reg.file_path_list_len
+
+        for _ in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+
+            input_source_dic = self.__reg.report.input_sources[fileListId].get()
+
+            file_name = input_source_dic['file_name']
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            fileListId += 1
+
+            if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-bar', 'nm-res-oth', 'nm-res-sax')\
+               or file_type.startswith('nm-pea'):
+                continue
+
+            if (content_subtype is not None and 'dist_restraint' in content_subtype)\
+               or file_type in AUX_TOP_FILE_TYPES:
+                continue
+
+            if content_subtype is None:
+
+                if self.__reg.permit_missing_legacy_dist_restraint:
+                    self.__suspendReport('content_mismatch', file_name,
+                                         f"The restraint file is not recognized properly {file_type}. "
+                                         "Please fix the file so that it conforms to the format specifications.")
+
+                else:
+                    self.__suspendReport('content_mismatch', file_name,
+                                         "The restraint file is not recognized properly so that there is no mandatory "
+                                         "distance restraints in the set of uploaded restraint files. "
+                                         "Please re-upload the restraint file.")
+
+            elif 'chem_shift' not in content_subtype and not self.__reg.remediation_mode:
+
+                if self.__reg.permit_missing_legacy_dist_restraint:
+                    self.__suspendReport('missing_content', file_name,
+                                         f"The restraint file includes {concat_restraint_names(content_subtype)}. "
+                                         "However, distance restraints are missing in the set of uploaded restraint file(s). "
+                                         "The wwPDB NMR Validation Task Force highly recommends the submission of "
+                                         "distance restraints used for the structure determination.", warning=True)
+
+                else:
+                    self.__suspendReport('content_mismatch', file_name,
+                                         f"The restraint file includes {concat_restraint_names(content_subtype)}. "
+                                         "However, deposition of distance restraints is mandatory. "
+                                         "Please re-upload the restraint file.")
+
+    def __detectDuplicateMrUpload(self, md5_list: List[Optional[str]]) -> None:
+        """ Report restraint/spectral peak list files that have been uploaded more than once.
+        """
+
+        if len(set(md5_list)) == len(md5_list):
+            return
+
+        ar_list = self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]
+
+        for (i, j) in itertools.combinations(range(0, len(ar_list)), 2):
+
+            if None in (md5_list[i], md5_list[j]) or md5_list[i] != md5_list[j]:
+                continue
+
+            file_name_1 = os.path.basename(ar_list[i]['file_name'])
+            file_name_2 = os.path.basename(ar_list[j]['file_name'])
+
+            file_type_1 = ar_list[i]['file_type']
+            file_type_2 = ar_list[j]['file_type']
+
+            if file_type_1.startswith('nm-res') and file_type_2.startswith('nm-res'):
+                file_type = 'restraint'
+            elif file_type_1.startswith('nm-pea') and file_type_2.startswith('nm-pea'):
+                file_type = 'spectral peak list'
+            elif file_type_1.startswith('nm-res'):
+                file_type = 'restraint/spectral peak list'
+            else:
+                file_type = 'spectral peak list/restraint'
+
+            if self.__reg.internal_mode:
+                if os.path.exists(self.testPathWithSuffix(ar_list[j]['file_name'], '-ignored', True)):
+                    continue
+                if '-selected-as-' in file_name_1 or '-selected-as-' in file_name_2:
+                    continue
+                if re.search(r'\/bmr\d+\/work\/data\/', file_name_1) or re.search(r'\/bmr\d+\/work\/data\/', file_name_2):
+                    continue
+
+            self.__report('content_mismatch', f"{file_name_1} vs {file_name_2}",
+                          f"You have uploaded the same NMR {file_type} file twice. "
+                          f"Please replace/delete either {file_name_1} or {file_name_2}.")
+
+            if self.__reg.remediation_mode:
+                file_path_2 = ar_list[j]['file_name']
+                os.symlink(file_path_2, self.testPath(file_path_2 + '-ignored', True))
+
     def detectContentSubTypeOfLegacyMr(self, remediation_loop_count: int) -> bool:
         """ Detect content subtype of legacy restraint files.
         """
 
         corrected = False
 
-        hbond_da_atom_types = ('O', 'N', 'F')
-        rdc_origins = ('OO', 'X', 'Y', 'Z')
-
         md5_list = []
+        name_set_cache = {}
 
         fileListId = self.__reg.file_path_list_len
-
-        light_mr_file_types = ('nm-res-ari', 'nm-res-bar', 'nm-res-bio', 'nm-res-cya',
-                               'nm-res-dyn', 'nm-res-isd', 'nm-res-noa', 'nm-res-syb',
-                               'nm-res-ros', 'nm-res-oth')
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
@@ -1258,11 +2789,7 @@ class NmrDpMrSplitter:
 
             fileListId += 1
             if file_type is None or file_type in ('nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
-                if file_type == 'nm-res-mr':
-                    md5_list.append(None)
-                else:
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                        md5_list.append(hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
+                md5_list.append(None if file_type == 'nm-res-mr' else file_md5(file_path))
                 continue
 
             original_file_name = None
@@ -1272,1519 +2799,63 @@ class NmrDpMrSplitter:
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                md5_list.append(hashlib.md5(ifh.read().encode('utf-8')).hexdigest())
-
-            is_aux_amb = file_type == 'nm-aux-amb'
-            is_aux_cha = file_type == 'nm-aux-cha'
-            is_aux_gro = file_type == 'nm-aux-gro'
-            is_aux_pdb = file_type == 'nm-aux-pdb'
+            md5_list.append(file_md5(file_path))
 
             _mr_format_name = getRestraintFormatName(file_type)
             mr_format_name = _mr_format_name.split()[0]
             a_mr_format_name = ('an ' if mr_format_name[0] in ('AINMX') else 'a ') + _mr_format_name
 
-            atom_like_names =\
-                self.__reg.csStat.getAtomLikeNameSet(minimum_len=(2 if file_type in ('nm-res-ari', 'nm-res-bar', 'nm-res-bio',
-                                                                                     'nm-res-dyn', 'nm-res-isd', 'nm-res-ros',
-                                                                                     'nm-res-syb', 'nm-res-oth')
-                                                                  or is_aux_amb or is_aux_cha or is_aux_gro or is_aux_pdb else 1))
-            cs_atom_like_names = list(filter(is_half_spin_nuclei, atom_like_names))  # DAOTHER-7491
+            names = self.__legacyMrAtomNames(file_type, name_set_cache)
 
-            has_chem_shift = has_dist_restraint = has_dihed_restraint = has_rdc_restraint =\
-                has_plane_restraint = has_hbond_restraint = has_ssbond_restraint = has_rdc_origins = has_spectral_peak =\
-                has_coordinate = has_amb_coord = has_amb_inpcrd = has_ens_coord = has_topology = has_first_atom = False
+            flags = MrContentFlags()
 
             if file_type in ('nm-res-xpl', 'nm-res-cns'):
-
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-
-                    atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
-                    names, resids = [], []
-                    cs_range_like = dist_range_like = dihed_range_like = rdc_range_like = False
-
-                    rdc_atom_names = set()
-
-                    for line in ifh:
-
-                        if line.startswith('ATOM ') and line.count('.') >= 3:
-                            has_coordinate = True
-                            if PDB_FIRST_ATOM_PAT.match(line):
-                                if has_first_atom:
-                                    has_ens_coord = True
-                                has_first_atom = True
-
-                        elif line.startswith('MODEL') or line.startswith('ENDMDL')\
-                                or line.startswith('_atom_site.pdbx_PDB_model_num')\
-                                or line.startswith('_atom_site.ndb_model'):
-                            has_ens_coord = True
-
-                        _line = ' '.join(line.split())
-
-                        s = re.split('[ ()]', _line)
-
-                        _t_lower = ''
-
-                        for t in s:
-
-                            if len(t) == 0:
-                                continue
-
-                            if t[0] in ('#', '!'):
-                                break
-
-                            t_lower = t.lower()
-
-                            if t_lower.startswith('assi') or (real_likes == 3 and t_lower.startswith('weight')):
-
-                                if cs_atom_likes == 1 and resid_likes == 1 and cs_range_like:
-                                    has_chem_shift = True
-
-                                elif (atom_likes == 2 or (atom_likes > 0 and resid_likes == 2)) and dist_range_like:
-                                    has_dist_restraint = True
-
-                                elif atom_likes == 4 and dihed_range_like:
-                                    has_dihed_restraint = True
-
-                                elif cs_atom_likes + atom_unlikes == 6 and rdc_range_like:
-                                    has_rdc_restraint = True
-
-                                elif atom_likes == 3 and not (cs_range_like or dist_range_like or dihed_range_like
-                                                              or rdc_range_like or has_hbond_restraint)\
-                                        and names[0][0] in hbond_da_atom_types and names[1][0] in PROTON_BEGIN_CODE\
-                                        and names[2][0] in hbond_da_atom_types:
-                                    has_hbond_restraint = True
-
-                                atom_likes = atom_unlikes = cs_atom_likes = resid_likes = real_likes = 0
-                                names, resids = [], []
-                                cs_range_like = dist_range_like = dihed_range_like = rdc_range_like = False
-
-                            elif _t_lower == 'name':
-                                name = t.upper()
-                                if name in atom_like_names:
-                                    if name not in names or len(names) > 1:
-                                        atom_likes += 1
-                                        names.append(name)
-                                    if name in cs_atom_like_names:
-                                        cs_atom_likes += 1
-                                else:
-                                    atom_unlikes += 1
-                                    if not has_rdc_origins and name in rdc_origins:
-                                        rdc_atom_names.add(name)
-                                        if len(rdc_atom_names) == 4:
-                                            has_rdc_origins = True
-
-                            elif _t_lower == 'resid':
-                                try:
-                                    v = int(t)
-                                    if v not in resids:
-                                        resid_likes += 1
-                                        resids.append(v)
-                                except ValueError:
-                                    pass
-
-                            elif '.' in t:
-                                try:
-                                    v = float(t)
-                                    if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
-                                        cs_range_like = True
-                                    if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
-                                        dist_range_like = True
-                                    if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
-                                        dihed_range_like = True
-                                    if RDC_RANGE_MIN <= v <= RDC_RANGE_MAX:
-                                        rdc_range_like = True
-                                    real_likes += 1
-                                except ValueError:
-                                    pass
-
-                            _t_lower = t_lower
-
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-
-                    atom_likes = 0
-                    names = []
-                    has_rest = has_plan = has_grou = has_sele = has_resi = False
-
-                    for line in ifh:
-
-                        _line = ' '.join(line.split())
-
-                        s = re.split('[ ()=]', _line)
-
-                        _t_lower = ''
-
-                        for t in s:
-
-                            if len(t) == 0:
-                                continue
-
-                            if t[0] in ('#', '!'):
-                                break
-
-                            t_lower = t.lower()
-
-                            if t_lower.startswith('rest'):
-                                has_rest = True
-
-                            elif t_lower.startswith('plan'):
-                                has_plan = True
-
-                            elif has_rest and has_plan:
-
-                                if t_lower.startswith('grou'):
-                                    has_grou = True
-
-                                elif t_lower.startswith('sele'):
-                                    has_sele = True
-
-                                    atom_likes = 0
-                                    names = []
-
-                                elif _t_lower == 'name':
-                                    name = t.upper()
-                                    if name in atom_like_names:
-                                        if name not in names or len(names) > 1:
-                                            atom_likes += 1
-                                            names.append(name)
-
-                                elif t_lower.startswith('resi'):
-                                    has_resi = True
-
-                                elif has_grou and has_sele and has_resi and not has_plane_restraint\
-                                        and _t_lower.startswith('weig'):
-                                    if atom_likes > 0:
-                                        try:
-                                            v = float(t)
-                                            if WEIGHT_RANGE_MIN <= v <= WEIGHT_RANGE_MAX:
-                                                has_plane_restraint = True
-                                        except ValueError:
-                                            pass
-
-                                elif t_lower == 'end':
-                                    has_grou = has_sele = has_resi = False
-
-                            _t_lower = t_lower
+                self.__scanXplorCnsMr(file_path, names, flags)
 
             elif file_type == 'nm-res-amb':
+                self.__scanAmberMr(file_path, flags)
 
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                    in_rst = in_iat = in_igr1 = in_igr2 =\
-                        dist_range_like = dihed_range_like = rdc_range_like = False
+            elif file_type in LIGHT_MR_FILE_TYPES or file_type in AUX_TOP_FILE_TYPES:
+                self.__scanLightMrAndAuxTop(file_path, file_type, names, flags)
 
-                    names, values = [], []
+            if file_type in LIGHT_MR_FILE_TYPES and not flags.has_dist_restraint:  # DAOTHER-7491
+                self.__scanLightMrDistFallback(file_path, names, flags)
 
-                    pos = 0
+            valid = self.__detectPromptDumpFile(file_path, file_type, file_name, mr_format_name)
 
-                    for line in ifh:
+            content_subtype, valid, fixed =\
+                self.__parseLegacyMrWithAntlr(ar, file_path, file_type, file_name, a_mr_format_name,
+                                              valid, remediation_loop_count, flags)
+            corrected |= fixed
 
-                        if line.startswith('ATOM ') and line.count('.') >= 3:
-                            has_coordinate = True
-                            if PDB_FIRST_ATOM_PAT.match(line):
-                                if has_first_atom:
-                                    has_ens_coord = True
-                                has_first_atom = True
-
-                        elif line.startswith('MODEL') or line.startswith('ENDMDL')\
-                                or line.startswith('_atom_site.pdbx_PDB_model_num')\
-                                or line.startswith('_atom_site.ndb_model'):
-                            has_ens_coord = True
-
-                        pos += 1
-
-                        if pos == 1 and not line.isdigit():
-                            has_amb_inpcrd = True
-
-                        elif pos == 2 and has_amb_inpcrd:
-                            try:
-                                int(line.lstrip().split()[0])
-                            except (ValueError, IndexError):
-                                has_amb_inpcrd = False
-
-                        elif pos == 3 and has_amb_inpcrd:
-                            if line.count('.') != 6:
-                                has_amb_inpcrd = False
-
-                        if '&rst ' in line:
-                            line = re.sub('&rst ', '&rst,', line)
-
-                        elif '&end' in line:
-                            line = re.sub('&end', ',&end', line)
-
-                        elif '/' in line:
-                            line = re.sub('/', ',&end', line)
-
-                        _line = ' '.join(line.split())
-
-                        if len(_line) == 0 or _line.startswith('#') or _line.startswith('!'):
-                            continue
-
-                        s = re.split(',', WS_PAT.sub('', _line).lower())
-
-                        for t in s:
-
-                            if len(t) == 0:
-                                continue
-
-                            if t[0] in ('#', '!'):
-                                break
-
-                            if t == '&rst':
-                                in_rst = True
-
-                            elif in_rst:
-
-                                if t == '&end':
-
-                                    atom_likes = atom_unlikes = 0
-
-                                    for name in names:
-
-                                        if isinstance(name, int):
-                                            if name != -1:
-                                                atom_likes += 1
-                                            else:
-                                                atom_unlikes += 1
-
-                                        if isinstance(name, list):
-
-                                            if any(True for n in name if n != -1):
-                                                atom_likes += 1
-                                            else:
-                                                atom_unlikes += 1
-
-                                    if len(values) == 4:
-                                        v = (values[1] + values[2]) / 2.0
-
-                                        if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
-                                            dist_range_like = True
-                                        if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
-                                            dihed_range_like = True
-                                        if RDC_RANGE_MIN <= v <= RDC_RANGE_MAX:
-                                            rdc_range_like = True
-
-                                        if atom_likes == 2 and dist_range_like:
-                                            has_dist_restraint = True
-
-                                        elif atom_likes == 4 and dihed_range_like:
-                                            has_dihed_restraint = True
-
-                                        elif atom_likes + atom_unlikes == 6 and rdc_range_like:
-                                            has_rdc_restraint = True
-
-                                    names, values = [], []
-
-                                    in_rst = in_iat = in_igr1 = in_igr2 = False
-
-                                elif t.startswith('iat='):
-                                    in_iat = True
-                                    try:
-                                        iat = int(t[4:])
-                                        names.append(iat)
-                                    except ValueError:
-                                        pass
-
-                                    in_igr1 = in_igr2 = False
-
-                                elif '=' not in t and in_iat:
-                                    try:
-                                        iat = int(t)
-                                        names.append(iat)
-                                    except ValueError:
-                                        pass
-
-                                elif AMBER_R_PAT.match(t):
-                                    len_values = len(values)
-                                    g = AMBER_R_PAT.search(t).groups()
-                                    try:
-                                        r_idx = int(g[0]) - 1
-                                        v = float(g[1])
-                                        if len_values == r_idx:
-                                            values.append(v)
-                                        elif len_values > r_idx:
-                                            values.insert(r_idx, v)
-                                        else:
-                                            while len(values) < r_idx:
-                                                values.append(None)
-                                            values.append(v)
-                                    except ValueError:
-                                        pass
-
-                                    in_iat = in_igr1 = in_igr2 = False
-
-                                elif t.startswith('igr1'):
-                                    in_igr1 = True
-                                    try:
-                                        iat = int(t[5:])
-                                        names.insert(0, [iat])
-                                    except ValueError:
-                                        pass
-
-                                    in_iat = in_igr2 = False
-
-                                elif '=' not in t and in_igr1:
-                                    try:
-                                        iat = int(t)
-                                        g = names[0]
-                                        g.append(iat)
-                                    except ValueError:
-                                        pass
-
-                                elif t.startswith('igr2'):
-                                    in_igr2 = True
-                                    try:
-                                        iat = int(t[5:])
-                                        names.insert(1, [iat])
-                                    except ValueError:
-                                        pass
-
-                                    in_iat = in_igr1 = False
-
-                                elif '=' not in t and in_igr2:
-                                    try:
-                                        iat = int(t)
-                                        g = names[1]
-                                        g.append(iat)
-                                    except ValueError:
-                                        pass
-
-                                elif '=' in t:
-                                    in_iat = in_igr1 = in_igr2 = False
-
-            elif file_type in light_mr_file_types or is_aux_amb or is_aux_cha or is_aux_gro or is_aux_pdb:
-
-                if is_aux_amb:
-
-                    has_atom_name = has_residue_label = has_residue_pointer = has_amb_atom_type =\
-                        chk_atom_name_format = chk_residue_label_format =\
-                        chk_residue_pointer_format = chk_amb_atom_type_format =\
-                        in_atom_name = in_residue_label = in_residue_pointer = in_amb_atom_type = False
-
-                    atom_names = residue_labels = residue_pointers = amb_atom_types = 0
-
-                elif is_aux_cha:
-
-                    has_ext = in_atoms = False
-
-                    atom_names = 0
-
-                elif is_aux_gro:
-
-                    has_system = has_molecules = has_atoms =\
-                        in_system = in_molecules = in_atoms = False
-
-                    system_names = molecule_names = atom_names = 0
-
-                elif is_aux_pdb:
-
-                    # has_top_num = False
-                    atom_names = 0
-
-                atom_like_names_oth = self.__reg.csStat.getAtomLikeNameSet(1)
-                cs_atom_like_names_oth = list(filter(is_half_spin_nuclei, atom_like_names_oth))  # DAOTHER-7491
-
-                one_letter_codes = STD_MON_DICT.values()
-                three_letter_codes = STD_MON_DICT.keys()
-
-                prohibited_col = set()
-
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-
-                    pos = 0
-
-                    for line in ifh:
-                        pos += 1
-
-                        if line.startswith('ATOM ') and line.count('.') >= 3:
-                            has_coordinate = True
-                            if PDB_FIRST_ATOM_PAT.match(line):
-                                if has_first_atom:
-                                    has_ens_coord = True
-                                has_first_atom = True
-                            if is_aux_amb:  # and line.count('.') >= 3:
-                                has_amb_coord = True
-
-                        elif line.startswith('MODEL') or line.startswith('ENDMDL')\
-                                or line.startswith('_atom_site.pdbx_PDB_model_num')\
-                                or line.startswith('_atom_site.ndb_model'):
-                            has_ens_coord = True
-
-                        elif is_aux_amb:
-
-                            if pos == 1 and not line.isdigit():
-                                has_amb_inpcrd = True
-
-                            elif pos == 2 and has_amb_inpcrd:
-                                try:
-                                    int(line.lstrip().split()[0])
-                                except (ValueError, IndexError):
-                                    has_amb_inpcrd = False
-
-                            elif pos == 3 and has_amb_inpcrd:
-                                if line.count('.') != 6:
-                                    has_amb_inpcrd = False
-
-                            if line.startswith('%FLAG'):
-                                in_atom_name = in_residue_label = in_residue_pointer = False
-
-                                if line.startswith('%FLAG ATOM_NAME'):
-                                    has_atom_name = True
-                                    chk_atom_name_format = True
-
-                                elif line.startswith('%FLAG RESIDUE_LABEL'):
-                                    has_residue_label = True
-                                    chk_residue_label_format = True
-
-                                elif line.startswith('%FLAG RESIDUE_POINTER'):
-                                    has_residue_pointer = True
-                                    chk_residue_pointer_format = True
-
-                                elif line.startswith('%FLAG AMBER_ATOM_TYPE'):
-                                    has_amb_atom_type = True
-                                    chk_amb_atom_type_format = True
-
-                            elif chk_atom_name_format:
-                                chk_atom_name_format = AMBER_A_FORMAT_PAT.match(line)
-                                if chk_atom_name_format:
-                                    in_atom_name = True
-                                    g = AMBER_A_FORMAT_PAT.search(line).groups()
-                                    max_cols = int(g[0])
-                                    max_char = int(g[1])
-                                else:
-                                    has_atom_name = False
-                                chk_atom_name_format = False
-
-                            elif chk_residue_label_format:
-                                chk_residue_label_format = AMBER_A_FORMAT_PAT.match(line)
-                                if chk_residue_label_format:
-                                    in_residue_label = True
-                                    g = AMBER_A_FORMAT_PAT.search(line).groups()
-                                    max_cols = int(g[0])
-                                    max_char = int(g[1])
-                                else:
-                                    has_residue_label = False
-                                chk_residue_label_format = False
-
-                            elif chk_residue_pointer_format:
-                                chk_residue_pointer_format = AMBER_I_FORMAT_PAT.match(line)
-                                if chk_residue_pointer_format:
-                                    in_residue_pointer = True
-                                    g = AMBER_I_FORMAT_PAT.search(line).groups()
-                                    max_cols = int(g[0])
-                                    max_char = int(g[1])
-                                else:
-                                    has_residue_pointer = False
-                                chk_residue_pointer_format = False
-
-                            elif chk_amb_atom_type_format:
-                                chk_amb_atom_type_format = AMBER_A_FORMAT_PAT.match(line)
-                                if chk_amb_atom_type_format:
-                                    in_amb_atom_type = True
-                                    g = AMBER_A_FORMAT_PAT.search(line).groups()
-                                    max_cols = int(g[0])
-                                    max_char = int(g[1])
-                                else:
-                                    has_amb_atom_type = False
-                                chk_amb_atom_type_format = False
-
-                            elif in_atom_name:
-                                len_line = len(line)
-                                begin = col = 0
-                                end = max_char
-                                while col < max_cols and end < len_line:
-                                    if len(line[begin:end].rstrip()) > 0:
-                                        atom_names += 1
-                                    begin = end
-                                    end += max_char
-                                    col += 1
-
-                            elif in_residue_label:
-                                len_line = len(line)
-                                begin = col = 0
-                                end = max_char
-                                while col < max_cols and end < len_line:
-                                    if len(line[begin:end].rstrip()) > 0:
-                                        residue_labels += 1
-                                    begin = end
-                                    end += max_char
-                                    col += 1
-
-                            elif in_residue_pointer:
-                                len_line = len(line)
-                                begin = col = 0
-                                end = max_char
-                                while col < max_cols and end < len_line:
-                                    try:
-                                        _residue_pointer = line[begin:end].lstrip()
-                                        if len(_residue_pointer) > 0:
-                                            int(_residue_pointer)
-                                            residue_pointers += 1
-                                    except ValueError:
-                                        pass
-                                    begin = end
-                                    end += max_char
-                                    col += 1
-
-                            elif in_amb_atom_type:
-                                len_line = len(line)
-                                begin = col = 0
-                                end = max_char
-                                while col < max_cols and end < len_line:
-                                    if len(line[begin:end].rstrip()) > 0:
-                                        amb_atom_types += 1
-                                    begin = end
-                                    end += max_char
-                                    col += 1
-
-                        elif is_aux_cha:
-
-                            if 'EXT' in line:
-                                l_split = line.split()
-                                _line = ' '.join(l_split)
-
-                                if len(_line) > 1 and _line[0].isdigit() and _line[1] == 'EXT':
-                                    has_ext = in_atoms = True
-                                    continue
-
-                            elif in_atoms:
-                                l_split = line.split()
-                                _line = ' '.join(l_split)
-
-                                if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
-                                    continue
-
-                                if len(l_split) >= 10:
-                                    try:
-                                        atom_num = int(l_split[0])
-                                        seq_id = int(l_split[8])
-                                        comp_id = l_split[2]
-                                        atom_id = l_split[3]
-                                        if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
-                                           and atom_id in atom_like_names_oth:
-                                            atom_names += 1
-                                    except ValueError:
-                                        pass
-
-                        elif is_aux_gro:
-
-                            if line.startswith('['):
-                                in_system = in_molecules = in_atoms = False
-
-                                if line.startswith('[ system ]'):
-                                    has_system = in_system = True
-
-                                elif line.startswith('[ molecules ]'):
-                                    has_molecules = in_molecules = True
-
-                                elif line.startswith('[ atoms ]'):
-                                    has_atoms = in_atoms = True
-
-                            elif in_system or in_molecules or in_atoms:
-                                l_split = line.split()
-                                _line = ' '.join(l_split)
-
-                                if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
-                                    continue
-
-                                if in_system:
-                                    system_names += 1
-
-                                elif in_molecules:
-                                    if len(l_split) == 2:
-                                        try:
-                                            num = int(l_split[1])
-                                            if num > 0 and l_split[0].isalnum():
-                                                molecule_names += 1
-                                        except ValueError:
-                                            pass
-
-                                else:  # [ atoms ]
-                                    if len(l_split) > 6:
-                                        try:
-                                            atom_num = int(l_split[0])
-                                            seq_id = int(l_split[2])
-                                            comp_id = l_split[3]
-                                            atom_id = l_split[4]
-                                            if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
-                                               and atom_id in atom_like_names_oth:
-                                                atom_names += 1
-                                        except ValueError:
-                                            pass
-
-                        elif is_aux_pdb:
-
-                            l_split = line.split()
-                            _line = ' '.join(l_split)
-
-                            if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
-                                continue
-
-                            if len(l_split) >= 10:
-                                try:
-                                    atom_num = int(l_split[1])
-                                    seq_id = int(l_split[4] if l_split[4].isdigit() else l_split[5])
-                                    comp_id = l_split[3]
-                                    atom_id = l_split[2]
-                                    if atom_num > 0 and seq_id > 0 and comp_id in three_letter_codes\
-                                       and atom_id in atom_like_names_oth:
-                                        # if atom_num == 1:
-                                        #     has_top_num = True
-                                        atom_names += 1
-                                except ValueError:
-                                    pass
-
-                        _line = ' '.join(line.split())
-
-                        if len(_line) == 0 or _line.startswith('#') or _line.startswith('!') or _line.startswith(';'):
-                            continue
-
-                        s = re.split('[ ()]', _line)
-
-                        atom_likes = cs_atom_likes = 0
-                        names = []
-                        res_like = angle_like = cs_range_like = dist_range_like = dihed_range_like = False
-
-                        for t in s:
-
-                            if len(t) == 0:
-                                continue
-
-                            if t[0] in ('#', '!', ';'):
-                                break
-
-                            name = t.upper()
-
-                            if name in atom_like_names:
-                                if name not in names or len(names) > 1:
-                                    atom_likes += 1
-                                    names.append(name)
-                                if names in cs_atom_like_names:
-                                    cs_atom_likes += 1
-
-                            elif name in one_letter_codes and name not in atom_like_names_oth:
-                                prohibited_col.add(s.index(t))
-
-                            elif '.' in t:
-                                try:
-                                    v = float(t)
-                                    if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
-                                        cs_range_like = True
-                                    if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
-                                        dist_range_like = True
-                                    if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
-                                        dihed_range_like = True
-                                except ValueError:
-                                    pass
-
-                            elif name in three_letter_codes:
-                                res_like = True
-
-                            elif name in KNOWN_ANGLE_NAMES:
-                                angle_like = True
-
-                        if cs_atom_likes == 1 and cs_range_like:
-                            has_chem_shift = True
-
-                        elif atom_likes == 2 and dist_range_like:
-                            has_dist_restraint = True
-
-                        elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
-                            has_dihed_restraint = True
-
-                if file_type == 'nm-res-oth' and has_chem_shift and not has_dist_restraint and not has_dihed_restraint:
-
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-
-                        for line in ifh:
-
-                            _line = ' '.join(line.split())
-
-                            if len(_line) == 0 or _line.startswith('#') or _line.startswith('!'):
-                                continue
-
-                            s = re.split('[ ()]', _line)
-
-                            atom_likes = cs_atom_likes = 0
-                            names = []
-                            res_like = angle_like = cs_range_like = dist_range_like = dihed_range_like = False
-
-                            for t in s:
-
-                                if len(t) == 0:
-                                    continue
-
-                                if t[0] in ('#', '!'):
-                                    break
-
-                                if s.index(t) in prohibited_col:
-                                    continue
-
-                                name = t.upper()
-
-                                if name in atom_like_names_oth:
-                                    if name not in names or len(names) > 1:
-                                        atom_likes += 1
-                                        names.append(name)
-                                    if name in cs_atom_like_names_oth:
-                                        cs_atom_likes += 1
-
-                                elif '.' in t:
-                                    try:
-                                        v = float(t)
-                                        if CS_RANGE_MIN <= v <= CS_RANGE_MAX:
-                                            cs_range_like = True
-                                        if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:
-                                            dist_range_like = True
-                                        if ANGLE_RANGE_MIN <= v <= ANGLE_RANGE_MAX:
-                                            dihed_range_like = True
-                                    except ValueError:
-                                        pass
-
-                                elif name in three_letter_codes:
-                                    res_like = True
-
-                                elif name in KNOWN_ANGLE_NAMES:
-                                    angle_like = True
-
-                            if cs_atom_likes == 1 and cs_range_like:
-                                has_chem_shift = True
-
-                            elif atom_likes == 2 and dist_range_like:
-                                has_dist_restraint = True
-
-                            elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
-                                has_dihed_restraint = True
-
-                if file_type == 'nm-res-oth':
-
-                    has_spectral_peak = get_peak_list_format(file_path) is not None
-
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                        for pos, line in enumerate(ifh, start=1):
-                            if pos == 1:
-                                if 'Structures from CYANA' not in line:
-                                    break
-                            elif pos == 2:
-                                if 'CYANA' not in line:
-                                    break
-                            elif pos == 3:
-                                if line.count('Number') < 3:
-                                    break
-                            elif pos == 4:
-                                if line.count('.') >= 3:
-                                    has_coordinate = True
-                                break
-
-                    with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                        for pos, line in enumerate(ifh, start=1):
-                            if pos == 1:
-                                if line.isdigit():
-                                    break
-                            elif pos == 2:
-                                try:
-                                    int(line.lstrip().split()[0])
-                                except (ValueError, IndexError):
-                                    break
-                            elif pos == 3:
-                                if line.count('.') == 6:
-                                    has_coordinate = True
-                                break
-
-                if is_aux_amb:
-
-                    if has_atom_name and has_residue_label and has_residue_pointer and has_amb_atom_type\
-                       and atom_names > 0 and residue_labels > 0 and residue_pointers > 0 and amb_atom_types > 0:
-                        has_topology = True
-
-                    if has_amb_coord and (not has_first_atom or has_ens_coord):
-                        has_amb_coord = False
-
-                elif is_aux_cha:
-
-                    if has_ext and atom_names > 0:
-                        has_topology = True
-
-                elif is_aux_gro:
-
-                    if has_system and has_molecules and has_atoms\
-                       and system_names > 0 and molecule_names > 0 and atom_names > 0:
-                        has_topology = True
-
-                elif is_aux_pdb:
-
-                    if atom_names > 0:  # and has_top_num:
-                        has_topology = True
-
-            if file_type in light_mr_file_types and not has_dist_restraint:  # DAOTHER-7491
-
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-
-                    for line in ifh:
-
-                        _line = ' '.join(line.split())
-
-                        if len(_line) == 0 or _line.startswith('#') or _line.startswith('!'):
-                            continue
-
-                        s = re.split('[ ()]', _line)
-
-                        if len(s) < 7:
-                            continue
-
-                        try:
-                            int(s[0])
-                            int(s[3])
-                            v = float(s[6])
-                            if v < DIST_RANGE_MIN or DIST_RANGE_MAX < v:
-                                continue
-                        except ValueError:
-                            continue
-
-                        if s[1].isalnum():
-                            comp_id = s[1].upper()
-                            atom_id = s[2].upper()
-
-                            if comp_id in three_letter_codes:
-                                if atom_id not in atom_like_names:
-                                    continue
-
-                            elif len(comp_id) > 3:
-                                continue
-
-                            elif not self.__reg.ccU.updateChemCompDict(comp_id):
-                                continue
-
-                        if s[4].isalnum():
-                            comp_id = s[4].upper()
-                            atom_id = s[5].upper()
-
-                            if comp_id in three_letter_codes:
-                                if atom_id not in atom_like_names:
-                                    continue
-
-                            elif len(comp_id) > 3:
-                                continue
-
-                            elif not self.__reg.ccU.updateChemCompDict(comp_id):
-                                continue
-
-                        has_dist_restraint = True
-
-                        break
-
-            content_subtype = None
-            valid = True
-            div_test = False
-
-            prompt_type = None
-
-            try:
-
-                with open(file_path, 'r', encoding='utf-8') as ifh:
-                    for idx, line in enumerate(ifh):
-                        if line.isspace():
-                            continue
-                        prompt_type = get_prompt_file_format(line)
-                        if prompt_type is not None:
-                            break
-                        if idx >= MR_MAX_SPACER_LINES:
-                            break
-
-            except UnicodeDecodeError as e:  # catch exception due to binary format (DAOTHER-9425)
-
-                if file_type != 'nm-aux-pdb':
-
-                    err = f"The {mr_format_name} restraint file {file_name!r} is not a plain text file. {str(e)}"
-
-                    self.__reg.report.error.appendDescription('format_issue',
-                                                              {'file_name': file_name, 'description': err})
-
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-                    valid = False
-
-            if prompt_type is not None:
-
-                err = f"The {mr_format_name} restraint file {file_name!r} appears to be {prompt_type} prompt message dump file. "\
-                    f"Did you accidentally upload the wrong file? Please re-upload valid {mr_format_name} restraint file(s) "\
-                    "used for the structure determination."
-
-                self.__reg.report.error.appendDescription('format_issue',
-                                                          {'file_name': file_name, 'description': err})
-
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-                valid = False
-
-            try:
-
-                if file_type in PARSABLE_MR_FILE_TYPES and valid:
-
-                    sll_pred = False
-                    if file_path in self.__reg.sll_pred_holder and file_type in self.__reg.sll_pred_holder[file_path]:
-                        sll_pred = self.__reg.sll_pred_holder[file_path][file_type]
-
-                    file_path = self.testPathWithSuffix(file_path, '-corrected')
-
-                    # use ANTLR SLL prediction mode for performance gain if restraints have deep
-                    # but simple atom selection (DAOTHER-10315)
-                    if file_type in ('nm-res-xpl', 'nm-res-cns', 'nm-res-cha'):
-                        has_deep_l_pattern = False
-                        with open(file_path, 'r', encoding='utf-8', errors='ignore') as ifh:
-                            for idx, line in enumerate(ifh):
-                                if DEEP_L_PARENS_PAT.match(line):
-                                    has_deep_l_pattern = True
-                                if has_deep_l_pattern and DEEP_R_PARENS_PAT.match(line):
-                                    self.__reg.sll_pred_forced.append(file_path)
-                                    sll_pred = True
-                                    break
-                                if idx >= 40:
-                                    break
-
-                    reader = self.getSimpleFileReader(file_type, self.__reg.verbose, sll_pred=sll_pred)
-
-                    listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    if listener is not None and file_type in RETRIAL_MR_FILE_TYPES:
-                        reasons = listener.getReasonsForReparsing()
-
-                        if reasons is not None:
-                            reader = self.getSimpleFileReader(file_type, self.__reg.verbose, sll_pred=sll_pred, reasons=reasons)
-
-                            listener, parser_err_listener, lexer_err_listener = reader.parse(file_path, None)
-
-                    err = ''
-                    err_lines = []
-
-                    has_lexer_error = lexer_err_listener is not None and lexer_err_listener.getMessageList() is not None
-                    has_parser_error = parser_err_listener is not None and parser_err_listener.getMessageList() is not None
-
-                    content_subtype = listener.getContentSubtype() if listener is not None else None
-                    if content_subtype is not None and len(content_subtype) == 0:
-                        content_subtype = None
-                    elif file_type in ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb'):
-                        has_topology = True
-                        content_subtype = {'topology': 1}
-
-                    has_content = content_subtype is not None
-
-                    if has_lexer_error and has_parser_error and has_content:
-                        # parser error occurs before occurrence of lexer error that implies mixing of different MR formats in a file
-                        if lexer_err_listener.getErrorLineNumber()[0] > parser_err_listener.getErrorLineNumber()[0]:
-                            corrected |= self.__stripLegacyMrIfNecessary(file_path, file_type,
-                                                                         parser_err_listener.getMessageList()[0],
-                                                                         str(file_path), 0)
-                            div_test = True
-
-                    fixed_line_num = -1
-
-                    if has_lexer_error:
-                        messageList = lexer_err_listener.getMessageList()
-
-                        for description in messageList:
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} "\
-                                f"{description['message']}\n"
-                            if 'input' in description:
-                                enc = detect_encoding(description['input'])
-                                is_not_ascii = False
-                                if enc is not None and enc != 'ascii':
-                                    err += f"{description['input']}\n".encode().decode('ascii', 'backslashreplace')
-                                    is_not_ascii = True
-                                else:
-                                    err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if is_not_ascii:
-                                    err += f"[Unexpected text encoding] Encoding used in the above line is {enc!r} "\
-                                        "and must be 'ascii'.\n"
-                                elif not div_test and has_content and self.__reg.remediation_mode:
-                                    fixed = self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    corrected |= fixed
-                                    if fixed:
-                                        fixed_line_num = description['line_number']
-                                    div_test = file_type != 'nm-res-amb'  # remediate missing comma issue in AMBER MR
-
-                    if has_parser_error:
-                        total_line = -1
-                        if os.path.exists(file_path):
-                            with open(file_path, 'r', encoding='utf-8', errors='replace') as ifh:
-                                total_line = len(ifh.readlines())
-
-                        messageList = parser_err_listener.getMessageList()
-
-                        for description in messageList:
-                            # ignore noeol error for linear mr file formats
-                            if description['line_number'] == total_line and file_type in LINEAR_MR_FILE_TYPES:
-                                continue
-                            err_lines.append(description['line_number'])
-                            err += f"[Syntax error] line {description['line_number']}:{description['column_position']} "\
-                                f"{description['message']}\n"
-                            len_err = len(err)
-                            if 0 < fixed_line_num <= description['line_number']:
-                                div_test = True
-                            if 'input' in description:
-                                err += f"{description['input']}\n"
-                                err += f"{description['marker']}\n"
-                                if not div_test and has_content and self.__reg.remediation_mode:
-                                    corrected |=\
-                                        self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                    div_test = True
-                            elif not div_test and has_content and self.__reg.remediation_mode:
-                                corrected |= self.__divideLegacyMrIfNecessary(file_path, file_type, description, str(file_path), 0)
-                                div_test = True
-
-                            _err = next((_description.get('previous_input') for _description in self.__reg.divide_mr_error_message
-                                         if _description['file_path'] == description['file_path']
-                                         and _description['line_number'] == description['line_number']
-                                         and _description['message'] == description['message']), None)
-
-                            if _err is not None and not COMMENT_PAT.match(_err) and not _err.isspace():
-                                s = '. ' if _err.startswith('Do you') else ':\n'
-                                err = err[:len_err] +\
-                                    ("However, the error may be due to missing statement "
-                                     "(e.g. 'noe', 'restraint dihedral', 'sanisotropy') "
-                                     f"at the beginning of {_err.strip().split(' ')[0]!r} "
-                                     "and note that the statement should be ended with 'end' tag "
-                                     if _err.lower().strip().startswith('class')
-                                     else "However, the error may be due to the previous input ") +\
-                                    f"(line {description['line_number']-1}){s}{_err}" + err[len_err:]
-
-                    if len(err) > 0:
-                        valid = False
-
-                        err = f"Could not interpret {file_name!r} as {a_mr_format_name} file:\n{err[0:-1]}"
-
-                        ar['format_mismatch'], _err, _, _ =\
-                            self.__detectOtherPossibleFormatAsErrorOfLegacyMr(file_path, file_name, file_type, err_lines)
-
-                        if ar['format_mismatch']:
-                            err += '\n' + _err
-
-                        self.__reg.report.error.appendDescription('format_issue',
-                                                                  {'file_name': file_name, 'description': err})
-
-                        if not self.__reg.remediation_mode or remediation_loop_count > 0:
-                            self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - "
-                                                 f"{file_type} {file_name} {err}\n")
-
-                        has_dist_restraint = has_dihed_restraint = has_rdc_restraint = False
-
-                    elif listener is not None:
-
-                        if listener.warningMessage is not None:
-
-                            messages = [msg for msg in listener.warningMessage
-                                        if 'warning' not in msg and 'Unsupported' not in msg
-                                        and 'Redundant' not in msg
-                                        and ((self.__reg.remediation_mode and 'Range value error' not in msg)
-                                             or not self.__reg.remediation_mode)]
-
-                            if len(messages) > 0:
-                                valid = False
-
-                                if len(messages) > 5:
-                                    messages = messages[:5]
-                                    msg = '\n'.join(messages)
-                                    msg += '\nThose similar errors may continue...'
-                                else:
-                                    msg = '\n'.join(messages)
-                                err = f"Could not interpret {file_name!r} due to the following data issue(s):\n{msg}"
-
-                                self.__reg.report.error.appendDescription('format_issue',
-                                                                          {'file_name': file_name, 'description': err})
-
-                                if not self.__reg.remediation_mode or remediation_loop_count > 0:
-                                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - "
-                                                         f"{file_type} {file_name} {err}\n")
-
-                        if valid:
-
-                            has_chem_shift = has_coordinate = False
-
-                            if content_subtype is not None:
-                                has_dist_restraint = 'dist_restraint' in content_subtype
-                                has_dihed_restraint = 'dihed_restraint' in content_subtype
-                                has_rdc_restraint = 'rdc_restraint' in content_subtype
-                                has_plane_restraint = 'plane_restraint' in content_subtype
-                                has_hbond_restraint = 'hbond_restraint' in content_subtype
-                                has_ssbond_restraint = 'ssbond_restraint' in content_subtype
-
-                                if file_type == 'nm-res-cya' and has_dist_restraint:
-                                    ar['dist_type'] = listener.getTypeOfDistanceRestraints()
-                                if file_type == 'nm-res-amb':
-                                    ar['has_comments'] = listener.hasComments()
-
-                                ar['is_valid'] = True
-
-                elif file_type == 'nm-res-oth':
-                    if not (self.__reg.remediation_mode and file_path.endswith('-div_ext.mr')):
-                        ar['format_mismatch'], _, _, _ =\
-                            self.__detectOtherPossibleFormatAsErrorOfLegacyMr(file_path, file_name, file_type, [])
-
-            except ValueError as e:
-
-                self.__reg.report.error.appendDescription('internal_error',
-                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
-                                                          "++ Error  - " + str(e))
-
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {str(e)}\n")
-
-            if has_coordinate and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
-                    and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint:
-
-                if not is_aux_amb and not is_aux_cha and not is_aux_gro and not is_aux_pdb:
-                    err = f"The {mr_format_name} restraint file includes coordinates. "\
-                        "Did you accidentally select wrong format? Please re-upload the restraint file."
-                else:
-                    err = f"The {mr_format_name} topology file includes coordinates. "\
-                        "Did you accidentally select wrong format? Please re-upload the restraint file."
-
-                self.__reg.report.error.appendDescription('content_mismatch',
-                                                          {'file_name': file_name, 'description': err})
-
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-                has_chem_shift = False
-
-            elif has_chem_shift and not has_coordinate and not has_amb_inpcrd and not has_dist_restraint\
-                    and not has_dihed_restraint and not has_rdc_restraint and not has_plane_restraint\
-                    and not has_hbond_restraint and not has_ssbond_restraint:
-
-                if has_rdc_origins:
-
-                    hint = 'assign ( resid # and name OO ) ( resid # and name X ) ( resid # and name Y ) ( resid # and name Z ) "\
-                        "( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.#'
-
-                    err = f"The restraint file {file_name!r} may be a malformed XPLOR-NIH RDC restraint file. "\
-                        f"Tips for XPLOR-NIH RDC restraints: {hint!r} pattern must be present in the file. "\
-                        "Did you accidentally select wrong format? Please re-upload the restraint file."
-
-                    self.__reg.report.error.appendDescription('content_mismatch',
-                                                              {'file_name': file_name, 'description': err})
-
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-                    has_chem_shift = False
-
-                elif valid:
-
-                    if not is_aux_amb and not is_aux_cha and not is_aux_gro and not is_aux_pdb:
-                        err = f"The {mr_format_name} restraint file includes assigned chemical shifts. "\
-                            "Did you accidentally select wrong format? Please re-upload the restraint file."
-                    else:
-                        err = f"The {mr_format_name} topology file includes assigned chemical shifts. "\
-                            "Did you accidentally select wrong format? Please re-upload the restraint file."
-
-                    self.__reg.report.error.appendDescription('content_mismatch',
-                                                              {'file_name': file_name, 'description': err})
-
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-            elif has_chem_shift:
-                has_chem_shift = False
-
-            if has_spectral_peak:
-
-                err = f"The {mr_format_name} restraint file includes spectral peak list. "\
-                    "Did you accidentally select wrong format? Please re-upload the file as spectral peak list file."
-
-                self.__reg.report.error.appendDescription('content_mismatch',
-                                                          {'file_name': file_name, 'description': err})
-
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+            self.__reportContentMismatch(file_type, file_name, mr_format_name, valid, flags)
 
             if content_subtype is None:
-                content_subtype = {'chem_shift': 1 if has_chem_shift else 0,
-                                   'dist_restraint': 1 if has_dist_restraint else 0,
-                                   'dihed_restraint': 1 if has_dihed_restraint else 0,
-                                   'rdc_restraint': 1 if has_rdc_restraint else 0,
-                                   'plane_restraint': 1 if has_plane_restraint else 0,
-                                   'hbond_restraint': 1 if has_hbond_restraint else 0,
-                                   'ssbond_restraint': 1 if has_ssbond_restraint else 0,
-                                   'coordinate': 1 if has_coordinate else 0,
-                                   'topology': 1 if has_topology else 0}
+                content_subtype = {'chem_shift': 1 if flags.has_chem_shift else 0,
+                                   'dist_restraint': 1 if flags.has_dist_restraint else 0,
+                                   'dihed_restraint': 1 if flags.has_dihed_restraint else 0,
+                                   'rdc_restraint': 1 if flags.has_rdc_restraint else 0,
+                                   'plane_restraint': 1 if flags.has_plane_restraint else 0,
+                                   'hbond_restraint': 1 if flags.has_hbond_restraint else 0,
+                                   'ssbond_restraint': 1 if flags.has_ssbond_restraint else 0,
+                                   'coordinate': 1 if flags.has_coordinate else 0,
+                                   'topology': 1 if flags.has_topology else 0}
             else:
-                if 'dist_restraint' in content_subtype:
-                    has_dist_restraint = True
-                if 'dihed_restraint' in content_subtype:
-                    has_dihed_restraint = True
-                if 'rdc_restraint' in content_subtype:
-                    has_rdc_restraint = True
-                if 'plane_restraint' in content_subtype:
-                    has_plane_restraint = True
-                if 'hbond_restraint' in content_subtype:
-                    has_hbond_restraint = True
-                if 'ssbond_restraint' in content_subtype:
-                    has_ssbond_restraint = True
+                for key in ('dist_restraint', 'dihed_restraint', 'rdc_restraint',
+                            'plane_restraint', 'hbond_restraint', 'ssbond_restraint'):
+                    if key in content_subtype:
+                        setattr(flags, f'has_{key}', True)
 
-            if not is_aux_amb and not is_aux_cha and not is_aux_gro and not is_aux_pdb\
-               and not has_chem_shift and not has_dist_restraint and not has_dihed_restraint and not has_rdc_restraint\
-               and not has_plane_restraint and not has_hbond_restraint and not has_ssbond_restraint and not valid:
+            self.__reportUnidentifiedContent(file_type, file_name, mr_format_name, content_subtype, valid, flags)
 
-                hint = ''
-                if len(concat_restraint_names(content_subtype)) == 0:
-                    if file_type in ('nm-res-xpl', 'nm-res-cns') and not has_rdc_origins:
-                        hint = 'assign ( segid $ and resid # and name $ ) ( segid $ and resid # and name $ ) #.# #.# #.#'
-                    elif file_type == 'nm-res-amb':
-                        hint = '&rst iat=#[,#], r1=#.#, r2=#.#, r3=#.#, r4=#.#, [igr1=#[,#],] [igr2=#[,#],] &end'
-
-                if len(hint) > 0:
-                    hint = f" Tips for {mr_format_name} restraints: {hint!r} pattern must be present in the file."
-
-                warn = f"Constraint type of the restraint file ({mr_format_name}) could not be identified."\
-                    f"{hint} Did you accidentally select wrong format?"
-
-                self.__reg.report.warning.appendDescription('missing_content',
-                                                            {'file_name': file_name, 'description': warn})
-
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Warning  - {warn}\n")
-
-            elif is_aux_amb and not has_amb_coord and not has_topology:
-
-                subtype_name = ''
-                if has_chem_shift:
-                    subtype_name += "Assigned chemical shifts, "
-                if has_dist_restraint:
-                    subtype_name += "Distance restraints, "
-                if has_dihed_restraint:
-                    subtype_name += "Dihedral angle restraints, "
-                if has_rdc_restraint:
-                    subtype_name += "RDC restraints, "
-                if has_plane_restraint:
-                    subtype_name += "Planarity restraints, "
-                if has_hbond_restraint:
-                    subtype_name += "Hydrogen bond restraints, "
-                if has_ssbond_restraint:
-                    subtype_name += "Disulfide bond restraints, "
-                if has_amb_inpcrd:
-                    subtype_name += "AMBER restart coordinates (aka. .crd or .rst file), "
-
-                if len(subtype_name) > 0:
-                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
-
-                hint = " Tips for AMBER topology: Proper contents starting with '%FLAG ATOM_NAME', '%FLAG RESIDUE_LABEL', "\
-                    "'%FLAG RESIDUE_POINTER', and '%FLAG AMBER_ATOM_TYPE' lines must be present in the file."
-
-                if has_coordinate:
-                    hint = " Tips for AMBER coordinates: It should be directory generated by 'ambpdb' command "\
-                        "and must not have MODEL/ENDMDL keywords to ensure that AMBER atomic IDs, "\
-                        "referred as 'iat' in the AMBER restraint file, are preserved in the file."
-
-                err = f"{file_name!r} is neither AMBER topology (.prmtop) nor coordinates (.inpcrd.pdb){subtype_name}."\
-                    f"{hint} Did you accidentally select wrong format? Please re-upload the AMBER topology file."
-
-                self.__reg.report.error.appendDescription('content_mismatch',
-                                                          {'file_name': file_name, 'description': err})
-
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-            elif is_aux_cha and not has_topology:
-
-                subtype_name = ''
-                if has_chem_shift:
-                    subtype_name += "Assigned chemical shifts, "
-                if has_dist_restraint:
-                    subtype_name += "Distance restraints, "
-                if has_dihed_restraint:
-                    subtype_name += "Dihedral angle restraints, "
-                if has_rdc_restraint:
-                    subtype_name += "RDC restraints, "
-                if has_plane_restraint:
-                    subtype_name += "Planarity restraints, "
-                if has_hbond_restraint:
-                    subtype_name += "Hydrogen bond restraints, "
-                if has_ssbond_restraint:
-                    subtype_name += "Disulfide bond restraints, "
-
-                if len(subtype_name) > 0:
-                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
-
-                hint = " Tips for CHARMM topology: '{Number of atoms} EXT' header line must be present in the file. "\
-                    "Then, it is followed by '{atom_number} {label_seq_id} {label_comp_id} {label_atom_id} "\
-                    "{Cartn_x} {Cartn_y} {Cartn_z} {segment_id} {auth_seq_id} {B_iso_or_equiv}' lines."
-
-                err = f"{file_name!r} is not CHARMM topology (aka. CRD or CHARM CARD file) {subtype_name}."\
-                    f"{hint} Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
-
-                self.__reg.report.error.appendDescription('content_mismatch',
-                                                          {'file_name': file_name, 'description': err})
-
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-            elif is_aux_gro and not has_topology:
-
-                subtype_name = ''
-                if has_chem_shift:
-                    subtype_name += "Assigned chemical shifts, "
-                if has_dist_restraint:
-                    subtype_name += "Distance restraints, "
-                if has_dihed_restraint:
-                    subtype_name += "Dihedral angle restraints, "
-                if has_rdc_restraint:
-                    subtype_name += "RDC restraints, "
-                if has_plane_restraint:
-                    subtype_name += "Planarity restraints, "
-                if has_hbond_restraint:
-                    subtype_name += "Hydrogen bond restraints, "
-                if has_ssbond_restraint:
-                    subtype_name += "Disulfide bond restraints, "
-
-                if len(subtype_name) > 0:
-                    subtype_name = f". It looks like to have {subtype_name[:-2]} instead"
-
-                hint = " Tips for GROMACS topology: Proper contents starting with '[ system ]', '[ molecules ]', "\
-                    "and '[ atoms ]' lines must be present in the file."
-
-                err = f"{file_name!r} is not GROMACS topology {subtype_name}."\
-                    f"{hint} Did you accidentally select wrong format? Please re-upload the GROMACS topology file."
-
-                self.__reg.report.error.appendDescription('content_mismatch',
-                                                          {'file_name': file_name, 'description': err})
-
-                if self.__reg.verbose:
-                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-            self.__reg.legacy_dist_restraint_uploaded |= has_dist_restraint
+            self.__reg.legacy_dist_restraint_uploaded |= flags.has_dist_restraint
 
             input_source.setItemValue('content_subtype', content_subtype)
 
         if not self.__reg.legacy_dist_restraint_uploaded:
+            self.__checkMandatoryDistRestraint()
 
-            fileListId = self.__reg.file_path_list_len
-
-            for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
-
-                input_source = self.__reg.report.input_sources[fileListId]
-                input_source_dic = input_source.get()
-
-                file_name = input_source_dic['file_name']
-                file_type = input_source_dic['file_type']
-                content_subtype = input_source_dic['content_subtype']
-
-                fileListId += 1
-
-                if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-bar', 'nm-res-oth', 'nm-res-sax')\
-                   or file_type.startswith('nm-pea'):
-                    continue
-
-                if (content_subtype is not None and 'dist_restraint' in content_subtype)\
-                   or file_type in ('nm-aux-amb', 'nm-aux-cha', 'nm-aux-gro', 'nm-aux-pdb'):
-                    continue
-
-                if content_subtype is None:
-
-                    if self.__reg.permit_missing_legacy_dist_restraint:
-
-                        err = f"The restraint file is not recognized properly {file_type}. "\
-                            "Please fix the file so that it conforms to the format specifications."
-
-                        self.__reg.suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                          {'file_name': file_name, 'description': err}})
-
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-                    else:
-
-                        err = "The restraint file is not recognized properly "\
-                            "so that there is no mandatory distance restraints in the set of uploaded restraint files. "\
-                            "Please re-upload the restraint file."
-
-                        self.__reg.suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                          {'file_name': file_name, 'description': err}})
-
-                        if self.__reg.verbose:
-                            self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-                elif 'chem_shift' not in content_subtype:
-
-                    if not self.__reg.remediation_mode:
-
-                        if self.__reg.permit_missing_legacy_dist_restraint:
-
-                            warn = f"The restraint file includes {concat_restraint_names(content_subtype)}. "\
-                                "However, distance restraints are missing in the set of uploaded restraint file(s). "\
-                                "The wwPDB NMR Validation Task Force highly recommends the submission of distance restraints "\
-                                "used for the structure determination."
-
-                            self.__reg.suspended_warnings_for_lazy_eval.append({'missing_content':
-                                                                                {'file_name': file_name, 'description': warn}})
-
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
-                                                     f"++ Warning  - {warn}\n")
-
-                        else:
-
-                            err = f"The restraint file includes {concat_restraint_names(content_subtype)}. "\
-                                "However, deposition of distance restraints is mandatory. "\
-                                "Please re-upload the restraint file."
-
-                            self.__reg.suspended_errors_for_lazy_eval.append({'content_mismatch':
-                                                                              {'file_name': file_name, 'description': err}})
-
-                            if self.__reg.verbose:
-                                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-        md5_set = set(md5_list)
-
-        if len(md5_set) != len(md5_list):
-
-            ar_path_len = len(self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY])
-
-            for (i, j) in itertools.combinations(range(0, ar_path_len), 2):
-
-                if None in (md5_list[i], md5_list[j]):
-                    continue
-
-                if md5_list[i] == md5_list[j]:
-
-                    file_name_1 = os.path.basename(self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][i]['file_name'])
-                    file_name_2 = os.path.basename(self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][j]['file_name'])
-
-                    file_type_1 = self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][i]['file_type']
-                    file_type_2 = self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][j]['file_type']
-
-                    if file_type_1.startswith('nm-res') and file_type_2.startswith('nm-res'):
-                        file_type = 'restraint'
-                    elif file_type_1.startswith('nm-pea') and file_type_2.startswith('nm-pea'):
-                        file_type = 'spectral peak list'
-                    elif file_type_1.startswith('nm-res'):
-                        file_type = 'restraint/spectral peak list'
-                    else:
-                        file_type = 'spectral peak list/restraint'
-
-                    if self.__reg.internal_mode:
-                        if os.path.exists(self.testPathWithSuffix(
-                                self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][j]['file_name'], '-ignored', True)):
-                            continue
-                        if '-selected-as-' in file_name_1 or '-selected-as-' in file_name_2:
-                            continue
-                        if re.search(r'\/bmr\d+\/work\/data\/', file_name_1) or re.search(r'\/bmr\d+\/work\/data\/', file_name_2):
-                            continue
-
-                    err = f"You have uploaded the same NMR {file_type} file twice. "\
-                        f"Please replace/delete either {file_name_1} or {file_name_2}."
-
-                    self.__reg.report.error.appendDescription('content_mismatch',
-                                                              {'file_name': f"{file_name_1} vs {file_name_2}", 'description': err})
-
-                    if self.__reg.verbose:
-                        self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
-
-                    if self.__reg.remediation_mode:
-                        file_path_2 = self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY][j]['file_name']
-                        os.symlink(file_path_2, self.testPath(file_path_2 + '-ignored', True))
+        self.__detectDuplicateMrUpload(md5_list)
 
         return corrected
 

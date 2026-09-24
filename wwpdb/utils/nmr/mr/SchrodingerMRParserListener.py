@@ -3608,7 +3608,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         self.exitSelection(ctx)
 
         if len(self.atomSelectionSet) == 1 and len(self.atomSelectionSet[0]) > 0 and self.__cur_store_name not in EMPTY_VALUE:
-            self.storeSet[self.__cur_store_name] = copy.copy(self.atomSelectionSet[0])
+            self.storeSet[self.__cur_store_name] = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
 
         self.atomSelectionSet.clear()
         self.g.clear()

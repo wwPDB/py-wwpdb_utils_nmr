@@ -3,6 +3,7 @@
 #
 # Update:
 #  7-Aug-2026 my optional speedy-antlr-tool C++ parser accelerators
+# 24-Sep-2026 my optional C accelerator for ParserListenerUtil (DAOTHER-10315)
 #
 import glob
 import json
@@ -89,6 +90,35 @@ def speedyAntlrExtensions() -> list:
 
 buildSpeedyAntlr = os.environ.get('WWPDB_NMR_BUILD_SPEEDY_ANTLR', '') not in ('', '0', 'false', 'False')
 
+
+# ------------------------------------------------------------------------------
+# Optional C accelerator for wwpdb/utils/nmr/mr/ParserListenerUtil.py.
+#
+# Same contract as the speedy-antlr accelerators above: off by default, so the
+# sdist/wheel published to PyPI stays pure Python, and ParserListenerUtil rebinds
+# copyFactor()/copyPolySeq()/atomKey()/factorKey() to the compiled versions only
+# when the extension imports. One dependency-free C99 translation unit, so this
+# needs no static library and no extra toolchain beyond a C compiler:
+#
+#   WWPDB_NMR_BUILD_C_ACCEL=1 python setup.py build_ext --inplace
+
+
+def cAccelExtensions() -> list:
+    """ The ParserListenerUtil accelerator, built in place next to its Python fallbacks.
+    """
+
+    source = os.path.join(CPP_SRC_DIR, 'c_listener_util.c')
+
+    if not os.path.isfile(source):
+        raise RuntimeError(f'{source} is missing.')
+
+    return [Extension('wwpdb.utils.nmr.mr.c_listener_util',
+                      sources=[source],
+                      language='c')]
+
+
+buildCAccel = os.environ.get('WWPDB_NMR_BUILD_C_ACCEL', '') not in ('', '0', 'false', 'False')
+
 with open('wwpdb/utils/nmr/__init__.py', 'r', encoding='utf-8') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         fd.read(), re.MULTILINE).group(1)
@@ -134,7 +164,8 @@ setup(
                       "dataclasses; python_version == '3.6'"],
     packages=find_packages(exclude=['wwpdb.utils.tests-nmr', 'wwpdb.utils.tests-nmr-tox', 'mock-data']),
     libraries=speedyAntlrLibraries() if buildSpeedyAntlr else [],
-    ext_modules=speedyAntlrExtensions() if buildSpeedyAntlr else [],
+    ext_modules=(speedyAntlrExtensions() if buildSpeedyAntlr else [])
+    + (cAccelExtensions() if buildCAccel else []),
     # Enables Manifest to be used
     include_package_data=True,
     package_data={

@@ -450,6 +450,87 @@ pollutes what a later LL parse of the same input reports - e.g. `missing RETURN 
 can depend on what was parsed earlier in the same process. The C++ accelerators
 are order-independent, so they are the more reproducible of the two paths.
 
+## C accelerator for the factor cache
+
+`mr/ParserListenerUtil.py` carries a second, much smaller accelerator, unrelated to
+the ANTLR one above. `BaseStackedMRParserListener.doConsumeFactor_expressions()`
+memoizes resolved atom-selection factors, and every cache hit returns a private
+copy of the cached factor - which means copying every atom dictionary in
+`factor['atom_selection']`, because ~28 sites downstream mutate those atoms in
+place (`del atom['is_poly']`, `atom['segment_id'] = ...`). On the DAOTHER-10315
+entry that is **117,098 calls copying 96.7 million atom dictionaries**, 99.97 % of
+them at the cache-hit return.
+
+[cpp_src/c_listener_util.c](cpp_src/c_listener_util.c) reimplements the four
+helpers that carry that load - `copyFactor()`, `copyPolySeq()`, `atomKey()` and
+`factorKey()` - as one dependency-free C99 translation unit. Each is a behavioral
+twin of the Python body it replaces, down to the exact-type tests
+(`v.__class__ is list`, `a.__class__ is dict`, so dict and list *subclasses* keep
+taking the borrow path), the insertion order of the result and the exception
+raised for a wrong-typed argument.
+
+### Building
+
+Off by default, same contract as the ANTLR accelerators:
+
+```bash
+    WWPDB_NMR_BUILD_C_ACCEL=1 python3 setup.py build_ext --inplace
+```
+
+No static library and no extra toolchain - one `.c` file against `Python.h`. The
+Dockerfile builder stage sets the flag alongside `WWPDB_NMR_BUILD_SPEEDY_ANTLR=1`.
+
+### Fallback
+
+`ParserListenerUtil` keeps every Python body, reachable as `copyFactorPy()`,
+`copyPolySeqPy()`, `atomKeyPy()` and `factorKeyPy()`, and rebinds the public names
+only when `from . import c_listener_util` succeeds; `USE_C_IMPLEMENTATION` reports
+which path is live. The import is **relative** on purpose: the package resolves as
+`wwpdb.utils.nmr` in OneDep and as bare `nmr` in standalone mode, and a relative
+import is the one form that cannot develop an asymmetry between the two branches
+of a `try:`/`except ImportError:` pair.
+
+`factorKey()` is the cache key, replacing `str(factor)`. It only pays for itself
+once compiled - at the key site the factors are small (117 k calls averaging 1.8
+atom selections, 64 % of them with none at all), so the whole key costs ~0.07 s of
+the run under `str()`, roughly double that as an interpreted tuple and about a
+third of it compiled. The interpreted tuple key is therefore a small loss. Hence
+`factorCacheKey = factorKey if USE_C_IMPLEMENTATION else str`: the interpreted
+build keeps the repr key it has always used. Both keys were verified to induce the
+same cache partition on real data - 3,297 distinct keys either way, no mismatch.
+
+### Measured
+
+`tests-nmr/main_daother_10315.py`, process CPU time (user+sys), three repetitions.
+Wall clock is unusable on a contended host; CPU time is what is reported.
+
+| configuration | rep 1 | rep 2 | rep 3 | median |
+|---|---:|---:|---:|---:|
+| HEAD | 130.59 | 135.98 | 138.73 | 135.98 |
+| + accelerator | 128.71 | 132.16 | 127.44 | **128.71** |
+
+Median paired delta **-3.8 s, -2.8 %** of the whole run. Per-routine, over factors
+shaped like the real ones:
+
+| n atoms | `copyFactor` python | C | speedup |
+|---:|---:|---:|---:|
+| 0 | 0.241 us | 0.075 us | 3.20x |
+| 8 | 1.152 us | 0.509 us | 2.27x |
+| 64 | 8.133 us | 4.028 us | 2.02x |
+| 512 | 80.7 us | 32.6 us | 2.47x |
+| 4096 | 607 us | 432 us | 1.41x |
+
+The fit is `0.241 us + 148 ns/atom` interpreted against `0.075 us + 105 ns/atom`
+compiled, so over the entry's 96.7 M atoms: **14.3 s -> 10.2 s**. That is the whole
+effect, and it agrees with the measured -3.8 s.
+
+**The speedup is bounded by allocation, not by interpretation.** A copy of N atom
+dictionaries costs N `PyDict_Copy()` calls whichever language asks for them, which
+is why the advantage falls from 3.2x on an empty factor to 1.4x on a 4096-atom one.
+Going materially faster means not copying: the ~28 in-place writers listed above
+would have to be converted to copy-before-mutate first, after which the cached
+atoms could be shared outright.
+
 ## Appendix
 
 The codes used for specifying each file type in NmrDpUtility are compatible with OneDep system as follows:

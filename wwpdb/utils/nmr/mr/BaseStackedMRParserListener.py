@@ -136,6 +136,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        copyFactor,
                                                        copyPolySeq,
+                                                       factorCacheKey,
                                                        toNefEx,
                                                        coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -268,6 +269,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            copyFactor,
                                            copyPolySeq,
+                                           factorCacheKey,
                                            toNefEx,
                                            coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -4702,7 +4704,8 @@ class BaseStackedMRParserListener():
                     if self.__dist_comment_pat.match(self.lastComment):
                         g = self.__dist_comment_pat.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 3
-                        # _factor['comp_id'] = [g[offset]]
+                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                            _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
                         _seqId = _factor['seq_id'][0]
@@ -4718,14 +4721,16 @@ class BaseStackedMRParserListener():
                         g = self.__dist_comment_pat2.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 4
                         _factor['chain_id'] = [g[offset]]
-                        # _factor['comp_id'] = [g[offset + 1]]
+                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                            _factor['comp_id'] = [g[offset + 1]]
                         _factor['seq_id'] = [int(g[offset + 2])]
                         _factor['atom_id'] = [g[offset + 3]]
                 elif self.cur_subtype == 'dihed':
                     if self.__dihed_comment_pat.match(self.lastComment):
                         g = self.__dihed_comment_pat.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 3
-                        # _factor['comp_id'] = [g[offset]]
+                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                            _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
                         _seqId = _factor['seq_id'][0]
@@ -4816,9 +4821,14 @@ class BaseStackedMRParserListener():
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             _factor['seq_not_specified'] = True
 
-        key = str(_factor)
-        if key in self.__cachedDictForFactor:
-            _factor_ = self.__cachedDictForFactor[key]
+        try:
+            key = factorCacheKey(_factor)
+            _factor_ = self.__cachedDictForFactor.get(key)
+        except TypeError:  # a non-hashable value would be new; fall back to the repr key
+            key = str(_factor)
+            _factor_ = self.__cachedDictForFactor.get(key)
+
+        if _factor_ is not None:
             if 'has_nitroxide' in _factor_:
                 self.has_nx = True
             elif 'has_gd3+' in _factor_:

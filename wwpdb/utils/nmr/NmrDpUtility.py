@@ -291,6 +291,10 @@
 #                           (copyFactor/copyPolySeq/atomKey in ParserListenerUtil, list()/dict()/copy.copy(),
 #                           or no copy at all where the retrieved object is immutable or never mutated),
 #                           and compare atom selections of the 'not' clause via a hashed key set (DAOTHER-10315)
+# 24-Sep-2026  M. Yokochi - add an optional C accelerator (cpp_src/c_listener_util.c, built by
+#                           WWPDB_NMR_BUILD_C_ACCEL=1) for ParserListenerUtil.copyFactor/copyPolySeq/atomKey,
+#                           replace the str(factor) key of the factor cache by ParserListenerUtil.factorKey(),
+#                           and store the SCHRODINGER 'store' clause as a factor dictionary (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

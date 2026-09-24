@@ -419,7 +419,7 @@ if __name__ == "__main__":
                  '../../tests-nmr/mock-data-remediation/2lwh/2lwh.cif',
                  None)
 
-    mr_atom_name_mapping_ = [
+    mrAtomNameMapping_ = [
         {'auth_atom_id': 'C15', 'auth_comp_id': '2QL', 'auth_seq_id': 101,
          'original_atom_id': 'C15', 'original_comp_id': 'DBP', 'original_seq_id': 23},
         {'auth_atom_id': 'C19', 'auth_comp_id': '2QL', 'auth_seq_id': 101,
@@ -596,7 +596,7 @@ if __name__ == "__main__":
          'original_atom_id': 'H13', 'original_comp_id': 'DBP', 'original_seq_id': 23},
         {'auth_atom_id': 'H14', 'auth_comp_id': '2QL', 'auth_seq_id': 101,
          'original_atom_id': 'H14', 'original_comp_id': 'DBP', 'original_seq_id': 23}]
-    reader = AmberMRReader(True, mrAtomNameMapping=mr_atom_name_mapping_)
+    reader = AmberMRReader(True, mrAtomNameMapping=mrAtomNameMapping_)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2miw/2miw-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2miw/2miw.cif',

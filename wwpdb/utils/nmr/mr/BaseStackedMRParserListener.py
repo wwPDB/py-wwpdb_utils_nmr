@@ -4704,7 +4704,8 @@ class BaseStackedMRParserListener():
                     if self.__dist_comment_pat.match(self.lastComment):
                         g = self.__dist_comment_pat.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 3
-                        # _factor['comp_id'] = [g[offset]]
+                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                            _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
                         _seqId = _factor['seq_id'][0]
@@ -4720,14 +4721,16 @@ class BaseStackedMRParserListener():
                         g = self.__dist_comment_pat2.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 4
                         _factor['chain_id'] = [g[offset]]
-                        # _factor['comp_id'] = [g[offset + 1]]
+                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                            _factor['comp_id'] = [g[offset + 1]]
                         _factor['seq_id'] = [int(g[offset + 2])]
                         _factor['atom_id'] = [g[offset + 3]]
                 elif self.cur_subtype == 'dihed':
                     if self.__dihed_comment_pat.match(self.lastComment):
                         g = self.__dihed_comment_pat.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 3
-                        # _factor['comp_id'] = [g[offset]]
+                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                            _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
                         _seqId = _factor['seq_id'][0]

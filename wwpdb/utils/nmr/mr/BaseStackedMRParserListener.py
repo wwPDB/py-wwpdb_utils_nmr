@@ -136,6 +136,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        copyFactor,
                                                        copyPolySeq,
+                                                       factorCacheKey,
                                                        toNefEx,
                                                        coordAssemblyChecker,
                                                        extendCoordChainsForExactNoes,
@@ -268,6 +269,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            copyFactor,
                                            copyPolySeq,
+                                           factorCacheKey,
                                            toNefEx,
                                            coordAssemblyChecker,
                                            extendCoordChainsForExactNoes,
@@ -4816,9 +4818,14 @@ class BaseStackedMRParserListener():
         if 'seq_id' not in _factor and 'seq_ids' not in _factor:
             _factor['seq_not_specified'] = True
 
-        key = str(_factor)
-        if key in self.__cachedDictForFactor:
-            _factor_ = self.__cachedDictForFactor[key]
+        try:
+            key = factorCacheKey(_factor)
+            _factor_ = self.__cachedDictForFactor.get(key)
+        except TypeError:  # a non-hashable value would be new; fall back to the repr key
+            key = str(_factor)
+            _factor_ = self.__cachedDictForFactor.get(key)
+
+        if _factor_ is not None:
             if 'has_nitroxide' in _factor_:
                 self.has_nx = True
             elif 'has_gd3+' in _factor_:

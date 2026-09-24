@@ -12,6 +12,8 @@
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR restraint remediation Phase 2)
 # 30-Jun-2026  M. Yokochi - add getCspRow() to support chemical shift perturbation (v1.1.0)
+# 24-Sep-2026  M. Yokochi - add factorKey() and bind atomKey()/copyFactor()/copyPolySeq()/factorKey()
+#                           to the optional C accelerator when it is available (DAOTHER-10315)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -166,6 +168,52 @@ def copyPolySeq(polySeq: List[dict]) -> List[dict]:
     """
 
     return [{k: (list(v) if v.__class__ is list else v) for k, v in ps.items()} for ps in polySeq]
+
+
+def factorKey(factor: dict) -> tuple:
+    """ Return a hashable canonical form of a factor dictionary, which compares equal exactly
+        when the factor dictionaries compare equal. Used as the key of the factor cache of
+        BaseStackedMRParserListener in place of str(factor), which has to build a repr of the
+        whole factor. Both keys induce the same cache partition; this one skips the number and
+        string formatting, but only wins once compiled - see factorCacheKey (DAOTHER-10315).
+    """
+
+    return tuple((k, tuple(tuple(a.items()) if a.__class__ is dict else a for a in v) if v.__class__ is list else v)
+                 for k, v in factor.items())
+
+
+# Optional C accelerator for the four helpers above, which dominate the factor cache of
+# BaseStackedMRParserListener.doConsumeFactor_expressions(). It is compiled only where the
+# speedy-antlr-tool accelerators are (see setup.py and the Dockerfile builder stage), so the
+# ImportError path is the normal one for a pip-installed package.
+#
+# The import is relative on purpose. The package resolves as wwpdb.utils.nmr in OneDep and as
+# bare nmr in standalone mode, and a relative import is the one form that binds the same name
+# in both without a try:/except ImportError: pair that could drift apart. The sa_*.py shims
+# reach their own extensions the same way.
+try:
+    from . import c_listener_util
+except ImportError:
+    c_listener_util = None
+
+USE_C_IMPLEMENTATION = c_listener_util is not None
+
+# Handles on the Python bodies, so ParserListenerUtilTests can assert that the two
+# implementations agree, and so a profiling run can compare them in place.
+atomKeyPy, copyFactorPy, copyPolySeqPy, factorKeyPy = atomKey, copyFactor, copyPolySeq, factorKey
+
+if USE_C_IMPLEMENTATION:
+    atomKey = c_listener_util.atomKey  # noqa: F811 pylint: disable=function-redefined,c-extension-no-member
+    copyFactor = c_listener_util.copyFactor  # noqa: F811 pylint: disable=function-redefined,c-extension-no-member
+    copyPolySeq = c_listener_util.copyPolySeq  # noqa: F811 pylint: disable=function-redefined,c-extension-no-member
+    factorKey = c_listener_util.factorKey  # noqa: F811 pylint: disable=function-redefined,c-extension-no-member
+
+# The cache key of doConsumeFactor_expressions(). Either key is cheap here, because the factors
+# reaching it are small - measured over the DAOTHER-10315 entry, 117k calls averaging 1.8 atom
+# selections, so str() costs ~0.07 s over the whole run. The interpreted tuple key is about
+# twice that and the compiled one about a third of it, so the tuple key is worth taking only
+# when it is compiled, and the interpreted build keeps the repr key it has always used.
+factorCacheKey = factorKey if USE_C_IMPLEMENTATION else str
 
 
 def toRegEx(string: str) -> str:

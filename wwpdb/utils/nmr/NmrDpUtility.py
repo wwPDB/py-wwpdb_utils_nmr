@@ -295,6 +295,9 @@
 #                           WWPDB_NMR_BUILD_C_ACCEL=1) for ParserListenerUtil.copyFactor/copyPolySeq/atomKey,
 #                           replace the str(factor) key of the factor cache by ParserListenerUtil.factorKey(),
 #                           and store the SCHRODINGER 'store' clause as a factor dictionary (DAOTHER-10315)
+# 25-Sep-2026  M. Yokochi - clear the shared PairwiseAlign before each pairwise alignment, which otherwise re-aligns
+#                           every test sequence ever added, and remove quadratic lookups in
+#                           AlignUtil.alignPolymerSequence/assignPolymerSequence (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -303,7 +306,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.2"
+__version__ = "5.3.3"
 
 import collections
 import copy
@@ -3857,6 +3860,7 @@ class NmrDpUtility:
                             if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                 ps2 = _ps2
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -3894,6 +3898,7 @@ class NmrDpUtility:
                                         if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
+                                        self.__reg.pA.clear()
                                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id_}')
                                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id_)
                                         self.__reg.pA.doAlign()
@@ -4184,6 +4189,7 @@ class NmrDpUtility:
                             if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                 ps2 = _ps2
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -4221,6 +4227,7 @@ class NmrDpUtility:
                                         if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
+                                        self.__reg.pA.clear()
                                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id_}')
                                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id_)
                                         self.__reg.pA.doAlign()
@@ -4444,6 +4451,7 @@ class NmrDpUtility:
                                                and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                                 ps2 = _ps2
 
+                                            self.__reg.pA.clear()
                                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                                             self.__reg.pA.doAlign()
@@ -4478,6 +4486,7 @@ class NmrDpUtility:
                                     if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                         ps2 = _ps2
 
+                                    self.__reg.pA.clear()
                                     self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                                     self.__reg.pA.doAlign()
@@ -10867,6 +10876,7 @@ class NmrDpUtility:
                             if chain_id != ps2['chain_id']:
                                 continue
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -10923,6 +10933,7 @@ class NmrDpUtility:
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
+                self.__reg.pA.clear()
                 self.__reg.pA.setReferenceSequence(ps1['auth_comp_id'] if 'auth_comp_id' in ps1 else ps2['comp_id'],
                                                    f'REF{chain_id}')
                 self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
@@ -10939,6 +10950,7 @@ class NmrDpUtility:
 
                 if length == unmapped + conflict:
                     if len(ps1['seq_id']) == 1 and 'alt_comp_id' in ps1 and ps1['alt_comp_id'][0] in ps2['comp_id']:
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(ps1['alt_comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -10970,6 +10982,7 @@ class NmrDpUtility:
                     _ps1_ = __ps1
                     _ps2_ = __ps2
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(_ps1_['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(_ps2_['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -11018,6 +11031,7 @@ class NmrDpUtility:
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
+                self.__reg.pA.clear()
                 self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                 self.__reg.pA.addTestSequence(ps2['auth_comp_id'] if 'auth_comp_id' in ps2 else ps2['comp_id'], chain_id)
                 self.__reg.pA.doAlign()
@@ -11033,6 +11047,7 @@ class NmrDpUtility:
 
                 if length == unmapped + conflict:
                     if len(ps2['seq_id']) == 1 and 'alt_comp_id' in ps2 and ps2['alt_comp_id'][0] in ps1['comp_id']:
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(ps2['alt_comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -11064,6 +11079,7 @@ class NmrDpUtility:
                     _ps1_ = __ps1
                     _ps2_ = __ps2
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(_ps1_['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(_ps2_['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -11104,6 +11120,7 @@ class NmrDpUtility:
         """ Compensate ladder-like Histidine tag in polymer sequence 2.
         """
 
+        self.__reg.pA.clear()
         self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
         self.__reg.pA.doAlign()
@@ -11419,6 +11436,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id2)
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -11447,6 +11465,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -11468,6 +11487,7 @@ class NmrDpUtility:
                             if k1 == k2 == 'comp_id' or k1 not in ps1 or k2 not in ps2:
                                 continue
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(ps1[k1], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2[k2], chain_id)
                             self.__reg.pA.doAlign()
@@ -11691,6 +11711,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id2)
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -11739,6 +11760,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -11772,6 +11794,7 @@ class NmrDpUtility:
                             _ps1 = __ps1
                             _ps2 = __ps2
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -12255,6 +12278,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id2)
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -12303,6 +12327,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -12336,6 +12361,7 @@ class NmrDpUtility:
                             _ps1 = __ps1
                             _ps2 = __ps2
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()

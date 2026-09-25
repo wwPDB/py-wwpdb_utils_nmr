@@ -6278,6 +6278,7 @@ class BasePKParserListener():
         if len(longest_substr) == 0:
             return atom_sel[0]
 
+        self.pA.clear()
         self.pA.setReferenceSequence(list(longest_substr), 'REFNAME')
         self.pA.addTestSequence(list(max_str), 'NAME')
         self.pA.doAlign()

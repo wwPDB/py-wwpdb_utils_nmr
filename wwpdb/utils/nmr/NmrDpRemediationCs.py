@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.2"
+__version__ = "5.3.3"
 
 import copy
 from operator import itemgetter
@@ -292,6 +292,7 @@ class NmrDpRemediationCs(NmrDpRemediationBase):
 
         chain_id = cif_ps['chain_id']
 
+        self._reg.pA.clear()
         self._reg.pA.setReferenceSequence(cif_ps['comp_id'], f'REF{chain_id}')
         self._reg.pA.addTestSequence(nmr_ps['comp_id'], chain_id)
         self._reg.pA.doAlign()

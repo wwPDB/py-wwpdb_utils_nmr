@@ -47,7 +47,7 @@ python -m unittest discover -v -s wwpdb/utils/tests-nmr-tox -p "NmrDpUtilityTest
 
 ### Known failures
 
-A green run is **58 ran, 52 ok, 1 failure, 1 skipped**. The one failure predates
+A green run is **65 ran, 63 ok, 1 failure, 1 skipped**. The one failure predates
 the current work and is not worth chasing:
 
 - `test_get_nef_atom` — asserts that `get_nef_atom("HEM", ...)` collapses the

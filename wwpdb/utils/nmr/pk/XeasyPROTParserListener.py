@@ -197,7 +197,7 @@ class XeasyPROTParserListener(ParseTreeListener, BaseTopologyParserListener):
                     'auth_comp_id': factor['comp_id'],
                     'auth_atom_id': atomId}
 
-            if any(True for v in atom.values() if v is None):
+            if None in atom.values():
                 self.protStatements -= 1
                 return
 

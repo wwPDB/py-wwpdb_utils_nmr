@@ -1570,7 +1570,7 @@ class AmberMRParserListener(ParseTreeListener):
                                      sf['list_id'], self.__entryId, dstFunc,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
-                        if any(True for _dat in row[1:len_keys] if _dat is None):
+                        if None in row[1:len_keys]:  # pylint: disable=possibly-used-before-assignment
                             sf['index_id'] -= 1
                             continue
                         sf['loop'].add_data(row)
@@ -1867,7 +1867,7 @@ class AmberMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
-                    if any(True for _dat in row[1:len_keys] if _dat is None):
+                    if None in row[1:len_keys]:  # pylint: disable=possibly-used-before-assignment
                         sf['index_id'] -= 1
                         continue
                     sf['loop'].add_data(row)
@@ -3960,7 +3960,7 @@ class AmberMRParserListener(ParseTreeListener):
                                      sf['list_id'], self.__entryId, dstFunc,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom1, atom2)
-                        if any(True for _dat in row[1:len_keys] if _dat is None):
+                        if None in row[1:len_keys]:  # pylint: disable=used-before-assignment
                             sf['index_id'] -= 1
                             continue
                         sf['loop'].add_data(row)
@@ -4307,7 +4307,7 @@ class AmberMRParserListener(ParseTreeListener):
                                  sf['list_id'], self.__entryId, dstFunc,
                                  self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                  atom1, atom2, atom3, atom4)
-                    if any(True for _dat in row[1:len_keys] if _dat is None):
+                    if None in row[1:len_keys]:  # pylint: disable=possibly-used-before-assignment
                         sf['index_id'] -= 1
                         continue
                     sf['loop'].add_data(row)
@@ -8425,7 +8425,7 @@ class AmberMRParserListener(ParseTreeListener):
                                              sf['list_id'], self.__entryId, dstFunc,
                                              self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                              atom1, atom2)
-                                if any(True for _dat in row[1:len_keys] if _dat is None):
+                                if None in row[1:len_keys]:  # pylint: disable=possibly-used-before-assignment
                                     sf['index_id'] -= 1
                                     continue
                                 sf['loop'].add_data(row)
@@ -8774,7 +8774,7 @@ class AmberMRParserListener(ParseTreeListener):
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom)
-                            if any(True for _dat in row[1:len_keys] if _dat is None):
+                            if None in row[1:len_keys]:  # pylint: disable=possibly-used-before-assignment
                                 sf['index_id'] -= 1
                                 continue
                             sf['loop'].add_data(row)
@@ -9318,7 +9318,7 @@ class AmberMRParserListener(ParseTreeListener):
                                      sf['list_id'], self.__entryId, dstFunc,
                                      self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                      atom)
-                        if any(True for _dat in row[1:len_keys] if _dat is None):
+                        if None in row[1:len_keys]:  # pylint: disable=possibly-used-before-assignment
                             sf['index_id'] -= 1
                             continue
                         sf['loop'].add_data(row)
@@ -9855,7 +9855,7 @@ class AmberMRParserListener(ParseTreeListener):
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom1, atom2)
-                            if any(True for _dat in row[1:len_keys] if _dat is None):
+                            if None in row[1:len_keys]:  # pylint: disable=possibly-used-before-assignment
                                 sf['index_id'] -= 1
                                 continue
                             sf['loop'].add_data(row)
@@ -10540,7 +10540,7 @@ class AmberMRParserListener(ParseTreeListener):
                                          sf['list_id'], self.__entryId, dstFunc,
                                          self.__authToStarSeq, self.__authToOrigSeq, self.__authToInsCode, self.__offsetHolder,
                                          atom2)
-                            if any(True for _dat in row[1:len_keys] if _dat is None):
+                            if None in row[1:len_keys]:  # pylint: disable=possibly-used-before-assignment
                                 sf['index_id'] -= 1
                                 continue
                             sf['loop'].add_data(row)

@@ -4837,7 +4837,7 @@ def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any(True for seqId in seqIds if seqId is None):
+    if None in seqIds:
         return False
 
     chainIds = [a['chain_id'] for a in atoms]
@@ -4974,7 +4974,7 @@ def getAltProtonIdInBondConstraint(atoms: List[dict], csStat
     if len(atoms) < 2:
         return None, None
 
-    if any(True for a in atoms if a is None):
+    if None in atoms:
         return None, None
 
     for a in atoms:
@@ -5045,7 +5045,7 @@ def isAsymmetricRangeRestraint(atoms: List[dict], chainIdSet: List[str], symmetr
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any(True for seqId in seqIds if seqId is None):
+    if None in seqIds:
         return False
 
     commonSeqId = collections.Counter(seqIds).most_common()
@@ -5740,7 +5740,7 @@ def getRdcCode(atoms: List[dict]
     if len(atoms) != 2:
         return None
 
-    if any(True for a in atoms if a is None):
+    if None in atoms:
         return None
 
     atom1 = atoms[0]

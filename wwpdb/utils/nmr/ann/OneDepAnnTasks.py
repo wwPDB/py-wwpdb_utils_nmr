@@ -244,6 +244,7 @@ def get_nmr_software(name: str) -> str:
     for software in NMR_SOFTWERE_LIST:
         _software = software.lower()
 
+        pA.clear()
         pA.setReferenceSequence(list(_software), 'REFNAME')
         pA.addTestSequence(list(_name), 'NAME')
         pA.doAlign()

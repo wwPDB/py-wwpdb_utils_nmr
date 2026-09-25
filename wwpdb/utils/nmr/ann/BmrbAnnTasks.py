@@ -1894,6 +1894,7 @@ class BmrbAnnTasks:
                or 'naphos' in key:
                 return False
 
+            self.__reg.pA.clear()
             self.__reg.pA.setReferenceSequence(list(entity['name'].replace(' ', '').lower()), 'REFNAME')
             self.__reg.pA.addTestSequence(list(key.replace(' ', '').lower()), 'NAME')
             self.__reg.pA.doAlign()

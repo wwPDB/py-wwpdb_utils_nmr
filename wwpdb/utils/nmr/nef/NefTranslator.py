@@ -141,7 +141,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.2"
+__version__ = "5.3.3"
 
 import collections
 import copy
@@ -10056,6 +10056,7 @@ class NefTranslator:
             if len(longest_substr) == 0:
                 return atom_sel[0]
 
+            self.__pA.clear()
             self.__pA.setReferenceSequence(list(longest_substr), 'REFNAME')
             self.__pA.addTestSequence(list(max_str), 'NAME')
             self.__pA.doAlign()

@@ -148,6 +148,174 @@ class NmrDpValidationMr(NmrDpValidationBase):
 
         if loop is not None:
 
+            def get_idx_msg(idx):
+                _index_tag = index_tag if index_tag is not None else 'ID'
+                try:
+                    _index_tag_col = loop.tags.index(_index_tag)
+                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                except ValueError:
+                    _index_tag = 'ID'
+                    try:
+                        _index_tag_col = loop.tags.index(_index_tag)
+                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
+                    except ValueError:
+                        _index_tag = 'Index_ID'
+                        idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
+                return idx_msg
+
+            def report_atom_sel_warn(idx, warn):
+                idx_msg = get_idx_msg(idx)
+
+                if warn.startswith('[Atom not found]'):
+                    if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
+                        self._reg.report.error.appendDescription('atom_not_found',
+                                                                 {'file_name': original_file_name,
+                                                                  'sf_framecode': sf_framecode,
+                                                                  'category': lp_category,
+                                                                  'description': idx_msg + warn})
+
+                        if self._reg.verbose:
+                            self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
+                                                f"++ Error  - {idx_msg + warn}\n")
+
+                elif warn.startswith('[Hydrogen not instantiated]'):
+                    self._reg.report.warning.appendDescription('hydrogen_not_instantiated',
+                                                               {'file_name': original_file_name,
+                                                                'sf_framecode': sf_framecode,
+                                                                'category': lp_category,
+                                                                'description': idx_msg + warn})
+
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
+                                            f"++ Warning  - {idx_msg + warn}\n")
+
+                elif warn.startswith('[Invalid atom nomenclature]'):
+                    self._reg.report.error.appendDescription('invalid_atom_nomenclature',
+                                                             {'file_name': original_file_name,
+                                                              'sf_framecode': sf_framecode,
+                                                              'category': lp_category,
+                                                              'description': idx_msg + warn})
+
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
+                                            f"++ Error  - {idx_msg + warn}\n")
+
+                elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
+                    self._reg.report.error.appendDescription('invalid_data',
+                                                             {'file_name': original_file_name,
+                                                              'sf_framecode': sf_framecode,
+                                                              'category': lp_category,
+                                                              'description': idx_msg + warn})
+
+                    if self._reg.verbose:
+                        self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
+                                            f"++ ValueError  - {idx_msg + warn}\n")
+
+            def emit_str_mr_rows(idx, atom_sels):
+                if any(True for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
+                    return
+
+                sf_item['id'] += 1
+
+                if content_subtype == 'dist_restraint':
+                    Id = '.'
+                    _Id = None
+                    if id_col != -1:
+                        Id = loop.data[idx][id_col]
+                        try:
+                            _Id = int(Id)
+                        except ValueError:
+                            Id = '.'
+                    Id = sf_item['id'] if isinstance(Id, str) and Id == '.' else _Id
+                    combinationId = '.'
+                    if combination_id_col != -1:
+                        combinationId = loop.data[idx][combination_id_col]
+                        try:
+                            int(combinationId)
+                        except ValueError:
+                            combinationId = '.'
+                    memberId = '.'
+                    if member_id_col != -1:
+                        memberId = loop.data[idx][member_id_col]
+                        try:
+                            int(memberId)
+                        except ValueError:
+                            memberId = '.'
+                    valid_atom_sels = atom_sels[0] is not None and atom_sels[1] is not None
+                    if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
+                       and (isAmbigAtomSelection(atom_sels[0], self._reg.csStat)
+                            or isAmbigAtomSelection(atom_sels[1], self._reg.csStat)):
+                        memberId = 0
+                    memberLogicCode = '.'
+                    if member_logic_code_col != -1:
+                        memberLogicCode = loop.data[idx][member_logic_code_col]
+                        if memberLogicCode in EMPTY_VALUE:
+                            memberLogicCode = '.'
+                    memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
+                        else memberLogicCode
+
+                    if isinstance(memberId, int):
+                        _atom1 = _atom2 = None
+
+                    if valid_atom_sels:
+                        for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
+                            if isIdenticalRestraint([atom1, atom2]):
+                                continue
+                            if isinstance(memberId, int):
+                                if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self._reg.csStat)\
+                                   or isAmbigAtomSelection([_atom2, atom2], self._reg.csStat):
+                                    memberId += 1
+                                    _atom1, _atom2 = atom1, atom2
+                            sf_item['index_id'] += 1
+                            _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                  memberId, memberLogicCode, list_id, self._reg.entry_id,
+                                                  loop.tags, loop.data[idx],
+                                                  auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                                  [atom1, atom2], self._reg.annotation_mode)
+                            lp.add_data(_row)
+
+                    elif atom_sels[0] is not None:
+                        atom2 = None
+                        for atom1 in atom_sels[0]:
+                            sf_item['index_id'] += 1
+                            _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                  memberId, memberLogicCode, list_id, self._reg.entry_id,
+                                                  loop.tags, loop.data[idx],
+                                                  auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                                  [atom1, atom2], self._reg.annotation_mode)
+                            lp.add_data(_row)
+
+                    elif atom_sels[1] is not None:
+                        atom1 = None
+                        for atom2 in atom_sels[1]:
+                            sf_item['index_id'] += 1
+                            _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                                  memberId, memberLogicCode, list_id, self._reg.entry_id,
+                                                  loop.tags, loop.data[idx],
+                                                  auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                                  [atom1, atom2], self._reg.annotation_mode)
+                            lp.add_data(_row)
+
+                    else:
+                        atom1 = atom2 = None
+                        sf_item['index_id'] += 1
+                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
+                                              memberId, memberLogicCode, list_id, self._reg.entry_id,
+                                              loop.tags, loop.data[idx],
+                                              auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                              [atom1, atom2], self._reg.annotation_mode)
+                        lp.add_data(_row)
+
+                else:
+
+                    sf_item['index_id'] += 1
+                    _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
+                                          None, None, list_id, self._reg.entry_id,
+                                          loop.tags, loop.data[idx],
+                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
+                                          atom_sels, self._reg.annotation_mode)
+                    lp.add_data(_row)
+
             input_source = self._reg.report.input_sources[file_list_id]
             input_source_dic = input_source.get()
 
@@ -563,18 +731,7 @@ class NmrDpValidationMr(NmrDpValidationBase):
 
                                 if warn is not None:
 
-                                    _index_tag = index_tag if index_tag is not None else 'ID'
-                                    try:
-                                        _index_tag_col = loop.tags.index(_index_tag)
-                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                    except ValueError:
-                                        _index_tag = 'ID'
-                                        try:
-                                            _index_tag_col = loop.tags.index(_index_tag)
-                                            idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                        except ValueError:
-                                            _index_tag = 'Index_ID'
-                                            idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
+                                    idx_msg = get_idx_msg(idx)
 
                                     if warn.startswith('[Atom not found]'):
                                         if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
@@ -652,168 +809,11 @@ class NmrDpValidationMr(NmrDpValidationBase):
 
                                 if warn is not None:
 
-                                    _index_tag = index_tag if index_tag is not None else 'ID'
-                                    try:
-                                        _index_tag_col = loop.tags.index(_index_tag)
-                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                    except ValueError:
-                                        _index_tag = 'ID'
-                                        try:
-                                            _index_tag_col = loop.tags.index(_index_tag)
-                                            idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                        except ValueError:
-                                            _index_tag = 'Index_ID'
-                                            idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
-
-                                    if warn.startswith('[Atom not found]'):
-                                        if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
-                                            self._reg.report.error.appendDescription('atom_not_found',
-                                                                                     {'file_name': original_file_name,
-                                                                                      'sf_framecode': sf_framecode,
-                                                                                      'category': lp_category,
-                                                                                      'description': idx_msg + warn})
-
-                                            if self._reg.verbose:
-                                                self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                    f"++ Error  - {idx_msg + warn}\n")
-
-                                    elif warn.startswith('[Hydrogen not instantiated]'):
-                                        self._reg.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                   {'file_name': original_file_name,
-                                                                                    'sf_framecode': sf_framecode,
-                                                                                    'category': lp_category,
-                                                                                    'description': idx_msg + warn})
-
-                                        if self._reg.verbose:
-                                            self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                f"++ Warning  - {idx_msg + warn}\n")
-
-                                    elif warn.startswith('[Invalid atom nomenclature]'):
-                                        self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                                 {'file_name': original_file_name,
-                                                                                  'sf_framecode': sf_framecode,
-                                                                                  'category': lp_category,
-                                                                                  'description': idx_msg + warn})
-
-                                        if self._reg.verbose:
-                                            self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                f"++ Error  - {idx_msg + warn}\n")
-
-                                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                        self._reg.report.error.appendDescription('invalid_data',
-                                                                                 {'file_name': original_file_name,
-                                                                                  'sf_framecode': sf_framecode,
-                                                                                  'category': lp_category,
-                                                                                  'description': idx_msg + warn})
-
-                                        if self._reg.verbose:
-                                            self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                f"++ ValueError  - {idx_msg + warn}\n")
+                                    report_atom_sel_warn(idx, warn)
 
                                     continue
 
-                            if any(True for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
-                                continue
-
-                            sf_item['id'] += 1
-
-                            if content_subtype == 'dist_restraint':
-                                Id = '.'
-                                if id_col != -1:
-                                    Id = loop.data[idx][id_col]
-                                    try:
-                                        _Id = int(Id)
-                                    except ValueError:
-                                        Id = '.'
-                                Id = sf_item['id'] if isinstance(Id, str) and Id == '.' else _Id
-                                combinationId = '.'
-                                if combination_id_col != -1:
-                                    combinationId = loop.data[idx][combination_id_col]
-                                    try:
-                                        int(combinationId)
-                                    except ValueError:
-                                        combinationId = '.'
-                                memberId = '.'
-                                if member_id_col != -1:
-                                    memberId = loop.data[idx][member_id_col]
-                                    try:
-                                        int(memberId)
-                                    except ValueError:
-                                        memberId = '.'
-                                valid_atom_sels = atom_sels[0] is not None and atom_sels[1] is not None
-                                if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
-                                   and (isAmbigAtomSelection(atom_sels[0], self._reg.csStat)
-                                        or isAmbigAtomSelection(atom_sels[1], self._reg.csStat)):
-                                    memberId = 0
-                                memberLogicCode = '.'
-                                if member_logic_code_col != -1:
-                                    memberLogicCode = loop.data[idx][member_logic_code_col]
-                                    if memberLogicCode in EMPTY_VALUE:
-                                        memberLogicCode = '.'
-                                memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
-                                    else memberLogicCode
-
-                                if isinstance(memberId, int):
-                                    _atom1 = _atom2 = None
-
-                                if valid_atom_sels:
-                                    for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
-                                        if isIdenticalRestraint([atom1, atom2]):
-                                            continue
-                                        if isinstance(memberId, int):
-                                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self._reg.csStat)\
-                                               or isAmbigAtomSelection([_atom2, atom2], self._reg.csStat):
-                                                memberId += 1
-                                                _atom1, _atom2 = atom1, atom2
-                                        sf_item['index_id'] += 1
-                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                              memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                              loop.tags, loop.data[idx],
-                                                              auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2], self._reg.annotation_mode)
-                                        lp.add_data(_row)
-
-                                elif atom_sels[0] is not None:
-                                    atom2 = None
-                                    for atom1 in atom_sels[0]:
-                                        sf_item['index_id'] += 1
-                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                              memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                              loop.tags, loop.data[idx],
-                                                              auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2], self._reg.annotation_mode)
-                                        lp.add_data(_row)
-
-                                elif atom_sels[1] is not None:
-                                    atom1 = None
-                                    for atom2 in atom_sels[1]:
-                                        sf_item['index_id'] += 1
-                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                              memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                              loop.tags, loop.data[idx],
-                                                              auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2], self._reg.annotation_mode)
-                                        lp.add_data(_row)
-
-                                else:
-                                    atom1 = atom2 = None
-                                    sf_item['index_id'] += 1
-                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                          memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                          loop.tags, loop.data[idx],
-                                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                          [atom1, atom2], self._reg.annotation_mode)
-                                    lp.add_data(_row)
-
-                            else:
-
-                                sf_item['index_id'] += 1
-                                _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
-                                                      None, None, list_id, self._reg.entry_id,
-                                                      loop.tags, loop.data[idx],
-                                                      auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                      atom_sels, self._reg.annotation_mode)
-                                lp.add_data(_row)
+                            emit_str_mr_rows(idx, atom_sels)
 
                     else:
 
@@ -1068,18 +1068,7 @@ class NmrDpValidationMr(NmrDpValidationBase):
 
                                 if warn is not None:
 
-                                    _index_tag = index_tag if index_tag is not None else 'ID'
-                                    try:
-                                        _index_tag_col = loop.tags.index(_index_tag)
-                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                    except ValueError:
-                                        _index_tag = 'ID'
-                                        try:
-                                            _index_tag_col = loop.tags.index(_index_tag)
-                                            idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                        except ValueError:
-                                            _index_tag = 'Index_ID'
-                                            idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
+                                    idx_msg = get_idx_msg(idx)
 
                                     if warn.startswith('[Atom not found]'):
                                         if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
@@ -1116,168 +1105,11 @@ class NmrDpValidationMr(NmrDpValidationBase):
 
                                 if warn is not None:
 
-                                    _index_tag = index_tag if index_tag is not None else 'ID'
-                                    try:
-                                        _index_tag_col = loop.tags.index(_index_tag)
-                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                    except ValueError:
-                                        _index_tag = 'ID'
-                                        try:
-                                            _index_tag_col = loop.tags.index(_index_tag)
-                                            idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                        except ValueError:
-                                            _index_tag = 'Index_ID'
-                                            idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
-
-                                    if warn.startswith('[Atom not found]'):
-                                        if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
-                                            self._reg.report.error.appendDescription('atom_not_found',
-                                                                                     {'file_name': original_file_name,
-                                                                                      'sf_framecode': sf_framecode,
-                                                                                      'category': lp_category,
-                                                                                      'description': idx_msg + warn})
-
-                                            if self._reg.verbose:
-                                                self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                    f"++ Error  - {idx_msg + warn}\n")
-
-                                    elif warn.startswith('[Hydrogen not instantiated]'):
-                                        self._reg.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                                   {'file_name': original_file_name,
-                                                                                    'sf_framecode': sf_framecode,
-                                                                                    'category': lp_category,
-                                                                                    'description': idx_msg + warn})
-
-                                        if self._reg.verbose:
-                                            self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                f"++ Warning  - {idx_msg + warn}\n")
-
-                                    elif warn.startswith('[Invalid atom nomenclature]'):
-                                        self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                                 {'file_name': original_file_name,
-                                                                                  'sf_framecode': sf_framecode,
-                                                                                  'category': lp_category,
-                                                                                  'description': idx_msg + warn})
-
-                                        if self._reg.verbose:
-                                            self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                f"++ Error  - {idx_msg + warn}\n")
-
-                                    elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                        self._reg.report.error.appendDescription('invalid_data',
-                                                                                 {'file_name': original_file_name,
-                                                                                  'sf_framecode': sf_framecode,
-                                                                                  'category': lp_category,
-                                                                                  'description': idx_msg + warn})
-
-                                        if self._reg.verbose:
-                                            self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                f"++ ValueError  - {idx_msg + warn}\n")
+                                    report_atom_sel_warn(idx, warn)
 
                                     continue
 
-                            if any(True for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
-                                continue
-
-                            sf_item['id'] += 1
-
-                            if content_subtype == 'dist_restraint':
-                                Id = '.'
-                                if id_col != -1:
-                                    Id = loop.data[idx][id_col]
-                                    try:
-                                        _Id = int(Id)
-                                    except ValueError:
-                                        Id = '.'
-                                Id = sf_item['id'] if isinstance(Id, str) and Id == '.' else _Id
-                                combinationId = '.'
-                                if combination_id_col != -1:
-                                    combinationId = loop.data[idx][combination_id_col]
-                                    try:
-                                        int(combinationId)
-                                    except ValueError:
-                                        combinationId = '.'
-                                memberId = '.'
-                                if member_id_col != -1:
-                                    memberId = loop.data[idx][member_id_col]
-                                    try:
-                                        int(memberId)
-                                    except ValueError:
-                                        memberId = '.'
-                                valid_atom_sels = atom_sels[0] is not None and atom_sels[1] is not None
-                                if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
-                                   and (isAmbigAtomSelection(atom_sels[0], self._reg.csStat)
-                                        or isAmbigAtomSelection(atom_sels[1], self._reg.csStat)):
-                                    memberId = 0
-                                memberLogicCode = '.'
-                                if member_logic_code_col != -1:
-                                    memberLogicCode = loop.data[idx][member_logic_code_col]
-                                    if memberLogicCode in EMPTY_VALUE:
-                                        memberLogicCode = '.'
-                                memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
-                                    else memberLogicCode
-
-                                if isinstance(memberId, int):
-                                    _atom1 = _atom2 = None
-
-                                if valid_atom_sels:
-                                    for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
-                                        if isIdenticalRestraint([atom1, atom2]):
-                                            continue
-                                        if isinstance(memberId, int):
-                                            if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self._reg.csStat)\
-                                               or isAmbigAtomSelection([_atom2, atom2], self._reg.csStat):
-                                                memberId += 1
-                                                _atom1, _atom2 = atom1, atom2
-                                        sf_item['index_id'] += 1
-                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                              memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                              loop.tags, loop.data[idx],
-                                                              auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2], self._reg.annotation_mode)
-                                        lp.add_data(_row)
-
-                                elif atom_sels[0] is not None:
-                                    atom2 = None
-                                    for atom1 in atom_sels[0]:
-                                        sf_item['index_id'] += 1
-                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                              memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                              loop.tags, loop.data[idx],
-                                                              auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2], self._reg.annotation_mode)
-                                        lp.add_data(_row)
-
-                                elif atom_sels[1] is not None:
-                                    atom1 = None
-                                    for atom2 in atom_sels[1]:
-                                        sf_item['index_id'] += 1
-                                        _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                              memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                              loop.tags, loop.data[idx],
-                                                              auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                              [atom1, atom2], self._reg.annotation_mode)
-                                        lp.add_data(_row)
-
-                                else:
-                                    atom1 = atom2 = None
-                                    sf_item['index_id'] += 1
-                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                          memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                          loop.tags, loop.data[idx],
-                                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                          [atom1, atom2], self._reg.annotation_mode)
-                                    lp.add_data(_row)
-
-                            else:
-
-                                sf_item['index_id'] += 1
-                                _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
-                                                      None, None, list_id, self._reg.entry_id,
-                                                      loop.tags, loop.data[idx],
-                                                      auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                      atom_sels, self._reg.annotation_mode)
-                                lp.add_data(_row)
+                            emit_str_mr_rows(idx, atom_sels)
 
                 else:  # nothing to do because of insufficient sequence tags
 
@@ -1487,18 +1319,7 @@ class NmrDpValidationMr(NmrDpValidationBase):
 
                             if warn is not None:
 
-                                _index_tag = index_tag if index_tag is not None else 'ID'
-                                try:
-                                    _index_tag_col = loop.tags.index(_index_tag)
-                                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                except ValueError:
-                                    _index_tag = 'ID'
-                                    try:
-                                        _index_tag_col = loop.tags.index(_index_tag)
-                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                    except ValueError:
-                                        _index_tag = 'Index_ID'
-                                        idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
+                                idx_msg = get_idx_msg(idx)
 
                                 if warn.startswith('[Atom not found]'):
                                     if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
@@ -1535,168 +1356,11 @@ class NmrDpValidationMr(NmrDpValidationBase):
 
                             if warn is not None:
 
-                                _index_tag = index_tag if index_tag is not None else 'ID'
-                                try:
-                                    _index_tag_col = loop.tags.index(_index_tag)
-                                    idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                except ValueError:
-                                    _index_tag = 'ID'
-                                    try:
-                                        _index_tag_col = loop.tags.index(_index_tag)
-                                        idx_msg = f"[Check row of {_index_tag} {loop.data[idx][_index_tag_col]}] "
-                                    except ValueError:
-                                        _index_tag = 'Index_ID'
-                                        idx_msg = f"[Check row of {_index_tag} {idx + 1}] "
-
-                                if warn.startswith('[Atom not found]'):
-                                    if not self._reg.remediation_mode or 'Macromolecules page' not in warn:
-                                        self._reg.report.error.appendDescription('atom_not_found',
-                                                                                 {'file_name': original_file_name,
-                                                                                  'sf_framecode': sf_framecode,
-                                                                                  'category': lp_category,
-                                                                                  'description': idx_msg + warn})
-
-                                        if self._reg.verbose:
-                                            self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                                f"++ Error  - {idx_msg + warn}\n")
-
-                                elif warn.startswith('[Hydrogen not instantiated]'):
-                                    self._reg.report.warning.appendDescription('hydrogen_not_instantiated',
-                                                                               {'file_name': original_file_name,
-                                                                                'sf_framecode': sf_framecode,
-                                                                                'category': lp_category,
-                                                                                'description': idx_msg + warn})
-
-                                    if self._reg.verbose:
-                                        self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                            f"++ Warning  - {idx_msg + warn}\n")
-
-                                elif warn.startswith('[Invalid atom nomenclature]'):
-                                    self._reg.report.error.appendDescription('invalid_atom_nomenclature',
-                                                                             {'file_name': original_file_name,
-                                                                              'sf_framecode': sf_framecode,
-                                                                              'category': lp_category,
-                                                                              'description': idx_msg + warn})
-
-                                    if self._reg.verbose:
-                                        self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                            f"++ Error  - {idx_msg + warn}\n")
-
-                                elif warn.startswith('[Invalid atom selection]') or warn.startswith('[Invalid data]'):
-                                    self._reg.report.error.appendDescription('invalid_data',
-                                                                             {'file_name': original_file_name,
-                                                                              'sf_framecode': sf_framecode,
-                                                                              'category': lp_category,
-                                                                              'description': idx_msg + warn})
-
-                                    if self._reg.verbose:
-                                        self._reg.log.write(f"+{self.__class_name__}.validateStrMr() "
-                                                            f"++ ValueError  - {idx_msg + warn}\n")
+                                report_atom_sel_warn(idx, warn)
 
                                 continue
 
-                        if any(True for d in range(atom_dim_num) if atom_sels[d] is None or len(atom_sels[d]) == 0):
-                            continue
-
-                        sf_item['id'] += 1
-
-                        if content_subtype == 'dist_restraint':
-                            Id = '.'
-                            if id_col != -1:
-                                Id = loop.data[idx][id_col]
-                                try:
-                                    _Id = int(Id)
-                                except ValueError:
-                                    Id = '.'
-                            Id = sf_item['id'] if isinstance(Id, str) and Id == '.' else _Id
-                            combinationId = '.'
-                            if combination_id_col != -1:
-                                combinationId = loop.data[idx][combination_id_col]
-                                try:
-                                    int(combinationId)
-                                except ValueError:
-                                    combinationId = '.'
-                            memberId = '.'
-                            if member_id_col != -1:
-                                memberId = loop.data[idx][member_id_col]
-                                try:
-                                    int(memberId)
-                                except ValueError:
-                                    memberId = '.'
-                            valid_atom_sels = atom_sels[0] is not None and atom_sels[1] is not None
-                            if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
-                               and (isAmbigAtomSelection(atom_sels[0], self._reg.csStat)
-                                    or isAmbigAtomSelection(atom_sels[1], self._reg.csStat)):
-                                memberId = 0
-                            memberLogicCode = '.'
-                            if member_logic_code_col != -1:
-                                memberLogicCode = loop.data[idx][member_logic_code_col]
-                                if memberLogicCode in EMPTY_VALUE:
-                                    memberLogicCode = '.'
-                            memberLogicCode = 'OR' if valid_atom_sels and len(atom_sels[0]) * len(atom_sels[1]) > 1\
-                                else memberLogicCode
-
-                            if isinstance(memberId, int):
-                                _atom1 = _atom2 = None
-
-                            if valid_atom_sels:
-                                for atom1, atom2 in itertools.product(atom_sels[0], atom_sels[1]):
-                                    if isIdenticalRestraint([atom1, atom2]):
-                                        continue
-                                    if isinstance(memberId, int):
-                                        if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self._reg.csStat)\
-                                           or isAmbigAtomSelection([_atom2, atom2], self._reg.csStat):
-                                            memberId += 1
-                                            _atom1, _atom2 = atom1, atom2
-                                    sf_item['index_id'] += 1
-                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                          memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                          loop.tags, loop.data[idx],
-                                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                          [atom1, atom2], self._reg.annotation_mode)
-                                    lp.add_data(_row)
-
-                            elif atom_sels[0] is not None:
-                                atom2 = None
-                                for atom1 in atom_sels[0]:
-                                    sf_item['index_id'] += 1
-                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                          memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                          loop.tags, loop.data[idx],
-                                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                          [atom1, atom2], self._reg.annotation_mode)
-                                    lp.add_data(_row)
-
-                            elif atom_sels[1] is not None:
-                                atom1 = None
-                                for atom2 in atom_sels[1]:
-                                    sf_item['index_id'] += 1
-                                    _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                          memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                          loop.tags, loop.data[idx],
-                                                          auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                          [atom1, atom2], self._reg.annotation_mode)
-                                    lp.add_data(_row)
-
-                            else:
-                                atom1 = atom2 = None
-                                sf_item['index_id'] += 1
-                                _row = getRowForStrMr(content_subtype, Id, sf_item['index_id'],
-                                                      memberId, memberLogicCode, list_id, self._reg.entry_id,
-                                                      loop.tags, loop.data[idx],
-                                                      auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                      [atom1, atom2], self._reg.annotation_mode)
-                                lp.add_data(_row)
-
-                        else:
-
-                            sf_item['index_id'] += 1
-                            _row = getRowForStrMr(content_subtype, sf_item['id'], sf_item['index_id'],
-                                                  None, None, list_id, self._reg.entry_id,
-                                                  loop.tags, loop.data[idx],
-                                                  auth_to_star_seq, auth_to_orig_seq, auth_to_ins_code, offset_holder,
-                                                  atom_sels, self._reg.annotation_mode)
-                            lp.add_data(_row)
+                        emit_str_mr_rows(idx, atom_sels)
 
                     if not is_valid:
 

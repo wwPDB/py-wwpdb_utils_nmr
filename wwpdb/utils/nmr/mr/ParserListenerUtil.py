@@ -5171,43 +5171,31 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
     if len(atoms) < 2:
         return False
 
-    if any(True for a in atoms if a is None):
+    if None in atoms:
         return False
 
+    # a missing key yields None, which is in EMPTY_VALUE
     for a in atoms:
-        if 'chain_id' not in a or a['chain_id'] in EMPTY_VALUE:
-            return True
-        if 'seq_id' not in a or a['seq_id'] in EMPTY_VALUE:
-            return True
-        if 'comp_id' not in a or a['comp_id'] in EMPTY_VALUE:
-            return True
-        if 'atom_id' not in a or a['atom_id'] in EMPTY_VALUE:
+        if a.get('chain_id') in EMPTY_VALUE or a.get('seq_id') in EMPTY_VALUE\
+           or a.get('comp_id') in EMPTY_VALUE or a.get('atom_id') in EMPTY_VALUE:
             return True
 
-    chainIds = [a['chain_id'] for a in atoms]
+    a0 = atoms[0]
+    chainId, seqId = a0['chain_id'], a0['seq_id']
 
-    if len(collections.Counter(chainIds).most_common()) > 1:
+    if any(a['chain_id'] != chainId for a in atoms):
         return True
 
-    seqIds = [a['seq_id'] for a in atoms]
-
-    if any(True for seqId in seqIds if seqId is None):
-        return False
-
-    commonSeqId = collections.Counter(seqIds).most_common()
-
-    if len(commonSeqId) > 1:
+    if any(a['seq_id'] != seqId for a in atoms):
         return True
 
     atomIds = list(set(a['atom_id'] for a in atoms))
 
-    commonAtomId = collections.Counter(atomIds).most_common()
-
-    if len(commonAtomId) == 1:
+    if len(atomIds) == 1:
         return False
 
     atomId0 = atomIds[0]
-    compId = atoms[0]['comp_id']
+    compId = a0['comp_id']
 
     _protonsInGroup = csStat.getProtonsInSameGroup(compId, atomId0, True)
     geminalAtom = csStat.getGeminalAtom(compId, atomId0)

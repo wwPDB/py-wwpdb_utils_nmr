@@ -2059,38 +2059,40 @@ class NmrDpValidationMr(NmrDpValidationBase):
 
                         if atom1['atom_id'][0] in PROTON_BEGIN_CODE and atom2['atom_id'][0] in PROTON_BEGIN_CODE:
 
-                            if (values == _values and not isAmbigAtomSelection(_atoms1, self._reg.csStat)
-                                and not isAmbigAtomSelection(_atoms2, self._reg.csStat))\
-                               or (values == _values and atom1['ref_chain_id'] != atom2['ref_chain_id']
-                                   and ((not isAmbigAtomSelection(_atoms1, self._reg.csStat) and len(_atom2) > 0
-                                         and atom1['ref_chain_id'] != _atom2['ref_chain_id']
-                                         and atom2['comp_id'] == _atom2['comp_id'])
-                                        or (not isAmbigAtomSelection(_atoms2, self._reg.csStat) and len(_atom1) > 0
-                                            and atom2['ref_chain_id'] != _atom1['ref_chain_id']
-                                            and atom1['comp_id'] == _atom1['comp_id']))):
+                            if values == _values:
+                                ambig1 = isAmbigAtomSelection(_atoms1, self._reg.csStat)
+                                ambig2 = isAmbigAtomSelection(_atoms2, self._reg.csStat)
 
-                                diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
-                                diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
+                                if (not ambig1 and not ambig2)\
+                                   or (atom1['ref_chain_id'] != atom2['ref_chain_id']
+                                       and ((not ambig1 and len(_atom2) > 0
+                                             and atom1['ref_chain_id'] != _atom2['ref_chain_id']
+                                             and atom2['comp_id'] == _atom2['comp_id'])
+                                            or (not ambig2 and len(_atom1) > 0
+                                                and atom2['ref_chain_id'] != _atom1['ref_chain_id']
+                                                and atom1['comp_id'] == _atom1['comp_id']))):
 
-                                if (not isAmbigAtomSelection(_atoms1, self._reg.csStat) and diff_cs_val1)\
-                                   or (not isAmbigAtomSelection(_atoms2, self._reg.csStat) and diff_cs_val2):
-                                    pass
+                                    diff_cs_val1 = cs_val1 is not None and _cs_val1 is not None and cs_val1 != _cs_val1
+                                    diff_cs_val2 = cs_val2 is not None and _cs_val2 is not None and cs_val2 != _cs_val2
 
-                                else:
-
-                                    try:
-
-                                        _row[member_logic_code_col] = 'OR'
-
-                                        if _member_logic_code in EMPTY_VALUE:
-                                            lp.data[-1][member_logic_code_col] = 'OR'
-
-                                    except IndexError:
+                                    if (not ambig1 and diff_cs_val1) or (not ambig2 and diff_cs_val2):
                                         pass
 
-                                    sf_item['id'] -= 1
+                                    else:
 
-                                    modified = True
+                                        try:
+
+                                            _row[member_logic_code_col] = 'OR'
+
+                                            if _member_logic_code in EMPTY_VALUE:
+                                                lp.data[-1][member_logic_code_col] = 'OR'
+
+                                        except IndexError:
+                                            pass
+
+                                        sf_item['id'] -= 1
+
+                                        modified = True
 
                         elif values == _values and isIdenticalRestraint(_atoms1, self._reg.nefT)\
                                 and isIdenticalRestraint(_atoms2, self._reg.nefT):

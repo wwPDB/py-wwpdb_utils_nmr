@@ -1643,6 +1643,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                 _atomId_ = []
                 iterAtomId = list(atomId)
                 for _atomId in canAtomIdList:
+                    pA.clear()
                     pA.setReferenceSequence(iterAtomId, f'REF{refCompId}')
                     pA.addTestSequence(list(_atomId), refCompId)
                     pA.doAlign()
@@ -2656,6 +2657,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     ps1 = next(ps1 for ps1 in nmrPolySeq if ps1['chain_id'] == test_chain_id)
                     ps2 = next(ps2 for ps2 in polySeq if ps2['auth_chain_id'] == ref_chain_id)
 
+                    pA.clear()
                     pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
                     pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     pA.doAlign()

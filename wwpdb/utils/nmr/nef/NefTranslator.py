@@ -10056,6 +10056,7 @@ class NefTranslator:
             if len(longest_substr) == 0:
                 return atom_sel[0]
 
+            self.__pA.clear()
             self.__pA.setReferenceSequence(list(longest_substr), 'REFNAME')
             self.__pA.addTestSequence(list(max_str), 'NAME')
             self.__pA.doAlign()

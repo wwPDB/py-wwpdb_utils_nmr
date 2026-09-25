@@ -681,6 +681,7 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == test_chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['auth_chain_id'] == ref_chain_id)
 
+                    self._reg.pA.clear()
                     self._reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
                     self._reg.pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     self._reg.pA.doAlign()

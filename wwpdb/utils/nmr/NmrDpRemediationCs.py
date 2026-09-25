@@ -292,6 +292,7 @@ class NmrDpRemediationCs(NmrDpRemediationBase):
 
         chain_id = cif_ps['chain_id']
 
+        self._reg.pA.clear()
         self._reg.pA.setReferenceSequence(cif_ps['comp_id'], f'REF{chain_id}')
         self._reg.pA.addTestSequence(nmr_ps['comp_id'], chain_id)
         self._reg.pA.doAlign()

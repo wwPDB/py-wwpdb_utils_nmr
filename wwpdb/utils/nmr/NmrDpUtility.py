@@ -298,6 +298,9 @@
 # 25-Sep-2026  M. Yokochi - clear the shared PairwiseAlign before each pairwise alignment, which otherwise re-aligns
 #                           every test sequence ever added, and remove quadratic lookups in
 #                           AlignUtil.alignPolymerSequence/assignPolymerSequence (DAOTHER-10315)
+# 28-Sep-2026  M. Yokochi - return the glibc heap freed by the speedy-antlr C++ lexer/parser to the OS right after
+#                           each parse (AntlrParseUtil.parseAntlr), which otherwise stays resident through the
+#                           listener walk (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

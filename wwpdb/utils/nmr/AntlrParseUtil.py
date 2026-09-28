@@ -3,6 +3,8 @@
 # Date: 7-Aug-2026
 #
 # Updates:
+# 28-Sep-2026  M. Yokochi - call malloc_trim(0) after each C++ parse to return the freed C++ heap to the OS (DAOTHER-10315)
+##
 """ A single ANTLR parse driver shared by every *Reader class in this package.
 
     Historically each *Reader.py repeated the same
@@ -19,6 +21,8 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
+import ctypes
+import ctypes.util
 from typing import Optional, Tuple
 
 from antlr4 import CommonTokenStream, InputStream, PredictionMode
@@ -34,6 +38,17 @@ except ImportError:
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.SpeedyAntlrErrorListener import createSpeedyAntlrErrorListener
+
+
+# The C++ lexer and parser allocate their tokens and parse tree on the glibc heap, and free
+# them when saModule.parse() returns. The Python parse tree built in between keeps those heap
+# pages mapped, so the freed memory stays resident through the whole listener walk: 26 MB of
+# XPLOR-NIH input holds about 800 MB where the pure-Python path holds about 720 MB.
+# malloc_trim(0) hands the free pages back, which brings it to about 575 MB (DAOTHER-10315).
+try:
+    _malloc_trim = ctypes.CDLL(ctypes.util.find_library('c') or 'libc.so.6').malloc_trim
+except (AttributeError, OSError):  # not glibc, e.g. musl, macOS or Windows
+    _malloc_trim = None
 
 
 def usingCppParser(saModule) -> bool:
@@ -89,6 +104,9 @@ def parseAntlr(lexerClass, parserClass, entryRuleName: str, inputString: str,
         errorListener = createSpeedyAntlrErrorListener(saModule, lexerErrorListener, parserErrorListener)
 
         tree = saModule.parse(stream, entryRuleName, errorListener, predictionModeSll)
+
+        if _malloc_trim is not None:
+            _malloc_trim(0)
 
         return tree, parserErrorListener, lexerErrorListener
 

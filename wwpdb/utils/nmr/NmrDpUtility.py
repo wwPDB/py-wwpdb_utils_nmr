@@ -3197,37 +3197,68 @@ class NmrDpUtility:
                                        if item[0] == seq_id + offset_seq_ids[chain_id] and item[1] == comp_id and len(item) == 3):
                                 common_poly_seq[chain_id].add((seq_id + offset_seq_ids[chain_id], comp_id))
 
-        asm = []  # molecular assembly of a loop
+        def get_array_expr(c):
+            seq_ids = sorted(set(item[0] - offset_seq_ids[c] for item in common_poly_seq[c]))
+            comp_ids, alt_comp_ids = [], []
+
+            for seq_id in seq_ids:
+                _comp_ids = [item[1] for item in common_poly_seq[c] if item[0] - offset_seq_ids[c] == seq_id]
+                if cs_has_alt_comp_id:
+                    _alt_comp_ids = [item[len(item) - 1] for item in common_poly_seq[c]
+                                     if item[0] - offset_seq_ids[c] == seq_id]
+                if len(_comp_ids) == 1:
+                    comp_ids.append(_comp_ids[0])
+                    if cs_has_alt_comp_id:
+                        alt_comp_ids.append(_alt_comp_ids[0])
+                else:
+                    comp_ids.append(next(comp_id for comp_id in _comp_ids if comp_id not in EMPTY_VALUE))
+                    if cs_has_alt_comp_id:
+                        alt_comp_ids.append(next(alt_comp_id for alt_comp_id in _alt_comp_ids
+                                                 if alt_comp_id not in EMPTY_VALUE))
+            return seq_ids, comp_ids, alt_comp_ids
+
+        asm, failed_entity = [], []  # molecular assembly of a loop
 
         for chain_id in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[chain_id]) > 0:
-                seq_ids = sorted(set(item[0] - offset_seq_ids[chain_id] for item in common_poly_seq[chain_id]))
-                comp_ids = []
-                if cs_has_alt_comp_id:
-                    alt_comp_ids = []
-
-                for seq_id in seq_ids:
-                    _comp_ids = [item[1] for item in common_poly_seq[chain_id] if item[0] - offset_seq_ids[chain_id] == seq_id]
-                    if cs_has_alt_comp_id:
-                        _alt_comp_ids = [item[len(item) - 1] for item in common_poly_seq[chain_id]
-                                         if item[0] - offset_seq_ids[chain_id] == seq_id]
-                    if len(_comp_ids) == 1:
-                        comp_ids.append(_comp_ids[0])
-                        if cs_has_alt_comp_id:
-                            alt_comp_ids.append(_alt_comp_ids[0])
-                    else:
-                        comp_ids.append(next(comp_id for comp_id in _comp_ids if comp_id not in EMPTY_VALUE))
-                        if cs_has_alt_comp_id:
-                            alt_comp_ids.append(next(alt_comp_id for alt_comp_id in _alt_comp_ids
-                                                     if alt_comp_id not in EMPTY_VALUE))
+                seq_ids, comp_ids, alt_comp_ids = get_array_expr(chain_id)
 
                 if self.__reg.combined_mode and self.__reg.has_star_entity:
                     ent = self.__extractPolymerSequenceInEntityLoopOfChain__(fileListId, chain_id)
 
                     if ent is not None:
-                        asm.append(ent)
-                        continue
+                        if any(comp_id in comp_ids for comp_id in ent['comp_id']):
+                            asm.append(ent)
+
+                        else:
+                            failed_entity.append(chain_id)
+
+                    elif len(failed_entity) > 0:
+                        hit = False
+                        for _chain_id in copy.copy(failed_entity):
+                            ent = self.__extractPolymerSequenceInEntityLoopOfChain__(fileListId, _chain_id)
+
+                            if ent is not None and any(comp_id in comp_ids for comp_id in ent['comp_id']):
+                                _seq_ids, _comp_ids, _alt_comp_ids = get_array_expr(_chain_id)
+                                _ent = {'chain_id': _chain_id, 'seq_id': _seq_ids, 'comp_id': _comp_ids}
+                                if cs_has_alt_comp_id:
+                                    _ent['alt_comp_id'] = _alt_comp_ids
+
+                                asm.append(_ent)
+
+                                ent['chain_id'] = chain_id
+                                asm.append(ent)
+
+                                failed_entity.remove(_chain_id)
+
+                                hit = True
+                                break
+
+                        if not hit:
+                            failed_entity.append(chain_id)
+
+                    continue
 
                 ent = {'chain_id': chain_id, 'seq_id': seq_ids, 'comp_id': comp_ids}
                 if cs_has_alt_comp_id:

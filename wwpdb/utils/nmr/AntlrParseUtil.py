@@ -4,6 +4,7 @@
 #
 # Updates:
 # 28-Sep-2026  M. Yokochi - call malloc_trim(0) after each C++ parse to return the freed C++ heap to the OS (DAOTHER-10315)
+# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous parse tree before a large parse (DAOTHER-10315)
 ##
 """ A single ANTLR parse driver shared by every *Reader class in this package.
 
@@ -23,18 +24,19 @@ __version__ = "1.0.0"
 
 import ctypes
 import ctypes.util
+import gc
 from typing import Optional, Tuple
 
 from antlr4 import CommonTokenStream, InputStream, PredictionMode
 from antlr4.tree.Tree import ParseTree
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
+    from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT, MIN_INPUT_SIZE_FOR_GC
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.mr.SpeedyAntlrErrorListener import createSpeedyAntlrErrorListener
 except ImportError:
-    from nmr.NmrDpConstant import MAX_ERROR_REPORT
+    from nmr.NmrDpConstant import MAX_ERROR_REPORT, MIN_INPUT_SIZE_FOR_GC
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.SpeedyAntlrErrorListener import createSpeedyAntlrErrorListener
@@ -49,6 +51,14 @@ try:
     _malloc_trim = ctypes.CDLL(ctypes.util.find_library('c') or 'libc.so.6').malloc_trim
 except (AttributeError, OSError):  # not glibc, e.g. musl, macOS or Windows
     _malloc_trim = None
+
+# A parse tree is cyclic (each child's parentCtx points back at its parent), so a tree that has
+# been walked and dropped is freed only by the cyclic GC, and the full collection that reaches it
+# runs rarely once the heap is large. A Reader that re-parses the same file with reasons from the
+# previous trial therefore builds the new tree on top of the dead one: on 26 MB of XPLOR-NIH input,
+# 1.75 M objects of the previous tree were still alive when the third parse began, and that parse
+# sets the peak RSS of the run in both the C++ and the pure-Python path. Inputs this long get a
+# full collection first, see MIN_INPUT_SIZE_FOR_GC (DAOTHER-10315).
 
 
 def usingCppParser(saModule) -> bool:
@@ -93,6 +103,11 @@ def parseAntlr(lexerClass, parserClass, entryRuleName: str, inputString: str,
     parserErrorListener = ParserErrorListener(filePath, inputString=reportInputString,
                                               maxErrorReport=maxParserErrorReport,
                                               ignoreCodicError=ignoreCodicError)
+
+    if len(inputString) >= MIN_INPUT_SIZE_FOR_GC:
+        gc.collect()
+        if _malloc_trim is not None:
+            _malloc_trim(0)
 
     stream = InputStream(inputString)
 

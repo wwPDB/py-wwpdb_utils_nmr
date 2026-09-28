@@ -301,6 +301,11 @@
 # 28-Sep-2026  M. Yokochi - return the glibc heap freed by the speedy-antlr C++ lexer/parser to the OS right after
 #                           each parse (AntlrParseUtil.parseAntlr), which otherwise stays resident through the
 #                           listener walk (DAOTHER-10315)
+# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous parse tree before parsing a large input
+#                           (AntlrParseUtil.parseAntlr), which otherwise overlaps the peak of a re-parse (DAOTHER-10315)
+# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous NMR unified data before validating a large one
+#                           (NmrDpValidationInput.validateInputSource), which otherwise sets the peak memory of
+#                           'nmr-str2str-deposit' (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

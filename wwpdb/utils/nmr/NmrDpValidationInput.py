@@ -3,6 +3,8 @@
 # Date: 17-Aug-2026
 #
 # Updates:
+# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous NMR unified data before validating
+#                           a large one, which otherwise sets the peak memory of 'nmr-str2str-deposit' (DAOTHER-10315)
 ##
 """ Input source validation and content subtype detection for NMR data validation.
     @author: Masashi Yokochi
@@ -14,6 +16,7 @@ __license__ = "Apache License 2.0"
 __version__ = "5.3.3"
 
 import copy
+import gc
 import os
 import re
 import shutil
@@ -38,7 +41,8 @@ try:
                                                BMRB_NMR_STAR_FILE_NAME_PAT,
                                                INTNL_ANY_MR_FILE_NAME_PAT,
                                                PDB_MR_FILE_NAME_PAT,
-                                               WS_PAT)
+                                               WS_PAT,
+                                               MIN_INPUT_SIZE_FOR_GC)
     from wwpdb.utils.nmr.NmrDpMrSplitter import (detect_bom,
                                                  convert_codec,
                                                  convert_rtf_to_ascii,
@@ -66,7 +70,8 @@ except ImportError:
                                    BMRB_NMR_STAR_FILE_NAME_PAT,
                                    INTNL_ANY_MR_FILE_NAME_PAT,
                                    PDB_MR_FILE_NAME_PAT,
-                                   WS_PAT)
+                                   WS_PAT,
+                                   MIN_INPUT_SIZE_FOR_GC)
     from nmr.NmrDpMrSplitter import (detect_bom,
                                      convert_codec,
                                      convert_rtf_to_ascii,
@@ -704,6 +709,13 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     _srcPath = self.getNextPath(srcPath, '.rtf2txt')
                     convert_rtf_to_ascii(srcPath, _srcPath)
                     srcPath = _srcPath
+
+            # The previous NMR unified data, e.g. the one that 'nmr-str2str-deposit' has just written and now
+            # re-reads as the next version, has been dropped from star_data, but pynmrstar entries are cyclic
+            # and the full collection that frees them runs rarely once the heap is large. Collect it before the
+            # new entry is parsed: on a 32 MB entry that is 450k objects, 1226 MB -> 666 MB (DAOTHER-10315).
+            if os.path.exists(srcPath) and os.path.getsize(srcPath) >= MIN_INPUT_SIZE_FOR_GC:
+                gc.collect()
 
             is_valid, message = self._reg.nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 

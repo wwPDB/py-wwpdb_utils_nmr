@@ -59,8 +59,6 @@ __version__ = "1.2.1"
 
 import collections
 import copy
-import ctypes
-import gc
 import hashlib
 import inspect
 import itertools
@@ -101,7 +99,8 @@ try:
                                                LEN_MAJOR_ASYM_ID,
                                                RMSD_OVERLAID_EXACTLY,
                                                RMSD_CUTOFF_FOR_DOMAIN,
-                                               CARTN_DATA_ITEMS)
+                                               CARTN_DATA_ITEMS,
+                                               run_gc)
 except ImportError:
     from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
                                    EMPTY_VALUE,
@@ -110,8 +109,8 @@ except ImportError:
                                    LEN_MAJOR_ASYM_ID,
                                    RMSD_OVERLAID_EXACTLY,
                                    RMSD_CUTOFF_FOR_DOMAIN,
-                                   CARTN_DATA_ITEMS)
-
+                                   CARTN_DATA_ITEMS,
+                                   run_gc)
 
 # throw RuntimeWarning as error for bug tracking, any runtimewarning should be handled
 warnings.filterwarnings('error', category=RuntimeWarning, module='CifReader')
@@ -788,7 +787,7 @@ class CifReader:
 
         return self.__buildDictList(rowList, dataItems, colDict, set(dataNames))
 
-    def __compileFilterPlan(self, filterItems: List[dict], colDict: dict) -> Optional[List[tuple]]:
+    def __compileFilterPlan(self, filterItems: List[dict], colDict: dict) -> Optional[List[tuple]]:  # pylint: disable=no-self-use
         """ Compile filter items to a list of (column index, value conversion, post check, payload,
             whether an empty value is rejected), so that the per-item decisions are made once per call
             instead of once per row.
@@ -821,7 +820,7 @@ class CifReader:
 
         return plan
 
-    def __filterRows(self, rowList: List[list], idxIt: int, conv: int, post: int, payload: Any,
+    def __filterRows(self, rowList: List[list], idxIt: int, conv: int, post: int, payload: Any,  # pylint: disable=no-self-use
                      emptyRejects: bool) -> List[list]:
         """ Return rows that satisfy a compiled filter item.
         """
@@ -884,7 +883,8 @@ class CifReader:
 
         return _rowList
 
-    def __filterRowsRowWise(self, rowList: List[list], filterItems: List[dict], colDict: dict) -> List[list]:
+    def __filterRowsRowWise(self, rowList: List[list], filterItems: List[dict], colDict: dict  # pylint: disable=no-self-use
+                            ) -> List[list]:
         """ Return rows that satisfy filter items, evaluating the filter items in order for each row.
             Required by the 'fetch_first_match' filter, whose 'abort' depends on the row order.
         """
@@ -1057,8 +1057,8 @@ class CifReader:
 
         return valueIndex
 
-    def __buildDictList(self, rowList: List[list], dataItems: List[dict], colDict: dict, dataNames: set
-                        ) -> List[dict]:
+    def __buildDictList(self, rowList: List[list], dataItems: List[dict], colDict: dict,  # pylint: disable=no-self-use
+                        dataNames: set) -> List[dict]:
         """ Return a list of dictionaries of given rows.
         """
 
@@ -1976,15 +1976,6 @@ class CifReader:
 
         _, v = numpy.linalg.eig(d_ord)
 
-        def run_gc():
-            gc.collect()  # Forces immediate garbage collection
-
-            try:
-                # Forces glibc to release cached memory pools back to the OS
-                ctypes.CDLL("libc.so.6").malloc_trim(0)
-            except (AttributeError, OSError):
-                pass  # Fallback for non-Linux platforms
-
         md5_set = set()
 
         abort = False
@@ -2041,7 +2032,7 @@ class CifReader:
                     del labels
 
                     if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                        run_gc()
+                        run_gc(0)
 
                         cycle = 0
 
@@ -2648,7 +2639,7 @@ class CifReader:
                     del labels
 
                     if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                        run_gc()
+                        run_gc(0)
 
                         cycle = 0
 
@@ -2841,7 +2832,6 @@ class CifReader:
             if self.__verbose and self.__debug:
                 self.__log.write(f'{clist}')
 
-        if cycle > GARBAGE_COLLECTION_CYCLES / 4:
-            run_gc()
+        run_gc(0)
 
         return rlist, dlist, clist

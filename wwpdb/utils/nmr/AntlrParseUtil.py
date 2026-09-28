@@ -22,35 +22,26 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
-import ctypes
-import ctypes.util
-import gc
 from typing import Optional, Tuple
 
 from antlr4 import CommonTokenStream, InputStream, PredictionMode
 from antlr4.tree.Tree import ParseTree
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT, MIN_INPUT_SIZE_FOR_GC
+    from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
+                                               MIN_INPUT_SIZE_FOR_GC,
+                                               run_gc)
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.mr.SpeedyAntlrErrorListener import createSpeedyAntlrErrorListener
 except ImportError:
-    from nmr.NmrDpConstant import MAX_ERROR_REPORT, MIN_INPUT_SIZE_FOR_GC
+    from nmr.NmrDpConstant import (MAX_ERROR_REPORT,
+                                   MIN_INPUT_SIZE_FOR_GC,
+                                   run_gc)
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.SpeedyAntlrErrorListener import createSpeedyAntlrErrorListener
 
-
-# The C++ lexer and parser allocate their tokens and parse tree on the glibc heap, and free
-# them when saModule.parse() returns. The Python parse tree built in between keeps those heap
-# pages mapped, so the freed memory stays resident through the whole listener walk: 26 MB of
-# XPLOR-NIH input holds about 800 MB where the pure-Python path holds about 720 MB.
-# malloc_trim(0) hands the free pages back, which brings it to about 575 MB (DAOTHER-10315).
-try:
-    _malloc_trim = ctypes.CDLL(ctypes.util.find_library('c') or 'libc.so.6').malloc_trim
-except (AttributeError, OSError):  # not glibc, e.g. musl, macOS or Windows
-    _malloc_trim = None
 
 # A parse tree is cyclic (each child's parentCtx points back at its parent), so a tree that has
 # been walked and dropped is freed only by the cyclic GC, and the full collection that reaches it
@@ -105,9 +96,7 @@ def parseAntlr(lexerClass, parserClass, entryRuleName: str, inputString: str,
                                               ignoreCodicError=ignoreCodicError)
 
     if len(inputString) >= MIN_INPUT_SIZE_FOR_GC:
-        gc.collect()
-        if _malloc_trim is not None:
-            _malloc_trim(0)
+        run_gc(2)
 
     stream = InputStream(inputString)
 
@@ -120,8 +109,7 @@ def parseAntlr(lexerClass, parserClass, entryRuleName: str, inputString: str,
 
         tree = saModule.parse(stream, entryRuleName, errorListener, predictionModeSll)
 
-        if _malloc_trim is not None:
-            _malloc_trim(0)
+        run_gc(0)
 
         return tree, parserErrorListener, lexerErrorListener
 

@@ -3,6 +3,7 @@
 # Date: 07-Jan-2026
 #
 # Updates:
+# 28-Sep-2026  M. Yokochi - add MIN_INPUT_SIZE_FOR_GC (DAOTHER-10315)
 ##
 """ Constants for NMR data processing.
     @author: Masashi Yokochi
@@ -660,6 +661,11 @@ MAX_MAG_IDENT_ASYM_ID = 2
 
 MAX_ERROR_REPORT = 1
 MAX_ERR_LINE_NUM = 20
+
+# minimum input size (characters of an ANTLR input, or bytes of an NMR-STAR file) that triggers a full
+# garbage collection before it is parsed. Parse trees and pynmrstar entries are cyclic, so a dropped one
+# is freed only by the cyclic GC, whose full collections run rarely once the heap is large (DAOTHER-10315)
+MIN_INPUT_SIZE_FOR_GC = 1_000_000
 
 REPRESENTATIVE_MODEL_ID = 1
 REPRESENTATIVE_ASYM_ID = 'A'

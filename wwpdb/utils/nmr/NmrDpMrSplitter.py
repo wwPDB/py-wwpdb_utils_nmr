@@ -1651,7 +1651,8 @@ class NmrDpMrSplitter:
             self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
                                  f"++ {'Warning' if warning else 'Error'}  - {description}\n")
 
-    def __concatDetectedSubtypeNames(self, flags: MrContentFlags, incl_amb_inpcrd: bool = False) -> str:
+    def __concatDetectedSubtypeNames(self, flags: MrContentFlags, incl_amb_inpcrd: bool = False,  # pylint: disable=no-self-use
+                                     ) -> str:
         """ Return the "It looks like to have ... instead" clause for the detected content subtypes.
         """
 
@@ -1682,7 +1683,8 @@ class NmrDpMrSplitter:
 
         return MrAtomNames(*cache[minimum_len], *cache['oth'])
 
-    def __scanXplorCnsMr(self, file_path: str, names: MrAtomNames, flags: MrContentFlags) -> None:
+    def __scanXplorCnsMr(self, file_path: str, names: MrAtomNames, flags: MrContentFlags  # pylint: disable=no-self-use
+                         ) -> None:
         """ Detect content subtypes of an XPLOR-NIH/CNS restraint file by scanning its text.
         """
 
@@ -1837,7 +1839,7 @@ class NmrDpMrSplitter:
                 if flags.has_plane_restraint:
                     break  # this pass sets no other indicator, so nothing can change any more
 
-    def __scanAmberMr(self, file_path: str, flags: MrContentFlags) -> None:
+    def __scanAmberMr(self, file_path: str, flags: MrContentFlags) -> None:  # pylint: disable=no-self-use
         """ Detect content subtypes of an AMBER restraint file by scanning its text.
         """
 
@@ -2012,8 +2014,8 @@ class NmrDpMrSplitter:
                         elif '=' in t:
                             in_iat = in_igr1 = in_igr2 = False
 
-    def __classifyLightMrCounts(self, cs_atom_likes: int, atom_likes: int, res_like: bool, angle_like: bool,
-                                cs_range_like: bool, dist_range_like: bool, dihed_range_like: bool,
+    def __classifyLightMrCounts(self, cs_atom_likes: int, atom_likes: int, res_like: bool,  # pylint: disable=no-self-use
+                                angle_like: bool, cs_range_like: bool, dist_range_like: bool, dihed_range_like: bool,
                                 flags: MrContentFlags) -> None:
         """ Record the content subtype implied by the token counts of a single line.
         """

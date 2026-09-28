@@ -15,9 +15,27 @@ __license__ = "Apache License 2.0"
 __version__ = "5.3.3"
 
 import copy
+import ctypes
+import gc
 import re
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module,import-error
+
+try:
+    _malloc_trim = ctypes.CDLL(ctypes.util.find_library('c') or 'libc.so.6').malloc_trim
+except (AttributeError, OSError):  # not glibc, e.g. musl, macOS or Windows
+    _malloc_trim = None
+
+
+def run_gc(generation: int = 2):
+    """ Run garbage collection.
+    """
+
+    gc.collect(generation)  # Forces immediate garbage collection
+
+    if _malloc_trim is not None:
+        _malloc_trim(0)
+
 
 # supported parameter keys as input/output file path(s) for NmrDpUtility class
 MODEL_FILE_PATH_KEY = 'coordinate_file_path'
@@ -224,10 +242,10 @@ WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P'])
 WELL_KNOWN_ISOTOPE_NUMBERS = tuple(WELL_KNOWN_ISOTOPE_NUMBERS)
 
 # maximum number of rows to perform explicit redundancy check
-MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 20000
+MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 20_000
 
 # maximum number of rows to perform index order check
-MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK = 10000
+MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK = 10_000
 
 # maximum number of rows to be used for spectral peak list identification
 MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY = 10
@@ -1214,7 +1232,7 @@ CS_UNUSUAL_ERROR_SCALED_BY_SIGMA = 5.0
 CS_DIFF_ERROR_SCALED_BY_SIGMA = 10.0
 
 # hardware limit of NMR probe design in Hz (DAOTHER-7389, issue #1)
-HARD_PROBE_LIMIT = 250000
+HARD_PROBE_LIMIT = 250_000
 
 # maximum number of lines as spacer for recognition of MR files
 MR_MAX_SPACER_LINES = 20

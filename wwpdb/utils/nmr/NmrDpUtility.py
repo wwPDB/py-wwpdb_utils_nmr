@@ -423,7 +423,8 @@ try:
                                                REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                SPECTRAL_DIM_TEMPLATE,
-                                               DEFAULT_COORD_PROPERTIES)
+                                               DEFAULT_COORD_PROPERTIES,
+                                               run_gc)
     from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
                                                get_next_path,
                                                test_path_with_suffix)
@@ -564,7 +565,8 @@ except ImportError:
                                    REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    SPECTRAL_DIM_TEMPLATE,
-                                   DEFAULT_COORD_PROPERTIES)
+                                   DEFAULT_COORD_PROPERTIES,
+                                   run_gc)
     from nmr.NmrDpRegistry import (NmrDpRegistry,
                                    get_next_path,
                                    test_path_with_suffix)
@@ -1548,6 +1550,8 @@ class NmrDpUtility:
 
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
+
+            run_gc(0)
 
     def __dumpDpReport(self) -> bool:
         """ Dump current NMR data processing report.

@@ -34,7 +34,8 @@ try:
                                                INTNL_ANY_MR_FILE_NAME_PAT,
                                                PDB_MR_FILE_NAME_PAT,
                                                DIST_AMBIG_LOW,
-                                               DIST_AMBIG_UP)
+                                               DIST_AMBIG_UP,
+                                               run_gc)
     from wwpdb.utils.nmr.AlignUtil import getPrettyJson
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
@@ -58,7 +59,8 @@ except ImportError:
                                    INTNL_ANY_MR_FILE_NAME_PAT,
                                    PDB_MR_FILE_NAME_PAT,
                                    DIST_AMBIG_LOW,
-                                   DIST_AMBIG_UP)
+                                   DIST_AMBIG_UP,
+                                   run_gc)
     from nmr.AlignUtil import getPrettyJson
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
@@ -2151,6 +2153,12 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
         master_entry.write_to_file(self._reg.dstPath,
                                    show_comments=(self._reg.bmrb_only and self._reg.internal_mode),
                                    skip_empty_loops=True, skip_empty_tags=False)
+
+        self._reg.list_id_counter.clear()
+        self._reg.mr_sf_dict_holder.clear()
+        self._reg.pk_sf_holder.clear()
+
+        run_gc(0)
 
         self._reg.list_id_counter = None
         self._reg.mr_sf_dict_holder = None

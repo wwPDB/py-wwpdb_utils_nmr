@@ -315,6 +315,8 @@
 # 29-Sep-2026  M. Yokochi - collect the model numbers and the representative alt_id of atom_site with
 #                           CifReader.getDistinctValues()/getFirstValue() in NmrDpUtility and NmrVrptUtility, instead of
 #                           a dictionary per atom row (+263 MB for 1.36 M rows) (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - hand the NMR-STAR entry parsed by NefTranslator.validate_file() over to the following
+#                           read_input_file() of the same, unchanged large file, instead of parsing it again (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -1070,6 +1072,7 @@ class NmrDpUtility:
 
         self.__reg.cR.release()
         self.__reg.caC = None  # rebuilt by every op(), see __parseCoordFilePath()
+        self.__reg.nefT.release()
 
         run_gc(2)
 

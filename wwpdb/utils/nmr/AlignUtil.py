@@ -3,6 +3,8 @@
 # Date: 18-Feb-2022
 #
 # Updates:
+# 29-Sep-2026  M. Yokochi - add writePrettyJson(), which streams the output of getPrettyJson() to a file (DAOTHER-10315)
+##
 """ Utilities for pairwise alignment.
     @author: Masashi Yokochi
 """
@@ -19,7 +21,7 @@ import os
 import re
 import sys
 from itertools import zip_longest
-from typing import List, Optional, Tuple
+from typing import IO, List, Optional, Tuple
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LOW_SEQ_COVERAGE,
@@ -4146,52 +4148,62 @@ def retrieveAtomNameMappingFromInternal(cR, dir_path: str, history: dict, cif_pa
     return atom_name_mapping
 
 
+def getPrettyChunk(chunk: str) -> str:
+    """ Return a run of JSON lines without a key, with the elements of short arrays put on one line.
+    """
+
+    # string
+    chunk_ = re.sub(r'",\s+', '", ', chunk)
+    # number
+    chunk__ = re.sub(r'(\d),\s+', r'\1, ', chunk_)
+    # null, true, false
+    chunk___ = re.sub(r'(null|true|false),\s+', r'\1, ', chunk__)
+
+    return re.sub(r'(\s+)\[\s+([\S ]+)\s+\](,?)\n', r'\1[\2]\3\n', chunk___)
+
+
+def writePrettyJson(data: dict, ofh: IO, blockSize: int = 1 << 20) -> None:
+    """ Write pretty JSON to a text file object: json.dumps(indent=2), with each run of lines that carry no key
+        passed through getPrettyChunk(). The encoder output is consumed in blocks of about blockSize characters,
+        so memory stays bounded by the largest such run, where materializing json.dumps(indent=2) and its lines
+        cost +596 MB for a 26 MB report (DAOTHER-10315).
+    """
+
+    chunk = []  # the current run of lines without a key
+
+    def feed(lines):
+        for line in lines:
+            if '": ' in line:
+                if chunk:
+                    ofh.write(getPrettyChunk(''.join(chunk)))
+                    chunk.clear()
+                ofh.write(line + '\n')
+            else:
+                chunk.append(line + '\n')
+
+    buf, size, carry = [], 0, ''
+
+    for piece in json.JSONEncoder(indent=2).iterencode(data):
+        buf.append(piece)
+        size += len(piece)
+
+        if size >= blockSize:
+            lines = (carry + ''.join(buf)).split('\n')
+            buf.clear()
+            size = 0
+            carry = lines.pop()  # a line may continue into the next block
+            feed(lines)
+
+    feed((carry + ''.join(buf)).split('\n'))
+
+    if chunk:
+        ofh.write(getPrettyChunk(''.join(chunk)))
+
+
 def getPrettyJson(data: dict) -> str:
     """ Return pretty JSON string.
     """
 
-    def getPrettyChunk(chunk):
-
-        # string
-        chunk_ = re.sub(r'",\s+', '", ', chunk)
-        # number
-        chunk__ = re.sub(r'(\d),\s+', r'\1, ', chunk_)
-        # null, true, false
-        chunk___ = re.sub(r'(null|true|false),\s+', r'\1, ', chunk__)
-
-        return re.sub(r'(\s+)\[\s+([\S ]+)\s+\](,?)\n', r'\1[\2]\3\n', chunk___)
-
-    lines = json.dumps(data, indent=2).split('\n')
-
-    is_tag, chunk = [], []
-
     with io.StringIO() as f:
-
-        for line in lines:
-
-            if '": ' in line:
-
-                if f.tell() > 0:
-                    is_tag.append(False)
-                    chunk.append(f.getvalue())
-
-                    f.truncate(0)
-                    f.seek(0)
-
-                is_tag.append(True)
-                chunk.append(line)
-
-            else:
-                f.write(line + '\n')
-
-        if f.tell() > 0:
-            is_tag.append(False)
-            chunk.append(f.getvalue())
-
-            f.truncate(0)
-            f.seek(0)
-
-        for _is_tag, _chunk in zip(is_tag, chunk):
-            f.write((_chunk + '\n') if _is_tag else getPrettyChunk(_chunk))
-
+        writePrettyJson(data, f)
         return f.getvalue()

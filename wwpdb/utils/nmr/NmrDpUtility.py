@@ -312,6 +312,9 @@
 #                           where nothing was left to collect (DAOTHER-10315)
 # 29-Sep-2026  M. Yokochi - add release() to drop the parsed coordinates between workflow operations, e.g. before
 #                           running NmrVrptUtility in the same process (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - collect the model numbers and the representative alt_id of atom_site with
+#                           CifReader.getDistinctValues()/getFirstValue() in NmrDpUtility and NmrVrptUtility, instead of
+#                           a dictionary per atom row (+263 MB for 1.36 M rows) (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -9394,14 +9397,9 @@ class NmrDpUtility:
                         model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags\
                             else 'ndb_model'
 
-                        model_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': model_num_name, 'type': 'int',
-                                                                          'alt_name': 'model_id'}
-                                                                         ])
+                        model_ids = self.__reg.cR.getDistinctValues('atom_site', model_num_name, 'int')
 
                         if len(model_ids) > 0:
-                            model_ids = set(c['model_id'] for c in model_ids)
-
                             self.__reg.representative_model_id = min(model_ids)
                             self.__reg.total_models = len(model_ids)
                             self.__reg.eff_model_ids = sorted(model_ids)
@@ -9431,13 +9429,9 @@ class NmrDpUtility:
                     model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags\
                         else 'ndb_model'
 
-                    model_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                                     ])
+                    model_ids = self.__reg.cR.getDistinctValues('atom_site', model_num_name, 'int')
 
                     if len(model_ids) > 0:
-                        model_ids = set(c['model_id'] for c in model_ids)
-
                         self.__reg.total_models = len(model_ids)
                         self.__reg.eff_model_ids = sorted(model_ids)
 
@@ -9477,15 +9471,10 @@ class NmrDpUtility:
                         self.__reg.log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Warning  - {warn}\n")
 
             if self.__reg.cR.hasItem('atom_site', 'label_alt_id'):
-                alt_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'label_alt_id', 'type': 'str'}
-                                                               ])
+                alt_id = self.__reg.cR.getFirstValue('atom_site', 'label_alt_id')
 
-                if len(alt_ids) > 0:
-                    for a in alt_ids:
-                        if a['label_alt_id'] not in EMPTY_VALUE:
-                            self.__reg.representative_alt_id = a['label_alt_id']
-                            break
+                if alt_id is not None:
+                    self.__reg.representative_alt_id = alt_id
 
             self.__ensemble_composition = {'total_models': self.__reg.total_models,
                                            'eff_model_ids': self.__reg.eff_model_ids,

@@ -1412,14 +1412,9 @@ class NmrVrptUtility:
 
                         try:
 
-                            model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': 'pdbx_PDB_model_num', 'type': 'int',
-                                                                          'alt_name': 'model_id'}
-                                                                         ])
+                            model_ids = self.__cR.getDistinctValues('atom_site', 'pdbx_PDB_model_num', 'int')
 
                             if len(model_ids) > 0:
-                                model_ids = set(c['model_id'] for c in model_ids)
-
                                 self.__representative_model_id = min(model_ids)
                                 self.__total_models = len(model_ids)
                                 self.__eff_model_ids = sorted(model_ids)
@@ -1445,14 +1440,9 @@ class NmrVrptUtility:
 
                     try:
 
-                        model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': 'pdbx_PDB_model_num', 'type': 'int',
-                                                                      'alt_name': 'model_id'}
-                                                                     ])
+                        model_ids = self.__cR.getDistinctValues('atom_site', 'pdbx_PDB_model_num', 'int')
 
                         if len(model_ids) > 0:
-                            model_ids = set(c['model_id'] for c in model_ids)
-
                             self.__total_models = len(model_ids)
                             self.__eff_model_ids = sorted(model_ids)
 
@@ -1462,15 +1452,10 @@ class NmrVrptUtility:
                             self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
 
                 if self.__cR.hasItem('atom_site', 'label_alt_id'):
-                    alt_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'label_alt_id', 'type': 'str'}
-                                                               ])
+                    alt_id = self.__cR.getFirstValue('atom_site', 'label_alt_id')
 
-                    if len(alt_ids) > 0:
-                        for a in alt_ids:
-                            if a['label_alt_id'] not in EMPTY_VALUE:
-                                self.__representative_alt_id = a['label_alt_id']
-                                break
+                    if alt_id is not None:
+                        self.__representative_alt_id = alt_id
 
                 if self.__cR.hasCategory('chem_comp_atom'):
 

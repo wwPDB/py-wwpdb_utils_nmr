@@ -712,8 +712,9 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     srcPath = _srcPath
 
             # The previous NMR unified data, e.g. the one that 'nmr-str2str-deposit' has just written and now
-            # re-reads as the next version, has been dropped from star_data, but pynmrstar entries are cyclic
-            # and the full collection that frees them runs rarely once the heap is large. Collect it before the
+            # re-reads as the next version, has been dropped from star_data, but it is still reachable through
+            # reference cycles (a plain pynmrstar entry is not cyclic; the cycles come from the surrounding data),
+            # and the full collection that frees it runs rarely once the heap is large. Collect it before the
             # new entry is parsed: on a 32 MB entry that is 450k objects, 1226 MB -> 666 MB (DAOTHER-10315).
             if os.path.exists(srcPath) and os.path.getsize(srcPath) >= MIN_INPUT_SIZE_FOR_GC:
                 run_gc(2)

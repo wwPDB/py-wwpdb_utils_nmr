@@ -14,6 +14,7 @@
 # 27-Jan-2022  M. Yokochi - add restraint types described by XPLOR-NIH, CNS, CYANA, and AMBER systems (NMR restraint remediation)
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraint (DAOTHER-7690, NMR restraint remediation)
 #
+import json
 import os
 import sys
 import unittest
@@ -128,6 +129,30 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(os.path.join(TESTOUTPUT, "2l9r-str-consistency-log.json"))
 
         self.utility.op("nmr-str-consistency-check")
+
+    def test_release(self):
+        # release() drops the parsed coordinates, and the next op() re-reads them with the same result
+        cR = self.utility._NmrDpUtility__reg.cR  # pylint: disable=protected-access
+
+        def check(log_name):
+            log_path = os.path.join(TESTOUTPUT, log_name)
+            self.utility.setSource(os.path.join(self.data_dir_path, "2l9r.str"))
+            self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "2l9r.cif"), type="file")
+            self.utility.setLog(log_path)
+            self.utility.op("nmr-str-consistency-check")
+            with open(log_path, "r", encoding="utf-8") as ifh:
+                report = json.load(ifh)
+            return report["information"]["status"], report["error"], report["warning"]
+
+        before = check("2l9r-str-consistency-before-release-log.json")
+        self.assertIsNotNone(cR.getDataBlock())
+
+        self.utility.release()
+        self.assertIsNone(cR.getDataBlock())
+
+        after = check("2l9r-str-consistency-after-release-log.json")
+        self.assertIsNotNone(cR.getDataBlock())
+        self.assertEqual(before, after)
 
     def test_nmr_nef_consistency_check_non_std_residue(self):
         self.utility.setSource(os.path.join(self.data_dir_path, "2l9rnonstandard.nef"))

@@ -139,6 +139,7 @@
 # 27-Jan-2026  M. Yokochi - add hasSequenceMismatchErrorInCsLoop() (DAOTHER-10487)
 # 30-Jun-2026  M. Yokochi - add 'nm-csp-*' file type to support chemical shift perturbation (DAOTHER-9785)
 # 10-Jul-2026  M. Yokochi - add 'ensemble_composition' item in NmrDpReportInputSource class (DAOTHER-9785)
+# 29-Sep-2026  M. Yokochi - stream the report to its JSON file in writeFile() (DAOTHER-10315)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -160,13 +161,13 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                STD_MON_DICT,
                                                UNKNOWN_RESIDUE)
-    from wwpdb.utils.nmr.AlignUtil import getPrettyJson
+    from wwpdb.utils.nmr.AlignUtil import writePrettyJson
     from wwpdb.utils.nmr.CifToNmrStar import get_value_safe
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    STD_MON_DICT,
                                    UNKNOWN_RESIDUE)
-    from nmr.AlignUtil import getPrettyJson
+    from nmr.AlignUtil import writePrettyJson
     from nmr.CifToNmrStar import get_value_safe
 
 
@@ -1707,7 +1708,7 @@ class NmrDpReport:
             return False
 
         with open(out_path, 'w', encoding='utf-8') as file:
-            file.write(getPrettyJson(self.get()))
+            writePrettyJson(self.get(), file)
 
         return True
 

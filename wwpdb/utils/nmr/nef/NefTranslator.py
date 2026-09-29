@@ -133,6 +133,8 @@
 # 28-May-2026  M. Yokochi - fix conversion from NMR-STAR _Bond loop to NEF _nef_covalent_link loop (DAOTHER-10781, v5.1.0)
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 # 19-Aug-2026  M. Yokochi - refactor check_data() and get_conflict_id_set() for performance gain including minor bug fixes (v5.3.0)
+# 29-Sep-2026  M. Yokochi - hand the entry parsed by validate_file() over to the following read_input_file() of the same,
+#                           unchanged large file, instead of parsing it again (DAOTHER-10315)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -147,6 +149,7 @@ import collections
 import copy
 # import csv
 import functools
+import hashlib
 import io
 import itertools
 import logging
@@ -197,7 +200,8 @@ try:
                                                READABLE_ITEM_TYPE,
                                                LP_CATEGORIES,
                                                KEY_ITEMS,
-                                               DATA_ITEMS)
+                                               DATA_ITEMS,
+                                               MIN_FILE_SIZE_FOR_PARSE_REUSE)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            getOneLetterCode,
@@ -247,7 +251,8 @@ except ImportError:
                                    READABLE_ITEM_TYPE,
                                    LP_CATEGORIES,
                                    KEY_ITEMS,
-                                   DATA_ITEMS)
+                                   DATA_ITEMS,
+                                   MIN_FILE_SIZE_FOR_PARSE_REUSE)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                getOneLetterCode,
@@ -308,6 +313,22 @@ def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row: dict) -> str:
 
     except KeyError:
         return ''
+
+
+def get_file_identity(in_file: str) -> tuple:
+    """ Return the identity of a file: real path, size, modification time in ns, and MD5 of the content.
+        The content hash catches a rewrite of the same size within one tick of a coarse file system clock.
+    """
+
+    st = os.stat(in_file)
+
+    md5 = hashlib.md5()
+
+    with open(in_file, 'rb') as ifh:
+        for block in iter(lambda: ifh.read(1 << 20), b''):
+            md5.update(block)
+
+    return os.path.realpath(in_file), st.st_size, st.st_mtime_ns, md5.hexdigest()
 
 
 def is_empty_loop(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> bool:
@@ -490,7 +511,8 @@ class NefTranslator:
                  '__cachedDictForValidStarAtomInXplor',
                  '__cachedDictForValidStarAtom',
                  '__cachedDictForStarAtom',
-                 '__cachedDictForNefAtom')
+                 '__cachedDictForNefAtom',
+                 '__parsedInput')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BmrbChemShiftStat] = None,
@@ -1526,6 +1548,10 @@ class NefTranslator:
         self.__cachedDictForStarAtom = {}
         self.__cachedDictForNefAtom = {}
 
+        # (file identity, data type, data object) parsed by validate_file(), handed over once to the following
+        # read_input_file() of the same, unchanged file
+        self.__parsedInput = None
+
     @property
     def pA(self) -> PairwiseAlign:
         """ Get instance of PairwiseAlign.
@@ -1657,11 +1683,27 @@ class NefTranslator:
         is_ok = True
         data_type = star_data = None
 
-        try:
+        # avoid ValueError: Empty strings are not allowed as values.
+        # Use the None singleton, or '.' to represent null values. (DAOTHER-10399)
+        pynmrstar.definitions.STR_CONVERSION_DICT[''] = None
 
-            # avoid ValueError: Empty strings are not allowed as values.
-            # Use the None singleton, or '.' to represent null values. (DAOTHER-10399)
-            pynmrstar.definitions.STR_CONVERSION_DICT[''] = None
+        # take over the data object that validate_file() has just parsed from the same file, unless the file has
+        # changed since, e.g. remediated in between; the slot is emptied either way, so no object is handed twice
+        parsed, self.__parsedInput = self.__parsedInput, None
+
+        if parsed is not None:
+            identity, _data_type, _star_data = parsed
+            del parsed
+
+            try:
+                if identity == get_file_identity(in_file):
+                    return True, _data_type, _star_data
+            except OSError:
+                pass
+
+            del _star_data  # drop the stale entry before parsing again
+
+        try:
 
             star_data = pynmrstar.Entry.from_file(in_file)
 
@@ -1695,6 +1737,12 @@ class NefTranslator:
                 else ('Saveframe' if isinstance(star_data, pynmrstar.Saveframe) else 'Loop')
 
         return is_ok, data_type, star_data
+
+    def release(self) -> None:
+        """ Release the data object parsed by validate_file() that no read_input_file() has taken over.
+        """
+
+        self.__parsedInput = None
 
     def check_mandatory_tags(self, in_file: str, file_type: str
                              ) -> Tuple[List[str], List[str]]:
@@ -1790,6 +1838,8 @@ class NefTranslator:
 
         file_type = 'unknown'
 
+        parsed = None
+
         err_template_for_missing_mandatory_loop =\
             "The mandatory loop %r is missing. Deposition of %s is mandatory. Please re-upload the %s file."
         err_template_for_empty_mandatory_loop =\
@@ -1806,6 +1856,8 @@ class NefTranslator:
             is_ok, data_type, star_data = self.read_input_file(in_file)
 
             if is_ok:
+
+                parsed = (data_type, star_data)
 
                 minimal_lp_category_nef_a = ['_nef_chemical_shift', '_nef_distance_restraint']
                 minimal_lp_category_nef_s = ['_nef_chemical_shift']
@@ -2134,6 +2186,15 @@ class NefTranslator:
         except Exception as e:  # pylint: disable=broad-exception-caught
             is_valid = False
             error.append(str(e))
+
+        # hand the data object, which the checks above only read, over to the read_input_file() that callers run next
+        # on a large file, instead of parsing the file again (DAOTHER-10315)
+        if parsed is not None:
+            try:
+                if os.path.getsize(in_file) >= MIN_FILE_SIZE_FOR_PARSE_REUSE:
+                    self.__parsedInput = (get_file_identity(in_file),) + parsed
+            except OSError:
+                pass
 
         return is_valid, {'info': info, 'error': error, 'file_type': file_type}
 

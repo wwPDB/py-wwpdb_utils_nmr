@@ -16,10 +16,13 @@
 # 28-Oct-2021  M. Yokochi - support NefTranslator v3.0.2
 # 24-Feb-2022  M. Yokochi - support NefTranslator v3.0.9
 # 16-Dec-2022  M. Yokochi - support NefTranslator v3.3.2
+# 29-Sep-2026  M. Yokochi - add test for handing the entry parsed by validate_file() over to read_input_file() (DAOTHER-10315)
 ##
 import os
+import shutil
 import sys
 import unittest
+from unittest import mock
 
 from packaging import version
 
@@ -170,6 +173,51 @@ class TestNefTranslator(unittest.TestCase):
     #     self.assertEqual(self.neft.is_empty_loop(dat, "_Atom_chem_shift", "Entry"), False)
     #     self.assertEqual(self.neft.is_empty_loop(dat, "_Gen_dist_constraint", "Entry"), True)
     #
+
+    def test_validate_then_read_parses_once(self):
+        # validate_file() hands its entry over to the following read_input_file() of the same, unchanged large file,
+        # and a changed file, including a same-size rewrite with the modification time restored, is parsed again
+        src = os.path.join(TESTOUTPUT, "2l9r_docr-parse-reuse.str")
+        shutil.copyfile(os.path.join(self.data_dir_path, "2l9r_docr.str"), src)
+        self.assertGreaterEqual(os.path.getsize(src), 1_000_000)  # MIN_FILE_SIZE_FOR_PARSE_REUSE
+
+        def version_of(entry):
+            return entry.get_saveframes_by_category("entry_information")[0].get_tag("Source_data_format_version")[0]
+
+        with mock.patch.object(pynmrstar.Entry, "from_file", side_effect=pynmrstar.Entry.from_file) as from_file:
+            # unchanged file: parsed once, the same object taken over
+            self.assertTrue(self.neft.validate_file(src, "A")[0])
+            is_ok, data_type, entry = self.neft.read_input_file(src)
+            self.assertTrue(is_ok)
+            self.assertEqual(data_type, "Entry")
+            self.assertEqual(from_file.call_count, 1)
+
+            # the entry is handed over only once
+            self.neft.read_input_file(src)
+            self.assertEqual(from_file.call_count, 2)
+
+            # same-size rewrite with the modification time restored: only the content hash tells
+            self.neft.validate_file(src, "A")
+            st = os.stat(src)
+            with open(src, "r", encoding="utf-8") as ifh:
+                text = ifh.read()
+            self.assertEqual(text.count("_Entry.Source_data_format_version    1.0"), 1)
+            with open(src, "w", encoding="utf-8") as ofh:
+                ofh.write(text.replace("_Entry.Source_data_format_version    1.0", "_Entry.Source_data_format_version    1.1"))
+            os.utime(src, ns=(st.st_atime_ns, st.st_mtime_ns))
+            self.assertEqual((os.path.getsize(src), os.stat(src).st_mtime_ns), (st.st_size, st.st_mtime_ns))
+            calls = from_file.call_count
+            is_ok, _, entry = self.neft.read_input_file(src)
+            self.assertTrue(is_ok)
+            self.assertEqual(from_file.call_count, calls + 1)
+            self.assertEqual(version_of(entry), "1.1")
+
+            # release() drops the entry
+            self.neft.validate_file(src, "A")
+            self.neft.release()
+            calls = from_file.call_count
+            self.neft.read_input_file(src)
+            self.assertEqual(from_file.call_count, calls + 1)
 
     def test_get_inventory_list(self):
         (isValid, _content, data) = self.neft.read_input_file(os.path.join(self.data_dir_path, "2mqq.nef"))

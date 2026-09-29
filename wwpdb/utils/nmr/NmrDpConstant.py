@@ -4,6 +4,8 @@
 #
 # Updates:
 # 28-Sep-2026  M. Yokochi - add MIN_INPUT_SIZE_FOR_GC (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - import ctypes.util, without which run_gc() silently skipped malloc_trim(),
+#                           and add trim_heap() (DAOTHER-10315)
 ##
 """ Constants for NMR data processing.
     @author: Masashi Yokochi
@@ -16,6 +18,7 @@ __version__ = "5.3.3"
 
 import copy
 import ctypes
+import ctypes.util
 import gc
 import re
 
@@ -27,14 +30,24 @@ except (AttributeError, OSError):  # not glibc, e.g. musl, macOS or Windows
     _malloc_trim = None
 
 
+def trim_heap():
+    """ Return the free memory at the top and in the middle of the glibc heap to the OS.
+        A no-op where glibc is absent.
+    """
+
+    if _malloc_trim is not None:
+        _malloc_trim(0)
+
+
 def run_gc(generation: int = 2):
-    """ Run garbage collection.
+    """ Run garbage collection, then return the freed heap memory to the OS.
+        Only a full collection (generation 2) reaches the cycles of long-lived objects, e.g. a dropped
+        parse tree or NMR unified data; generation 0 examines only the objects allocated most recently.
     """
 
     gc.collect(generation)  # Forces immediate garbage collection
 
-    if _malloc_trim is not None:
-        _malloc_trim(0)
+    trim_heap()
 
 
 # supported parameter keys as input/output file path(s) for NmrDpUtility class
@@ -681,8 +694,10 @@ MAX_ERROR_REPORT = 1
 MAX_ERR_LINE_NUM = 20
 
 # minimum input size (characters of an ANTLR input, or bytes of an NMR-STAR file) that triggers a full
-# garbage collection before it is parsed. Parse trees and pynmrstar entries are cyclic, so a dropped one
-# is freed only by the cyclic GC, whose full collections run rarely once the heap is large (DAOTHER-10315)
+# garbage collection before it is parsed. A dropped parse tree (cyclic through parentCtx) or NMR unified data
+# (a plain pynmrstar entry is not cyclic, but the one dropped in 'nmr-str2str-deposit' was measured to be
+# reachable only through reference cycles) is freed only by the cyclic GC, whose full collections run
+# rarely once the heap is large (DAOTHER-10315)
 MIN_INPUT_SIZE_FOR_GC = 1_000_000
 
 REPRESENTATIVE_MODEL_ID = 1

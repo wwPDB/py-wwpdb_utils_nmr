@@ -89,8 +89,7 @@ try:
                                                GYROMAGNETIC_RATIOS,
                                                PERMEABILITY_0,
                                                PLANCK_CONSTANT,
-                                               REDUCED_PLANCK_CONSTANT,
-                                               run_gc)
+                                               REDUCED_PLANCK_CONSTANT)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -139,8 +138,7 @@ except ImportError:
                                    GYROMAGNETIC_RATIOS,
                                    PERMEABILITY_0,
                                    PLANCK_CONSTANT,
-                                   REDUCED_PLANCK_CONSTANT,
-                                   run_gc)
+                                   REDUCED_PLANCK_CONSTANT)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.NmrDpReport import NmrDpReport
@@ -1373,13 +1371,9 @@ class NmrVrptUtility:
                     if end_time - start_time > 1.0:
                         self.__log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
 
-        if self.__coordinates is not None:
-            self.__coordinates.clear()
-
-        if self.__entityInstance is not None:
-            self.__entityInstance.clear()
-
-        run_gc(0)
+        # back to the initial state, which the next op expects, e.g. __extractEntityInstances() tests for None
+        self.__coordinates = None
+        self.__entityInstance = None
 
         return self.__results
 
@@ -5265,7 +5259,7 @@ class NmrVrptUtility:
         if has_rci_results:
             self.__results['rci_version'] = rci.version
 
-        self.__chemShiftDict.clear()
+        self.__chemShiftDict = None
 
         return True
 
@@ -5545,7 +5539,7 @@ class NmrVrptUtility:
 
             self.__results['dist_violation_seq'] = dist_violation_seq
 
-            self.__distRestDict.clear()
+            self.__distRestDict = None
 
             return True
 
@@ -5802,7 +5796,7 @@ class NmrVrptUtility:
 
             self.__results['angle_violation_seq'] = angle_violation_seq
 
-            self.__dihedRestDict.clear()
+            self.__dihedRestDict = None
 
             return True
 
@@ -6044,7 +6038,7 @@ class NmrVrptUtility:
             if len(self.__rdcCorrPlotDict) > 0:
                 self.__results['rdc_correlation_plot'] = self.__rdcCorrPlotDict
 
-            self.__rdcRestDict.clear()
+            self.__rdcRestDict = None
 
             return True
 

@@ -306,6 +306,10 @@
 # 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous NMR unified data before validating a large one
 #                           (NmrDpValidationInput.validateInputSource), which otherwise sets the peak memory of
 #                           'nmr-str2str-deposit' (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - keep only the run_gc() calls measured to free memory: a full collection at the registry
+#                           reset of op(), trim_heap() alone after a C++ parse, and none at the end of
+#                           NmrDpRemediationMerge.mergeLegacyData(), NmrVrptUtility.op() or CifReader.__calculateRmsd(),
+#                           where nothing was left to collect (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -1551,7 +1555,7 @@ class NmrDpUtility:
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
 
-            run_gc(0)
+            run_gc(2)
 
     def __dumpDpReport(self) -> bool:
         """ Dump current NMR data processing report.

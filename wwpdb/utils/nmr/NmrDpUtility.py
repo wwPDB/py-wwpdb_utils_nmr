@@ -306,6 +306,15 @@
 # 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous NMR unified data before validating a large one
 #                           (NmrDpValidationInput.validateInputSource), which otherwise sets the peak memory of
 #                           'nmr-str2str-deposit' (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - keep only the run_gc() calls measured to free memory: a full collection at the registry
+#                           reset of op(), trim_heap() alone after a C++ parse, and none at the end of
+#                           NmrDpRemediationMerge.mergeLegacyData(), NmrVrptUtility.op() or CifReader.__calculateRmsd(),
+#                           where nothing was left to collect (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - add release() to drop the parsed coordinates between workflow operations, e.g. before
+#                           running NmrVrptUtility in the same process (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - collect the model numbers and the representative alt_id of atom_site with
+#                           CifReader.getDistinctValues()/getFirstValue() in NmrDpUtility and NmrVrptUtility, instead of
+#                           a dictionary per atom row (+263 MB for 1.36 M rows) (DAOTHER-10315)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -1050,6 +1059,20 @@ class NmrDpUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e)) from e
 
+    def release(self) -> None:
+        """ Release the memory held for the coordinate file between workflow operations, e.g. before running
+            an NmrVrptUtility in the same process that is not given this utility's CifReader, and so parses the
+            coordinate file on its own. The parsed coordinates otherwise stay in memory so that the next op() on
+            the same file skips re-parsing it; after release(), the next op() re-reads it. On a 134 MB coordinate
+            file (a single model of 1.36 M atoms) this frees 1.3 GB, and the peak of the following restraint
+            validation drops from 3.5 GB to 2.2 GB (DAOTHER-10315).
+        """
+
+        self.__reg.cR.release()
+        self.__reg.caC = None  # rebuilt by every op(), see __parseCoordFilePath()
+
+        run_gc(2)
+
     def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
         """
@@ -1551,7 +1574,7 @@ class NmrDpUtility:
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
 
-            run_gc(0)
+            run_gc(2)
 
     def __dumpDpReport(self) -> bool:
         """ Dump current NMR data processing report.
@@ -9374,14 +9397,9 @@ class NmrDpUtility:
                         model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags\
                             else 'ndb_model'
 
-                        model_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': model_num_name, 'type': 'int',
-                                                                          'alt_name': 'model_id'}
-                                                                         ])
+                        model_ids = self.__reg.cR.getDistinctValues('atom_site', model_num_name, 'int')
 
                         if len(model_ids) > 0:
-                            model_ids = set(c['model_id'] for c in model_ids)
-
                             self.__reg.representative_model_id = min(model_ids)
                             self.__reg.total_models = len(model_ids)
                             self.__reg.eff_model_ids = sorted(model_ids)
@@ -9411,13 +9429,9 @@ class NmrDpUtility:
                     model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags\
                         else 'ndb_model'
 
-                    model_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                                     ])
+                    model_ids = self.__reg.cR.getDistinctValues('atom_site', model_num_name, 'int')
 
                     if len(model_ids) > 0:
-                        model_ids = set(c['model_id'] for c in model_ids)
-
                         self.__reg.total_models = len(model_ids)
                         self.__reg.eff_model_ids = sorted(model_ids)
 
@@ -9457,15 +9471,10 @@ class NmrDpUtility:
                         self.__reg.log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Warning  - {warn}\n")
 
             if self.__reg.cR.hasItem('atom_site', 'label_alt_id'):
-                alt_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'label_alt_id', 'type': 'str'}
-                                                               ])
+                alt_id = self.__reg.cR.getFirstValue('atom_site', 'label_alt_id')
 
-                if len(alt_ids) > 0:
-                    for a in alt_ids:
-                        if a['label_alt_id'] not in EMPTY_VALUE:
-                            self.__reg.representative_alt_id = a['label_alt_id']
-                            break
+                if alt_id is not None:
+                    self.__reg.representative_alt_id = alt_id
 
             self.__ensemble_composition = {'total_models': self.__reg.total_models,
                                            'eff_model_ids': self.__reg.eff_model_ids,

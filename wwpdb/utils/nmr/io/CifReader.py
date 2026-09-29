@@ -48,6 +48,9 @@
 #                     in getDictListWithFilter() (performance enhancement)
 # 18-Sep-2026 - my  - stop taking the absolute value of 'range-float' and 'range-int' filter items,
 #                     which discarded row values outside the mirrored range
+# 29-Sep-2026 - my  - add release() to drop the parsed data blocks between workflow operations (DAOTHER-10315)
+# 29-Sep-2026 - my  - add getDistinctValues() and getFirstValue(), which scan a column without a dictionary per row
+#                     (DAOTHER-10315)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -549,6 +552,18 @@ class CifReader:
 
         return False
 
+    def release(self) -> None:
+        """ Release the parsed data blocks, which dominate the memory of this reader for a large structure
+            (1.28 GB for a 134 MB CIF file of 1.36 M atoms). The file path is kept, and the next parse() re-reads the file,
+            because it reuses the parsed data only while the data block is present.
+        """
+
+        self.__dBlockList = None
+        self.__dBlockNameList = None
+        self.__categoryNameList = None
+        self.__valueIndex = {}
+        self.__dBlock = None
+
     def getDirPath(self) -> str:
         """ Return directory path of CIF file.
         """
@@ -725,6 +740,88 @@ class CifReader:
             dList.append({itName: row[idxIt] for idxIt, itName in enumerate(iList)})
 
         return dList
+
+    def __getItemColumn(self, catName: str, itemName: str, blockName: Optional[str]
+                        ) -> Tuple[Optional[List[list]], int]:
+        """ Return the row list and the column index of a data item, with the same data block switching, empty
+            results and LookupError as getDictListWithFilter() for a single data item.
+        """
+
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
+
+        if self.__dBlock is None:
+            return None, -1
+
+        catObj = self.__dBlock.getObj(catName)
+
+        if catObj is None:
+            return None, -1
+
+        iList = catObj.getAttributeList()
+
+        if itemName not in iList:
+            raise LookupError(f"Missing one of data items {[itemName]}.")
+
+        return catObj.getRowList(), iList.index(itemName)
+
+    def getDistinctValues(self, catName: str, itemName: str, itemType: str = 'str',
+                          blockName: Optional[str] = None) -> set:
+        """ Return the distinct values of a data item, converted as getDictListWithFilter() converts a data item
+            of the given type without 'default', i.e. the set of d[itemName] over
+            getDictListWithFilter(catName, [{'name': itemName, 'type': itemType}]), without a dictionary per row:
+            that list cost +263 MB for the 1.36 M atom_site rows of 6x63 only to collect the model numbers
+            (DAOTHER-10315). Each value converts on its own, so converting the distinct raw values is equivalent.
+        """
+
+        if itemType not in CIF_ITEM_TYPES:
+            raise TypeError(f"Type {itemType} of data item {itemName} must be one of {CIF_ITEM_TYPES}.")
+
+        rowList, idxIt = self.__getItemColumn(catName, itemName, blockName)
+
+        if rowList is None:
+            return set()
+
+        conv = CIF_DATA_CONVERSIONS.get(itemType, DATA_FLOAT)
+
+        values = set()
+
+        for val in {row[idxIt] for row in rowList}:
+            if val in EMPTY_VALUE_SET:
+                val = None
+            if conv == DATA_ALNUM:
+                if not val[0].isalnum() and val[0] != "'":  # same as __buildDictList(), incl. its TypeError on None
+                    val = None
+            elif conv == DATA_BOOL:
+                val = val.lower() in TRUE_VALUE
+            elif conv == DATA_INT:
+                if val is not None:
+                    try:
+                        val = int(val)
+                    except ValueError:
+                        val = None
+            elif conv == DATA_FLOAT and val is not None:
+                val = float(val)
+            values.add(val)
+
+        return values
+
+    def getFirstValue(self, catName: str, itemName: str, blockName: Optional[str] = None) -> Optional[str]:
+        """ Return the first non-empty value of a data item in row order, or None; i.e. the first d[itemName] not in
+            EMPTY_VALUE over getDictListWithFilter(catName, [{'name': itemName, 'type': 'str'}]), without a
+            dictionary per row (DAOTHER-10315).
+        """
+
+        rowList, idxIt = self.__getItemColumn(catName, itemName, blockName)
+
+        if rowList is None:
+            return None
+
+        for row in rowList:
+            if row[idxIt] not in EMPTY_VALUE_SET:
+                return row[idxIt]
+
+        return None
 
     def getDictListWithFilter(self, catName: str, dataItems: List[dict], filterItems: Optional[List[dict]] = None,
                               blockName: Optional[str] = None
@@ -2831,7 +2928,5 @@ class CifReader:
 
             if self.__verbose and self.__debug:
                 self.__log.write(f'{clist}')
-
-        run_gc(0)
 
         return rlist, dlist, clist

@@ -117,6 +117,15 @@ workflow operation|role|primary output file(s) and its file path API
 
 By default, NmrDpUtility sets the current working directory to store intermediate processing files and creates a directory named `utils_nmr` within the current working directory to store cache files for performance improvement. The working directory and the cache directory can be configured independently by using **setWorkspace(dirPath: str, cacheDirPath: str = None)**. If cacheDirPath is None, the cache directory will be created under the specified working directory. Considering the reprocessing of files using the same coordinates or the same NMR data, stored cache files can be reused, resulting in improved performance. It would be better to share a common cache directory across a session. NOTE: The specified workspace is updated to its default settings after each workflow operation is completed. Therefore, in order to continue applying the workspace settings, you need to configure the workspace again.
 
+7. Release memory between workflow operations if necessary
+
+NmrDpUtility keeps the parsed coordinate file after **op()**, so that the next operation on the same file skips re-parsing it. For a large structure this can take more than 1 GB. Call **release()** before running memory-hungry work in the same process, e.g. restraint validation with an NmrVrptUtility that is not given NmrDpUtility's CifReader, and so parses the coordinate file on its own; the next **op()** then re-reads the coordinate file.
+
+```python
+    util.op('nmr-str2str-deposit')
+    util.release()  # drop the parsed coordinates before NmrVrptUtility parses them again
+```
+
 ## Typical workflow operations
 
 As of now, OneDep supports (a) single NMR data file deposition using NMR unified data file in NEF or NMR-STAR and (b) conventional separated NMR data file deposition requiring assigned chemical shift file and set of NMR restraint files.

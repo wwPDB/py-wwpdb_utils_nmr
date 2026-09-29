@@ -30,14 +30,16 @@ from antlr4.tree.Tree import ParseTree
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
                                                MIN_INPUT_SIZE_FOR_GC,
-                                               run_gc)
+                                               run_gc,
+                                               trim_heap)
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
     from wwpdb.utils.nmr.mr.SpeedyAntlrErrorListener import createSpeedyAntlrErrorListener
 except ImportError:
     from nmr.NmrDpConstant import (MAX_ERROR_REPORT,
                                    MIN_INPUT_SIZE_FOR_GC,
-                                   run_gc)
+                                   run_gc,
+                                   trim_heap)
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.SpeedyAntlrErrorListener import createSpeedyAntlrErrorListener
@@ -109,7 +111,10 @@ def parseAntlr(lexerClass, parserClass, entryRuleName: str, inputString: str,
 
         tree = saModule.parse(stream, entryRuleName, errorListener, predictionModeSll)
 
-        run_gc(0)
+        # The C++ lexer and parser freed their tokens and parse tree on return, but the Python parse tree
+        # built in between keeps those heap pages resident through the listener walk; hand them back.
+        # Nothing is left to collect here, so no gc.collect() (DAOTHER-10315).
+        trim_heap()
 
         return tree, parserErrorListener, lexerErrorListener
 

@@ -4246,8 +4246,8 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__distRestDict.items():
 
-                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
-                has_member_id = any(True for r in restraints if r['member_id'] is not None)
+                has_combination_id = any(r['combination_id'] is not None for r in restraints)
+                has_member_id = any(r['member_id'] is not None for r in restraints)
 
                 self.__distRestDictWithCombKey[rest_key] = {}
 
@@ -4264,11 +4264,14 @@ class NmrVrptUtility:
                     self.__distRestDictWithCombKey[rest_key][(None, None)] = restraints
 
                 elif not has_combination_id and has_member_id:
-                    member_ids = set(r['member_id'] for r in restraints)
+                    r_by_mem = {}
+                    for r in restraints:
+                        member_id = r['member_id']
+                        if member_id not in r_by_mem:
+                            r_by_mem[member_id] = []
+                        r_by_mem[member_id].append(r)
 
-                    for member_id in member_ids:
-                        _restraints = [r for r in restraints if r['member_id'] == member_id]
-
+                    for member_id, _restraints in r_by_mem.items():
                         _error_per_model = calc_dist_rest_viol(rest_key, _restraints)
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4277,11 +4280,14 @@ class NmrVrptUtility:
                         self.__distRestDictWithCombKey[rest_key][(None, member_id)] = _restraints
 
                 elif has_combination_id and not has_member_id:
-                    combination_ids = set(r['combination_id'] for r in restraints)
+                    r_by_comb = {}
+                    for r in restraints:
+                        combination_id = r['combination_id']
+                        if combination_id not in r_by_comb:
+                            r_by_comb[combination_id] = []
+                        r_by_comb[combination_id].append(r)
 
-                    for combination_id in combination_ids:
-                        _restraints = [r for r in restraints if r['combination_id'] == combination_id]
-
+                    for combination_id, _restraints in r_by_comb.items():
                         _error_per_model = calc_dist_rest_viol(rest_key, _restraints)
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4290,16 +4296,18 @@ class NmrVrptUtility:
                         self.__distRestDictWithCombKey[rest_key][(combination_id, None)] = _restraints
 
                 else:
-                    combination_ids = set(r['combination_id'] for r in restraints)
-                    member_ids = set(r['member_id'] for r in restraints)
+                    r_by_comb_and_mem = {}
+                    for r in restraints:
+                        combination_id = r['combination_id']
+                        member_id = r['member_id']
+                        if combination_id not in r_by_comb_and_mem:
+                            r_by_comb_and_mem[combination_id] = {}
+                        if member_id not in r_by_comb_and_mem[combination_id]:
+                            r_by_comb_and_mem[combination_id][member_id] = []
+                        r_by_comb_and_mem[combination_id][member_id].append(r)
 
-                    for combination_id in combination_ids:
-
-                        for member_id in member_ids:
-                            _restraints = [r for r in restraints
-                                           if r['combination_id'] == combination_id
-                                           and r['member_id'] == member_id]
-
+                    for combination_id, _r_by_mem in r_by_comb_and_mem.items():
+                        for member_id, _restraints in _r_by_mem.items():
                             _error_per_model = calc_dist_rest_viol(rest_key, _restraints)
 
                             fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4428,7 +4436,7 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__dihedRestDict.items():
 
-                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
+                has_combination_id = any(r['combination_id'] is not None for r in restraints)
 
                 self.__dihedRestDictWithCombKey[rest_key] = {}
 
@@ -4445,11 +4453,14 @@ class NmrVrptUtility:
                     self.__dihedRestDictWithCombKey[rest_key][(None,)] = restraints
 
                 else:
-                    combination_ids = set(r['combination_id'] for r in restraints)
+                    r_by_comb = {}
+                    for r in restraints:
+                        combination_id = r['combination_id']
+                        if combination_id not in r_by_comb:
+                            r_by_comb[combination_id] = []
+                        r_by_comb[combination_id].append(r)
 
-                    for combination_id in combination_ids:
-                        _restraints = [r for r in restraints if r['combination_id'] == combination_id]
-
+                    for combination_id, _restraints in r_by_comb.items():
                         _error_per_model = calc_dihed_rest_viol(rest_key, _restraints)
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4595,7 +4606,7 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__rdcRestDict.items():
 
-                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
+                has_combination_id = any(r['combination_id'] is not None for r in restraints)
 
                 self.__rdcRestDictWithCombKey[rest_key] = {}
 
@@ -4612,11 +4623,14 @@ class NmrVrptUtility:
                     self.__rdcRestDictWithCombKey[rest_key][(None,)] = restraints
 
                 else:
-                    combination_ids = set(r['combination_id'] for r in restraints)
+                    r_by_comb = {}
+                    for r in restraints:
+                        combination_id = r['combination_id']
+                        if combination_id not in r_by_comb:
+                            r_by_comb[combination_id] = []
+                        r_by_comb[combination_id].append(r)
 
-                    for combination_id in combination_ids:
-                        _restraints = [r for r in restraints if r['combination_id'] == combination_id]
-
+                    for combination_id, _restraints in r_by_comb.items():
                         _error_per_model = calc_rdc_rest_viol(rest_key, _restraints)
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,

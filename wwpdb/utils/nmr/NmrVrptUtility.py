@@ -55,6 +55,7 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                                NMR_CIF_FILE_PATH_KEY,
                                                NMR_STR_FILE_PATH_KEY,
+                                               NEXT_STAR_FILE_PATH_KEY,
                                                RESULT_PKL_FILE_PATH_KEY,
                                                REPORT_FILE_PATH_KEY,
                                                CIF_READER_OBJ_KEY,
@@ -1687,7 +1688,10 @@ class NmrVrptUtility:
 
             fPath = self.__inputParamDict[NMR_STR_FILE_PATH_KEY]
 
-            _fPath = self.getNextPath(fPath, '.str2cif')
+            if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict:
+                _fPath = self.__outputParamDict[NMR_CIF_FILE_PATH_KEY]
+            else:
+                _fPath = self.getNextPath(fPath, '.str2cif')
 
             try:
 
@@ -1718,8 +1722,9 @@ class NmrVrptUtility:
 
             finally:
                 try:
-                    if os.path.exists(_fPath):
-                        os.remove(_fPath)
+                    if NMR_CIF_FILE_PATH_KEY not in self.__outputParamDict:
+                        if os.path.exists(_fPath):
+                            os.remove(_fPath)
                 except OSError:
                     pass
 
@@ -1727,8 +1732,16 @@ class NmrVrptUtility:
 
             master_entry = self.__inputParamDict[PYNMRSTAR_OBJ_KEY]
 
-            _fPath = get_temp_path(None, '.str')
-            __fPath = f'{_fPath}.str2cif'
+            _fPath = __fPath = None
+
+            if NEXT_STAR_FILE_PATH_KEY in self.__outputParamDict:
+                _fPath = self.__outputParamDict[NEXT_STAR_FILE_PATH_KEY]
+            if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict:
+                __fPath = self.__outputParamDict[NMR_CIF_FILE_PATH_KEY]
+            if _fPath is None:
+                _fPath = get_temp_path(None, '.str')
+            if __fPath is None:
+                __fPath = f'{_fPath}.str2cif'
 
             try:
 
@@ -1761,10 +1774,12 @@ class NmrVrptUtility:
 
             finally:
                 try:
-                    if os.path.exists(_fPath):
-                        os.remove(_fPath)
-                    if os.path.exists(__fPath):
-                        os.remove(__fPath)
+                    if NEXT_STAR_FILE_PATH_KEY not in self.__outputParamDict:
+                        if os.path.exists(_fPath):
+                            os.remove(_fPath)
+                    if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict:
+                        if os.path.exists(__fPath):
+                            os.remove(__fPath)
                 except OSError:
                     pass
 

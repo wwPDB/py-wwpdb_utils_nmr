@@ -22,7 +22,10 @@ from datetime import datetime
 import numpy
 
 try:
-    from wwpdb.utils.nmr.NmrDpConstant import (REPORT_FILE_PATH_KEY,
+    from wwpdb.utils.nmr.NmrDpConstant import (PYNMRSTAR_OBJ_KEY,
+                                               NEXT_STAR_FILE_PATH_KEY,
+                                               NMR_CIF_FILE_PATH_KEY,
+                                               REPORT_FILE_PATH_KEY,
                                                SF_CATEGORIES,
                                                LP_CATEGORIES,
                                                INDEX_TAGS,
@@ -38,7 +41,10 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import NmrVrptUtility
     from wwpdb.utils.nmr.NmrDpValidationBase import NmrDpValidationBase
 except ImportError:
-    from nmr.NmrDpConstant import (REPORT_FILE_PATH_KEY,
+    from nmr.NmrDpConstant import (PYNMRSTAR_OBJ_KEY,
+                                   NEXT_STAR_FILE_PATH_KEY,
+                                   NMR_CIF_FILE_PATH_KEY,
+                                   REPORT_FILE_PATH_KEY,
                                    SF_CATEGORIES,
                                    LP_CATEGORIES,
                                    INDEX_TAGS,
@@ -443,12 +449,20 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                       'classification': 'PDBx/mmCIF parser, domain recognition, '
                                                         'and clustering analysis of the ensemble structure'})
 
-            vrpt_util.addInput(name='pynmrstar_object', value=self._reg.star_data[0], type='param')
+            vrpt_util.addInput(name=PYNMRSTAR_OBJ_KEY, value=self._reg.star_data[0], type='param')
+
+            if self._reg.dstPath is not None:
+                vrpt_util.addOutput(name=NEXT_STAR_FILE_PATH_KEY,
+                                    value=self._reg.dstPath, type='file')
+
+            if NMR_CIF_FILE_PATH_KEY in self._reg.outputParamDict:
+                vrpt_util.addOutput(name=NMR_CIF_FILE_PATH_KEY,
+                                    value=self._reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], type='file')
 
             if REPORT_FILE_PATH_KEY in self._reg.inputParamDict:
                 fPath = self._reg.inputParamDict[REPORT_FILE_PATH_KEY]
                 if os.path.exists(fPath):
-                    vrpt_util.addInput(name='report_file_path', value=fPath, type='file')
+                    vrpt_util.addInput(name=REPORT_FILE_PATH_KEY, value=fPath, type='file')
 
             vrpt_cs = vrpt_util.op('nmr-cs-validation')
 

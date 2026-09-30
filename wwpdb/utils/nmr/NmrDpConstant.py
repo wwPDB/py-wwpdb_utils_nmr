@@ -145,7 +145,9 @@ VRPT_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
                         REPORT_FILE_PATH_KEY)
 
 # supported output file names for NmrVrptUtility class
-VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,)
+VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,
+                         NEXT_STAR_FILE_PATH_KEY,  # used with PYNMRSTAR_OBJ_KEY
+                         NMR_CIF_FILE_PATH_KEY)  # used with PYNMRSTAR_OBJ_KEY
 
 # supported workflow operations of NmrVrptUtility class
 VRPT_WORKFLOW_OPS = ('nmr-cs-validation',

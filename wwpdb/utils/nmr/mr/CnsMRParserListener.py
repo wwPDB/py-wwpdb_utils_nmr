@@ -54,7 +54,7 @@ try:
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.CnsMRParser import CnsMRParser
-    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
+    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener, appendUniqueAtoms
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        copyFactor,
                                                        atomKey,
@@ -107,7 +107,7 @@ except ImportError:
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.CnsMRParser import CnsMRParser
-    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
+    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener, appendUniqueAtoms
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            copyFactor,
                                            atomKey,
@@ -3182,9 +3182,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             blockSelections[blockId] = _selection
 
                         else:
-                            for _atom in _selection:
-                                if _atom not in blockSelections[blockId]:
-                                    blockSelections[blockId].append(_atom)
+                            appendUniqueAtoms(blockSelections[blockId], _selection)
 
                     stackSelections.clear()
 
@@ -3219,9 +3217,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 _selection = self.stackSelections.pop()
                 if _selection is not None:
                     if self.con_union_expr:
-                        for _atom in _selection:
-                            if _atom not in atomSelection:
-                                atomSelection.append(_atom)
+                        appendUniqueAtoms(atomSelection, _selection)
                     else:
                         atomSelection = self.intersectionAtom_selections(_selection, atomSelection)
 
@@ -3245,9 +3241,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     blockSelections[blockId] = _selection
 
                 else:
-                    for _atom in _selection:
-                        if _atom not in blockSelections[blockId]:
-                            blockSelections[blockId].append(_atom)
+                    appendUniqueAtoms(blockSelections[blockId], _selection)
 
             self.stackSelections.clear()
 
@@ -3259,9 +3253,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         while self.stackSelections:
             _selection = self.stackSelections.pop()
             if _selection is not None:
-                for _atom in _selection:
-                    if _atom not in atomSelection:
-                        atomSelection.append(_atom)
+                appendUniqueAtoms(atomSelection, _selection)
 
         if '*' in atomSelection:
             atomSelection.remove('*')

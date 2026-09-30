@@ -855,6 +855,10 @@ class NmrDpValidationInput(NmrDpValidationBase):
 
             post_internal_processing()
 
+        # release cached input data on NefTranslator because there is no chance
+        # to read the same file hereafter
+        self._reg.nefT.release()
+
         return is_done
 
     def _convertCsToEntry(self, src_data: Optional[Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]] = None,

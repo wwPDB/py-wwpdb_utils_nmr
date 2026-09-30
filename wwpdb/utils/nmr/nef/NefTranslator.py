@@ -201,7 +201,8 @@ try:
                                                LP_CATEGORIES,
                                                KEY_ITEMS,
                                                DATA_ITEMS,
-                                               MIN_FILE_SIZE_FOR_PARSE_REUSE)
+                                               MIN_INPUT_SIZE_FOR_GC,
+                                               run_gc)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            getOneLetterCode,
@@ -252,7 +253,8 @@ except ImportError:
                                    LP_CATEGORIES,
                                    KEY_ITEMS,
                                    DATA_ITEMS,
-                                   MIN_FILE_SIZE_FOR_PARSE_REUSE)
+                                   MIN_INPUT_SIZE_FOR_GC,
+                                   run_gc)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                getOneLetterCode,
@@ -512,6 +514,7 @@ class NefTranslator:
                  '__cachedDictForValidStarAtom',
                  '__cachedDictForStarAtom',
                  '__cachedDictForNefAtom',
+                 '__parsedFileSize',
                  '__parsedInput')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
@@ -1550,6 +1553,7 @@ class NefTranslator:
 
         # (file identity, data type, data object) parsed by validate_file(), handed over once to the following
         # read_input_file() of the same, unchanged file
+        self.__parsedFileSize = 0
         self.__parsedInput = None
 
     @property
@@ -1743,6 +1747,11 @@ class NefTranslator:
         """
 
         self.__parsedInput = None
+
+        if self.__parsedFileSize > MIN_INPUT_SIZE_FOR_GC:
+            run_gc(2)
+
+        self.__parsedFileSize = 0
 
     def check_mandatory_tags(self, in_file: str, file_type: str
                              ) -> Tuple[List[str], List[str]]:
@@ -2187,12 +2196,12 @@ class NefTranslator:
             is_valid = False
             error.append(str(e))
 
-        # hand the data object, which the checks above only read, over to the read_input_file() that callers run next
-        # on a large file, instead of parsing the file again (DAOTHER-7829, 9785)
+        # hand the data object, which the checks above only read, over to the read_input_file() that callers run next,
+        # instead of parsing the file again (DAOTHER-7829, 9785)
         if parsed is not None:
             try:
-                if os.path.getsize(in_file) >= MIN_FILE_SIZE_FOR_PARSE_REUSE:
-                    self.__parsedInput = (get_file_identity(in_file),) + parsed
+                self.__parsedFileSize = os.path.getsize(in_file)
+                self.__parsedInput = (get_file_identity(in_file),) + parsed
             except OSError:
                 pass
 

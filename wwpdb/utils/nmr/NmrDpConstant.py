@@ -145,7 +145,9 @@ VRPT_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
                         REPORT_FILE_PATH_KEY)
 
 # supported output file names for NmrVrptUtility class
-VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,)
+VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,
+                         NEXT_STAR_FILE_PATH_KEY,  # used with PYNMRSTAR_OBJ_KEY
+                         NMR_CIF_FILE_PATH_KEY)  # used with PYNMRSTAR_OBJ_KEY
 
 # supported workflow operations of NmrVrptUtility class
 VRPT_WORKFLOW_OPS = ('nmr-cs-validation',
@@ -700,10 +702,6 @@ MAX_ERR_LINE_NUM = 20
 # reachable only through reference cycles) is freed only by the cyclic GC, whose full collections run
 # rarely once the heap is large (DAOTHER-7829, 9785)
 MIN_INPUT_SIZE_FOR_GC = 1_000_000
-
-# minimum size of an NEF/NMR-STAR file whose entry parsed by NefTranslator.validate_file() is handed over to the
-# following NefTranslator.read_input_file() of the same, unchanged file, instead of being parsed again (DAOTHER-7829, 9785)
-MIN_FILE_SIZE_FOR_PARSE_REUSE = 1_000_000
 
 REPRESENTATIVE_MODEL_ID = 1
 REPRESENTATIVE_ASYM_ID = 'A'

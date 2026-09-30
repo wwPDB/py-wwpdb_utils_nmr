@@ -1442,7 +1442,7 @@ class NmrDpUtility:
                 if not task():
                     pass
 
-                if self.__reg.debug:
+                if self.__reg.verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__reg.log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
@@ -1459,7 +1459,7 @@ class NmrDpUtility:
                 if not task():
                     pass
 
-                if self.__reg.debug:
+                if self.__reg.verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__reg.log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
@@ -1478,7 +1478,7 @@ class NmrDpUtility:
                     if task.__name__ in (self.__translateNef2Str.__name__, self.__translateStr2Nef.__name__):
                         break
 
-                if self.__reg.debug:
+                if self.__reg.verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__reg.log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")

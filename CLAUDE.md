@@ -33,8 +33,8 @@ FULLTEST=1 python -m unittest discover -v -s wwpdb/utils/tests-nmr-tox -p "*Test
 python -m unittest discover -v -s wwpdb/utils/tests-nmr-tox -p "NmrDpUtilityTests.py" -k <test_name>
 ```
 
-- **`FULLTEST=1` matters.** Without it, 20 of the 28 `NmrDpUtilityTests` are
-  skipped, so the default run exercises ~8. Use it for anything non-trivial.
+- **`FULLTEST=1` matters.** Without it, 20 of the 29 `NmrDpUtilityTests` are
+  skipped, so the default run exercises ~9. Use it for anything non-trivial.
   `NmrDpUtilityTests` alone takes ~10 min; the whole suite ~10-12 min.
 - `format_black` is in `tox.ini`'s envlist but **not** wired into CI, and the
   codebase is not black-formatted. Do not run black.
@@ -47,7 +47,7 @@ python -m unittest discover -v -s wwpdb/utils/tests-nmr-tox -p "NmrDpUtilityTest
 
 ### Known failures
 
-A green run is **67 ran, 65 ok, 1 failure, 1 skipped**. The one failure predates
+A green run is **69 ran, 67 ok, 1 failure, 1 skipped**. The one failure predates
 the current work and is not worth chasing:
 
 - `test_get_nef_atom` — asserts that `get_nef_atom("HEM", ...)` collapses the

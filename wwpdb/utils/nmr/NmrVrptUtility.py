@@ -22,6 +22,8 @@
 # 09-Sep-2026  M. Yokochi - calculate number of chemical shifts mapped to unmodeled residues as unmapped warning
 #                           (DAOTHER-9785, 10987, v1.3.2)
 # 16-Sep-2026  M. Yokochi - allow to run chemical shift analysis without coordinates (DAOTHER-9785, v1.3.3)
+# 30-Sep-2026  M. Yokochi - import NEXT_STAR_FILE_PATH_KEY in standalone mode too, and remove the temporary CIF file of
+#                           a pynmrstar object only when its path was not given (DAOTHER-9785)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -106,6 +108,7 @@ except ImportError:
     from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                    NMR_CIF_FILE_PATH_KEY,
                                    NMR_STR_FILE_PATH_KEY,
+                                   NEXT_STAR_FILE_PATH_KEY,
                                    RESULT_PKL_FILE_PATH_KEY,
                                    REPORT_FILE_PATH_KEY,
                                    CIF_READER_OBJ_KEY,
@@ -1777,7 +1780,7 @@ class NmrVrptUtility:
                     if NEXT_STAR_FILE_PATH_KEY not in self.__outputParamDict:
                         if os.path.exists(_fPath):
                             os.remove(_fPath)
-                    if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict:
+                    if NMR_CIF_FILE_PATH_KEY not in self.__outputParamDict:
                         if os.path.exists(__fPath):
                             os.remove(__fPath)
                 except OSError:

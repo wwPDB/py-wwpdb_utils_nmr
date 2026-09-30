@@ -3,7 +3,7 @@
 # Date: 18-Feb-2022
 #
 # Updates:
-# 29-Sep-2026  M. Yokochi - add writePrettyJson(), which streams the output of getPrettyJson() to a file (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - add writePrettyJson(), which streams the output of getPrettyJson() to a file (DAOTHER-7829, 9785)
 ##
 """ Utilities for pairwise alignment.
     @author: Masashi Yokochi
@@ -4166,7 +4166,7 @@ def writePrettyJson(data: dict, ofh: IO, blockSize: int = 1 << 20) -> None:
     """ Write pretty JSON to a text file object: json.dumps(indent=2), with each run of lines that carry no key
         passed through getPrettyChunk(). The encoder output is consumed in blocks of about blockSize characters,
         so memory stays bounded by the largest such run, where materializing json.dumps(indent=2) and its lines
-        cost +596 MB for a 26 MB report (DAOTHER-10315).
+        cost +596 MB for a 26 MB report (DAOTHER-7829, 9785).
     """
 
     chunk = []  # the current run of lines without a key

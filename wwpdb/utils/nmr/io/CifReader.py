@@ -48,9 +48,9 @@
 #                     in getDictListWithFilter() (performance enhancement)
 # 18-Sep-2026 - my  - stop taking the absolute value of 'range-float' and 'range-int' filter items,
 #                     which discarded row values outside the mirrored range
-# 29-Sep-2026 - my  - add release() to drop the parsed data blocks between workflow operations (DAOTHER-10315)
+# 29-Sep-2026 - my  - add release() to drop the parsed data blocks between workflow operations (DAOTHER-7829, 9785)
 # 29-Sep-2026 - my  - add getDistinctValues() and getFirstValue(), which scan a column without a dictionary per row
-#                     (DAOTHER-10315)
+#                     (DAOTHER-7829, 9785)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -771,7 +771,7 @@ class CifReader:
             of the given type without 'default', i.e. the set of d[itemName] over
             getDictListWithFilter(catName, [{'name': itemName, 'type': itemType}]), without a dictionary per row:
             that list cost +263 MB for the 1.36 M atom_site rows of 6x63 only to collect the model numbers
-            (DAOTHER-10315). Each value converts on its own, so converting the distinct raw values is equivalent.
+            (DAOTHER-7829, 9785). Each value converts on its own, so converting the distinct raw values is equivalent.
         """
 
         if itemType not in CIF_ITEM_TYPES:
@@ -809,7 +809,7 @@ class CifReader:
     def getFirstValue(self, catName: str, itemName: str, blockName: Optional[str] = None) -> Optional[str]:
         """ Return the first non-empty value of a data item in row order, or None; i.e. the first d[itemName] not in
             EMPTY_VALUE over getDictListWithFilter(catName, [{'name': itemName, 'type': 'str'}]), without a
-            dictionary per row (DAOTHER-10315).
+            dictionary per row (DAOTHER-7829, 9785).
         """
 
         rowList, idxIt = self.__getItemColumn(catName, itemName, blockName)

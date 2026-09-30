@@ -294,29 +294,27 @@
 # 24-Sep-2026  M. Yokochi - add an optional C accelerator (cpp_src/c_listener_util.c, built by
 #                           WWPDB_NMR_BUILD_C_ACCEL=1) for ParserListenerUtil.copyFactor/copyPolySeq/atomKey,
 #                           replace the str(factor) key of the factor cache by ParserListenerUtil.factorKey(),
-#                           and store the SCHRODINGER 'store' clause as a factor dictionary (DAOTHER-10315)
+#                           and store the SCHRODINGER 'store' clause as a factor dictionary (DAOTHER-7829, 9785)
 # 25-Sep-2026  M. Yokochi - clear the shared PairwiseAlign before each pairwise alignment, which otherwise re-aligns
 #                           every test sequence ever added, and remove quadratic lookups in
-#                           AlignUtil.alignPolymerSequence/assignPolymerSequence (DAOTHER-10315)
+#                           AlignUtil.alignPolymerSequence/assignPolymerSequence (DAOTHER-7829, 9785)
 # 28-Sep-2026  M. Yokochi - return the glibc heap freed by the speedy-antlr C++ lexer/parser to the OS right after
 #                           each parse (AntlrParseUtil.parseAntlr), which otherwise stays resident through the
-#                           listener walk (DAOTHER-10315)
-# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous parse tree before parsing a large input
-#                           (AntlrParseUtil.parseAntlr), which otherwise overlaps the peak of a re-parse (DAOTHER-10315)
+#                           listener walk (DAOTHER-7829, 9785)
 # 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous NMR unified data before validating a large one
 #                           (NmrDpValidationInput.validateInputSource), which otherwise sets the peak memory of
-#                           'nmr-str2str-deposit' (DAOTHER-10315)
+#                           'nmr-str2str-deposit' (DAOTHER-7829, 9785)
 # 29-Sep-2026  M. Yokochi - keep only the run_gc() calls measured to free memory: a full collection at the registry
 #                           reset of op(), trim_heap() alone after a C++ parse, and none at the end of
 #                           NmrDpRemediationMerge.mergeLegacyData(), NmrVrptUtility.op() or CifReader.__calculateRmsd(),
-#                           where nothing was left to collect (DAOTHER-10315)
+#                           where nothing was left to collect (DAOTHER-7829, 9785)
 # 29-Sep-2026  M. Yokochi - add release() to drop the parsed coordinates between workflow operations, e.g. before
-#                           running NmrVrptUtility in the same process (DAOTHER-10315)
+#                           running NmrVrptUtility in the same process (DAOTHER-7829, 9785)
 # 29-Sep-2026  M. Yokochi - collect the model numbers and the representative alt_id of atom_site with
 #                           CifReader.getDistinctValues()/getFirstValue() in NmrDpUtility and NmrVrptUtility, instead of
-#                           a dictionary per atom row (+263 MB for 1.36 M rows) (DAOTHER-10315)
+#                           a dictionary per atom row (+263 MB for 1.36 M rows) (DAOTHER-7829, 9785)
 # 29-Sep-2026  M. Yokochi - hand the NMR-STAR entry parsed by NefTranslator.validate_file() over to the following
-#                           read_input_file() of the same, unchanged large file, instead of parsing it again (DAOTHER-10315)
+#                           read_input_file() of the same, unchanged large file, instead of parsing it again (DAOTHER-7829, 9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -1067,7 +1065,7 @@ class NmrDpUtility:
             coordinate file on its own. The parsed coordinates otherwise stay in memory so that the next op() on
             the same file skips re-parsing it; after release(), the next op() re-reads it. On a 134 MB coordinate
             file (a single model of 1.36 M atoms) this frees 1.3 GB, and the peak of the following restraint
-            validation drops from 3.5 GB to 2.2 GB (DAOTHER-10315).
+            validation drops from 3.5 GB to 2.2 GB (DAOTHER-7829, 9785).
         """
 
         self.__reg.cR.release()

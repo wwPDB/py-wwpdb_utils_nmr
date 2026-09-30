@@ -139,7 +139,7 @@
 # 27-Jan-2026  M. Yokochi - add hasSequenceMismatchErrorInCsLoop() (DAOTHER-10487)
 # 30-Jun-2026  M. Yokochi - add 'nm-csp-*' file type to support chemical shift perturbation (DAOTHER-9785)
 # 10-Jul-2026  M. Yokochi - add 'ensemble_composition' item in NmrDpReportInputSource class (DAOTHER-9785)
-# 29-Sep-2026  M. Yokochi - stream the report to its JSON file in writeFile() (DAOTHER-10315)
+# 29-Sep-2026  M. Yokochi - stream the report to its JSON file in writeFile() (DAOTHER-7829, 9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -151,6 +151,7 @@ __license__ = "Apache License 2.0"
 __version__ = "5.3.3"
 
 import copy
+import functools
 import json
 import re
 import sys
@@ -1155,6 +1156,7 @@ class NmrDpReport:
 
         return ''.join(f)
 
+    @functools.lru_cache(maxsize=32)
     def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id: str, label_scheme: bool = True
                                               ) -> Optional[dict]:
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
@@ -1252,6 +1254,7 @@ class NmrDpReport:
 
         return None
 
+    @functools.lru_cache(maxsize=32)
     def getModelPolymerSequenceWithNmrChainId(self, nmr_chain_id: str
                                               ) -> Optional[dict]:
         """ Retrieve coordinate polymer sequence corresponding to a given NMR chain_id.
@@ -1548,6 +1551,9 @@ class NmrDpReport:
     def clean(self) -> None:
         """ Clear errors and warnings.
         """
+
+        self.getNmrPolymerSequenceWithModelChainId.cache_clear()
+        self.getModelPolymerSequenceWithNmrChainId.cache_clear()
 
         if not self.__immutable:
 

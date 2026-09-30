@@ -134,7 +134,7 @@
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 # 19-Aug-2026  M. Yokochi - refactor check_data() and get_conflict_id_set() for performance gain including minor bug fixes (v5.3.0)
 # 29-Sep-2026  M. Yokochi - hand the entry parsed by validate_file() over to the following read_input_file() of the same,
-#                           unchanged large file, instead of parsing it again (DAOTHER-10315)
+#                           unchanged large file, instead of parsing it again (DAOTHER-7829, 9785)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -2188,7 +2188,7 @@ class NefTranslator:
             error.append(str(e))
 
         # hand the data object, which the checks above only read, over to the read_input_file() that callers run next
-        # on a large file, instead of parsing the file again (DAOTHER-10315)
+        # on a large file, instead of parsing the file again (DAOTHER-7829, 9785)
         if parsed is not None:
             try:
                 if os.path.getsize(in_file) >= MIN_FILE_SIZE_FOR_PARSE_REUSE:
@@ -2362,27 +2362,50 @@ class NefTranslator:
 
             try:
 
-                chain_ids = sorted(set(row[2] for row in seq_data), key=lambda x: (len(x), x))
-                offset_seq_ids = {row[2]: 0 for row in seq_data}
-                for c in chain_ids:
-                    min_seq_id = min(int(row[0]) for row in seq_data if row[2] == c)
+                seq_data_by_chain = {}
+                for x in seq_data:
+                    c = x[2]
+                    if c not in seq_data_by_chain:
+                        seq_data_by_chain[c] = []
+                    if isinstance(x[0], str):
+                        x[0] = int(x[0])
+                    x[1] = x[1].upper()
+                    seq_data_by_chain[c].append(x[:2])
+
+                chain_ids = sorted(list(seq_data_by_chain), key=lambda x: (len(x), x))
+
+                offset_seq_ids = {c: 0 for c in chain_ids}
+                for c, _seq_data in seq_data_by_chain.items():
+                    min_seq_id = min(x[0] for x in _seq_data)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set((row[2], int(row[0]) + offset_seq_ids[row[2]], row[1].upper()) for row in seq_data),
-                                    key=itemgetter(0, 1))
 
-                chk_dict = {(row[2], int(row[0])): row[1].upper() for row in seq_data}
+                sorted_seq, chk_dict = [], {}
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        sorted_seq.append((c, x[0] + offset_seq_ids[c], x[1]))
+                        chk_dict[(c, x[0])] = x[1]
 
-                for row in seq_data:
-                    chk_key = (row[2], int(row[0]))
-                    if chk_dict[chk_key] != row[1].upper():
-                        raise KeyError(f"{lp_category[1:]} loop contains different {comp_id_name} "
-                                       f"({row[1]} and {chk_dict[chk_key]}) "
-                                       f"with the same {chain_id_name} {row[2]}, {seq_id_name} {row[0]}.")
+                sorted_seq = sorted(set(sorted_seq), key=itemgetter(0, 1))
 
-                for c in chain_ids:
-                    cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        chk_key = (c, x[0])
+                        if chk_dict[chk_key] != x[1]:
+                            raise KeyError(f"{lp_category[1:]} loop contains different {comp_id_name} "
+                                           f"({x[1]} and {chk_dict[chk_key]}) "
+                                           f"with the same {chain_id_name} {c}, {seq_id_name} {x[0]}.")
+
+                sorted_seq_by_chain = {}
+                for x in sorted_seq:
+                    c = x[0]
+                    if c not in sorted_seq_by_chain:
+                        sorted_seq_by_chain[c] = []
+                    sorted_seq_by_chain[c].append(x[1:])
+
+                for c, _sorted_seq in sorted_seq_by_chain.items():
+                    cmp_dict[c] = [x[1] for x in _sorted_seq]
+                    seq_dict[c] = [x[0] - offset_seq_ids[c] for x in _sorted_seq]
 
                 asm = []  # assembly of a loop
 
@@ -4081,42 +4104,65 @@ class NefTranslator:
 
             try:
 
-                chain_ids = sorted(set(row[2] for row in seq_data))
-                offset_seq_ids = {row[2]: 0 for row in seq_data}
-                for c in chain_ids:
-                    min_seq_id = min(int(row[0]) for row in seq_data if row[2] == c)
+                seq_data_by_chain = {}
+                for x in seq_data:
+                    c = x[2]
+                    if c not in seq_data_by_chain:
+                        seq_data_by_chain[c] = []
+                    if isinstance(x[0], str):
+                        x[0] = int(x[0])
+                    x[1] = x[1].upper()
+                    seq_data_by_chain[c].append(x[:2])
+
+                chain_ids = sorted(list(seq_data_by_chain), key=lambda x: (len(str(x)), str(x)))
+
+                offset_seq_ids = {c: 0 for c in chain_ids}
+                for c, _seq_data in seq_data_by_chain.items():
+                    min_seq_id = min(x[0] for x in _seq_data)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set((row[2], int(row[0]) + offset_seq_ids[row[2]], row[1].upper()) for row in seq_data),
-                                    key=itemgetter(0, 1))
-                chk_dict = {(row[2], int(row[0])): row[1].upper() for row in seq_data}
 
-                for row in seq_data:
-                    chk_key = (row[2], int(row[0]))
-                    if chk_dict[chk_key] != row[1].upper():
+                sorted_seq, chk_dict = [], {}
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        sorted_seq.append((c, x[0] + offset_seq_ids[c], x[1]))
+                        chk_dict[(c, x[0])] = x[1]
 
-                        if seq_id_name != alt_seq_id_name and alt_seq_id_name in loop.tags:
+                sorted_seq = sorted(set(sorted_seq), key=itemgetter(0, 1))
 
-                            seq_tags = [seq_id_name, alt_seq_id_name]
-                            _seq_data = loop.get_tag(seq_tags)
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        chk_key = (c, x[0])
+                        if chk_dict[chk_key] != x[1]:
 
-                            offset = None
+                            if seq_id_name != alt_seq_id_name and alt_seq_id_name in loop.tags:
 
-                            for _row in _seq_data:
-                                try:
-                                    offset = int(_row[0]) - int(_row[1])
-                                    break
-                                except ValueError:
-                                    continue
+                                _seq_data_ = loop.get_tag([seq_id_name, alt_seq_id_name])
 
-                            if offset is not None:
-                                return self.get_star_seq(star_data, lp_category, alt_seq_id_name, comp_id_name, chain_id_name,
-                                                         alt_seq_id_name, offset, alt_chain_id_name,
-                                                         allow_empty, allow_gap, check_identity, coord_assembly_checker)
+                                offset = None
 
-                for c in chain_ids:
-                    cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
+                                for _row_ in _seq_data_:
+                                    try:
+                                        offset = int(_row_[0]) - int(_row_[1])
+                                        break
+                                    except ValueError:
+                                        continue
+
+                                if offset is not None:
+                                    return self.get_star_seq(star_data, lp_category, alt_seq_id_name, comp_id_name, chain_id_name,
+                                                             alt_seq_id_name, offset, alt_chain_id_name,
+                                                             allow_empty, allow_gap, check_identity, coord_assembly_checker)
+
+                sorted_seq_by_chain = {}
+                for x in sorted_seq:
+                    c = x[0]
+                    if c not in sorted_seq_by_chain:
+                        sorted_seq_by_chain[c] = []
+                    sorted_seq_by_chain[c].append(x[1:])
+
+                for c, _sorted_seq in sorted_seq_by_chain.items():
+                    cmp_dict[c] = [x[1] for x in _sorted_seq]
+                    seq_dict[c] = [x[0] - offset_seq_ids[c] for x in _sorted_seq]
 
                 has_alt_comp_id = False
                 if lp_category == '_Atom_chem_shift' and self.__remediation_mode\
@@ -4436,31 +4482,55 @@ class NefTranslator:
 
             try:
 
-                chain_ids = sorted(set(row[4] for row in seq_data), key=lambda x: (len(x), x))
-                offset_seq_ids = {row[4]: 0 for row in seq_data}
-                for c in chain_ids:
-                    min_seq_id = min(int(row[3]) for row in seq_data if row[4] == c)
+                seq_data_by_chain = {}
+                for x in seq_data:
+                    c = x[4]
+                    if c not in seq_data_by_chain:
+                        seq_data_by_chain[c] = []
+                    if isinstance(x[3], str):
+                        x[3] = int(x[3])
+                    if isinstance(x[0], str):
+                        x[0] = x[0].strip()
+                    else:
+                        x[0] = str(x[0])
+                    seq_data_by_chain[c].append(x[:4])
+
+                chain_ids = sorted(list(seq_data_by_chain), key=lambda x: (len(str(x)), str(x)))
+
+                offset_seq_ids = {c: 0 for c in chain_ids}
+                for c, _seq_data in seq_data_by_chain.items():
+                    min_seq_id = min(x[3] for x in _seq_data)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set((row[4], int(row[3]) + offset_seq_ids[row[4]], row[2],
-                                         row[0].strip() if isinstance(row[0], str) else str(row[0]), row[1]) for row in seq_data),
-                                    key=itemgetter(0, 1))
 
-                chk_dict = {(row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0])):
-                            row[1] for row in seq_data}
+                sorted_seq, chk_dict = [], {}
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        sorted_seq.append((c, x[3] + offset_seq_ids[c], x[2], x[0], x[1]))
+                        chk_dict[(c, x[3], x[2], x[0])] = x[1]
 
-                for row in seq_data:
-                    chk_key = (row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0]))
-                    if chk_dict[chk_key] != row[1]:
-                        raise KeyError(f"Author sequence must be unique. {chain_id_name} {row[4]}, {seq_id_name} {row[3]}, "
-                                       f"{auth_asym_id_name} {row[2]}, {auth_seq_id_name} {row[0]}, "
-                                       f"{auth_comp_id_name} {row[1]} vs {chk_dict[chk_key]}.")
+                sorted_seq = sorted(set(sorted_seq), key=itemgetter(0, 1))
 
-                for c in chain_ids:
-                    acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
-                    aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
-                    asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        chk_key = (c, x[3], x[2], x[0])
+                        if chk_dict[chk_key] != x[1]:
+                            raise KeyError(f"Author sequence must be unique. {chain_id_name} {c}, {seq_id_name} {x[3]}, "
+                                           f"{auth_asym_id_name} {x[2]}, {auth_seq_id_name} {x[0]}, "
+                                           f"{auth_comp_id_name} {x[1]} vs {chk_dict[chk_key]}.")
+
+                sorted_seq_by_chain = {}
+                for x in sorted_seq:
+                    c = x[0]
+                    if c not in sorted_seq_by_chain:
+                        sorted_seq_by_chain[c] = []
+                    sorted_seq_by_chain[c].append(x[1:])
+
+                for c, _sorted_seq in sorted_seq_by_chain.items():
+                    acmp_dict[c] = [x[3] for x in _sorted_seq]
+                    aseq_dict[c] = [x[2] for x in _sorted_seq]
+                    asym_dict[c] = [x[1] for x in _sorted_seq]
+                    seq_dict[c] = [x[0] - offset_seq_ids[c] for x in _sorted_seq]
 
                 asm = []  # assembly of a loop
 
@@ -4598,16 +4668,16 @@ class NefTranslator:
             if len(f) > 0:
                 raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
-            comps = sorted(set(row[0].upper() for row in pair_data if row[0] not in EMPTY_VALUE))
+            comp_ids = sorted(set(row[0].upper() for row in pair_data if row[0] not in EMPTY_VALUE))
             sorted_comp_atom = sorted(set((row[0].upper(), row[1]) for row in pair_data),
                                       key=itemgetter(0, 1))
 
-            for c in comps:
+            for c in comp_ids:
                 atm_dict[c] = [x[1] for x in sorted_comp_atom if x[0] == c]
 
             asm = []  # assembly of a loop
 
-            for c in comps:
+            for c in comp_ids:
                 ent = {}  # entity
 
                 ent['comp_id'] = c

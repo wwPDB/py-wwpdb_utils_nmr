@@ -1366,7 +1366,7 @@ class NmrVrptUtility:
                 if not task():
                     break
 
-                if self.__debug and self.__verbose:
+                if self.__verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")

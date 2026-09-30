@@ -3,8 +3,8 @@
 # Date: 7-Aug-2026
 #
 # Updates:
-# 28-Sep-2026  M. Yokochi - call malloc_trim(0) after each C++ parse to return the freed C++ heap to the OS (DAOTHER-10315)
-# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous parse tree before a large parse (DAOTHER-10315)
+# 28-Sep-2026  M. Yokochi - call malloc_trim(0) after each C++ parse to return the freed C++ heap to the OS (DAOTHER-7829, 9785)
+# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous parse tree before a large parse (DAOTHER-7829, 9785)
 ##
 """ A single ANTLR parse driver shared by every *Reader class in this package.
 
@@ -51,7 +51,7 @@ except ImportError:
 # previous trial therefore builds the new tree on top of the dead one: on 26 MB of XPLOR-NIH input,
 # 1.75 M objects of the previous tree were still alive when the third parse began, and that parse
 # sets the peak RSS of the run in both the C++ and the pure-Python path. Inputs this long get a
-# full collection first, see MIN_INPUT_SIZE_FOR_GC (DAOTHER-10315).
+# full collection first, see MIN_INPUT_SIZE_FOR_GC (DAOTHER-7829, 9785).
 
 
 def usingCppParser(saModule) -> bool:
@@ -113,7 +113,7 @@ def parseAntlr(lexerClass, parserClass, entryRuleName: str, inputString: str,
 
         # The C++ lexer and parser freed their tokens and parse tree on return, but the Python parse tree
         # built in between keeps those heap pages resident through the listener walk; hand them back.
-        # Nothing is left to collect here, so no gc.collect() (DAOTHER-10315).
+        # Nothing is left to collect here, so no gc.collect() (DAOTHER-7829, 9785).
         trim_heap()
 
         return tree, parserErrorListener, lexerErrorListener

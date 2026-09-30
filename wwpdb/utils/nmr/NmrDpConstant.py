@@ -3,10 +3,10 @@
 # Date: 07-Jan-2026
 #
 # Updates:
-# 28-Sep-2026  M. Yokochi - add MIN_INPUT_SIZE_FOR_GC (DAOTHER-10315)
+# 28-Sep-2026  M. Yokochi - add MIN_INPUT_SIZE_FOR_GC (DAOTHER-7829, 9785)
 # 29-Sep-2026  M. Yokochi - import ctypes.util, without which run_gc() silently skipped malloc_trim(),
-#                           and add trim_heap() (DAOTHER-10315)
-# 29-Sep-2026  M. Yokochi - add MIN_FILE_SIZE_FOR_PARSE_REUSE (DAOTHER-10315)
+#                           and add trim_heap() (DAOTHER-7829, 9785)
+# 29-Sep-2026  M. Yokochi - add MIN_FILE_SIZE_FOR_PARSE_REUSE (DAOTHER-7829, 9785)
 ##
 """ Constants for NMR data processing.
     @author: Masashi Yokochi
@@ -698,11 +698,11 @@ MAX_ERR_LINE_NUM = 20
 # garbage collection before it is parsed. A dropped parse tree (cyclic through parentCtx) or NMR unified data
 # (a plain pynmrstar entry is not cyclic, but the one dropped in 'nmr-str2str-deposit' was measured to be
 # reachable only through reference cycles) is freed only by the cyclic GC, whose full collections run
-# rarely once the heap is large (DAOTHER-10315)
+# rarely once the heap is large (DAOTHER-7829, 9785)
 MIN_INPUT_SIZE_FOR_GC = 1_000_000
 
 # minimum size of an NEF/NMR-STAR file whose entry parsed by NefTranslator.validate_file() is handed over to the
-# following NefTranslator.read_input_file() of the same, unchanged file, instead of being parsed again (DAOTHER-10315)
+# following NefTranslator.read_input_file() of the same, unchanged file, instead of being parsed again (DAOTHER-7829, 9785)
 MIN_FILE_SIZE_FOR_PARSE_REUSE = 1_000_000
 
 REPRESENTATIVE_MODEL_ID = 1

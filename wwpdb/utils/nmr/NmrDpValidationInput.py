@@ -4,7 +4,7 @@
 #
 # Updates:
 # 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous NMR unified data before validating
-#                           a large one, which otherwise sets the peak memory of 'nmr-str2str-deposit' (DAOTHER-10315)
+#                           a large one, which otherwise sets the peak memory of 'nmr-str2str-deposit' (DAOTHER-7829, 9785)
 ##
 """ Input source validation and content subtype detection for NMR data validation.
     @author: Masashi Yokochi
@@ -715,7 +715,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
             # re-reads as the next version, has been dropped from star_data, but it is still reachable through
             # reference cycles (a plain pynmrstar entry is not cyclic; the cycles come from the surrounding data),
             # and the full collection that frees it runs rarely once the heap is large. Collect it before the
-            # new entry is parsed: on a 32 MB entry that is 450k objects, 1226 MB -> 666 MB (DAOTHER-10315).
+            # new entry is parsed: on a 32 MB entry that is 450k objects, 1226 MB -> 666 MB (DAOTHER-7829, 9785).
             if os.path.exists(srcPath) and os.path.getsize(srcPath) >= MIN_INPUT_SIZE_FOR_GC:
                 run_gc(2)
 

@@ -3742,6 +3742,10 @@ class NmrDpMrSplitter:
                             except OSError:
                                 pass
 
+                        # release cached input data on NefTranslator because there is no chance
+                        # to read the same file hereafter
+                        self.__reg.nefT.release()
+
                 elif has_cif_format and not has_mr_header:
 
                     remediated = True
@@ -3930,6 +3934,10 @@ class NmrDpMrSplitter:
                             except OSError:
                                 pass
 
+                        # release cached input data on NefTranslator because there is no chance
+                        # to read the same file hereafter
+                        self.__reg.nefT.release()
+
             except Exception as e:  # pylint: disable=broad-exception-caught
 
                 self.__reg.report.error.appendDescription('internal_error',
@@ -4089,6 +4097,10 @@ class NmrDpMrSplitter:
                         os.remove(_mrPath)
                     except OSError:
                         pass
+
+                # release cached input data on NefTranslator because there is no chance
+                # to read the same file hereafter
+                self.__reg.nefT.release()
 
             if os.path.exists(cor_dst_file):  # in case manually corrected MR file exists
                 dst_file = cor_dst_file
@@ -4904,6 +4916,10 @@ class NmrDpMrSplitter:
                                 except OSError:
                                     pass
 
+                            # release cached input data on NefTranslator because there is no chance
+                            # to read the same file hereafter
+                            self.__reg.nefT.release()
+
                             continue
 
                         if dst_file_type == 'cif':
@@ -5045,6 +5061,10 @@ class NmrDpMrSplitter:
                                     os.remove(_mrPath)
                                 except OSError:
                                     pass
+
+                            # release cached input data on NefTranslator because there is no chance
+                            # to read the same file hereafter
+                            self.__reg.nefT.release()
 
                             continue
 

@@ -89,7 +89,8 @@ try:
                                                GYROMAGNETIC_RATIOS,
                                                PERMEABILITY_0,
                                                PLANCK_CONSTANT,
-                                               REDUCED_PLANCK_CONSTANT)
+                                               REDUCED_PLANCK_CONSTANT,
+                                               run_gc)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -138,7 +139,8 @@ except ImportError:
                                    GYROMAGNETIC_RATIOS,
                                    PERMEABILITY_0,
                                    PLANCK_CONSTANT,
-                                   REDUCED_PLANCK_CONSTANT)
+                                   REDUCED_PLANCK_CONSTANT,
+                                   run_gc)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.NmrDpReport import NmrDpReport
@@ -1353,6 +1355,8 @@ class NmrVrptUtility:
 
         if self.__verbose:
             self.__log.write(f"+{self.__class_name__}.op() starting op {op}, use_cache {self.__use_cache}\n")
+
+        run_gc(2)
 
         if op in self.__procTasksDict:
 

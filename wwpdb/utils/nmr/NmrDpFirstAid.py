@@ -790,6 +790,8 @@ class NmrDpFirstAid:
         except OSError:
             pass
 
+        self.__reg.nefT.release()
+
         return is_done
 
     def rescueFormerNef(self, file_list_id: int) -> bool:

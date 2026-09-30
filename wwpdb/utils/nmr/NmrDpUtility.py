@@ -1490,11 +1490,11 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[0]
             input_source_dic = input_source.get()
 
-            if ((self.__reg.op == 'nmr-cs-mr-merge'
+            if ((op == 'nmr-cs-mr-merge'
                  and self.__reg.report.error.getValueList('missing_mandatory_content',
                                                           input_source_dic['file_name'],
                                                           key='_Atom_chem_shift') is not None)
-                or (self.__reg.op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate')
+                or (op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate')
                     and self.__reg.remediation_mode))\
                and self.__reg.report.isError() and self.__reg.dstPath is not None:
 
@@ -1575,7 +1575,8 @@ class NmrDpUtility:
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
 
-            run_gc(2)
+            if op == 'nmr-cs-mr-merge':
+                self.release()
 
     def __dumpDpReport(self) -> bool:
         """ Dump current NMR data processing report.

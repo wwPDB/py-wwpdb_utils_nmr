@@ -701,10 +701,6 @@ MAX_ERR_LINE_NUM = 20
 # rarely once the heap is large (DAOTHER-7829, 9785)
 MIN_INPUT_SIZE_FOR_GC = 1_000_000
 
-# minimum size of an NEF/NMR-STAR file whose entry parsed by NefTranslator.validate_file() is handed over to the
-# following NefTranslator.read_input_file() of the same, unchanged file, instead of being parsed again (DAOTHER-7829, 9785)
-MIN_FILE_SIZE_FOR_PARSE_REUSE = 1_000_000
-
 REPRESENTATIVE_MODEL_ID = 1
 REPRESENTATIVE_ASYM_ID = 'A'
 REPRESENTATIVE_ALT_ID = 'A'

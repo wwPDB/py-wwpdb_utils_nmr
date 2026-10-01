@@ -315,6 +315,9 @@
 #                           a dictionary per atom row (+263 MB for 1.36 M rows) (DAOTHER-7829, 9785)
 # 29-Sep-2026  M. Yokochi - hand the NMR-STAR entry parsed by NefTranslator.validate_file() over to the following
 #                           read_input_file() of the same, unchanged large file, instead of parsing it again (DAOTHER-7829, 9785)
+# 30-Sep-2026  M. Yokochi - merge atom selections with a size-adaptive hashed index (appendUniqueAtoms() in
+#                           BaseStackedMRParserListener) in exitSelection() of the XPLOR-NIH, CNS, CHARMM and SCHRODINGER
+#                           listeners and in doIntersectionFactor_expressions(), instead of O(N*M) list scans (DAOTHER-7829, 9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

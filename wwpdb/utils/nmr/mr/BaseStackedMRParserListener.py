@@ -19,7 +19,7 @@ import itertools
 import random
 import re
 import sys
-from typing import IO, List, Optional, Tuple
+from typing import Any, IO, List, Optional, Tuple
 
 import numpy
 
@@ -351,6 +351,46 @@ def intersectAtomSelectionInto(left: List[dict], right: List[dict],
                 _atomSelection.append(_atom)
 
     return _atomSelection
+
+
+def atomIndexKey(atom: Any) -> Any:
+    """ Return a hashable key that compares equal exactly when the atoms compare equal: the frozen items of
+        an atom dictionary, or the element itself otherwise (e.g. the '*' wildcard).
+        Raise TypeError for an unhashable value, so that callers can fall back to a plain list scan.
+    """
+
+    return frozenset(atom.items()) if isinstance(atom, dict) else atom
+
+
+def appendUniqueAtoms(dst: list, src: list) -> None:
+    """ Append the atoms of 'src' that are not yet in 'dst' to 'dst' in place, in order, checking against the
+        atoms appended so far as well, i.e. `for a in src: if a not in dst: dst.append(a)`. Size-adaptive like
+        intersectAtomSelectionInto(): a hashed index replaces the O(N*M) list scan once the inputs are large,
+        which cost 86 s of the 250 s nmr-cs-mr-merge of 6pts in exitSelection() (DAOTHER-7829, 9785).
+    """
+
+    lenD = len(dst)
+    lenS = len(src)
+
+    if lenS == 0:
+        return
+
+    if lenD * lenS > INTERSECTION_INDEX_FACTOR * (lenD + lenS):
+        try:
+            seen = {atomIndexKey(a) for a in dst}
+            keys = [atomIndexKey(a) for a in src]
+        except TypeError:  # an unhashable value: keep the plain list scan below
+            pass
+        else:
+            for a, k in zip(src, keys):
+                if k not in seen:
+                    seen.add(k)
+                    dst.append(a)
+            return
+
+    for a in src:
+        if a not in dst:
+            dst.append(a)
 
 
 class BaseStackedMRParserListener():
@@ -4593,12 +4633,32 @@ class BaseStackedMRParserListener():
                         _atom['segment_id'] = segment_id
                     _factor['atom_selection'] = refAtomSelection
 
+        # hashed index of atomSelection once the inputs are large, built after the in-place edits above;
+        # the O(N*M) membership scan cost 27 s of the 250 s nmr-cs-mr-merge of 6pts (DAOTHER-7829, 9785)
+        index = None
+        if atomSelection is not None:
+            lenR = len(refAtomSelection)
+            lenA = len(atomSelection)
+            if lenR * lenA > INTERSECTION_INDEX_FACTOR * (lenR + lenA):
+                try:
+                    index = {atomIndexKey(a) for a in atomSelection}
+                except TypeError:
+                    index = None
+
         _atomSelection = []
         for _atom, _atom_ in zip(refAtomSelection, _factor['atom_selection']):
             if isinstance(_atom, str) and _atom == '*':
                 _factor['atom_selection'] = atomSelection
                 return _factor
-            if _atom in atomSelection:
+            hit = None
+            if index is not None:
+                try:
+                    hit = atomIndexKey(_atom) in index
+                except TypeError:
+                    hit = None
+            if hit is None:
+                hit = _atom in atomSelection
+            if hit:
                 _atomSelection.append(_atom_)
             elif 'hydrogen_not_instantiated' in _atom and _atom['hydrogen_not_instantiated']:
                 chain_id = _atom['chain_id']

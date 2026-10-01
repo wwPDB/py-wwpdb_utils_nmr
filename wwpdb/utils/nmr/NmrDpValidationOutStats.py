@@ -471,6 +471,9 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
             vrpt_mr = vrpt_util.op('nmr-mr-validation')
 
+            # Free memory used for NmrVrptUtility
+            vrpt_util.release()
+
             if vrpt_cs is not None:
                 completeness = vrpt_cs['completeness']
 

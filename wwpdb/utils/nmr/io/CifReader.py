@@ -62,6 +62,7 @@ __version__ = "1.2.1"
 
 import collections
 import copy
+import gc
 import hashlib
 import inspect
 import itertools
@@ -102,8 +103,7 @@ try:
                                                LEN_MAJOR_ASYM_ID,
                                                RMSD_OVERLAID_EXACTLY,
                                                RMSD_CUTOFF_FOR_DOMAIN,
-                                               CARTN_DATA_ITEMS,
-                                               run_gc)
+                                               CARTN_DATA_ITEMS)
 except ImportError:
     from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
                                    EMPTY_VALUE,
@@ -112,8 +112,7 @@ except ImportError:
                                    LEN_MAJOR_ASYM_ID,
                                    RMSD_OVERLAID_EXACTLY,
                                    RMSD_CUTOFF_FOR_DOMAIN,
-                                   CARTN_DATA_ITEMS,
-                                   run_gc)
+                                   CARTN_DATA_ITEMS)
 
 # throw RuntimeWarning as error for bug tracking, any runtimewarning should be handled
 warnings.filterwarnings('error', category=RuntimeWarning, module='CifReader')
@@ -2129,7 +2128,7 @@ class CifReader:
                     del labels
 
                     if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                        run_gc(0)
+                        gc.collect(0)
 
                         cycle = 0
 
@@ -2736,7 +2735,7 @@ class CifReader:
                     del labels
 
                     if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                        run_gc(0)
+                        gc.collect(0)
 
                         cycle = 0
 
@@ -2930,6 +2929,6 @@ class CifReader:
                 self.__log.write(f'{clist}')
 
         if cycle > 0:
-            run_gc(0)
+            gc.collect(0)
 
         return rlist, dlist, clist

@@ -38,6 +38,7 @@ __version__ = "v1.3.3"
 
 import collections
 import copy
+import gc
 import gzip
 import math
 import os
@@ -92,8 +93,7 @@ try:
                                                GYROMAGNETIC_RATIOS,
                                                PERMEABILITY_0,
                                                PLANCK_CONSTANT,
-                                               REDUCED_PLANCK_CONSTANT,
-                                               run_gc)
+                                               REDUCED_PLANCK_CONSTANT)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
@@ -143,8 +143,7 @@ except ImportError:
                                    GYROMAGNETIC_RATIOS,
                                    PERMEABILITY_0,
                                    PLANCK_CONSTANT,
-                                   REDUCED_PLANCK_CONSTANT,
-                                   run_gc)
+                                   REDUCED_PLANCK_CONSTANT)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.NmrDpReport import NmrDpReport
@@ -1225,7 +1224,7 @@ class NmrVrptUtility:
                                 'nmr-restraint-validation': __mrValidTasks}  # for backward compatibility
 
         # Pre-run GC to avoid OOM because NmrVrptUtility requires a mount of memory
-        run_gc(2)
+        gc.collect(2)
 
     @property
     def version(self) -> str:
@@ -1399,7 +1398,7 @@ class NmrVrptUtility:
 
         self.__cifPath = None
 
-        run_gc(2)
+        gc.collect(2)
 
     def __parseCoordinate(self) -> bool:
         """ Parse coordinates.
@@ -1711,8 +1710,11 @@ class NmrVrptUtility:
 
             fPath = self.__inputParamDict[NMR_STR_FILE_PATH_KEY]
 
-            if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict:
+            has_safe_cif_path = False
+
+            if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict and self.__outputParamDict[NMR_CIF_FILE_PATH_KEY] is not None:
                 _fPath = self.__outputParamDict[NMR_CIF_FILE_PATH_KEY]
+                has_safe_cif_path = True
             else:
                 _fPath = self.getNextPath(fPath, '.str2cif')
 
@@ -1747,7 +1749,7 @@ class NmrVrptUtility:
 
             finally:
                 try:
-                    if NMR_CIF_FILE_PATH_KEY not in self.__outputParamDict:
+                    if not has_safe_cif_path:
                         if os.path.exists(_fPath):
                             os.remove(_fPath)
                 except OSError:
@@ -1757,15 +1759,18 @@ class NmrVrptUtility:
 
             master_entry = self.__inputParamDict[PYNMRSTAR_OBJ_KEY]
 
-            _fPath = __fPath = None
+            has_safe_star_path = has_safe_cif_path = False
 
-            if NEXT_STAR_FILE_PATH_KEY in self.__outputParamDict:
+            if NEXT_STAR_FILE_PATH_KEY in self.__outputParamDict and self.__outputParamDict[NEXT_STAR_FILE_PATH_KEY] is not None:
                 _fPath = self.__outputParamDict[NEXT_STAR_FILE_PATH_KEY]
-            if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict:
-                __fPath = self.__outputParamDict[NMR_CIF_FILE_PATH_KEY]
-            if _fPath is None:
+                has_safe_star_path = True
+            else:
                 _fPath = get_temp_path(None, '.str')
-            if __fPath is None:
+
+            if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict and self.__outputParamDict[NMR_CIF_FILE_PATH_KEY] is not None:
+                __fPath = self.__outputParamDict[NMR_CIF_FILE_PATH_KEY]
+                has_safe_cif_path = True
+            else:
                 __fPath = f'{_fPath}.str2cif'
 
             try:
@@ -1801,10 +1806,10 @@ class NmrVrptUtility:
 
             finally:
                 try:
-                    if NEXT_STAR_FILE_PATH_KEY not in self.__outputParamDict:
+                    if not has_safe_star_path:
                         if os.path.exists(_fPath):
                             os.remove(_fPath)
-                    if NMR_CIF_FILE_PATH_KEY not in self.__outputParamDict:
+                    if not has_safe_cif_path:
                         if os.path.exists(__fPath):
                             os.remove(__fPath)
                 except OSError:

@@ -151,6 +151,7 @@ import collections
 import copy
 # import csv
 import functools
+import gc
 import hashlib
 import io
 import itertools
@@ -203,8 +204,7 @@ try:
                                                LP_CATEGORIES,
                                                KEY_ITEMS,
                                                DATA_ITEMS,
-                                               MIN_INPUT_SIZE_FOR_GC,
-                                               run_gc)
+                                               MIN_INPUT_SIZE_FOR_GC)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            getOneLetterCode,
@@ -255,8 +255,7 @@ except ImportError:
                                    LP_CATEGORIES,
                                    KEY_ITEMS,
                                    DATA_ITEMS,
-                                   MIN_INPUT_SIZE_FOR_GC,
-                                   run_gc)
+                                   MIN_INPUT_SIZE_FOR_GC)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                getOneLetterCode,
@@ -1783,8 +1782,8 @@ class NefTranslator:
 
         try:
 
-            if self.__parsedFileSize > MIN_INPUT_SIZE_FOR_GC:
-                run_gc(2)
+            if self.__parsedFileSize >= MIN_INPUT_SIZE_FOR_GC:
+                gc.collect(2)
 
                 return True
 

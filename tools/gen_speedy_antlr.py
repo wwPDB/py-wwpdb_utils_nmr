@@ -4,6 +4,8 @@
 # Date: 7-Aug-2026
 #
 # Updates:
+# 01-Oct-2026  M. Yokochi - lex a one-byte-per-character str in place (latin1_input_stream.h) (DAOTHER-7829, 9785)
+##
 """ Generate the speedy-antlr-tool C++ accelerators for this package's grammars.
 
     Grammars are DISCOVERED from the *Reader.py classes rather than listed here:
@@ -17,7 +19,9 @@
       2. runs speedy_antlr_tool.generate() against the *already committed* Python
          parser to emit the sa_<grammar>.py shim and the C++ translator,
       3. patches do_parse() and the shim so the prediction mode is a per-call
-         argument (see PREDICTION_MODE_NOTE below),
+         argument (see PREDICTION_MODE_NOTE below), and do_parse() so that a str
+         stored one byte per character is lexed in place by
+         cpp_src/latin1_input_stream.h instead of a UTF-32 copy,
       4. writes cpp_src/speedy_antlr_manifest.json, which setup.py reads to
          declare the extensions.
 
@@ -113,6 +117,49 @@ CPP_PATCHES = [
          '                ->setPredictionMode(antlr4::atn::PredictionMode::SLL);\n'
          '        }\n'
          '        antlr4::tree::ParseTree *parse_tree;\n'),
+    ]),
+    # A str stored one byte per character (code points <= U+00FF, which covers every
+    # ASCII input) is lexed in place by wwpdb::Latin1InputStream (latin1_input_stream.h)
+    # with the code points and indices ANTLRInputStream would see. Otherwise the str
+    # takes the UTF-8 copy, which ANTLRInputStream decodes into a UTF-32 copy of its
+    # own, 4 bytes per character (DAOTHER-7829, 9785).
+    ('do_parse() lexes a one-byte-per-character str in place', [
+        ('#include "speedy_antlr.h"\n',
+         '#include "speedy_antlr.h"\n'
+         '#include "latin1_input_stream.h"  // wwPDB\n'),
+        ('        // Extract input stream\'s string\n'
+         '        const char *cstrdata;\n'
+         '        Py_ssize_t bufsize;\n'
+         '        strdata = PyObject_GetAttrString(stream, "strdata");\n'
+         '        if(!strdata) throw speedy_antlr::PythonException();\n'
+         '        cstrdata = PyUnicode_AsUTF8AndSize(strdata, &bufsize);\n'
+         '        if(!cstrdata) throw speedy_antlr::PythonException();\n'
+         '\n'
+         '        // Create an antlr InputStream object\n'
+         '        antlr4::ANTLRInputStream cpp_stream(cstrdata, bufsize);\n',
+         '        // Extract input stream\'s string\n'
+         '        strdata = PyObject_GetAttrString(stream, "strdata");\n'
+         '        if(!strdata) throw speedy_antlr::PythonException();\n'
+         '        if(!PyUnicode_Check(strdata)) {\n'
+         '            PyErr_SetString(PyExc_TypeError, "InputStream.strdata must be a str");\n'
+         '            throw speedy_antlr::PythonException();\n'
+         '        }\n'
+         '\n'
+         '        // Create an antlr InputStream object. wwPDB: a str stored one byte per\n'
+         '        // character is lexed in place (strdata is held until the end of the parse);\n'
+         '        // any other goes through the UTF-32 copy of ANTLRInputStream as before.\n'
+         '        std::unique_ptr<antlr4::CharStream> cpp_stream_holder;\n'
+         '        if(PyUnicode_KIND(strdata) == PyUnicode_1BYTE_KIND) {\n'
+         '            cpp_stream_holder.reset(new wwpdb::Latin1InputStream(\n'
+         '                reinterpret_cast<const unsigned char *>(PyUnicode_1BYTE_DATA(strdata)),\n'
+         '                static_cast<size_t>(PyUnicode_GET_LENGTH(strdata))));\n'
+         '        } else {\n'
+         '            Py_ssize_t bufsize;\n'
+         '            const char *cstrdata = PyUnicode_AsUTF8AndSize(strdata, &bufsize);\n'
+         '            if(!cstrdata) throw speedy_antlr::PythonException();\n'
+         '            cpp_stream_holder.reset(new antlr4::ANTLRInputStream(cstrdata, bufsize));\n'
+         '        }\n'
+         '        antlr4::CharStream &cpp_stream = *cpp_stream_holder;\n'),
     ]),
 ]
 

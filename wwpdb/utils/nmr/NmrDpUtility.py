@@ -318,6 +318,8 @@
 # 30-Sep-2026  M. Yokochi - merge atom selections with a size-adaptive hashed index (appendUniqueAtoms() in
 #                           BaseStackedMRParserListener) in exitSelection() of the XPLOR-NIH, CNS, CHARMM and SCHRODINGER
 #                           listeners and in doIntersectionFactor_expressions(), instead of O(N*M) list scans (DAOTHER-7829, 9785)
+# 01-Oct-2026  M. Yokochi - the speedy-antlr C++ accelerators lex a str stored one byte per character in place
+#                           (cpp_src/latin1_input_stream.h), instead of a UTF-32 copy of the input (DAOTHER-7829, 9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

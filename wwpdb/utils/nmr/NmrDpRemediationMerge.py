@@ -13,6 +13,7 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "5.3.3"
 
+import gc
 import os
 from datetime import datetime, timedelta
 from operator import itemgetter
@@ -2149,6 +2150,8 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
         self._reg.list_id_counter = None
         self._reg.mr_sf_dict_holder = None
         self._reg.pk_sf_holder = None
+
+        gc.collect(2)
 
         master_entry = self._reg.c2S.normalize_str(master_entry)
 

@@ -1075,8 +1075,6 @@ class NmrDpUtility:
         self.__reg.cR.release()
         self.__reg.caC = None  # rebuilt by every op(), see __parseCoordFilePath()
 
-        self.__reg.nefT.cache_clear()
-
         if not self.__reg.nefT.release():
             gc.collect(2)
 
@@ -1581,7 +1579,8 @@ class NmrDpUtility:
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
 
-            if op == 'nmr-cs-mr-merge':
+            # release memory after executing the following tasks, which may involve processing large files
+            if (op.startswith('nmr-cs') or op.startswith('nmr-str')) and self.__reg.cifChecked:
                 self.release()
 
     def __dumpDpReport(self) -> bool:

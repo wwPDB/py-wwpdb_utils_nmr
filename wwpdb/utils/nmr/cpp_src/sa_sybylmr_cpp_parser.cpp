@@ -13,6 +13,7 @@
 #include "SybylMRLexer.h"
 #include "SybylMRParser.h"
 #include "speedy_antlr.h"
+#include "latin1_input_stream.h"  // wwPDB
 
 #include "sa_sybylmr_translator.h"
 antlr4::tree::ParseTree* get_parse_tree_sybyl_mr(SybylMRParser *parser) {return parser->sybyl_mr();}
@@ -61,15 +62,28 @@ PyObject* do_parse(PyObject *self, PyObject *args) {
         }
 
         // Extract input stream's string
-        const char *cstrdata;
-        Py_ssize_t bufsize;
         strdata = PyObject_GetAttrString(stream, "strdata");
         if(!strdata) throw speedy_antlr::PythonException();
-        cstrdata = PyUnicode_AsUTF8AndSize(strdata, &bufsize);
-        if(!cstrdata) throw speedy_antlr::PythonException();
+        if(!PyUnicode_Check(strdata)) {
+            PyErr_SetString(PyExc_TypeError, "InputStream.strdata must be a str");
+            throw speedy_antlr::PythonException();
+        }
 
-        // Create an antlr InputStream object
-        antlr4::ANTLRInputStream cpp_stream(cstrdata, bufsize);
+        // Create an antlr InputStream object. wwPDB: a str stored one byte per
+        // character is lexed in place (strdata is held until the end of the parse);
+        // any other goes through the UTF-32 copy of ANTLRInputStream as before.
+        std::unique_ptr<antlr4::CharStream> cpp_stream_holder;
+        if(PyUnicode_KIND(strdata) == PyUnicode_1BYTE_KIND) {
+            cpp_stream_holder.reset(new wwpdb::Latin1InputStream(
+                reinterpret_cast<const unsigned char *>(PyUnicode_1BYTE_DATA(strdata)),
+                static_cast<size_t>(PyUnicode_GET_LENGTH(strdata))));
+        } else {
+            Py_ssize_t bufsize;
+            const char *cstrdata = PyUnicode_AsUTF8AndSize(strdata, &bufsize);
+            if(!cstrdata) throw speedy_antlr::PythonException();
+            cpp_stream_holder.reset(new antlr4::ANTLRInputStream(cstrdata, bufsize));
+        }
+        antlr4::CharStream &cpp_stream = *cpp_stream_holder;
 
         // in case error listener is overridden
         token_module = PyImport_ImportModule("antlr4.Token");

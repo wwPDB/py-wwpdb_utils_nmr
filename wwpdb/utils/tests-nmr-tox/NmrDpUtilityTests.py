@@ -185,26 +185,30 @@ for op, dst, nmr_cif in (('nmr-str2str-deposit', '2l9r_str2str.str', None),
         self.assertEqual(glob.glob(os.path.join(work, "*.str2cif")), [])
 
     def test_release(self):
-        # release() drops the parsed coordinates, and the next op() re-reads them with the same result
+        # release() drops the parsed coordinates, and the next op() re-reads them with the same result;
+        # nmr-cs*/nmr-str* operations release them on their own once they end
         cR = self.utility._NmrDpUtility__reg.cR  # pylint: disable=protected-access
 
-        def check(log_name):
+        def check(log_name, src_name="2l9r.nef", op="nmr-nef-consistency-check"):
             log_path = os.path.join(TESTOUTPUT, log_name)
-            self.utility.setSource(os.path.join(self.data_dir_path, "2l9r.str"))
+            self.utility.setSource(os.path.join(self.data_dir_path, src_name))
             self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "2l9r.cif"), type="file")
             self.utility.setLog(log_path)
-            self.utility.op("nmr-str-consistency-check")
+            self.utility.op(op)
             with open(log_path, "r", encoding="utf-8") as ifh:
                 report = json.load(ifh)
             return report["information"]["status"], report["error"], report["warning"]
 
-        before = check("2l9r-str-consistency-before-release-log.json")
+        check("2l9r-str-consistency-auto-release-log.json", "2l9r.str", "nmr-str-consistency-check")
+        self.assertIsNone(cR.getDataBlock())
+
+        before = check("2l9r-nef-consistency-before-release-log.json")
         self.assertIsNotNone(cR.getDataBlock())
 
         self.utility.release()
         self.assertIsNone(cR.getDataBlock())
 
-        after = check("2l9r-str-consistency-after-release-log.json")
+        after = check("2l9r-nef-consistency-after-release-log.json")
         self.assertIsNotNone(cR.getDataBlock())
         self.assertEqual(before, after)
 

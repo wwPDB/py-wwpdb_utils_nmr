@@ -1393,7 +1393,7 @@ class NmrVrptUtility:
         self.__nmrDataPath = None
 
         # check self.__cR is not borrowed from NmrDpUtility before releasing memory for the cooridnates
-        if self.__use_cache:
+        if not self.__use_cache:
             self.__cR.release()
 
         self.__cifPath = None

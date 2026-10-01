@@ -2929,4 +2929,7 @@ class CifReader:
             if self.__verbose and self.__debug:
                 self.__log.write(f'{clist}')
 
+        if cycle > 0:
+            run_gc(0)
+
         return rlist, dlist, clist

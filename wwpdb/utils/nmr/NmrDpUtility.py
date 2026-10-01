@@ -1073,9 +1073,9 @@ class NmrDpUtility:
 
         self.__reg.cR.release()
         self.__reg.caC = None  # rebuilt by every op(), see __parseCoordFilePath()
-        self.__reg.nefT.release()
 
-        run_gc(2)
+        if not self.__reg.nefT.release():
+            run_gc(2)
 
     def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
@@ -2077,6 +2077,8 @@ class NmrDpUtility:
     def __validateInputSource(self, srcPath: str = None) -> bool:
         """ Validate NMR data as primary input source.
         """
+
+        run_gc(1)
 
         return self.__reg.dpV.validateInputSource(srcPath)
 

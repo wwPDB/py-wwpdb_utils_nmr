@@ -1774,16 +1774,24 @@ class NefTranslator:
 
         return is_ok, data_type, star_data
 
-    def release(self) -> None:
+    def release(self) -> bool:
         """ Release the data object parsed by validate_file() that no read_input_file() has taken over.
+            @return: whether GC runned or not.
         """
 
         self.__parsedInput = None
 
-        if self.__parsedFileSize > MIN_INPUT_SIZE_FOR_GC:
-            run_gc(2)
+        try:
 
-        self.__parsedFileSize = 0
+            if self.__parsedFileSize > MIN_INPUT_SIZE_FOR_GC:
+                run_gc(2)
+
+                return True
+
+            return False
+
+        finally:
+            self.__parsedFileSize = 0
 
     def check_mandatory_tags(self, in_file: str, file_type: str
                              ) -> Tuple[List[str], List[str]]:

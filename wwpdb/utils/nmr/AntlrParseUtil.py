@@ -23,7 +23,6 @@ __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
 import gc
-
 from typing import Optional, Tuple
 
 from antlr4 import CommonTokenStream, InputStream, PredictionMode

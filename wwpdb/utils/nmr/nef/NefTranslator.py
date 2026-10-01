@@ -135,6 +135,8 @@
 # 19-Aug-2026  M. Yokochi - refactor check_data() and get_conflict_id_set() for performance gain including minor bug fixes (v5.3.0)
 # 29-Sep-2026  M. Yokochi - hand the entry parsed by validate_file() over to the following read_input_file() of the same,
 #                           unchanged large file, instead of parsing it again (DAOTHER-7829, 9785)
+# 01-Oct-2026  M. Yokochi - extract sequences from the distinct rows of a loop in get_nef_seq(), get_star_seq() and
+#                           get_star_auth_seq(), cutting the garbage collections tripled by per-row containers (DAOTHER-7829, 9785)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -158,7 +160,7 @@ import os
 import re
 import sys
 from operator import itemgetter
-from typing import IO, List, Optional, Tuple, Union
+from typing import Any, IO, List, Optional, Tuple, Union
 
 from packaging import version
 
@@ -413,6 +415,36 @@ def is_good_data(array: list) -> bool:
     """
 
     return not any(d in EMPTY_VALUE or (isinstance(d, str) and BAD_EXPR_PAT.match(d)) for d in array)
+
+
+def unique_rows(rows: List[list]) -> List[list]:
+    """ Return the distinct rows in the order of their first occurrence, as the original row objects.
+        Restraint loops repeat the same residues massively (6pts: 762,780 rows, 90 distinct), and processing every
+        row allocated enough per-row containers to triple the garbage collections over a large entry
+        (DAOTHER-7829, 9785). Return the rows as they are if one of them holds an unhashable value.
+    """
+
+    distinct = {}
+    setdefault = distinct.setdefault
+
+    try:
+        for row in rows:
+            setdefault(tuple(row), row)
+    except TypeError:
+        return rows
+
+    return list(distinct.values())
+
+
+def is_integer_value(value: Any) -> bool:
+    """ Return whether int() accepts a given value.
+    """
+
+    try:
+        int(value)
+        return True
+    except (ValueError, TypeError):
+        return False
 
 
 def specify_missing_tags(lp_category: str, current_tags: List[str], missing_tags: List[str]) -> str:
@@ -2311,6 +2343,19 @@ class NefTranslator:
                 return True
             return False
 
+        def has_conflict(rows):
+            """ Return whether two rows share the key of chk_dict below but differ in comp_id. """
+            chk = {}
+            try:
+                for x in rows:
+                    key = (x[2], int(x[0]) if isinstance(x[0], str) else x[0])
+                    comp_id = x[1].upper()
+                    if chk.setdefault(key, comp_id) != comp_id:
+                        return True
+            except (ValueError, TypeError):  # the processing below hits the same error and skips the loop
+                return False
+            return False
+
         for loop in loops:
             cmp_dict, seq_dict = {}, {}
 
@@ -2336,7 +2381,19 @@ class NefTranslator:
                     if len(msg) > 0:
                         raise LookupError(msg)
 
+            # restraint loops repeat the same residues massively (6pts: 762,780 rows, 90 distinct): work on the
+            # distinct rows unless one has to be reported, in which case every row is checked as before
+            # (DAOTHER-7829, 9785)
+            all_seq_data = seq_data
+            rows = unique_rows(seq_data)
             if allow_empty:
+                rows = [row for row in rows if is_good_data(row)]
+            fast = (allow_empty or not any(is_empty(row) for row in rows))\
+                and all(is_integer_value(row[0]) for row in rows)
+
+            if fast:
+                seq_data = rows
+            elif allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
@@ -2353,21 +2410,26 @@ class NefTranslator:
             if len(seq_data) == 0:
                 continue
 
-            for idx, row in enumerate(seq_data):
-                try:
-                    int(row[0])
-                except (ValueError, TypeError):
-                    if idx < len_data:
-                        if skip_empty_value_error(loop, idx):
-                            continue
-                        r = {}
-                        for j, t in enumerate(loop.tags):
-                            r[t] = loop.data[idx][j]
-                        f.append(f"[Invalid data] {seq_id_name} must be an integer. "
-                                 f"#_of_row {idx + 1}, data_of_row {r}.")
+            if not fast:
+                for idx, row in enumerate(seq_data):
+                    try:
+                        int(row[0])
+                    except (ValueError, TypeError):
+                        if idx < len_data:
+                            if skip_empty_value_error(loop, idx):
+                                continue
+                            r = {}
+                            for j, t in enumerate(loop.tags):
+                                r[t] = loop.data[idx][j]
+                            f.append(f"[Invalid data] {seq_id_name} must be an integer. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
                 raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
+
+            # the uniqueness error below names the conflicting rows as found among every row
+            if fast and has_conflict(seq_data):
+                seq_data = list(filter(is_good_data, all_seq_data)) if allow_empty else all_seq_data
 
             try:
 
@@ -4072,7 +4134,19 @@ class NefTranslator:
                                                  alt_seq_id_name, alt_seq_id_offset, alt_chain_id_name,
                                                  allow_empty, allow_gap, check_identity, coord_assembly_checker)
 
+            # restraint loops repeat the same residues massively (6pts: 762,780 rows, 90 distinct): work on the
+            # distinct rows unless one has to be reported, in which case every row is checked as before;
+            # a uniqueness conflict below is acted on by its existence alone
+            # (DAOTHER-7829, 9785)
+            rows = unique_rows(seq_data)
             if allow_empty:
+                rows = [row for row in rows if is_good_data(row)]
+            fast = (allow_empty or not any(is_empty(row) for row in rows))\
+                and all(is_integer_value(row[0]) for row in rows)
+
+            if fast:
+                seq_data = rows
+            elif allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
@@ -4089,18 +4163,19 @@ class NefTranslator:
             if len(seq_data) == 0:
                 continue
 
-            for idx, row in enumerate(seq_data):
-                try:
-                    int(row[0])
-                except (ValueError, TypeError):
-                    if idx < len_data:
-                        if skip_empty_value_error(loop, idx):
-                            continue
-                        r = {}
-                        for j, t in enumerate(loop.tags):
-                            r[t] = loop.data[idx][j]
-                        f.append(f"[Invalid data] {seq_id_name} must be an integer. "
-                                 f"#_of_row {idx + 1}, data_of_row {r}.")
+            if not fast:
+                for idx, row in enumerate(seq_data):
+                    try:
+                        int(row[0])
+                    except (ValueError, TypeError):
+                        if idx < len_data:
+                            if skip_empty_value_error(loop, idx):
+                                continue
+                            r = {}
+                            for j, t in enumerate(loop.tags):
+                                r[t] = loop.data[idx][j]
+                            f.append(f"[Invalid data] {seq_id_name} must be an integer. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
                 if seq_id_name == 'Comp_index_ID' and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags\
@@ -4417,6 +4492,19 @@ class NefTranslator:
 
         seq_id_col = 3
 
+        def has_conflict(rows):
+            """ Return whether two rows share the key of chk_dict below but differ in auth_comp_id. """
+            chk = {}
+            try:
+                for x in rows:
+                    key = (x[4], int(x[3]) if isinstance(x[3], str) else x[3], x[2],
+                           x[0].strip() if isinstance(x[0], str) else str(x[0]))
+                    if chk.setdefault(key, x[1]) != x[1]:
+                        return True
+            except (ValueError, TypeError):  # the processing below hits the same error and skips the loop
+                return False
+            return False
+
         for loop in loops:
             seq_dict, acmp_dict, aseq_dict, asym_dict = {}, {}, {}, {}
 
@@ -4456,7 +4544,19 @@ class NefTranslator:
                     if len(msg) > 0:
                         raise LookupError(msg)
 
+            # restraint loops repeat the same residues massively (6pts: 762,780 rows, 90 distinct): work on the
+            # distinct rows unless one has to be reported, in which case every row is checked as before
+            # (DAOTHER-7829, 9785)
+            all_seq_data = seq_data
+            rows = unique_rows(seq_data)
             if allow_empty:
+                rows = [row for row in rows if is_good_data(row)]
+            fast = (allow_empty or not any(is_empty(row) for row in rows))\
+                and all(is_integer_value(row[seq_id_col]) for row in rows)
+
+            if fast:
+                seq_data = rows
+            elif allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
@@ -4473,21 +4573,26 @@ class NefTranslator:
             if len(seq_data) == 0:
                 continue
 
-            for idx, row in enumerate(seq_data):
-                try:
-                    int(row[seq_id_col])
-                except (ValueError, TypeError):
-                    if idx < len_data:
-                        if skip_empty_value_error(loop, idx):
-                            continue
-                        r = {}
-                        for j, t in enumerate(loop.tags):
-                            r[t] = loop.data[idx][j]
-                        f.append(f"[Invalid data] {seq_id_name} must be an integer. "
-                                 f"#_of_row {idx + 1}, data_of_row {r}.")
+            if not fast:
+                for idx, row in enumerate(seq_data):
+                    try:
+                        int(row[seq_id_col])
+                    except (ValueError, TypeError):
+                        if idx < len_data:
+                            if skip_empty_value_error(loop, idx):
+                                continue
+                            r = {}
+                            for j, t in enumerate(loop.tags):
+                                r[t] = loop.data[idx][j]
+                            f.append(f"[Invalid data] {seq_id_name} must be an integer. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
                 raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
+
+            # the uniqueness error below names the conflicting rows as found among every row
+            if fast and has_conflict(seq_data):
+                seq_data = list(filter(is_good_data, all_seq_data)) if allow_empty else all_seq_data
 
             try:
 

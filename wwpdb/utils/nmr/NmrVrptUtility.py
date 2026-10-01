@@ -1224,6 +1224,9 @@ class NmrVrptUtility:
                                 'nmr-chemical-shift-validation': __csValidTasks,
                                 'nmr-restraint-validation': __mrValidTasks}  # for backward compatibility
 
+        # Pre-run GC to avoid OOM because NmrVrptUtility requires a mount of memory
+        run_gc(2)
+
     @property
     def version(self) -> str:
         """ Retrieve software version.
@@ -1360,8 +1363,6 @@ class NmrVrptUtility:
         if self.__verbose:
             self.__log.write(f"+{self.__class_name__}.op() starting op {op}, use_cache {self.__use_cache}\n")
 
-        run_gc(2)
-
         if op in self.__procTasksDict:
 
             for task in self.__procTasksDict[op]:
@@ -1379,11 +1380,26 @@ class NmrVrptUtility:
                     if end_time - start_time > 1.0:
                         self.__log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
 
+        return self.__results
+
+    def release(self) -> None:
+        """ Release the memory held for the coordinates and NMR data.
+        """
+
         # back to the initial state, which the next op expects, e.g. __extractEntityInstances() tests for None
         self.__coordinates = None
         self.__entityInstance = None
 
-        return self.__results
+        self.__rR.release()
+        self.__nmrDataPath = None
+
+        # check self.__cR is not borrowed from NmrDpUtility before releasing memory for the cooridnates
+        if self.__use_cache:
+            self.__cR.release()
+
+        self.__cifPath = None
+
+        run_gc(2)
 
     def __parseCoordinate(self) -> bool:
         """ Parse coordinates.
@@ -1585,8 +1601,10 @@ class NmrVrptUtility:
 
                 if self.__cR.parse(fPath):
                     self.__cifPath = fPath
+
                     if self.__use_cache:
                         self.__cifHashCode = self.__cR.getHashCode()
+
                     return True
 
             except Exception:  # pylint: disable=broad-exception-caught
@@ -1669,8 +1687,10 @@ class NmrVrptUtility:
 
                 if self.__rR.parse(fPath):
                     self.__nmrDataPath = fPath
+
                     if self.__use_cache:
                         self.__nmrDataHashCode = self.__rR.getHashCode()
+
                     return True
 
             except Exception:  # pylint: disable=broad-exception-caught
@@ -1716,8 +1736,10 @@ class NmrVrptUtility:
 
                     if self.__rR.parse(_fPath):
                         self.__nmrDataPath = fPath
+
                         if self.__use_cache:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
+
                         return True
 
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -1768,8 +1790,10 @@ class NmrVrptUtility:
 
                     if self.__rR.parse(__fPath):
                         self.__nmrDataPath = _fPath
+
                         if self.__use_cache:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
+
                         return True
 
             except Exception as e:  # pylint: disable=broad-exception-caught

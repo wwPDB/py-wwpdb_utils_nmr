@@ -332,6 +332,7 @@ __version__ = "5.3.3"
 
 import collections
 import copy
+import gc
 import hashlib
 import itertools
 import os
@@ -437,8 +438,7 @@ try:
                                                REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                SPECTRAL_DIM_TEMPLATE,
-                                               DEFAULT_COORD_PROPERTIES,
-                                               run_gc)
+                                               DEFAULT_COORD_PROPERTIES)
     from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
                                                get_next_path,
                                                test_path_with_suffix)
@@ -579,8 +579,7 @@ except ImportError:
                                    REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    SPECTRAL_DIM_TEMPLATE,
-                                   DEFAULT_COORD_PROPERTIES,
-                                   run_gc)
+                                   DEFAULT_COORD_PROPERTIES)
     from nmr.NmrDpRegistry import (NmrDpRegistry,
                                    get_next_path,
                                    test_path_with_suffix)
@@ -1075,9 +1074,9 @@ class NmrDpUtility:
 
         self.__reg.cR.release()
         self.__reg.caC = None  # rebuilt by every op(), see __parseCoordFilePath()
-        self.__reg.nefT.release()
 
-        run_gc(2)
+        if not self.__reg.nefT.release():
+            gc.collect(2)
 
     def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
@@ -1580,7 +1579,8 @@ class NmrDpUtility:
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
 
-            if op == 'nmr-cs-mr-merge':
+            # release memory after executing the following tasks, which may involve processing large files
+            if (op.startswith('nmr-cs') or op.startswith('nmr-str')) and self.__reg.cifChecked:
                 self.release()
 
     def __dumpDpReport(self) -> bool:

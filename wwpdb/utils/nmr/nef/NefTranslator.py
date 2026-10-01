@@ -151,6 +151,7 @@ import collections
 import copy
 # import csv
 import functools
+import gc
 import hashlib
 import io
 import itertools
@@ -203,8 +204,7 @@ try:
                                                LP_CATEGORIES,
                                                KEY_ITEMS,
                                                DATA_ITEMS,
-                                               MIN_INPUT_SIZE_FOR_GC,
-                                               run_gc)
+                                               MIN_INPUT_SIZE_FOR_GC)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            getOneLetterCode,
@@ -255,8 +255,7 @@ except ImportError:
                                    LP_CATEGORIES,
                                    KEY_ITEMS,
                                    DATA_ITEMS,
-                                   MIN_INPUT_SIZE_FOR_GC,
-                                   run_gc)
+                                   MIN_INPUT_SIZE_FOR_GC)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                getOneLetterCode,
@@ -1774,16 +1773,24 @@ class NefTranslator:
 
         return is_ok, data_type, star_data
 
-    def release(self) -> None:
+    def release(self) -> bool:
         """ Release the data object parsed by validate_file() that no read_input_file() has taken over.
+            @return: whether GC runned or not.
         """
 
         self.__parsedInput = None
 
-        if self.__parsedFileSize > MIN_INPUT_SIZE_FOR_GC:
-            run_gc(2)
+        try:
 
-        self.__parsedFileSize = 0
+            if self.__parsedFileSize >= MIN_INPUT_SIZE_FOR_GC:
+                gc.collect(2)
+
+                return True
+
+            return False
+
+        finally:
+            self.__parsedFileSize = 0
 
     def check_mandatory_tags(self, in_file: str, file_type: str
                              ) -> Tuple[List[str], List[str]]:

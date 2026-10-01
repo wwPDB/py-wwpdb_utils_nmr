@@ -22,6 +22,8 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.0.0"
 
+import gc
+
 from typing import Optional, Tuple
 
 from antlr4 import CommonTokenStream, InputStream, PredictionMode
@@ -30,7 +32,6 @@ from antlr4.tree.Tree import ParseTree
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
                                                MIN_INPUT_SIZE_FOR_GC,
-                                               run_gc,
                                                trim_heap)
     from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
     from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
@@ -38,7 +39,6 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (MAX_ERROR_REPORT,
                                    MIN_INPUT_SIZE_FOR_GC,
-                                   run_gc,
                                    trim_heap)
     from nmr.mr.LexerErrorListener import LexerErrorListener
     from nmr.mr.ParserErrorListener import ParserErrorListener
@@ -98,7 +98,8 @@ def parseAntlr(lexerClass, parserClass, entryRuleName: str, inputString: str,
                                               ignoreCodicError=ignoreCodicError)
 
     if len(inputString) >= MIN_INPUT_SIZE_FOR_GC:
-        run_gc(2)
+        gc.collect(2)
+        trim_heap()
 
     stream = InputStream(inputString)
 

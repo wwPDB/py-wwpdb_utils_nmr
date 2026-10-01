@@ -318,6 +318,8 @@
 # 30-Sep-2026  M. Yokochi - merge atom selections with a size-adaptive hashed index (appendUniqueAtoms() in
 #                           BaseStackedMRParserListener) in exitSelection() of the XPLOR-NIH, CNS, CHARMM and SCHRODINGER
 #                           listeners and in doIntersectionFactor_expressions(), instead of O(N*M) list scans (DAOTHER-7829, 9785)
+# 01-Oct-2026  M. Yokochi - the speedy-antlr C++ accelerators lex a str stored one byte per character in place
+#                           (cpp_src/latin1_input_stream.h), instead of a UTF-32 copy of the input (DAOTHER-7829, 9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -326,10 +328,11 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.3"
+__version__ = "5.4.0"
 
 import collections
 import copy
+import gc
 import hashlib
 import itertools
 import os
@@ -435,8 +438,7 @@ try:
                                                REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                SPECTRAL_DIM_TEMPLATE,
-                                               DEFAULT_COORD_PROPERTIES,
-                                               run_gc)
+                                               DEFAULT_COORD_PROPERTIES)
     from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
                                                get_next_path,
                                                test_path_with_suffix)
@@ -577,8 +579,7 @@ except ImportError:
                                    REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    SPECTRAL_DIM_TEMPLATE,
-                                   DEFAULT_COORD_PROPERTIES,
-                                   run_gc)
+                                   DEFAULT_COORD_PROPERTIES)
     from nmr.NmrDpRegistry import (NmrDpRegistry,
                                    get_next_path,
                                    test_path_with_suffix)
@@ -1073,9 +1074,9 @@ class NmrDpUtility:
 
         self.__reg.cR.release()
         self.__reg.caC = None  # rebuilt by every op(), see __parseCoordFilePath()
-        self.__reg.nefT.release()
 
-        run_gc(2)
+        if not self.__reg.nefT.release():
+            gc.collect(2)
 
     def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
@@ -1578,7 +1579,8 @@ class NmrDpUtility:
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
 
-            if op == 'nmr-cs-mr-merge':
+            # release memory after executing the following tasks, which may involve processing large files
+            if (op.startswith('nmr-cs') or op.startswith('nmr-str')) and self.__reg.cifChecked:
                 self.release()
 
     def __dumpDpReport(self) -> bool:

@@ -13,9 +13,10 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.3"
+__version__ = "5.4.0"
 
 import copy
+import gc
 import os
 import re
 import shutil
@@ -41,8 +42,7 @@ try:
                                                INTNL_ANY_MR_FILE_NAME_PAT,
                                                PDB_MR_FILE_NAME_PAT,
                                                WS_PAT,
-                                               MIN_INPUT_SIZE_FOR_GC,
-                                               run_gc)
+                                               MIN_INPUT_SIZE_FOR_GC)
     from wwpdb.utils.nmr.NmrDpMrSplitter import (detect_bom,
                                                  convert_codec,
                                                  convert_rtf_to_ascii,
@@ -71,8 +71,7 @@ except ImportError:
                                    INTNL_ANY_MR_FILE_NAME_PAT,
                                    PDB_MR_FILE_NAME_PAT,
                                    WS_PAT,
-                                   MIN_INPUT_SIZE_FOR_GC,
-                                   run_gc)
+                                   MIN_INPUT_SIZE_FOR_GC)
     from nmr.NmrDpMrSplitter import (detect_bom,
                                      convert_codec,
                                      convert_rtf_to_ascii,
@@ -717,7 +716,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
             # and the full collection that frees it runs rarely once the heap is large. Collect it before the
             # new entry is parsed: on a 32 MB entry that is 450k objects, 1226 MB -> 666 MB (DAOTHER-7829, 9785).
             if os.path.exists(srcPath) and os.path.getsize(srcPath) >= MIN_INPUT_SIZE_FOR_GC:
-                run_gc(2)
+                gc.collect(2)
 
             is_valid, message = self._reg.nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 

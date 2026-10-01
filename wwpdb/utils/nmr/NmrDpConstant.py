@@ -15,12 +15,11 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.3"
+__version__ = "5.4.0"
 
 import copy
 import ctypes
 import ctypes.util
-import gc
 import re
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module,import-error
@@ -38,17 +37,6 @@ def trim_heap():
 
     if _malloc_trim is not None:
         _malloc_trim(0)
-
-
-def run_gc(generation: int = 2):
-    """ Run garbage collection, then return the freed heap memory to the OS.
-        Only a full collection (generation 2) reaches the cycles of long-lived objects, e.g. a dropped
-        parse tree or NMR unified data; generation 0 examines only the objects allocated most recently.
-    """
-
-    gc.collect(generation)  # Forces immediate garbage collection
-
-    trim_heap()
 
 
 # supported parameter keys as input/output file path(s) for NmrDpUtility class
@@ -701,7 +689,7 @@ MAX_ERR_LINE_NUM = 20
 # (a plain pynmrstar entry is not cyclic, but the one dropped in 'nmr-str2str-deposit' was measured to be
 # reachable only through reference cycles) is freed only by the cyclic GC, whose full collections run
 # rarely once the heap is large (DAOTHER-7829, 9785)
-MIN_INPUT_SIZE_FOR_GC = 1_000_000
+MIN_INPUT_SIZE_FOR_GC = 500_000
 
 REPRESENTATIVE_MODEL_ID = 1
 REPRESENTATIVE_ASYM_ID = 'A'

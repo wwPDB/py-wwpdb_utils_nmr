@@ -2084,14 +2084,7 @@ class NmrDpMrSplitter:
                         if name not in _names or len(_names) > 1:
                             atom_likes += 1
                             _names.append(name)
-                        # NOTE: '_names' is a list, so this test is never true, which makes
-                        # has_chem_shift unreachable here. Do not "fix" it to the token without
-                        # tightening the predicate below: CS_RANGE (-300..300) contains DIST_RANGE
-                        # (0..101), so 'cs_atom_likes == 1 and cs_range_like' then shadows the
-                        # distance-restraint arm. Measured over tests-nmr/mock-data*: has_chem_shift
-                        # turns on for 982 of 1683 (file, file_type) pairs and 56 pairs lose
-                        # has_dist_restraint. __scanXplorCnsMr() also requires resid_likes == 1.
-                        if _names in cs_atom_like_names:
+                        if name in cs_atom_like_names:
                             cs_atom_likes += 1
 
                     elif name in STD_MON_ONE_LETTER_CODES and name not in atom_like_names_oth:

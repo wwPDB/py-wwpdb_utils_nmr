@@ -10,6 +10,8 @@
 import hashlib
 import io
 import os
+import pickle
+import shutil
 import sys
 import unittest
 
@@ -140,6 +142,30 @@ class TestCifReader(unittest.TestCase):
         cR = CifReader(False, sys.stderr, use_cache=False)
         self.assertTrue(cR.parse(self.cif_path))
         self.assertEqual(cR.getHashCode(), whole_text_digest(self.cif_path))
+
+    def test_unreadable_cache_is_replaced(self):
+        # a cache that cannot be unpickled, e.g. one that refers to a module that is not installed, used to stay in place,
+        # so that the file was parsed again on every run instead of being cached
+        cacheDir = os.path.join(TESTOUTPUT, 'cif_reader_cache')
+        shutil.rmtree(cacheDir, ignore_errors=True)
+        os.makedirs(cacheDir)
+        cachePath = os.path.join(cacheDir, f'{text_md5(self.cif_path)}.pkl')
+        with open(cachePath, 'wb') as ofh:
+            ofh.write(b'\x80\x04\x95\x10\x00\x00\x00\x00\x00\x00\x00\x8c\x07missing\x94\x8c\x01X\x94\x93\x94.')
+
+        cR = CifReader(False, sys.stderr, use_cache=True)
+        cR.cacheDirPath = cacheDir
+        self.assertTrue(cR.parse(self.cif_path))
+        self.assertEqual([a['label_atom_id'] for a in cR.getDictList('atom_site')], ['N', 'CA', 'C', 'N', 'CA', 'C'])
+
+        with open(cachePath, 'rb') as ifh:
+            self.assertEqual(pickle.load(ifh).getObj('atom_site').getRowList()[0][3], 'N')
+        self.assertEqual([f for f in os.listdir(cacheDir) if f.endswith('.tmp')], [])
+
+        _cR = CifReader(False, sys.stderr, use_cache=True)
+        _cR.cacheDirPath = cacheDir
+        self.assertTrue(_cR.parse(self.cif_path))
+        self.assertEqual(len(_cR.getDictList('atom_site')), 6)
 
 
 if __name__ == "__main__":

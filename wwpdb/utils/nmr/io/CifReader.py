@@ -55,6 +55,8 @@
 #                     (6x63: 1313 MB -> 453 MB retained, 1330 MB -> 529 MB peak) (DAOTHER-7829, 9785)
 # 02-Oct-2026 - my  - share the values in a copy of mmcif's tokenizer instead of wrapping it (parse time +30% -> +7%),
 #                     and hash the file in chunks (text_md5()) (DAOTHER-7829, 9785)
+# 03-Oct-2026 - my  - remove an unreadable data block cache, which was parsed around on every run, and write
+#                     the cache atomically (DAOTHER-7829, 9785)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -588,7 +590,13 @@ class CifReader:
                     os.remove(self.__cachePath)
 
                 except Exception:  # pylint: disable=broad-exception-caught
-                    pass
+                    # an unreadable cache, e.g. one that refers to a module that is no longer installed or one that was
+                    # cut short, must go: __setDataBlock() writes the cache only when there is none, so it would
+                    # otherwise be parsed around on every run
+                    try:
+                        os.remove(self.__cachePath)
+                    except OSError:
+                        pass
 
         if self.__dBlockList is None:
             self.__dBlockList, self.__dBlockNameList = [], []
@@ -629,8 +637,15 @@ class CifReader:
                 self.__dBlock = dataBlock
 
                 if self.__use_cache and not os.path.exists(self.__cachePath):
-                    with open(self.__cachePath, 'wb') as ofh:
-                        pickle.dump(dataBlock, ofh)
+                    # write a complete cache or none: a dump cut short would leave an unreadable cache behind
+                    tmpPath = f'{self.__cachePath}.{os.getpid()}.tmp'
+                    try:
+                        with open(tmpPath, 'wb') as ofh:
+                            pickle.dump(dataBlock, ofh)
+                        os.replace(tmpPath, self.__cachePath)
+                    finally:
+                        if os.path.exists(tmpPath):
+                            os.remove(tmpPath)
 
                 return True
 

@@ -16,6 +16,8 @@
 #                           to the optional C accelerator when it is available (DAOTHER-10315)
 # 03-Oct-2026  M. Yokochi - add buildPseudoChemCompBond(), which bonds heavy atoms by covalent radii instead of a flat
 #                           2.5 A cutoff, and isFlippableRingProtonHost() (DAOTHER-8817)
+# 03-Oct-2026  M. Yokochi - test the legacy PDB records in startsWithPdbRecord() with one str.startswith() call and
+#                           a set lookup instead of a scan over the records (DAOTHER-7829, 9785)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -5868,16 +5870,22 @@ def getRdcCode(atoms: List[dict]
     return 'RDC_other'
 
 
+# legacy PDB records, and the blank-padded ones without their trailing blank, for startsWithPdbRecord()
+_PDB_RECORDS_FOR_PREFIX_TEST = {False: (LEGACY_PDB_RECORDS,
+                                        frozenset(r[:-1] for r in LEGACY_PDB_RECORDS if r.endswith(' '))),
+                                True: (LEGACY_PDB_RECORDS_WO_REMARK,
+                                       frozenset(r[:-1] for r in LEGACY_PDB_RECORDS_WO_REMARK if r.endswith(' ')))}
+
+
 def startsWithPdbRecord(line: str, ignoreRemark: bool = False) -> bool:
     """ Return whether a given line string starts with legacy PDB records.
     """
 
-    PDB_RECORDS = LEGACY_PDB_RECORDS_WO_REMARK if ignoreRemark else LEGACY_PDB_RECORDS
+    pdbRecords, paddedRecords = _PDB_RECORDS_FOR_PREFIX_TEST[bool(ignoreRemark)]
 
-    if any(line.startswith(pdb_record) for pdb_record in PDB_RECORDS):
-        return True
-
-    return any(line[:-1] == pdb_record[:-1] for pdb_record in PDB_RECORDS if pdb_record.endswith(' '))
+    # str.startswith() takes the tuple of records at once, and a padded record such as 'TITLE ' also matches a line
+    # that is the record name followed by one more character, e.g. 'TITLE\n'
+    return line.startswith(pdbRecords) or line[:-1] in paddedRecords
 
 
 def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,

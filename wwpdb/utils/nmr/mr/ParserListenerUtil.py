@@ -5183,12 +5183,15 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
             return True
 
     a0 = atoms[0]
-    chainId, seqId = a0['chain_id'], a0['seq_id']
+    chainId, seqId, atomType = a0['chain_id'], a0['seq_id'], a0['atom_id'][0]
 
     if any(a['chain_id'] != chainId for a in atoms):
         return True
 
     if any(a['seq_id'] != seqId for a in atoms):
+        return True
+
+    if any(a['atom_id'][0] != atomType for a in atoms):
         return True
 
     atomIds = list(dict.fromkeys(a['atom_id'] for a in atoms))

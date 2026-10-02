@@ -7,6 +7,7 @@
 # 18-Sep-2026  M. Yokochi - fix CHARMM topology detection, whose '{Number of atoms} EXT' header test
 #                           compared a single character and so never matched, and name CHARMM rather
 #                           than GROMACS in its content_mismatch message
+# 03-Oct-2026  M. Yokochi - test restraints before chemical shifts in __classifyLightMrCounts() (DAOTHER-7829)
 ##
 """ File splitter for public PDB-MR formatted restraint file.
     @author: Masashi Yokochi
@@ -2018,16 +2019,21 @@ class NmrDpMrSplitter:
                                 angle_like: bool, cs_range_like: bool, dist_range_like: bool, dihed_range_like: bool,
                                 flags: MrContentFlags) -> None:
         """ Record the content subtype implied by the token counts of a single line.
+            Restraints are tested before chemical shifts: a restraint line can have exactly one chemical shift-like
+            atom name, e.g. 'assign (resid 23 and name O) (resid 27 and name HN) 1.9 0.1 0.1', and its distances
+            and angles lie in CS_RANGE, whereas a chemical shift line normally names a single atom, so it does not
+            match the restraint arms. Over 265 files of tests-nmr as 'nm-res-oth', testing chemical shifts first lost
+            the distance restraints of 8 files and the dihedral angle restraints of 45 (DAOTHER-7829).
         """
 
-        if cs_atom_likes == 1 and cs_range_like:
-            flags.has_chem_shift = True
-
-        elif atom_likes == 2 and dist_range_like:
+        if atom_likes == 2 and dist_range_like:
             flags.has_dist_restraint = True
 
         elif (atom_likes == 4 or (res_like and angle_like)) and dihed_range_like:
             flags.has_dihed_restraint = True
+
+        elif cs_atom_likes == 1 and cs_range_like:
+            flags.has_chem_shift = True
 
     def __scanLightMrAndAuxTop(self, file_path: str, file_type: str, names: MrAtomNames,
                                flags: MrContentFlags) -> None:

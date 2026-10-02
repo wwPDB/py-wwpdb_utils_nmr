@@ -51,6 +51,8 @@
 # 29-Sep-2026 - my  - add release() to drop the parsed data blocks between workflow operations (DAOTHER-7829, 9785)
 # 29-Sep-2026 - my  - add getDistinctValues() and getFirstValue(), which scan a column without a dictionary per row
 #                     (DAOTHER-7829, 9785)
+# 02-Oct-2026 - my  - parse with SharingPdbxReader, which shares equal values among the parsed rows
+#                     (6x63: 1313 MB -> 453 MB retained, 1330 MB -> 529 MB peak) (DAOTHER-7829, 9785)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -186,6 +188,29 @@ MAX_INDEXED_COLUMNS_PER_CATEGORY = 8
 
 # threshold for garbage collection for high memory usage of DBSCAN
 GARBAGE_COLLECTION_CYCLES = 32 if SKLEARN_DBSCAN else 128
+
+
+class SharingPdbxReader(PdbxReader):
+    """ PdbxReader that shares one str object among equal values of the parsed rows.
+        PdbxReader creates a new str for every value, e.g. 28.5 M values in 19.3 M str objects for the atom_site
+        of a 134 MB CIF file (6x63), of which only 1.85 M are distinct; sharing them cuts the parsed data blocks
+        from 1313 MB to 453 MB, at about 30% more parse time. The values themselves do not change.
+        Sharing has to happen while tokenizing: re-sharing the values of already parsed rows frees the str
+        objects but not the memory, which stays fragmented in the allocator.
+        PdbxReader.read() calls its private tokenizer as self.__tokenizer, i.e. self._PdbxReader__tokenizer,
+        which this class overrides. Should mmcif rename that method, the override no longer applies and the
+        parse falls back to unshared values; CifReaderTests detects that.
+    """
+
+    def _PdbxReader__tokenizer(self, ifh):  # pylint: disable=invalid-name
+        pool = {}
+        share = pool.setdefault
+        for catName, attName, quotedString, word in PdbxReader._PdbxReader__tokenizer(self, ifh):  # pylint: disable=no-member
+            if word is not None:
+                word = share(word, word)
+            elif quotedString is not None:
+                quotedString = share(quotedString, quotedString)
+            yield catName, attName, quotedString, word
 
 
 def M(axis: list, theta: float) -> list:
@@ -505,7 +530,7 @@ class CifReader:
             self.__categoryNameList = {}
 
             with open(self.__filePath, 'r', encoding='utf-8') as ifh:
-                pRd = PdbxReader(ifh)
+                pRd = SharingPdbxReader(ifh)
                 pRd.read(self.__dBlockList)
 
                 is_star = all(container.getType() == 'data' for container in self.__dBlockList)

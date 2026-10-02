@@ -3383,7 +3383,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
             # DAOTHER-8828
             authAtomNameToId, authAtomNameToIdExt = {}, {}
 
-            chainIds = set(c['chain_id'] for c in coord)
+            chainIds = dict.fromkeys(c['chain_id'] for c in coord)
             for chainId in chainIds:
                 seqIds = set(c['seq_id'] for c in coord if c['chain_id'] == chainId)
                 for seqId in seqIds:
@@ -3460,9 +3460,9 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     break
                             if found:
                                 break
-                    compIds = list(set(c['comp_id'] for c in coord
-                                       if c['chain_id'] == chainId and c['seq_id'] is not None
-                                       and c['seq_id'] == seqId))
+                    compIds = list(dict.fromkeys(c['comp_id'] for c in coord
+                                                 if c['chain_id'] == chainId and c['seq_id'] is not None
+                                                 and c['seq_id'] == seqId))
                     if len(compIds) > 1:  # 2kny: split implicit ins_code of atom_site
                         coordAtomSite[seqKey]['split_comp_id'] = compIds
                         for compId in compIds:
@@ -3636,7 +3636,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                  filterItemByRepModelId)
 
                 if len(unobs) > 0:
-                    chainIds = set(u['chain_id'] for u in unobs)
+                    chainIds = dict.fromkeys(u['chain_id'] for u in unobs)
                     for chainId in chainIds:
                         seqIds = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chainId and u['seq_id'] is not None)
                         for seqId in seqIds:
@@ -5183,7 +5183,7 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
             return True
 
     a0 = atoms[0]
-    chainId, seqId = a0['chain_id'], a0['seq_id']
+    chainId, seqId, atomType = a0['chain_id'], a0['seq_id'], a0['atom_id'][0]
 
     if any(a['chain_id'] != chainId for a in atoms):
         return True
@@ -5191,7 +5191,10 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
     if any(a['seq_id'] != seqId for a in atoms):
         return True
 
-    atomIds = list(set(a['atom_id'] for a in atoms))
+    if any(a['atom_id'][0] != atomType for a in atoms):
+        return True
+
+    atomIds = list(dict.fromkeys(a['atom_id'] for a in atoms))
 
     if len(atomIds) == 1:
         return False
@@ -5930,7 +5933,7 @@ def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = Non
     except Exception:  # pylint: disable=broad-exception-caught
         return None
 
-    return [dict(s) for s in set(frozenset(sc.items()) for sc in struct_conn if isinstance(sc, dict))]
+    return [dict(s) for s in dict.fromkeys(frozenset(sc.items()) for sc in struct_conn if isinstance(sc, dict))]
 
 
 def getWatsonCrickPtnr(cR, authAsymId: str

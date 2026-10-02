@@ -27,6 +27,8 @@
 # 03-Oct-2026  M. Yokochi - detect duplicated chemical shifts within each list, which the check against the dictionary
 #                           of all lists never did, and look up the shifts of each residue for the random coil index
 #                           instead of scanning all shifts of the list per residue (DAOTHER-7829, 9785)
+# 03-Oct-2026  M. Yokochi - keep the workflow tasks as functions instead of bound methods, so that an instance is not
+#                           a reference cycle and is freed as soon as it is dropped (DAOTHER-7829, 9785)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -1191,34 +1193,37 @@ class NmrVrptUtility:
         # whether molecular assembly is diamagnetic.
         self.__is_diamagnetic = True
 
-        __csValidTasks = [self.__parseCoordinate,
-                          self.__parseNmrData,
-                          self.__parseNmrDpReport,
-                          self.__checkPreviousCsAnalysis,
-                          self.__retrieveCoordAssemblyChecker,
-                          self.__extractCoordAtomSites,
-                          self.__extractEntityInstances,
-                          self.__extractChemicalShifts,
-                          self.__validateChemicalShifts,
-                          self.__summarizeCommonCsAnalysis,
-                          self.__outputResultsAsPickleFile]
+        # the tasks are functions, called with the instance, rather than bound methods, which would make each instance a
+        # reference cycle (instance -> task list -> bound method -> instance) that holds its coordinates, NMR data and
+        # report until a full garbage collection, e.g. the previous NMR unified data in 'nmr-str2str-deposit'
+        __csValidTasks = [NmrVrptUtility.__parseCoordinate,
+                          NmrVrptUtility.__parseNmrData,
+                          NmrVrptUtility.__parseNmrDpReport,
+                          NmrVrptUtility.__checkPreviousCsAnalysis,
+                          NmrVrptUtility.__retrieveCoordAssemblyChecker,
+                          NmrVrptUtility.__extractCoordAtomSites,
+                          NmrVrptUtility.__extractEntityInstances,
+                          NmrVrptUtility.__extractChemicalShifts,
+                          NmrVrptUtility.__validateChemicalShifts,
+                          NmrVrptUtility.__summarizeCommonCsAnalysis,
+                          NmrVrptUtility.__outputResultsAsPickleFile]
 
-        __mrValidTasks = [self.__parseCoordinate,
-                          self.__parseNmrData,
-                          self.__checkPreviousMrAnalysis,
-                          self.__retrieveCoordAssemblyChecker,
-                          self.__extractCoordAtomSites,
-                          self.__extractGenDistConstraints,
-                          self.__extractTorsionAngleConstraints,
-                          self.__extractRdcConstraints,
-                          self.__validateDistanceRestraints,
-                          self.__validateDihedralAngleRestraints,
-                          self.__validateRdcRestraints,
-                          self.__summarizeCommonMrAnalysis,
-                          self.__summarizeDistanceRestraintAnalysis,
-                          self.__summarizeDihedralAngleRestraintAnalysis,
-                          self.__summarizeRdcRestraintAnalysis,
-                          self.__outputResultsAsPickleFile]
+        __mrValidTasks = [NmrVrptUtility.__parseCoordinate,
+                          NmrVrptUtility.__parseNmrData,
+                          NmrVrptUtility.__checkPreviousMrAnalysis,
+                          NmrVrptUtility.__retrieveCoordAssemblyChecker,
+                          NmrVrptUtility.__extractCoordAtomSites,
+                          NmrVrptUtility.__extractGenDistConstraints,
+                          NmrVrptUtility.__extractTorsionAngleConstraints,
+                          NmrVrptUtility.__extractRdcConstraints,
+                          NmrVrptUtility.__validateDistanceRestraints,
+                          NmrVrptUtility.__validateDihedralAngleRestraints,
+                          NmrVrptUtility.__validateRdcRestraints,
+                          NmrVrptUtility.__summarizeCommonMrAnalysis,
+                          NmrVrptUtility.__summarizeDistanceRestraintAnalysis,
+                          NmrVrptUtility.__summarizeDihedralAngleRestraintAnalysis,
+                          NmrVrptUtility.__summarizeRdcRestraintAnalysis,
+                          NmrVrptUtility.__outputResultsAsPickleFile]
 
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'nmr-cs-validation': __csValidTasks,
@@ -1374,7 +1379,7 @@ class NmrVrptUtility:
 
                 start_time = time.time()
 
-                if not task():
+                if not task(self):
                     break
 
                 if self.__verbose:

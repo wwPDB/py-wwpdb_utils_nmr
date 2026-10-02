@@ -4,16 +4,18 @@
 #
 # Test that CifReader parses with SharingPdbxReader, which shares one str object among equal values,
 # and that the parsed content is the same as that of mmcif's PdbxReader (DAOTHER-7829, 9785).
+# 02-Oct-2026  M. Yokochi - test that the chunked hash code equals the digest of the whole text (DAOTHER-7829, 9785)
 ##
 """Test cases for the value sharing parse of CifReader."""
+import hashlib
+import io
 import os
 import sys
 import unittest
 
 from mmcif.io.PdbxReader import PdbxReader
 
-from wwpdb.utils.nmr.io.CifReader import CifReader, SharingPdbxReader
-
+# import commonsetup first: it mocks ConfigInfo, which ChemCompUtil reads when it is imported
 if __package__ is None or __package__ == "":
     from os import path
 
@@ -21,6 +23,9 @@ if __package__ is None or __package__ == "":
     from commonsetup import HERE, TESTOUTPUT  # noqa: F401 pylint: disable=import-error,unused-import
 else:
     from .commonsetup import HERE, TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
+
+from wwpdb.utils.nmr.NmrDpConstant import text_md5
+from wwpdb.utils.nmr.io.CifReader import CifReader, SharingPdbxReader
 
 CIF_TEXT = """data_TEST
 #
@@ -81,6 +86,18 @@ class TestCifReader(unittest.TestCase):
         self.assertTrue(hasattr(PdbxReader, '_PdbxReader__tokenizer'))
         self.assertIsNot(getattr(SharingPdbxReader, '_PdbxReader__tokenizer'), getattr(PdbxReader, '_PdbxReader__tokenizer'))
 
+    def test_same_syntax_errors_as_pdbx_reader(self):
+        # the copied tokenizer keeps PdbxReader's line number, which its error messages report
+        for text in ("data_X\n#\n_a.b 1\n_a.c 2\n_a.b\n", "data_X\n#\n\nloop_\n_a.b\n_c.d\n1 2\n",
+                     "data_X\n_a.b\n;x\ny\n;\n_a.c 2\n2 3\n"):
+            messages = []
+            for readerClass in (PdbxReader, SharingPdbxReader):
+                with self.assertRaises(Exception) as cm:
+                    readerClass(io.StringIO(text)).read([])
+                messages.append((type(cm.exception).__name__, str(cm.exception)))
+            self.assertIn('[Line: ', messages[0][1])
+            self.assertEqual(messages[1], messages[0])
+
     def test_same_content_as_pdbx_reader(self):
         for filePath in (self.cif_path, self.ccd_path):
             with self.subTest(filePath=os.path.basename(filePath)):
@@ -106,6 +123,23 @@ class TestCifReader(unittest.TestCase):
         self.assertIs(atoms[0]['label_atom_id'], atoms[3]['label_atom_id'])
         self.assertIs(atoms[0]['Cartn_x'], atoms[3]['Cartn_x'])
         self.assertEqual(cR.getDictList('struct')[0]['title'], 'A multi-line\ntitle')
+
+    def test_hash_code_equals_whole_text_digest(self):
+        # text_md5() hashes in chunks of 1 M characters; the hash code names the caches, so it must not change.
+        # The data spans several chunks, with CRLF, a lone CR, undecodable bytes and multi-byte characters.
+        def whole_text_digest(filePath):
+            with open(filePath, 'r', encoding='utf-8', errors='ignore') as ifh:
+                return hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
+
+        hashPath = os.path.join(TESTOUTPUT, 'cif_reader_hash_test.txt')
+        with open(hashPath, 'wb') as ofh:
+            ofh.write((CIF_TEXT.replace('\n', '\r\n').encode('utf-8') + b'\xff\xc3 ' + 'é中😀\r'.encode('utf-8')) * 5000)
+        self.assertGreater(os.path.getsize(hashPath), 2 << 20)
+        self.assertEqual(text_md5(hashPath), whole_text_digest(hashPath))
+
+        cR = CifReader(False, sys.stderr, use_cache=False)
+        self.assertTrue(cR.parse(self.cif_path))
+        self.assertEqual(cR.getHashCode(), whole_text_digest(self.cif_path))
 
 
 if __name__ == "__main__":

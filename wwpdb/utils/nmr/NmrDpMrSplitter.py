@@ -18,7 +18,6 @@ __license__ = "Apache License 2.0"
 __version__ = "5.4.0"
 
 import codecs
-import hashlib
 import itertools
 import os
 import re
@@ -69,7 +68,8 @@ try:
                                                WEIGHT_RANGE_MIN,
                                                WEIGHT_RANGE_MAX,
                                                KNOWN_ANGLE_NAMES,
-                                               CYANA_MR_FILE_EXTS)
+                                               CYANA_MR_FILE_EXTS,
+                                               text_md5)
     from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
                                                get_next_path,
                                                test_path_with_suffix)
@@ -153,7 +153,8 @@ except ImportError:
                                    WEIGHT_RANGE_MIN,
                                    WEIGHT_RANGE_MAX,
                                    KNOWN_ANGLE_NAMES,
-                                   CYANA_MR_FILE_EXTS)
+                                   CYANA_MR_FILE_EXTS,
+                                   text_md5)
     from nmr.NmrDpRegistry import (NmrDpRegistry,
                                    get_next_path,
                                    test_path_with_suffix)
@@ -292,8 +293,7 @@ def file_md5(fPath: str) -> str:
     """ Return the MD5 digest of the text content of a given file.
     """
 
-    with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:
-        return hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
+    return text_md5(fPath)
 
 
 def first_index_map(tokens: List[str]) -> dict:

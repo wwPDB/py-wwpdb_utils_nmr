@@ -326,6 +326,8 @@
 #                           chains and residues by first occurrence;
 #                           reset distance_sub_type and bond_flag per restraint in NmrVrptUtility's dist_violation_seq,
 #                           which carried over from the previous restraint when no atom matched the residue (DAOTHER-7829, 8905)
+# 02-Oct-2026  M. Yokochi - hash the text of input files in chunks (NmrDpConstant.text_md5()) instead of holding
+#                           the whole file twice, in CifReader, NmrDpMrSplitter and NmrDpValidationOutStats (DAOTHER-7829, 9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

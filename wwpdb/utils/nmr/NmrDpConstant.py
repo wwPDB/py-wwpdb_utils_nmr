@@ -7,6 +7,7 @@
 # 29-Sep-2026  M. Yokochi - import ctypes.util, without which run_gc() silently skipped malloc_trim(),
 #                           and add trim_heap() (DAOTHER-7829, 9785)
 # 29-Sep-2026  M. Yokochi - add MIN_FILE_SIZE_FOR_PARSE_REUSE (DAOTHER-7829, 9785)
+# 02-Oct-2026  M. Yokochi - add text_md5(), which hashes the text of a file in chunks (DAOTHER-7829, 9785)
 ##
 """ Constants for NMR data processing.
     @author: Masashi Yokochi
@@ -20,6 +21,7 @@ __version__ = "5.4.0"
 import copy
 import ctypes
 import ctypes.util
+import hashlib
 import re
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module,import-error
@@ -37,6 +39,22 @@ def trim_heap():
 
     if _malloc_trim is not None:
         _malloc_trim(0)
+
+
+def text_md5(fPath: str) -> str:
+    """ Return the MD5 digest of the text content of a given file, read as UTF-8 with undecodable bytes ignored
+        and with universal newlines, which is the digest of open(fPath, 'r', encoding='utf-8', errors='ignore')
+        .read().encode('utf-8'). The text is hashed in chunks, so that hashing a large file does not hold the whole
+        file twice, e.g. 270 MB for a 134 MB CIF file.
+    """
+
+    md5 = hashlib.md5()
+
+    with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+        for chunk in iter(lambda: ifh.read(1 << 20), ''):
+            md5.update(chunk.encode('utf-8'))
+
+    return md5.hexdigest()
 
 
 # supported parameter keys as input/output file path(s) for NmrDpUtility class

@@ -47,17 +47,18 @@ python -m unittest discover -v -s wwpdb/utils/tests-nmr-tox -p "NmrDpUtilityTest
 
 ### Known failures
 
-A green run is **69 ran, 67 ok, 1 failure, 1 skipped**. The one failure predates
-the current work and is not worth chasing:
+There are none. A green `FULLTEST=1` run is **75 ran, OK, 1 skipped**
+(`test_nmr_str2str_deposit_cleaned`, 'Until test corrected'); without
+`FULLTEST`, 25 are skipped.
 
-- `test_get_nef_atom` — asserts that `get_nef_atom("HEM", ...)` collapses the
-  `HMA/HMAA/HMAB` methyl protons to `HMA%`, but gets
-  `"Unknown non-standard residue HEM found."`. That branch needs
-  `NefTranslator.chemCompAtom` to be populated, which only happens through a
-  setter the test never calls (its third positional argument is `details`, not a
-  chem-comp dict). Nothing to do with the CCD fixtures: `HEM` and `HEB` ship in
-  the mocked `ligand-dict-v3`, and `csStat.getMethylAtoms("HEM")` returns the
-  methyls correctly.
+`test_get_nef_atom` used to fail. The cause was test import order:
+`commonsetup` mocks `wwpdb.utils.config.ConfigInfo` with the test CCD
+(`tests-nmr-tox/data/components`), and `ChemCompUtil` reads `CC_CVS_PATH` from
+`ConfigInfo` when it is imported. A test module that imported `wwpdb.utils.nmr`
+before `commonsetup` therefore bound the real CCD path, and `HEM` became
+`"Unknown non-standard residue HEM found."`. Every module in `tests-nmr-tox/`
+now imports `commonsetup` first. Keep it that way in new test modules,
+or results start depending on which module unittest happens to load first.
 
 Anything else failing is new. flake8 and pylint are both clean at CI's
 invocations.

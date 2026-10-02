@@ -2867,7 +2867,7 @@ class NmrVrptUtility:
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
 
-                    seq_keys = set([seq_key_1, seq_key_2])
+                    seq_keys = dict.fromkeys([seq_key_1, seq_key_2])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__distRestSeqDict:
@@ -3071,7 +3071,7 @@ class NmrVrptUtility:
                     seq_key_3 = (auth_asym_id_3, auth_seq_id_3, comp_id_3)
                     seq_key_4 = (auth_asym_id_4, auth_seq_id_4, comp_id_4)
 
-                    seq_keys = set([seq_key_1, seq_key_2, seq_key_3, seq_key_4])
+                    seq_keys = dict.fromkeys([seq_key_1, seq_key_2, seq_key_3, seq_key_4])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__dihedRestSeqDict:
@@ -3279,7 +3279,7 @@ class NmrVrptUtility:
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
 
-                    seq_keys = set([seq_key_1, seq_key_2])
+                    seq_keys = dict.fromkeys([seq_key_1, seq_key_2])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__rdcRestSeqDict:
@@ -5133,7 +5133,7 @@ class NmrVrptUtility:
         for list_id, cs_data in self.__chemShiftUniqDict.items():
             rci_result[list_id] = {}
 
-            auth_chain_ids = list(set(cs_key[0] for cs_key in cs_data))
+            auth_chain_ids = list(dict.fromkeys(cs_key[0] for cs_key in cs_data))
 
             for auth_chain_id in auth_chain_ids:
                 if has_coord:
@@ -5555,7 +5555,7 @@ class NmrVrptUtility:
                             continue
 
                         atom_ids = set()
-                        distance_type = None
+                        distance_type = distance_sub_type = bond_flag = None
 
                         for r in self.__distRestDictWithCombKey[rest_key][comb_key]:
                             seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
@@ -5833,10 +5833,10 @@ class NmrVrptUtility:
                             if angle_type is None:
                                 angle_type = r['angle_type']
 
-                        atom_ids = list(set(atom_ids_1))
-                        atom_ids.extend(list(set(atom_ids_2)))
-                        atom_ids.extend(list(set(atom_ids_3)))
-                        atom_ids.extend(list(set(atom_ids_4)))
+                        atom_ids = list(dict.fromkeys(atom_ids_1))
+                        atom_ids.extend(list(dict.fromkeys(atom_ids_2)))
+                        atom_ids.extend(list(dict.fromkeys(atom_ids_3)))
+                        atom_ids.extend(list(dict.fromkeys(atom_ids_4)))
 
                         angle_violation_seq[_seq_key].append([rest_key[0],
                                                               rest_key[1],
@@ -6074,8 +6074,8 @@ class NmrVrptUtility:
                             if rdc_type is None:
                                 rdc_type = r['rdc_type']
 
-                        atom_ids = list(set(atom_ids_1))
-                        atom_ids.extend(list(set(atom_ids_2)))
+                        atom_ids = list(dict.fromkeys(atom_ids_1))
+                        atom_ids.extend(list(dict.fromkeys(atom_ids_2)))
 
                         rdc_violation_seq[_seq_key].append([rest_key[0],
                                                             rest_key[1],

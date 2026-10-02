@@ -5523,7 +5523,7 @@ class NefTranslator:
                                     raise LookupError(msg)
 
                 tags = [k['name'] for k in key_items]
-                for data_name in set(data_names) & set(loop.tags):
+                for data_name in [d for d in data_names if d in loop.tags]:
                     tags.append(data_name)
 
                 tag_len = len(tags)

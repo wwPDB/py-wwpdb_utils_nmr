@@ -320,6 +320,16 @@
 #                           listeners and in doIntersectionFactor_expressions(), instead of O(N*M) list scans (DAOTHER-7829, 9785)
 # 01-Oct-2026  M. Yokochi - the speedy-antlr C++ accelerators lex a str stored one byte per character in place
 #                           (cpp_src/latin1_input_stream.h), instead of a UTF-32 copy of the input (DAOTHER-7829, 9785)
+# 02-Oct-2026  M. Yokochi - make the output independent of PYTHONHASHSEED: deduplicate atom selections in first-occurrence
+#                           order, take the first atom as the reference of isAmbigAtomSelection(), keep the data item order
+#                           in NefTranslator.check_data(), order coordinate chains and comp_ids, and NmrVrptUtility's
+#                           chains and residues by first occurrence;
+#                           reset distance_sub_type and bond_flag per restraint in NmrVrptUtility's dist_violation_seq,
+#                           which carried over from the previous restraint when no atom matched the residue (DAOTHER-7829, 8905)
+# 02-Oct-2026  M. Yokochi - hash the text of input files in chunks (NmrDpConstant.text_md5()) instead of holding
+#                           the whole file twice, in CifReader, NmrDpMrSplitter and NmrDpValidationOutStats (DAOTHER-7829, 9785)
+# 05-Oct-2026  M. Yokochi - pass chem_comp_type, the type_symbol of each atom of a pseudo CCD, to NefTranslator, and rebuild
+#                           a cached coordinate assembly checker that lacks it (DAOTHER-8817)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -328,7 +338,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.0"
+__version__ = "5.4.1"
 
 import collections
 import copy
@@ -8607,6 +8617,7 @@ class NmrDpUtility:
 
             # DAOTHER-8817
             if self.__reg.caC is not None and 'chem_comp_atom' in self.__reg.caC\
+               and 'chem_comp_type' in self.__reg.caC\
                and 'auth_atom_name_to_id' in self.__reg.caC\
                and 'auth_atom_name_to_id_ext' in self.__reg.caC\
                and 'auth_to_star_seq_ann' in self.__reg.caC\
@@ -8615,7 +8626,8 @@ class NmrDpUtility:
                 self.__reg.nefT.set_chem_comp_dict(self.__reg.caC['chem_comp_atom'],
                                                    self.__reg.caC['chem_comp_bond'],
                                                    self.__reg.caC['chem_comp_topo'],
-                                                   self.__reg.caC['auth_atom_name_to_id'])
+                                                   self.__reg.caC['auth_atom_name_to_id'],
+                                                   self.__reg.caC['chem_comp_type'])
                 return
 
         self.__parseCoordinate()  # need to set representative_model/alt_id values
@@ -8632,7 +8644,8 @@ class NmrDpUtility:
         self.__reg.nefT.set_chem_comp_dict(self.__reg.caC['chem_comp_atom'],
                                            self.__reg.caC['chem_comp_bond'],
                                            self.__reg.caC['chem_comp_topo'],
-                                           self.__reg.caC['auth_atom_name_to_id'])
+                                           self.__reg.caC['auth_atom_name_to_id'],
+                                           self.__reg.caC['chem_comp_type'])
 
     def __validateStrMr(self) -> bool:
         """ Validate restraints of NMR-STAR restraint files.

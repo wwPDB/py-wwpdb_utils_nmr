@@ -8,6 +8,7 @@
 ##
 """Test cases for buildPseudoChemCompBond(), isFlippableRingProtonHost() and their use by NefTranslator."""
 import glob
+import math
 import os
 import sys
 import unittest
@@ -161,6 +162,52 @@ class TestPseudoChemComp(unittest.TestCase):
                                   ('HZ%', (['HZ2', 'HZ3'], 1)),
                                   ('HH2', (['HH2'], 1)),
                                   ('HB%', (['HB2', 'HB3'], 2))):
+            with self.subTest(nefAtom=nefAtom):
+                self.assertEqual(neft.get_star_atom_for_ligand_remap(compId, nefAtom, None, coordAtomSite)[:2], expected)
+
+    def test_rings_without_substituent_and_five_membered_rings(self):
+        def regular_ring(n, radius):
+            return [numpy.array([radius * math.cos(2 * math.pi * i / n), radius * math.sin(2 * math.pi * i / n), 0.0])
+                    for i in range(n)]
+
+        # a free benzene: no substituent on any mirror axis, every CH has a mirror partner
+        carbons, hydrogens = regular_ring(6, 1.39), regular_ring(6, 2.47)
+        atomIds = [f'C{i + 1}' for i in range(6)] + [f'H{i + 1}' for i in range(6)]
+        self.assertEqual(ring_flip_hosts(atomIds, ['C'] * 6 + ['H'] * 6, dict(zip(atomIds, carbons + hydrogens))),
+                         ['C1', 'C2', 'C3', 'C4', 'C5', 'C6'])
+
+        # pyrrol-1-yl: the mirror axis runs through N1 and the midpoint of C3-C4
+        ring = regular_ring(5, 1.19)
+        atomIds, typeSymbols = ['N1', 'C2', 'C3', 'C4', 'C5', 'CX'], ['N', 'C', 'C', 'C', 'C', 'C']
+        coords = dict(zip(atomIds, ring + [ring[0] * (1 + 1.45 / 1.19)]))
+        for i, carbon in enumerate(('C2', 'C3', 'C4', 'C5'), start=1):
+            atomIds.append(f'H{carbon[1]}')
+            typeSymbols.append('H')
+            coords[f'H{carbon[1]}'] = ring[i] * (1 + 1.08 / 1.19)
+        self.assertEqual(ring_flip_hosts(atomIds, typeSymbols, coords), ['C2', 'C3', 'C4', 'C5'])
+
+        # pyrrol-2-yl has no mirror symmetry
+        coords = dict(zip(['N1', 'C2', 'C3', 'C4', 'C5'], ring))
+        coords.update({'CX': ring[1] * (1 + 1.45 / 1.19), 'H3': ring[2] * 1.9, 'H4': ring[3] * 1.9, 'H5': ring[4] * 1.9,
+                       'HN': ring[0] * 1.85})
+        atomIds = list(coords)
+        self.assertEqual(ring_flip_hosts(atomIds, ['N', 'C', 'C', 'C', 'C', 'C', 'H', 'H', 'H', 'H'], coords), [])
+
+    def test_elements_from_type_symbol(self):
+        # a mercury atom named HG is a heavy atom, not a proton
+        coords = {'HG': numpy.zeros(3), 'C1': numpy.array([2.1, 0.0, 0.0]), 'H1': numpy.array([2.5, 1.0, 0.0])}
+        bond, _ = buildPseudoChemCompBond(['HG', 'C1', 'H1'], ['HG', 'C', 'H'], coords)
+        self.assertEqual(bond, {'C1': ['H1']})
+
+        # NefTranslator with the type_symbol of each atom (chem_comp_type), as NmrDpUtility passes it
+        atomIds, typeSymbols, coords, _ = read_residue('PHE')
+        bond, topo = buildPseudoChemCompBond(atomIds, typeSymbols, coords)
+        compId = 'XXX'
+        neft = NefTranslator()
+        neft.set_chem_comp_dict({compId: atomIds}, {compId: bond}, {compId: topo}, {},
+                                {compId: dict(zip(atomIds, typeSymbols))})
+        coordAtomSite = {'atom_id': atomIds, 'alt_atom_id': atomIds}
+        for nefAtom, expected in (('HD%', (['HD1', 'HD2'], 3)), ('HZ', (['HZ'], 1))):
             with self.subTest(nefAtom=nefAtom):
                 self.assertEqual(neft.get_star_atom_for_ligand_remap(compId, nefAtom, None, coordAtomSite)[:2], expected)
 

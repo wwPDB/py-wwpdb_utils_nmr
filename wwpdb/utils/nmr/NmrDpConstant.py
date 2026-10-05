@@ -8,6 +8,7 @@
 #                           and add trim_heap() (DAOTHER-7829, 9785)
 # 29-Sep-2026  M. Yokochi - add MIN_FILE_SIZE_FOR_PARSE_REUSE (DAOTHER-7829, 9785)
 # 02-Oct-2026  M. Yokochi - add text_md5(), which hashes the text of a file in chunks (DAOTHER-7829, 9785)
+# 03-Oct-2026  M. Yokochi - add COVALENT_RADII and COVALENT_BOND_TOLERANCE (DAOTHER-8817)
 ##
 """ Constants for NMR data processing.
     @author: Masashi Yokochi
@@ -708,6 +709,17 @@ MAX_ERR_LINE_NUM = 20
 # reachable only through reference cycles) is freed only by the cyclic GC, whose full collections run
 # rarely once the heap is large (DAOTHER-7829, 9785)
 MIN_INPUT_SIZE_FOR_GC = 500_000
+
+# single-bond covalent radii in angstroms (Cordero et al., Dalton Trans. 2008, 2832-2838; sp3 C, low-spin Mn, Fe, Co) of the
+# elements found in non-standard residues; two heavy atoms of a residue are taken as bonded if they are closer
+# than COVALENT_BOND_TOLERANCE times the sum of their radii, which on the ideal coordinates of the test CCD finds
+# 351 of 352 heavy-atom bonds, missing only a 2.39 A Fe-N coordination, without any non-bonded pair, whereas
+# a flat 2.5 A cutoff also takes most atoms two bonds apart (median 2.44 A) as bonded (DAOTHER-8817)
+COVALENT_RADII = {'B': 0.84, 'C': 0.76, 'N': 0.71, 'O': 0.66, 'F': 0.57, 'SI': 1.11, 'P': 1.07, 'S': 1.05,
+                  'CL': 1.02, 'AS': 1.19, 'SE': 1.20, 'BR': 1.20, 'I': 1.39,
+                  'MG': 1.41, 'CA': 1.76, 'MN': 1.39, 'FE': 1.32, 'CO': 1.26, 'NI': 1.24, 'CU': 1.32, 'ZN': 1.22}
+DEFAULT_COVALENT_RADIUS = 0.76
+COVALENT_BOND_TOLERANCE = 1.15
 
 REPRESENTATIVE_MODEL_ID = 1
 REPRESENTATIVE_ASYM_ID = 'A'

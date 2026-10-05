@@ -139,6 +139,7 @@
 #                           get_star_auth_seq(), cutting the garbage collections tripled by per-row containers (DAOTHER-7829, 9785)
 # 03-Oct-2026  M. Yokochi - guess ambiguity code 3 of a non-standard residue by ring flip symmetry, isFlippableRingProtonHost(),
 #                           in reference to phenylalanine (DAOTHER-8817)
+# 05-Oct-2026  M. Yokochi - take the element of a pseudo CCD atom from its type_symbol (chem_comp_type) (DAOTHER-8817)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -222,7 +223,8 @@ try:
                                                        translateToStdAtomNameNoRef,
                                                        translateToStdAtomNameWithRef,
                                                        isLikePheOrTyr,
-                                                       isFlippableRingProtonHost)
+                                                       isFlippableRingProtonHost,
+                                                       pseudoAtomElement)
 except ImportError:
     from nmr.NmrDpConstant import (LEN_LARGE_ASYM_ID,
                                    LOW_SEQ_COVERAGE,
@@ -274,7 +276,8 @@ except ImportError:
                                            translateToStdAtomNameNoRef,
                                            translateToStdAtomNameWithRef,
                                            isLikePheOrTyr,
-                                           isFlippableRingProtonHost)
+                                           isFlippableRingProtonHost,
+                                           pseudoAtomElement)
 
 
 __package_name__ = 'wwpdb.utils.nmr'
@@ -538,6 +541,7 @@ class NefTranslator:
                  'chemCompAtom',
                  'chemCompBond',
                  'chemCompTopo',
+                 'chemCompType',
                  'authAtomNameToId',
                  'star2NefChainMapping',
                  'star2CifChainMapping',
@@ -1562,6 +1566,7 @@ class NefTranslator:
         self.chemCompAtom = None
         self.chemCompBond = None
         self.chemCompTopo = None
+        self.chemCompType = None
         # DAOTHER-10105: coordinate derived atom name mapping from pdbx_auth_atom_name to auth_atom_id
         self.authAtomNameToId = None
 
@@ -1667,10 +1672,10 @@ class NefTranslator:
         translateToStdAtomNameNoRef.cache_clear()
         translateToStdAtomNameWithRef.cache_clear()
 
-    def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict, auth_atom_name_to_id: dict
-                           ) -> None:
+    def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict, auth_atom_name_to_id: dict,
+                           chem_comp_type: Optional[dict] = None) -> None:
         """ Set chem_comp dictionary derived from ParserListerUtil.coordAssemblyChecker().
-            DAOTHER-8817: construct pseudo CCD from the coordinates
+            DAOTHER-8817: construct pseudo CCD from the coordinates, with the type_symbol of each atom in chem_comp_type
             DAOTHER-10105: add auth_atom_name_to_id to resolve pseudoatom names
         """
 
@@ -1682,6 +1687,9 @@ class NefTranslator:
 
         if isinstance(chem_comp_topo, dict):
             self.chemCompTopo = chem_comp_topo
+
+        if isinstance(chem_comp_type, dict):
+            self.chemCompType = chem_comp_type
 
         if isinstance(auth_atom_name_to_id, dict):
             self.authAtomNameToId = auth_atom_name_to_id
@@ -7839,8 +7847,11 @@ class NefTranslator:
                             if len_v == 2:
                                 return 2  # methylene/amino
                             if len_v == 1:
-                                if k[0] == 'C' and self.chemCompTopo is not None and comp_id in self.chemCompTopo\
-                                   and isFlippableRingProtonHost(self.chemCompTopo[comp_id], self.chemCompBond[comp_id], k):
+                                comp_type = None if self.chemCompType is None else self.chemCompType.get(comp_id)
+                                if pseudoAtomElement(k, comp_type) == 'C' and self.chemCompTopo is not None\
+                                   and comp_id in self.chemCompTopo\
+                                   and isFlippableRingProtonHost(self.chemCompTopo[comp_id], self.chemCompBond[comp_id], k,
+                                                                 comp_type):
                                     return 3  # aromatic opposite
                                 return 1
                 return None
@@ -8740,8 +8751,11 @@ class NefTranslator:
                                 if len_v == 2:
                                     return 2  # methylene/amino
                                 if len_v == 1:
-                                    if k[0] == 'C' and self.chemCompTopo is not None and comp_id in self.chemCompTopo\
-                                       and isFlippableRingProtonHost(self.chemCompTopo[comp_id], self.chemCompBond[comp_id], k):
+                                    comp_type = None if self.chemCompType is None else self.chemCompType.get(comp_id)
+                                    if pseudoAtomElement(k, comp_type) == 'C' and self.chemCompTopo is not None\
+                                       and comp_id in self.chemCompTopo\
+                                       and isFlippableRingProtonHost(self.chemCompTopo[comp_id], self.chemCompBond[comp_id], k,
+                                                                     comp_type):
                                         return 3  # aromatic opposite
                                     return 1
                     return None

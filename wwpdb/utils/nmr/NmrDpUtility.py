@@ -328,6 +328,8 @@
 #                           which carried over from the previous restraint when no atom matched the residue (DAOTHER-7829, 8905)
 # 02-Oct-2026  M. Yokochi - hash the text of input files in chunks (NmrDpConstant.text_md5()) instead of holding
 #                           the whole file twice, in CifReader, NmrDpMrSplitter and NmrDpValidationOutStats (DAOTHER-7829, 9785)
+# 05-Oct-2026  M. Yokochi - pass chem_comp_type, the type_symbol of each atom of a pseudo CCD, to NefTranslator, and rebuild
+#                           a cached coordinate assembly checker that lacks it (DAOTHER-8817)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -8615,6 +8617,7 @@ class NmrDpUtility:
 
             # DAOTHER-8817
             if self.__reg.caC is not None and 'chem_comp_atom' in self.__reg.caC\
+               and 'chem_comp_type' in self.__reg.caC\
                and 'auth_atom_name_to_id' in self.__reg.caC\
                and 'auth_atom_name_to_id_ext' in self.__reg.caC\
                and 'auth_to_star_seq_ann' in self.__reg.caC\
@@ -8623,7 +8626,8 @@ class NmrDpUtility:
                 self.__reg.nefT.set_chem_comp_dict(self.__reg.caC['chem_comp_atom'],
                                                    self.__reg.caC['chem_comp_bond'],
                                                    self.__reg.caC['chem_comp_topo'],
-                                                   self.__reg.caC['auth_atom_name_to_id'])
+                                                   self.__reg.caC['auth_atom_name_to_id'],
+                                                   self.__reg.caC['chem_comp_type'])
                 return
 
         self.__parseCoordinate()  # need to set representative_model/alt_id values
@@ -8640,7 +8644,8 @@ class NmrDpUtility:
         self.__reg.nefT.set_chem_comp_dict(self.__reg.caC['chem_comp_atom'],
                                            self.__reg.caC['chem_comp_bond'],
                                            self.__reg.caC['chem_comp_topo'],
-                                           self.__reg.caC['auth_atom_name_to_id'])
+                                           self.__reg.caC['auth_atom_name_to_id'],
+                                           self.__reg.caC['chem_comp_type'])
 
     def __validateStrMr(self) -> bool:
         """ Validate restraints of NMR-STAR restraint files.

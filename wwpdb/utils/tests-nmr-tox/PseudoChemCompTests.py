@@ -100,17 +100,66 @@ class TestPseudoChemComp(unittest.TestCase):
                 if len(atomIds) > 0:
                     self.assertEqual(ring_flip_hosts(atomIds, typeSymbols, coords), [])
 
-    def test_nef_translator_guesses_ambiguity_code_from_pseudo_ccd(self):
+    def test_nef_translator_guesses_ambiguity_code_from_pseudo_phe(self):
         # phenylalanine under a comp_id unknown to the CCD, so that NefTranslator falls back to the pseudo CCD
         atomIds, typeSymbols, coords, _ = read_residue('PHE')
         bond, topo = buildPseudoChemCompBond(atomIds, typeSymbols, coords)
-        compId = 'ZPH'
+        compId = 'XXX'
         neft = NefTranslator()
         neft.set_chem_comp_dict({compId: atomIds}, {compId: bond}, {compId: topo}, {})
         coordAtomSite = {'atom_id': atomIds, 'alt_atom_id': atomIds}
         for nefAtom, expected in (('HD%', (['HD1', 'HD2'], 3)),
                                   ('HE%', (['HE1', 'HE2'], 3)),
                                   ('HZ', (['HZ'], 1)),
+                                  ('HB%', (['HB2', 'HB3'], 2))):
+            with self.subTest(nefAtom=nefAtom):
+                self.assertEqual(neft.get_star_atom_for_ligand_remap(compId, nefAtom, None, coordAtomSite)[:2], expected)
+
+    def test_nef_translator_guesses_ambiguity_code_from_pseudo_tyr(self):
+        # tyrosine under a comp_id unknown to the CCD, so that NefTranslator falls back to the pseudo CCD
+        atomIds, typeSymbols, coords, _ = read_residue('TYR')
+        bond, topo = buildPseudoChemCompBond(atomIds, typeSymbols, coords)
+        compId = 'XXX'
+        neft = NefTranslator()
+        neft.set_chem_comp_dict({compId: atomIds}, {compId: bond}, {compId: topo}, {})
+        coordAtomSite = {'atom_id': atomIds, 'alt_atom_id': atomIds}
+        for nefAtom, expected in (('HD%', (['HD1', 'HD2'], 3)),
+                                  ('HE%', (['HE1', 'HE2'], 3)),
+                                  ('HH', (['HH'], 1)),
+                                  ('HB%', (['HB2', 'HB3'], 2))):
+            with self.subTest(nefAtom=nefAtom):
+                self.assertEqual(neft.get_star_atom_for_ligand_remap(compId, nefAtom, None, coordAtomSite)[:2], expected)
+
+    def test_nef_translator_guesses_ambiguity_code_from_pseudo_his(self):
+        # histidine under a comp_id unknown to the CCD, so that NefTranslator falls back to the pseudo CCD
+        atomIds, typeSymbols, coords, _ = read_residue('HIS')
+        bond, topo = buildPseudoChemCompBond(atomIds, typeSymbols, coords)
+        compId = 'XXX'
+        neft = NefTranslator()
+        neft.set_chem_comp_dict({compId: atomIds}, {compId: bond}, {compId: topo}, {})
+        coordAtomSite = {'atom_id': atomIds, 'alt_atom_id': atomIds}
+        for nefAtom, expected in (('HD%', (['HD1', 'HD2'], 1)),
+                                  ('HE%', (['HE1', 'HE2'], 1)),
+                                  ('HB%', (['HB2', 'HB3'], 2))):
+            with self.subTest(nefAtom=nefAtom):
+                self.assertEqual(neft.get_star_atom_for_ligand_remap(compId, nefAtom, None, coordAtomSite)[:2], expected)
+
+    def test_nef_translator_guesses_ambiguity_code_from_pseudo_trp(self):
+        # tryptophan under a comp_id unknown to the CCD, so that NefTranslator falls back to the pseudo CCD
+        atomIds, typeSymbols, coords, _ = read_residue('TRP')
+        bond, topo = buildPseudoChemCompBond(atomIds, typeSymbols, coords)
+        compId = 'XXX'
+        neft = NefTranslator()
+        neft.set_chem_comp_dict({compId: atomIds}, {compId: bond}, {compId: topo}, {})
+        coordAtomSite = {'atom_id': atomIds, 'alt_atom_id': atomIds}
+        for nefAtom, expected in (('HD1', (['HD1'], 1)),
+                                  ('HE1', (['HE1'], 1)),
+                                  ('HE3', (['HE3'], 1)),
+                                  ('HZ2', (['HZ2'], 1)),
+                                  ('HZ3', (['HZ3'], 1)),
+                                  ('HE%', (['HE1', 'HE3'], 1)),
+                                  ('HZ%', (['HZ2', 'HZ3'], 1)),
+                                  ('HH2', (['HH2'], 1)),
                                   ('HB%', (['HB2', 'HB3'], 2))):
             with self.subTest(nefAtom=nefAtom):
                 self.assertEqual(neft.get_star_atom_for_ligand_remap(compId, nefAtom, None, coordAtomSite)[:2], expected)

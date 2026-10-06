@@ -4757,14 +4757,15 @@ class BaseStackedMRParserListener():
 
         self.__lenAtomSelectionSet = len(self.atomSelectionSet)  # pylint: disable=attribute-defined-outside-init
 
-        if self.file_type == 'nm-res-cha' and 'atom_num' in _factor and 'atom_id' not in _factor:
+        if self.file_type == 'nm-res-cha':
             g = None
             if self.lastComment is not None:
                 if self.cur_subtype == 'dist':
                     if self.__dist_comment_pat.match(self.lastComment):
                         g = self.__dist_comment_pat.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 3
-                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                        if g[offset] in STD_MON_DICT\
+                           or any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):  # 2n6c unit test
                             _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
@@ -4781,7 +4782,8 @@ class BaseStackedMRParserListener():
                         g = self.__dist_comment_pat2.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 4
                         _factor['chain_id'] = [g[offset]]
-                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                        if g[offset] in STD_MON_DICT\
+                           or any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):
                             _factor['comp_id'] = [g[offset + 1]]
                         _factor['seq_id'] = [int(g[offset + 2])]
                         _factor['atom_id'] = [g[offset + 3]]
@@ -4789,7 +4791,8 @@ class BaseStackedMRParserListener():
                     if self.__dihed_comment_pat.match(self.lastComment):
                         g = self.__dihed_comment_pat.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 3
-                        if g[offset] in STD_MON_DICT:  # 2n6c unit test
+                        if g[offset] in STD_MON_DICT\
+                           or any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):  # 2n6c unit test
                             _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
@@ -4802,7 +4805,8 @@ class BaseStackedMRParserListener():
                                     _factor['chain_id'].append(_chainId)
                         if len(_factor['chain_id']) == 0:
                             del _factor['chain_id']
-            if g is None:
+
+            if g is None and 'atom_num' in _factor and 'atom_id' not in _factor:
                 _factor['atom_id'] = [None]
                 if 'chain_id' in _factor:
                     del _factor['chain_id']

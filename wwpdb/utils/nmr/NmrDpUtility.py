@@ -333,6 +333,8 @@
 # 07-Oct-2026  M. Yokochi - fold BaseStackedMRParserListener's validate{Rdc,T1T2,Csa,Pre,Pcs,Ccr}Range() into one helper,
 #                           and move selectRealistic{Bond,Chi2Angle}Constraint(), duplicated in both MR listener bases,
 #                           to NmrVrptUtility (DAOTHER-7829)
+# 07-Oct-2026  M. Yokochi - delegate the copies of selectRealistic{Bond,Chi2Angle}Constraint() in Amber, Rosetta and
+#                           Gromacs MR parser listeners to the same NmrVrptUtility functions (DAOTHER-7829)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

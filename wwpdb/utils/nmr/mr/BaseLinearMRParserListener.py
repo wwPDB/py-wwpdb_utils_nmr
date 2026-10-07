@@ -3,6 +3,9 @@
 # Date: 20-Oct-2025
 #
 # Updates:
+# 07-Oct-2026  M. Yokochi - keep the restraint's chain id in assignCoordPolymerSequenceWithChainIdWithoutCompId()
+#                           when a sequence remap lookup misses, instead of None, which assigned the
+#                           restraint to every chain with that residue number (DAOTHER-7829)
 """ ParserLister base class for generic linear MR files.
     @author: Masashi Yokochi
 """
@@ -3142,6 +3145,7 @@ class BaseLinearMRParserListener():
         chainAssign = set()
         _seqId = seqId
 
+        _refChainId = fixedChainId
         fixedSeqId = fixedCompId = None
 
         self.allow_ext_seq = False
@@ -3157,6 +3161,8 @@ class BaseLinearMRParserListener():
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.reasons['chain_id_clone'], seqId)
                 if seqId not in self.reasons['chain_id_clone']:
                     self.allow_ext_seq = True
+            if fixedChainId is None:
+                fixedChainId = _refChainId
             if fixedSeqId is not None:
                 seqId = _seqId = fixedSeqId
 
@@ -3172,16 +3178,16 @@ class BaseLinearMRParserListener():
                         continue
                 else:
                     if 'ext_chain_seq_id_remap' in self.reasons:
-                        fixedChainId, fixedSeqId, fixedCompId =\
+                        remapChainId, fixedSeqId, fixedCompId =\
                             retrieveRemappedSeqIdAndCompId(self.reasons['ext_chain_seq_id_remap'], chainId, seqId)
-                        if fixedChainId is not None and fixedChainId != chainId:
+                        if remapChainId is not None and remapChainId != chainId:
                             continue
                         if fixedSeqId is not None:
                             self.allow_ext_seq = fixedCompId is not None
                             seqId = _seqId = fixedSeqId
                     if fixedSeqId is None and 'chain_seq_id_remap' in self.reasons:
-                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
-                        if fixedChainId is not None and fixedChainId != chainId:
+                        remapChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
+                        if remapChainId is not None and remapChainId != chainId:
                             continue
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
@@ -3206,11 +3212,11 @@ class BaseLinearMRParserListener():
                 if self.reasons is not None:
                     if 'non_poly_remap' in self.reasons and cifCompId in self.reasons['non_poly_remap']\
                        and seqId in self.reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None,
+                        remapChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None,
                                                                            chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
-                        if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
+                        if (remapChainId is not None and remapChainId != chainId) or seqId not in ps['auth_seq_id']:
                             continue
                 updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
                 if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -3254,8 +3260,8 @@ class BaseLinearMRParserListener():
                             continue
                     else:
                         if 'chain_seq_id_remap' in self.reasons:
-                            fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
-                            if fixedChainId is not None and fixedChainId != chainId:
+                            remapChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
+                            if remapChainId is not None and remapChainId != chainId:
                                 continue
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId

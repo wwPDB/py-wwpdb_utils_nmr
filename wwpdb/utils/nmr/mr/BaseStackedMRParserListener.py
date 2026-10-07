@@ -128,9 +128,8 @@ try:
     from wwpdb.utils.nmr.NmrVrptUtility import (to_np_array,
                                                 distance,
                                                 dist_error,
-                                                angle_target_values,
-                                                dihedral_angle,
-                                                angle_error)
+                                                select_realistic_bond_constraint,
+                                                select_realistic_chi2_angle_constraint)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
@@ -261,9 +260,8 @@ except ImportError:
     from nmr.NmrVrptUtility import (to_np_array,
                                     distance,
                                     dist_error,
-                                    angle_target_values,
-                                    dihedral_angle,
-                                    angle_error)
+                                    select_realistic_bond_constraint,
+                                    select_realistic_chi2_angle_constraint)
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.ParserListenerUtil import (toRegEx,
@@ -3197,64 +3195,61 @@ class BaseStackedMRParserListener():
 
         return dstFunc
 
-    def validateRdcRange(self, weight: float, misc_dict: dict, target_value: Optional[float],
-                         lower_limit: Optional[float], upper_limit: Optional[float],
-                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
-                         ) -> Optional[dict]:
-        """ Validate angle value range.
+    def __validateValueRange(self, dstFunc: dict, target_value: Optional[float],
+                             lower_limit: Optional[float], upper_limit: Optional[float],
+                             lower_linear_limit: Optional[float], upper_linear_limit: Optional[float],
+                             error_min: float, error_max: float, restraint_error: dict,
+                             range_min: float, range_max: float, restraint_range: dict
+                             ) -> Optional[dict]:
+        """ Validate restraint value range against the given error/warning bounds, then fill dstFunc.
         """
 
         validRange = True
-        dstFunc = {'weight': weight}
-
-        if isinstance(misc_dict, dict):
-            for k, v in misc_dict.items():
-                dstFunc[k] = v
 
         if target_value is not None:
-            if RDC_ERROR_MIN < target_value < RDC_ERROR_MAX:
+            if error_min < target_value < error_max:
                 dstFunc['target_value'] = f"{target_value}"
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
                               f"The target value='{target_value}' "
-                              f"must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"must be within range {restraint_error}.")
 
         if lower_limit is not None:
-            if RDC_ERROR_MIN <= lower_limit < RDC_ERROR_MAX:
+            if error_min <= lower_limit < error_max:
                 dstFunc['lower_limit'] = f"{lower_limit:.6f}"
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
                               f"The lower limit value='{lower_limit:.6f}' "
-                              f"must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"must be within range {restraint_error}.")
 
         if upper_limit is not None:
-            if RDC_ERROR_MIN < upper_limit <= RDC_ERROR_MAX:
+            if error_min < upper_limit <= error_max:
                 dstFunc['upper_limit'] = f"{upper_limit:.6f}"
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
                               f"The upper limit value='{upper_limit:.6f}' "
-                              f"must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"must be within range {restraint_error}.")
 
         if lower_linear_limit is not None:
-            if RDC_ERROR_MIN <= lower_linear_limit < RDC_ERROR_MAX:
+            if error_min <= lower_linear_limit < error_max:
                 dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
                               f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"must be within range {restraint_error}.")
 
         if upper_linear_limit is not None:
-            if RDC_ERROR_MIN < upper_linear_limit <= RDC_ERROR_MAX:
+            if error_min < upper_linear_limit <= error_max:
                 dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
             else:
                 validRange = False
                 self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
                               f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"must be within range {RDC_RESTRAINT_ERROR}.")
+                              f"must be within range {restraint_error}.")
 
         if target_value is not None:
 
@@ -3334,50 +3329,68 @@ class BaseStackedMRParserListener():
             return None
 
         if target_value is not None:
-            if RDC_RANGE_MIN <= target_value <= RDC_RANGE_MAX:
+            if range_min <= target_value <= range_max:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                               f"The target value='{target_value}' "
-                              f"should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"should be within range {restraint_range}.")
 
         if lower_limit is not None:
-            if RDC_RANGE_MIN <= lower_limit <= RDC_RANGE_MAX:
+            if range_min <= lower_limit <= range_max:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                               f"The lower limit value='{lower_limit:.6f}' "
-                              f"should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"should be within range {restraint_range}.")
 
         if upper_limit is not None:
-            if RDC_RANGE_MIN <= upper_limit <= RDC_RANGE_MAX:
+            if range_min <= upper_limit <= range_max:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                               f"The upper limit value='{upper_limit:.6f}' "
-                              f"should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"should be within range {restraint_range}.")
 
         if lower_linear_limit is not None:
-            if RDC_RANGE_MIN <= lower_linear_limit <= RDC_RANGE_MAX:
+            if range_min <= lower_linear_limit <= range_max:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                               f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"should be within range {restraint_range}.")
 
         if upper_linear_limit is not None:
-            if RDC_RANGE_MIN <= upper_linear_limit <= RDC_RANGE_MAX:
+            if range_min <= upper_linear_limit <= range_max:
                 pass
             else:
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                               f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"should be within range {RDC_RESTRAINT_RANGE}.")
+                              f"should be within range {restraint_range}.")
 
         if target_value is None and lower_limit is None and upper_limit is None\
            and lower_linear_limit is None and upper_linear_limit is None:
             return None
 
         return dstFunc
+
+    def validateRdcRange(self, weight: float, misc_dict: dict, target_value: Optional[float],
+                         lower_limit: Optional[float], upper_limit: Optional[float],
+                         lower_linear_limit: Optional[float] = None, upper_linear_limit: Optional[float] = None
+                         ) -> Optional[dict]:
+        """ Validate angle value range.
+        """
+
+        dstFunc = {'weight': weight}
+
+        if isinstance(misc_dict, dict):
+            for k, v in misc_dict.items():
+                dstFunc[k] = v
+
+        return self.__validateValueRange(dstFunc, target_value, lower_limit, upper_limit,
+                                         lower_linear_limit, upper_linear_limit,
+                                         RDC_ERROR_MIN, RDC_ERROR_MAX, RDC_RESTRAINT_ERROR,
+                                         RDC_RANGE_MIN, RDC_RANGE_MAX, RDC_RESTRAINT_RANGE)
 
     def validateRdcRange2(self, weight: float, misc_dict: dict,
                           target_value_1: Optional[float], lower_limit_1: Optional[float], upper_limit_1: Optional[float],
@@ -3636,176 +3649,12 @@ class BaseStackedMRParserListener():
         """ Validate T1/T2 value range.
         """
 
-        validRange = True
         dstFunc = {'weight': weight, 'potential': self.potential}
 
-        if target_value is not None:
-            if T1T2_ERROR_MIN < target_value < T1T2_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
-
-        if lower_limit is not None:
-            if T1T2_ERROR_MIN <= lower_limit < T1T2_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
-
-        if upper_limit is not None:
-            if T1T2_ERROR_MIN < upper_limit <= T1T2_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
-
-        if lower_linear_limit is not None:
-            if T1T2_ERROR_MIN <= lower_linear_limit < T1T2_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
-
-        if upper_linear_limit is not None:
-            if T1T2_ERROR_MIN < upper_linear_limit <= T1T2_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"must be within range {T1T2_RESTRAINT_ERROR}.")
-
-        if target_value is not None:
-
-            if lower_limit is not None:
-                if lower_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if lower_linear_limit is not None:
-                if lower_linear_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if upper_limit is not None:
-                if upper_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-            if upper_linear_limit is not None:
-                if upper_linear_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-        else:
-
-            if None not in (lower_limit, upper_limit):
-                if lower_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_limit):
-                if lower_linear_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_limit, upper_linear_limit):
-                if lower_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_linear_limit):
-                if lower_linear_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_limit, lower_linear_limit):
-                if lower_linear_limit > lower_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
-
-            if None not in (upper_limit, upper_linear_limit):
-                if upper_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
-
-        if not validRange:
-            return None
-
-        if target_value is not None:
-            if T1T2_RANGE_MIN <= target_value <= T1T2_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
-
-        if lower_limit is not None:
-            if T1T2_RANGE_MIN <= lower_limit <= T1T2_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
-
-        if upper_limit is not None:
-            if T1T2_RANGE_MIN <= upper_limit <= T1T2_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
-
-        if lower_linear_limit is not None:
-            if T1T2_RANGE_MIN <= lower_linear_limit <= T1T2_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
-
-        if upper_linear_limit is not None:
-            if T1T2_RANGE_MIN <= upper_linear_limit <= T1T2_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"should be within range {T1T2_RESTRAINT_RANGE}.")
-
-        if target_value is None and lower_limit is None and upper_limit is None\
-           and lower_linear_limit is None and upper_linear_limit is None:
-            return None
-
-        return dstFunc
+        return self.__validateValueRange(dstFunc, target_value, lower_limit, upper_limit,
+                                         lower_linear_limit, upper_linear_limit,
+                                         T1T2_ERROR_MIN, T1T2_ERROR_MAX, T1T2_RESTRAINT_ERROR,
+                                         T1T2_RANGE_MIN, T1T2_RANGE_MAX, T1T2_RESTRAINT_RANGE)
 
     def validateCsaRange(self, weight: float, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
@@ -3814,176 +3663,12 @@ class BaseStackedMRParserListener():
         """ Validate CSA value range.
         """
 
-        validRange = True
         dstFunc = {'weight': weight, 'potential': self.potential}
 
-        if target_value is not None:
-            if CSA_ERROR_MIN < target_value < CSA_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"must be within range {CSA_RESTRAINT_ERROR}.")
-
-        if lower_limit is not None:
-            if CSA_ERROR_MIN <= lower_limit < CSA_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"must be within range {CSA_RESTRAINT_ERROR}.")
-
-        if upper_limit is not None:
-            if CSA_ERROR_MIN < upper_limit <= CSA_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"must be within range {CSA_RESTRAINT_ERROR}.")
-
-        if lower_linear_limit is not None:
-            if CSA_ERROR_MIN <= lower_linear_limit < CSA_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"must be within range {CSA_RESTRAINT_ERROR}.")
-
-        if upper_linear_limit is not None:
-            if CSA_ERROR_MIN < upper_linear_limit <= CSA_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"must be within range {CSA_RESTRAINT_ERROR}.")
-
-        if target_value is not None:
-
-            if lower_limit is not None:
-                if lower_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if lower_linear_limit is not None:
-                if lower_linear_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if upper_limit is not None:
-                if upper_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-            if upper_linear_limit is not None:
-                if upper_linear_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-        else:
-
-            if None not in (lower_limit, upper_limit):
-                if lower_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_limit):
-                if lower_linear_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_limit, upper_linear_limit):
-                if lower_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_linear_limit):
-                if lower_linear_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_limit, lower_linear_limit):
-                if lower_linear_limit > lower_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
-
-            if None not in (upper_limit, upper_linear_limit):
-                if upper_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
-
-        if not validRange:
-            return None
-
-        if target_value is not None:
-            if CSA_RANGE_MIN <= target_value <= CSA_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"should be within range {CSA_RESTRAINT_RANGE}.")
-
-        if lower_limit is not None:
-            if CSA_RANGE_MIN <= lower_limit <= CSA_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"should be within range {CSA_RESTRAINT_RANGE}.")
-
-        if upper_limit is not None:
-            if CSA_RANGE_MIN <= upper_limit <= CSA_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"should be within range {CSA_RESTRAINT_RANGE}.")
-
-        if lower_linear_limit is not None:
-            if CSA_RANGE_MIN <= lower_linear_limit <= CSA_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"should be within range {CSA_RESTRAINT_RANGE}.")
-
-        if upper_linear_limit is not None:
-            if CSA_RANGE_MIN <= upper_linear_limit <= CSA_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"should be within range {CSA_RESTRAINT_RANGE}.")
-
-        if target_value is None and lower_limit is None and upper_limit is None\
-           and lower_linear_limit is None and upper_linear_limit is None:
-            return None
-
-        return dstFunc
+        return self.__validateValueRange(dstFunc, target_value, lower_limit, upper_limit,
+                                         lower_linear_limit, upper_linear_limit,
+                                         CSA_ERROR_MIN, CSA_ERROR_MAX, CSA_RESTRAINT_ERROR,
+                                         CSA_RANGE_MIN, CSA_RANGE_MAX, CSA_RESTRAINT_RANGE)
 
     def validatePreRange(self, weight: float, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
@@ -3992,176 +3677,12 @@ class BaseStackedMRParserListener():
         """ Validate PRE value range.
         """
 
-        validRange = True
         dstFunc = {'weight': weight, 'potential': self.potential}
 
-        if target_value is not None:
-            if PRE_ERROR_MIN < target_value < PRE_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"must be within range {PRE_RESTRAINT_ERROR}.")
-
-        if lower_limit is not None:
-            if PRE_ERROR_MIN <= lower_limit < PRE_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"must be within range {PRE_RESTRAINT_ERROR}.")
-
-        if upper_limit is not None:
-            if PRE_ERROR_MIN < upper_limit <= PRE_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"must be within range {PRE_RESTRAINT_ERROR}.")
-
-        if lower_linear_limit is not None:
-            if PRE_ERROR_MIN <= lower_linear_limit < PRE_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"must be within range {PRE_RESTRAINT_ERROR}.")
-
-        if upper_linear_limit is not None:
-            if PRE_ERROR_MIN < upper_linear_limit <= PRE_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"must be within range {PRE_RESTRAINT_ERROR}.")
-
-        if target_value is not None:
-
-            if lower_limit is not None:
-                if lower_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if lower_linear_limit is not None:
-                if lower_linear_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if upper_limit is not None:
-                if upper_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-            if upper_linear_limit is not None:
-                if upper_linear_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-        else:
-
-            if None not in (lower_limit, upper_limit):
-                if lower_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_limit):
-                if lower_linear_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_limit, upper_linear_limit):
-                if lower_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_linear_limit):
-                if lower_linear_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_limit, lower_linear_limit):
-                if lower_linear_limit > lower_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
-
-            if None not in (upper_limit, upper_linear_limit):
-                if upper_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
-
-        if not validRange:
-            return None
-
-        if target_value is not None:
-            if PRE_RANGE_MIN <= target_value <= PRE_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"should be within range {PRE_RESTRAINT_RANGE}.")
-
-        if lower_limit is not None:
-            if PRE_RANGE_MIN <= lower_limit <= PRE_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"should be within range {PRE_RESTRAINT_RANGE}.")
-
-        if upper_limit is not None:
-            if PRE_RANGE_MIN <= upper_limit <= PRE_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"should be within range {PRE_RESTRAINT_RANGE}.")
-
-        if lower_linear_limit is not None:
-            if PRE_RANGE_MIN <= lower_linear_limit <= PRE_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"should be within range {PRE_RESTRAINT_RANGE}.")
-
-        if upper_linear_limit is not None:
-            if PRE_RANGE_MIN <= upper_linear_limit <= PRE_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"should be within range {PRE_RESTRAINT_RANGE}.")
-
-        if target_value is None and lower_limit is None and upper_limit is None\
-           and lower_linear_limit is None and upper_linear_limit is None:
-            return None
-
-        return dstFunc
+        return self.__validateValueRange(dstFunc, target_value, lower_limit, upper_limit,
+                                         lower_linear_limit, upper_linear_limit,
+                                         PRE_ERROR_MIN, PRE_ERROR_MAX, PRE_RESTRAINT_ERROR,
+                                         PRE_RANGE_MIN, PRE_RANGE_MAX, PRE_RESTRAINT_RANGE)
 
     def validatePcsRange(self, weight: float, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
@@ -4170,176 +3691,12 @@ class BaseStackedMRParserListener():
         """ Validate PCS value range.
         """
 
-        validRange = True
         dstFunc = {'weight': weight}
 
-        if target_value is not None:
-            if PCS_ERROR_MIN < target_value < PCS_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"must be within range {PCS_RESTRAINT_ERROR}.")
-
-        if lower_limit is not None:
-            if PCS_ERROR_MIN <= lower_limit < PCS_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"must be within range {PCS_RESTRAINT_ERROR}.")
-
-        if upper_limit is not None:
-            if PCS_ERROR_MIN < upper_limit <= PCS_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"must be within range {PCS_RESTRAINT_ERROR}.")
-
-        if lower_linear_limit is not None:
-            if PCS_ERROR_MIN <= lower_linear_limit < PCS_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"must be within range {PCS_RESTRAINT_ERROR}.")
-
-        if upper_linear_limit is not None:
-            if PCS_ERROR_MIN < upper_linear_limit <= PCS_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"must be within range {PCS_RESTRAINT_ERROR}.")
-
-        if target_value is not None:
-
-            if lower_limit is not None:
-                if lower_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if lower_linear_limit is not None:
-                if lower_linear_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if upper_limit is not None:
-                if upper_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-            if upper_linear_limit is not None:
-                if upper_linear_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-        else:
-
-            if None not in (lower_limit, upper_limit):
-                if lower_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_limit):
-                if lower_linear_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_limit, upper_linear_limit):
-                if lower_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_linear_limit):
-                if lower_linear_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_limit, lower_linear_limit):
-                if lower_linear_limit > lower_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
-
-            if None not in (upper_limit, upper_linear_limit):
-                if upper_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
-
-        if not validRange:
-            return None
-
-        if target_value is not None:
-            if PCS_RANGE_MIN <= target_value <= PCS_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"should be within range {PCS_RESTRAINT_RANGE}.")
-
-        if lower_limit is not None:
-            if PCS_RANGE_MIN <= lower_limit <= PCS_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"should be within range {PCS_RESTRAINT_RANGE}.")
-
-        if upper_limit is not None:
-            if PCS_RANGE_MIN <= upper_limit <= PCS_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"should be within range {PCS_RESTRAINT_RANGE}.")
-
-        if lower_linear_limit is not None:
-            if PCS_RANGE_MIN <= lower_linear_limit <= PCS_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"should be within range {PCS_RESTRAINT_RANGE}.")
-
-        if upper_linear_limit is not None:
-            if PCS_RANGE_MIN <= upper_linear_limit <= PCS_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"should be within range {PCS_RESTRAINT_RANGE}.")
-
-        if target_value is None and lower_limit is None and upper_limit is None\
-           and lower_linear_limit is None and upper_linear_limit is None:
-            return None
-
-        return dstFunc
+        return self.__validateValueRange(dstFunc, target_value, lower_limit, upper_limit,
+                                         lower_linear_limit, upper_linear_limit,
+                                         PCS_ERROR_MIN, PCS_ERROR_MAX, PCS_RESTRAINT_ERROR,
+                                         PCS_RANGE_MIN, PCS_RANGE_MAX, PCS_RESTRAINT_RANGE)
 
     def validateCcrRange(self, weight: float, target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float],
@@ -4348,176 +3705,12 @@ class BaseStackedMRParserListener():
         """ Validate CCR value range.
         """
 
-        validRange = True
         dstFunc = {'weight': weight, 'potential': self.potential}
 
-        if target_value is not None:
-            if CCR_ERROR_MIN < target_value < CCR_ERROR_MAX:
-                dstFunc['target_value'] = f"{target_value}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"must be within range {CCR_RESTRAINT_ERROR}.")
-
-        if lower_limit is not None:
-            if CCR_ERROR_MIN <= lower_limit < CCR_ERROR_MAX:
-                dstFunc['lower_limit'] = f"{lower_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"must be within range {CCR_RESTRAINT_ERROR}.")
-
-        if upper_limit is not None:
-            if CCR_ERROR_MIN < upper_limit <= CCR_ERROR_MAX:
-                dstFunc['upper_limit'] = f"{upper_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"must be within range {CCR_RESTRAINT_ERROR}.")
-
-        if lower_linear_limit is not None:
-            if CCR_ERROR_MIN <= lower_linear_limit < CCR_ERROR_MAX:
-                dstFunc['lower_linear_limit'] = f"{lower_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"must be within range {CCR_RESTRAINT_ERROR}.")
-
-        if upper_linear_limit is not None:
-            if CCR_ERROR_MIN < upper_linear_limit <= CCR_ERROR_MAX:
-                dstFunc['upper_linear_limit'] = f"{upper_linear_limit:.6f}"
-            else:
-                validRange = False
-                self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"must be within range {CCR_RESTRAINT_ERROR}.")
-
-        if target_value is not None:
-
-            if lower_limit is not None:
-                if lower_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if lower_linear_limit is not None:
-                if lower_linear_limit > target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the target value '{target_value}'.")
-
-            if upper_limit is not None:
-                if upper_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-            if upper_linear_limit is not None:
-                if upper_linear_limit < target_value:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                                  f"must be greater than the target value '{target_value}'.")
-
-        else:
-
-            if None not in (lower_limit, upper_limit):
-                if lower_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_limit):
-                if lower_linear_limit > upper_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_limit:.6f}'.")
-
-            if None not in (lower_limit, upper_linear_limit):
-                if lower_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower limit value='{lower_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_linear_limit, upper_linear_limit):
-                if lower_linear_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the upper limit value '{upper_linear_limit:.6f}'.")
-
-            if None not in (lower_limit, lower_linear_limit):
-                if lower_linear_limit > lower_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                                  f"must be less than the lower limit value '{lower_limit:.6f}'.")
-
-            if None not in (upper_limit, upper_linear_limit):
-                if upper_limit > upper_linear_limit:
-                    validRange = False
-                    self.f.append(f"[Range value error] {self.getCurrentRestraint()}"
-                                  f"The upper limit value='{upper_limit:.6f}' "
-                                  f"must be less than the upper linear limit value '{upper_linear_limit:.6f}'.")
-
-        if not validRange:
-            return None
-
-        if target_value is not None:
-            if CCR_RANGE_MIN <= target_value <= CCR_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The target value='{target_value}' "
-                              f"should be within range {CCR_RESTRAINT_RANGE}.")
-
-        if lower_limit is not None:
-            if CCR_RANGE_MIN <= lower_limit <= CCR_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower limit value='{lower_limit:.6f}' "
-                              f"should be within range {CCR_RESTRAINT_RANGE}.")
-
-        if upper_limit is not None:
-            if CCR_RANGE_MIN <= upper_limit <= CCR_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper limit value='{upper_limit:.6f}' "
-                              f"should be within range {CCR_RESTRAINT_RANGE}.")
-
-        if lower_linear_limit is not None:
-            if CCR_RANGE_MIN <= lower_linear_limit <= CCR_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The lower linear limit value='{lower_linear_limit:.6f}' "
-                              f"should be within range {CCR_RESTRAINT_RANGE}.")
-
-        if upper_linear_limit is not None:
-            if CCR_RANGE_MIN <= upper_linear_limit <= CCR_RANGE_MAX:
-                pass
-            else:
-                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
-                              f"The upper linear limit value='{upper_linear_limit:.6f}' "
-                              f"should be within range {CCR_RESTRAINT_RANGE}.")
-
-        if target_value is None and lower_limit is None and upper_limit is None\
-           and lower_linear_limit is None and upper_linear_limit is None:
-            return None
-
-        return dstFunc
+        return self.__validateValueRange(dstFunc, target_value, lower_limit, upper_limit,
+                                         lower_linear_limit, upper_linear_limit,
+                                         CCR_ERROR_MIN, CCR_ERROR_MAX, CCR_RESTRAINT_ERROR,
+                                         CCR_RANGE_MIN, CCR_RANGE_MAX, CCR_RESTRAINT_RANGE)
 
     def areUniqueCoordAtoms(self, subtype_name: str, skip_col: List[int] = None,
                             allow_ambig: bool = False, allow_ambig_warn_title: str = '') -> bool:
@@ -4764,8 +3957,7 @@ class BaseStackedMRParserListener():
                     if self.__dist_comment_pat.match(self.lastComment):
                         g = self.__dist_comment_pat.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 3
-                        if g[offset] in STD_MON_DICT\
-                           or any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):  # 2n6c unit test
+                        if any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):  # 2n6c
                             _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
@@ -4782,8 +3974,7 @@ class BaseStackedMRParserListener():
                         g = self.__dist_comment_pat2.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 4
                         _factor['chain_id'] = [g[offset]]
-                        if g[offset] in STD_MON_DICT\
-                           or any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):
+                        if any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):  # 2n6c
                             _factor['comp_id'] = [g[offset + 1]]
                         _factor['seq_id'] = [int(g[offset + 2])]
                         _factor['atom_id'] = [g[offset + 3]]
@@ -4791,8 +3982,7 @@ class BaseStackedMRParserListener():
                     if self.__dihed_comment_pat.match(self.lastComment):
                         g = self.__dihed_comment_pat.search(self.lastComment).groups()
                         offset = self.__lenAtomSelectionSet * 3
-                        if g[offset] in STD_MON_DICT\
-                           or any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):  # 2n6c unit test
+                        if any(g[offset] in ps['comp_id'] for ps in self.fullPolySeq):  # 2n6c
                             _factor['comp_id'] = [g[offset]]
                         _factor['seq_id'] = [int(g[offset + 1])]
                         _factor['atom_id'] = [g[offset + 2]]
@@ -8113,282 +7303,16 @@ class BaseStackedMRParserListener():
         """ Return realistic bond constraint taking into account the current coordinates.
         """
 
-        if not self.hasCoord:
-            return atom1, atom2
-
-        try:
-
-            _p1 =\
-                self.cR.getDictListWithFilter('atom_site',
-                                              CARTN_DATA_ITEMS,
-                                              [{'name': self.authAsymId, 'type': 'str', 'value': atom1['chain_id']},
-                                               {'name': self.authSeqId, 'type': 'int', 'value': atom1['seq_id']},
-                                               {'name': self.authAtomId, 'type': 'str', 'value': atom1['atom_id']},
-                                               {'name': self.modelNumName, 'type': 'int',
-                                                'value': self.representativeModelId},
-                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                'enum': (self.representativeAltId,)}
-                                               ])
-
-            if len(_p1) != 1:
-                return atom1, atom2
-
-            p1 = to_np_array(_p1[0])
-
-            _p2 =\
-                self.cR.getDictListWithFilter('atom_site',
-                                              CARTN_DATA_ITEMS,
-                                              [{'name': self.authAsymId, 'type': 'str', 'value': atom2['chain_id']},
-                                               {'name': self.authSeqId, 'type': 'int', 'value': atom2['seq_id']},
-                                               {'name': self.authAtomId, 'type': 'str', 'value': atom2['atom_id']},
-                                               {'name': self.modelNumName, 'type': 'int',
-                                                'value': self.representativeModelId},
-                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                'enum': (self.representativeAltId,)}
-                                               ])
-
-            if len(_p2) != 1:
-                return atom1, atom2
-
-            p2 = to_np_array(_p2[0])
-
-            d_org = distance(p1, p2)
-
-            lower_limit = dst_func.get('lower_limit')
-            if lower_limit is not None:
-                lower_limit = float(lower_limit)
-            upper_limit = dst_func.get('upper_limit')
-            if upper_limit is not None:
-                upper_limit = float(upper_limit)
-
-            if alt_atom_id1 is not None:
-
-                _p1 =\
-                    self.cR.getDictListWithFilter('atom_site',
-                                                  CARTN_DATA_ITEMS,
-                                                  [{'name': self.authAsymId, 'type': 'str', 'value': atom1['chain_id']},
-                                                   {'name': self.authSeqId, 'type': 'int', 'value': atom1['seq_id']},
-                                                   {'name': self.authAtomId, 'type': 'str', 'value': alt_atom_id1},
-                                                   {'name': self.modelNumName, 'type': 'int',
-                                                    'value': self.representativeModelId},
-                                                   {'name': 'label_alt_id', 'type': 'enum',
-                                                    'enum': (self.representativeAltId,)}
-                                                   ])
-
-                if len(_p1) != 1:
-                    return atom1, atom2
-
-                p1_alt = to_np_array(_p1[0])
-
-                d_alt = distance(p1_alt, p2)
-
-                if dist_error(lower_limit, upper_limit, d_org) > dist_error(lower_limit, upper_limit, d_alt):
-                    if 'auth_atom_id' not in atom1:
-                        atom1['auth_atom_id'] = atom1['atom_id']
-                    atom1['atom_id'] = alt_atom_id1
-
-            elif alt_atom_id2 is not None:
-
-                _p2 =\
-                    self.cR.getDictListWithFilter('atom_site',
-                                                  CARTN_DATA_ITEMS,
-                                                  [{'name': self.authAsymId, 'type': 'str', 'value': atom2['chain_id']},
-                                                   {'name': self.authSeqId, 'type': 'int', 'value': atom2['seq_id']},
-                                                   {'name': self.authAtomId, 'type': 'str', 'value': alt_atom_id2},
-                                                   {'name': self.modelNumName, 'type': 'int',
-                                                    'value': self.representativeModelId},
-                                                   {'name': 'label_alt_id', 'type': 'enum',
-                                                    'enum': (self.representativeAltId,)}
-                                                   ])
-
-                if len(_p2) != 1:
-                    return atom1, atom2
-
-                p2_alt = to_np_array(_p2[0])
-
-                d_alt = distance(p1, p2_alt)
-
-                if dist_error(lower_limit, upper_limit, d_org) > dist_error(lower_limit, upper_limit, d_alt):
-                    if 'auth_atom_id' not in atom2:
-                        atom2['auth_atom_id'] = atom2['atom_id']
-                    atom2['atom_id'] = alt_atom_id2
-
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            if self.__verbose:
-                self.__log.write(f"+{self.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
-
-        return atom1, atom2
+        return select_realistic_bond_constraint(self, atom1, atom2, alt_atom_id1, alt_atom_id2, dst_func,
+                                                self.__verbose, self.__log)
 
     def selectRealisticChi2AngleConstraint(self, atom1: str, atom2: str, atom3: str, atom4: str, dst_func: dict
                                            ) -> dict:
         """ Return realistic chi2 angle constraint taking into account the current coordinates.
         """
 
-        if not self.hasCoord:
-            return dst_func
-
-        try:
-
-            _p1 =\
-                self.cR.getDictListWithFilter('atom_site',
-                                              CARTN_DATA_ITEMS,
-                                              [{'name': self.authAsymId, 'type': 'str', 'value': atom1['chain_id']},
-                                               {'name': self.authSeqId, 'type': 'int', 'value': atom1['seq_id']},
-                                               {'name': self.authAtomId, 'type': 'str', 'value': atom1['atom_id']},
-                                               {'name': self.modelNumName, 'type': 'int',
-                                                'value': self.representativeModelId},
-                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                'enum': (self.representativeAltId,)}
-                                               ])
-
-            if len(_p1) != 1:
-                return dst_func
-
-            p1 = to_np_array(_p1[0])
-
-            _p2 =\
-                self.cR.getDictListWithFilter('atom_site',
-                                              CARTN_DATA_ITEMS,
-                                              [{'name': self.authAsymId, 'type': 'str', 'value': atom2['chain_id']},
-                                               {'name': self.authSeqId, 'type': 'int', 'value': atom2['seq_id']},
-                                               {'name': self.authAtomId, 'type': 'str', 'value': atom2['atom_id']},
-                                               {'name': self.modelNumName, 'type': 'int',
-                                                'value': self.representativeModelId},
-                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                'enum': (self.representativeAltId,)}
-                                               ])
-
-            if len(_p2) != 1:
-                return dst_func
-
-            p2 = to_np_array(_p2[0])
-
-            _p3 =\
-                self.cR.getDictListWithFilter('atom_site',
-                                              CARTN_DATA_ITEMS,
-                                              [{'name': self.authAsymId, 'type': 'str', 'value': atom3['chain_id']},
-                                               {'name': self.authSeqId, 'type': 'int', 'value': atom3['seq_id']},
-                                               {'name': self.authAtomId, 'type': 'str', 'value': atom3['atom_id']},
-                                               {'name': self.modelNumName, 'type': 'int',
-                                                'value': self.representativeModelId},
-                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                'enum': (self.representativeAltId,)}
-                                               ])
-
-            if len(_p3) != 1:
-                return dst_func
-
-            p3 = to_np_array(_p3[0])
-
-            _p4 =\
-                self.cR.getDictListWithFilter('atom_site',
-                                              CARTN_DATA_ITEMS,
-                                              [{'name': self.authAsymId, 'type': 'str', 'value': atom4['chain_id']},
-                                               {'name': self.authSeqId, 'type': 'int', 'value': atom4['seq_id']},
-                                               {'name': self.authAtomId, 'type': 'str', 'value': 'CD1'},
-                                               {'name': self.modelNumName, 'type': 'int',
-                                                'value': self.representativeModelId},
-                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                'enum': (self.representativeAltId,)}
-                                               ])
-
-            if len(_p4) != 1:
-                return dst_func
-
-            p4 = to_np_array(_p4[0])
-
-            chi2 = dihedral_angle(p1, p2, p3, p4)
-
-            _p4 =\
-                self.cR.getDictListWithFilter('atom_site',
-                                              CARTN_DATA_ITEMS,
-                                              [{'name': self.authAsymId, 'type': 'str', 'value': atom4['chain_id']},
-                                               {'name': self.authSeqId, 'type': 'int', 'value': atom4['seq_id']},
-                                               {'name': self.authAtomId, 'type': 'str', 'value': 'CD2'},
-                                               {'name': self.modelNumName, 'type': 'int',
-                                                'value': self.representativeModelId},
-                                               {'name': 'label_alt_id', 'type': 'enum',
-                                                'enum': (self.representativeAltId,)}
-                                               ])
-
-            if len(_p4) != 1:
-                return dst_func
-
-            alt_p4 = to_np_array(_p4[0])
-
-            alt_chi2 = dihedral_angle(p1, p2, p3, alt_p4)
-
-            target_value = dst_func.get('target_value')
-            if target_value is not None:
-                target_value = float(target_value)
-            target_value_uncertainty = dst_func.get('target_value_uncertainty')
-            if target_value_uncertainty is not None:
-                target_value_uncertainty = float(target_value_uncertainty)
-
-            lower_limit = dst_func.get('lower_limit')
-            if lower_limit is not None:
-                lower_limit = float(lower_limit)
-            upper_limit = dst_func.get('upper_limit')
-            if upper_limit is not None:
-                upper_limit = float(upper_limit)
-
-            lower_linear_limit = dst_func.get('lower_linear_limit')
-            if lower_linear_limit is not None:
-                lower_linear_limit = float(lower_linear_limit)
-            upper_linear_limit = dst_func.get('upper_linear_limit')
-            if upper_linear_limit is not None:
-                upper_linear_limit = float(upper_linear_limit)
-
-            target_value, lower_bound, upper_bound =\
-                angle_target_values(target_value, target_value_uncertainty,
-                                    lower_limit, upper_limit,
-                                    lower_linear_limit, upper_linear_limit)
-
-            if target_value is None:
-                return dst_func
-
-            if angle_error(lower_bound, upper_bound, target_value, chi2) >\
-               angle_error(lower_bound, upper_bound, target_value, alt_chi2):
-                target_value = dst_func.get('target_value')
-                if target_value is not None:
-                    target_value = float(target_value) + 180.0
-                lower_limit = dst_func.get('lower_limit')
-                if lower_limit is not None:
-                    lower_limit = float(lower_limit) + 180.0
-                upper_limit = dst_func.get('upper_limit')
-                if upper_limit is not None:
-                    upper_limit = float(upper_limit) + 180.0
-
-                if lower_linear_limit is not None:
-                    lower_linear_limit += 180.0
-                if upper_linear_limit is not None:
-                    upper_linear_limit += 180.0
-
-                _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
-                                     dtype=float)
-
-                shift = 0.0
-                if self.__correctCircularShift:
-                    if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
-                        shift = -(numpy.nanmax(_array) // 360) * 360
-                    elif numpy.nanmax(_array) <= -THRESHOLD_FOR_CIRCULAR_SHIFT:
-                        shift = -(numpy.nanmin(_array) // 360) * 360
-                if target_value is not None:
-                    dst_func['target_value'] = str(target_value + shift)
-                if lower_limit is not None:
-                    dst_func['lower_limit'] = str(lower_limit + shift)
-                if upper_limit is not None:
-                    dst_func['upper_limit'] = str(upper_limit + shift)
-                if lower_linear_limit is not None:
-                    dst_func['lower_linear_limit'] = str(lower_linear_limit + shift)
-                if upper_linear_limit is not None:
-                    dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
-
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            if self.__verbose:
-                self.__log.write(f"+{self.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
-
-        return dst_func
+        return select_realistic_chi2_angle_constraint(self, atom1, atom2, atom3, atom4, dst_func,
+                                                      self.__verbose, self.__log, self.__correctCircularShift)
 
     def isRealisticDistanceRestraint(self, atom1: str, atom2: str, dst_func: dict) -> bool:
         """ Return whether a given distance restraint is realistic in the assembly.

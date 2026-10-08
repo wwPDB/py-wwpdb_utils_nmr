@@ -9,6 +9,9 @@
 # 08-Oct-2026  M. Yokochi - keep the chain id fixed by chain_id_remap/chain_id_clone/branched_remap in
 #                           assignCoordPolymerSequenceWithoutCompId() instead of overwriting it with in-loop sequence
 #                           remap lookups, which assigned the restraint to every chain with that residue number (DAOTHER-7829)
+# 08-Oct-2026  M. Yokochi - merge assignCoordPolymerSequenceWithChainIdWithoutCompId() into
+#                           assignCoordPolymerSequenceWithoutCompId(fixedChainId=...); a None chain id no longer records
+#                           the restraint under chain None nor reports 'None:' in messages (DAOTHER-7829)
 """ ParserLister base class for generic linear MR files.
     @author: Masashi Yokochi
 """
@@ -2920,15 +2923,16 @@ class BaseLinearMRParserListener():
 
         return list(chainAssign), asis
 
-    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None
+    def assignCoordPolymerSequenceWithoutCompId(self, seqId: int, atomId: Optional[str] = None, fixedChainId: Optional[str] = None
                                                 ) -> List[Tuple[str, int, str, bool]]:
-        """ Assign polymer sequences of the coordinates.
+        """ Assign polymer sequences of the coordinates, restricted to a given chain (fixedChainId) if any.
         """
 
         chainAssign = set()
         _seqId = seqId
 
-        fixedChainId = fixedSeqId = fixedCompId = None
+        _refChainId = fixedChainId
+        fixedSeqId = fixedCompId = None
 
         self.allow_ext_seq = False
 
@@ -2943,6 +2947,8 @@ class BaseLinearMRParserListener():
                 fixedChainId, fixedSeqId = retrieveRemappedChainId(self.reasons['chain_id_clone'], seqId)
                 if seqId not in self.reasons['chain_id_clone']:
                     self.allow_ext_seq = True
+            if fixedChainId is None:
+                fixedChainId = _refChainId
             if fixedSeqId is not None:
                 seqId = _seqId = fixedSeqId
 
@@ -3116,12 +3122,13 @@ class BaseLinearMRParserListener():
                             self.__setLocalSeqScheme()
 
         if len(chainAssign) == 0:
+            _chainId_ = '' if _refChainId is None else f'{fixedChainId}:'  # prefix of the restraint's chain if given
             if seqId == 1 or (chainId if fixedChainId is None else fixedChainId, seqId - 1) in self.__coordUnobsRes:
                 if atomId is not None and atomId in AMINO_PROTON_CODE and atomId != 'H1':
-                    return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1')
+                    return self.assignCoordPolymerSequenceWithoutCompId(seqId, 'H1', None if _refChainId is None else fixedChainId)
             if atomId is not None and (('-' in atomId and ':' in atomId) or '.' in atomId):
                 self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                              f"{_seqId}:?:{atomId} is not present in the coordinates. "
+                              f"{_chainId_}{_seqId}:?:{atomId} is not present in the coordinates. "
                               "Please attach ambiguous atom name mapping information generated "
                               f"by 'makeDIST_RST' to the {self.software_name} restraint file.")
             elif atomId is not None:
@@ -3133,7 +3140,7 @@ class BaseLinearMRParserListener():
                                   f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                 else:
                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                                  f"{_seqId}:{atomId} is not present in the coordinates.")
+                                  f"{_chainId_}{_seqId}:{atomId} is not present in the coordinates.")
                     compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
                     if compIds is not None:
                         chainId = fixedChainId
@@ -3149,229 +3156,10 @@ class BaseLinearMRParserListener():
 
     def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: Optional[str], seqId: int, atomId: str
                                                            ) -> List[Tuple[str, int, str, bool]]:
-        """ Assign polymer sequences of the coordinates.
+        """ Assign polymer sequences of the coordinates of a given chain.
         """
 
-        chainAssign = set()
-        _seqId = seqId
-
-        _refChainId = fixedChainId
-        fixedSeqId = fixedCompId = None
-
-        self.allow_ext_seq = False
-
-        if self.reasons is not None:
-            if 'branched_remap' in self.reasons and seqId in self.reasons['branched_remap']:
-                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.reasons['branched_remap'], seqId)
-            if 'chain_id_remap' in self.reasons:  # and seqId in self.reasons['chain_id_remap']:
-                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.reasons['chain_id_remap'], seqId)
-                if seqId not in self.reasons['chain_id_remap']:
-                    self.allow_ext_seq = True
-            elif 'chain_id_clone' in self.reasons:  # and seqId in self.reasons['chain_id_clone']:
-                fixedChainId, fixedSeqId = retrieveRemappedChainId(self.reasons['chain_id_clone'], seqId)
-                if seqId not in self.reasons['chain_id_clone']:
-                    self.allow_ext_seq = True
-            if fixedChainId is None:
-                fixedChainId = _refChainId
-            if fixedSeqId is not None:
-                seqId = _seqId = fixedSeqId
-
-        for ps in self.polySeq:
-            chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, None)
-            if fixedChainId is not None and chainId != fixedChainId:
-                continue
-            if self.reasons is not None:
-                if 'seq_id_remap' not in self.reasons\
-                   and 'chain_seq_id_remap' not in self.reasons\
-                   and 'ext_chain_seq_id_remap' not in self.reasons:
-                    if fixedChainId is not None and fixedChainId != chainId:
-                        continue
-                else:
-                    if 'ext_chain_seq_id_remap' in self.reasons:
-                        remapChainId, fixedSeqId, fixedCompId =\
-                            retrieveRemappedSeqIdAndCompId(self.reasons['ext_chain_seq_id_remap'], chainId, seqId)
-                        if remapChainId is not None and remapChainId != chainId:
-                            continue
-                        if fixedSeqId is not None:
-                            self.allow_ext_seq = fixedCompId is not None
-                            seqId = _seqId = fixedSeqId
-                    if fixedSeqId is None and 'chain_seq_id_remap' in self.reasons:
-                        remapChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
-                        if remapChainId is not None and remapChainId != chainId:
-                            continue
-                        if fixedSeqId is not None:
-                            seqId = _seqId = fixedSeqId
-                    if fixedSeqId is None and 'seq_id_remap' in self.reasons:
-                        _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], None, seqId)
-                        if fixedSeqId is not None:
-                            seqId = _seqId = fixedSeqId
-            if seqId in ps['auth_seq_id'] or fixedCompId is not None:
-                if fixedCompId is not None:
-                    cifCompId = fixedCompId
-                else:
-                    if cifCompId is not None:
-                        if seqId not in ps['auth_seq_id'] and seqId in ps['seq_id']:
-                            seqId = ps['auth_seq_id'][ps['seq_id'].index(seqId)]
-                        if seqId not in ps['auth_seq_id']:
-                            continue
-                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(ps['auth_seq_id'], ps['comp_id']))
-                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), ps['auth_seq_id'].index(seqId))
-                    else:
-                        idx = ps['auth_seq_id'].index(seqId) if seqId in ps['auth_seq_id'] else ps['seq_id'].index(seqId)
-                    cifCompId = ps['comp_id'][idx]
-                if self.reasons is not None:
-                    if 'non_poly_remap' in self.reasons and cifCompId in self.reasons['non_poly_remap']\
-                       and seqId in self.reasons['non_poly_remap'][cifCompId]:
-                        remapChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None,
-                                                                           chainId, seqId, cifCompId)
-                        if fixedSeqId is not None:
-                            seqId = _seqId = fixedSeqId
-                        if (remapChainId is not None and remapChainId != chainId) or seqId not in ps['auth_seq_id']:
-                            continue
-                updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
-                if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                    chainAssign.add((chainId, seqId, cifCompId, True))
-            elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
-                auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
-                if len(auth_seq_id_list) > 0:
-                    min_auth_seq_id = min(auth_seq_id_list)
-                    max_auth_seq_id = max(auth_seq_id_list)
-                    if min_auth_seq_id <= seqId <= max_auth_seq_id:
-                        _seqId_ = seqId + 1
-                        while _seqId_ <= max_auth_seq_id:
-                            if _seqId_ in ps['auth_seq_id']:
-                                break
-                            _seqId_ += 1
-                        if _seqId_ not in ps['auth_seq_id']:
-                            _seqId_ = seqId - 1
-                            while _seqId_ >= min_auth_seq_id:
-                                if _seqId_ in ps['auth_seq_id']:
-                                    break
-                                _seqId_ -= 1
-                        if _seqId_ in ps['auth_seq_id']:
-                            idx = ps['auth_seq_id'].index(_seqId_) - (_seqId_ - seqId)
-                            try:
-                                seqId_ = ps['auth_seq_id'][idx]
-                                cifCompId = ps['comp_id'][idx]
-                                updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
-                                if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                    chainAssign.add((chainId, seqId_, cifCompId, True))
-                            except IndexError:
-                                pass
-
-        if self.hasNonPolySeq:
-            for np in self.__nonPolySeq:
-                chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, None, False)
-                if fixedChainId is not None and chainId != fixedChainId:
-                    continue
-                if self.reasons is not None:
-                    if 'seq_id_remap' not in self.reasons and 'chain_seq_id_remap' not in self.reasons:
-                        if fixedChainId is not None and fixedChainId != chainId:
-                            continue
-                    else:
-                        if 'chain_seq_id_remap' in self.reasons:
-                            remapChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
-                            if remapChainId is not None and remapChainId != chainId:
-                                continue
-                            if fixedSeqId is not None:
-                                seqId = _seqId = fixedSeqId
-                        if fixedSeqId is None and 'seq_id_remap' in self.reasons:
-                            _, fixedSeqId = retrieveRemappedSeqId(self.reasons['seq_id_remap'], None, seqId)
-                            if fixedSeqId is not None:
-                                seqId = _seqId = fixedSeqId
-                if seqId in np['auth_seq_id']:
-                    if cifCompId is not None:
-                        idx = next((_idx for _idx, (_seqId_, _cifCompId_) in enumerate(zip(np['auth_seq_id'], np['comp_id']))
-                                    if _seqId_ == seqId and _cifCompId_ == cifCompId), np['auth_seq_id'].index(seqId))
-                    else:
-                        idx = np['auth_seq_id'].index(seqId) if seqId in np['auth_seq_id'] else np['seq_id'].index(seqId)
-                    cifCompId = np['comp_id'][idx]
-                    updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
-                    if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                        chainAssign.add((chainId, seqId, cifCompId, False))
-
-        if len(chainAssign) == 0:
-            for ps in self.polySeq:
-                chainId = ps['chain_id']
-                if fixedChainId is not None and chainId != fixedChainId:
-                    continue
-                seqKey = (chainId, _seqId)
-                if seqKey in self.authToLabelSeq:
-                    _, seqId = self.authToLabelSeq[seqKey]
-                    if seqId in ps['seq_id']:
-                        cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
-                        updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
-                        if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.add((ps['auth_chain_id'], _seqId, cifCompId, True))
-
-            if self.hasNonPolySeq:
-                for np in self.__nonPolySeq:
-                    chainId = np['auth_chain_id']
-                    if fixedChainId is not None and chainId != fixedChainId:
-                        continue
-                    seqKey = (chainId, _seqId)
-                    if seqKey in self.authToLabelSeq:
-                        _, seqId = self.authToLabelSeq[seqKey]
-                        if seqId in np['seq_id']:
-                            cifCompId = np['comp_id'][np['seq_id'].index(seqId)]
-                            updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
-                            if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                                chainAssign.add((np['auth_chain_id'], _seqId, cifCompId, False))
-
-        if len(chainAssign) == 0 and self.__altPolySeq is not None:
-            for ps in self.__altPolySeq:
-                chainId = ps['auth_chain_id']
-                if fixedChainId is not None and chainId != fixedChainId:
-                    continue
-                if _seqId in ps['auth_seq_id']:
-                    cifCompId = ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
-                    updatePolySeqRst(self.__polySeqRst, fixedChainId, _seqId, cifCompId)
-                    chainAssign.add((chainId, _seqId, cifCompId, True))
-
-        if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
-                                      or self.__multiPolymer):
-            for ps in self.polySeq:
-                chainId = ps['chain_id']
-                if fixedChainId is not None and chainId != fixedChainId:
-                    continue
-                seqKey = (chainId, _seqId)
-                if seqKey in self.__labelToAuthSeq:
-                    _, seqId = self.__labelToAuthSeq[seqKey]
-                    if seqId in ps['auth_seq_id']:
-                        cifCompId = ps['comp_id'][ps['auth_seq_id'].index(seqId)]
-                        updatePolySeqRst(self.__polySeqRst, fixedChainId, seqId, cifCompId)
-                        if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
-                            chainAssign.add((ps['auth_chain_id'], seqId, cifCompId, True))
-                            self.authSeqId = 'label_seq_id'
-                            self.__setLocalSeqScheme()
-
-        if len(chainAssign) == 0:
-            if seqId == 1 or (fixedChainId, seqId - 1) in self.__coordUnobsRes:
-                if atomId in AMINO_PROTON_CODE and atomId != 'H1':
-                    return self.assignCoordPolymerSequenceWithChainIdWithoutCompId(fixedChainId, seqId, 'H1')
-            if (('-' in atomId and ':' in atomId) or '.' in atomId):
-                self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                              f"{fixedChainId}:{_seqId}:?:{atomId} is not present in the coordinates. "
-                              "Please attach ambiguous atom name mapping information generated "
-                              f"by 'makeDIST_RST' to the {self.software_name} restraint file.")
-            else:
-                if self.__monoPolymer and seqId < 1:
-                    refChainId = self.polySeq[0]['auth_chain_id']
-                    self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                                  f"{_seqId}:?:{atomId} is not present in the coordinates. "
-                                  f"The residue number '{_seqId}' is not present in polymer sequence "
-                                  f"of chain {refChainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
-                else:
-                    self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
-                                  f"{fixedChainId}:{_seqId}:{atomId} is not present in the coordinates.")
-                    compIds = guessCompIdFromAtomId([atomId], self.polySeq, self.nefT)
-                    if compIds is not None:
-                        if len(compIds) == 1:
-                            updatePolySeqRst(self.__polySeqRstFailed, fixedChainId, seqId, compIds[0])
-                        else:
-                            updatePolySeqRstAmbig(self.__polySeqRstFailedAmbig, fixedChainId, seqId, compIds)
-
-        return list(chainAssign)
+        return self.assignCoordPolymerSequenceWithoutCompId(seqId, atomId, fixedChainId)
 
     def assignCoordPolymerSequenceWithIndex(self, refChainId: str, seqId: int, compId: str, atomId: str,
                                             index: Optional[int] = None, group: Optional[int] = None

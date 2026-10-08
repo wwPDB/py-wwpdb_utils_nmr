@@ -74,6 +74,7 @@ try:
                                                        contentSubtypeOf,
                                                        incListIdCounter,
                                                        decListIdCounter,
+                                                       getSfDictOf,
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
@@ -134,6 +135,7 @@ except ImportError:
                                            contentSubtypeOf,
                                            incListIdCounter,
                                            decListIdCounter,
+                                           getSfDictOf,
                                            getSaveframe,
                                            getLoop,
                                            getRow,
@@ -1912,16 +1914,5 @@ class GromacsMRParserListener(ParseTreeListener):
         """ Return a dictionary of pynmrstar saveframes.
         """
 
-        if len(self.sfDict) == 0:
-            return self.__listIdCounter, None
-        ign_keys = []
-        for k, v in self.sfDict.items():
-            for item in reversed(v):
-                if item['index_id'] == 0:
-                    v.remove(item)
-                    if len(v) == 0:
-                        ign_keys.append(k)
-                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
-        for k in ign_keys:
-            del self.sfDict[k]
-        return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict
+        self.__listIdCounter, sfDict = getSfDictOf(self.sfDict, self.__listIdCounter)
+        return self.__listIdCounter, sfDict

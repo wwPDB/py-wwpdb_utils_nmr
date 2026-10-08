@@ -6,6 +6,9 @@
 # 07-Oct-2026  M. Yokochi - keep the restraint's chain id in assignCoordPolymerSequenceWithChainIdWithoutCompId()
 #                           when a sequence remap lookup misses, instead of None, which assigned the
 #                           restraint to every chain with that residue number (DAOTHER-7829)
+# 08-Oct-2026  M. Yokochi - keep the chain id fixed by chain_id_remap/chain_id_clone/branched_remap in
+#                           assignCoordPolymerSequenceWithoutCompId() instead of overwriting it with in-loop sequence
+#                           remap lookups, which assigned the restraint to every chain with that residue number (DAOTHER-7829)
 """ ParserLister base class for generic linear MR files.
     @author: Masashi Yokochi
 """
@@ -114,6 +117,8 @@ try:
                                                        contentSubtypeOf,
                                                        incListIdCounter,
                                                        decListIdCounter,
+                                                       getSfDictOf,
+                                                       trimSfWoLpOf,
                                                        getSaveframe,
                                                        getLoop)
 except ImportError:
@@ -205,6 +210,8 @@ except ImportError:
                                            contentSubtypeOf,
                                            incListIdCounter,
                                            decListIdCounter,
+                                           getSfDictOf,
+                                           trimSfWoLpOf,
                                            getSaveframe,
                                            getLoop)
 
@@ -284,6 +291,7 @@ class BaseLinearMRParserListener():
                  'ssbondRestraints',
                  'fchiralRestraints',
                  'sfDict',
+                 '__lastSfDict',
                  '__cachedDictForStarAtom',
                  '__chainNumberDict',
                  'extResKey',
@@ -414,9 +422,6 @@ class BaseLinearMRParserListener():
 
     # default saveframe name for error handling
     __def_err_sf_framecode = None
-
-    # last edited pynmrstar saveframe
-    __lastSfDict = {}
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  representativeModelId: int = REPRESENTATIVE_MODEL_ID,
@@ -632,6 +637,7 @@ class BaseLinearMRParserListener():
         self.fchiralRestraints = 0   # Floating chiral stereo assignments
 
         self.sfDict = {}  # dictionary of pynmrstar saveframes
+        self.__lastSfDict = {}  # last added pynmrstar saveframe of each restraint subtype
 
         self.__cachedDictForStarAtom = {}
 
@@ -2942,6 +2948,8 @@ class BaseLinearMRParserListener():
 
         for ps in self.polySeq:
             chainId, seqId, cifCompId = self.getRealChainSeqId(ps, _seqId, None)
+            if fixedChainId is not None and chainId != fixedChainId:
+                continue
             if self.reasons is not None:
                 if 'seq_id_remap' not in self.reasons\
                    and 'chain_seq_id_remap' not in self.reasons\
@@ -2950,16 +2958,16 @@ class BaseLinearMRParserListener():
                         continue
                 else:
                     if 'ext_chain_seq_id_remap' in self.reasons:
-                        fixedChainId, fixedSeqId, fixedCompId =\
+                        remapChainId, fixedSeqId, fixedCompId =\
                             retrieveRemappedSeqIdAndCompId(self.reasons['ext_chain_seq_id_remap'], chainId, seqId)
-                        if fixedChainId is not None and fixedChainId != chainId:
+                        if remapChainId is not None and remapChainId != chainId:
                             continue
                         if fixedSeqId is not None:
                             self.allow_ext_seq = fixedCompId is not None
                             seqId = _seqId = fixedSeqId
                     if fixedSeqId is None and 'chain_seq_id_remap' in self.reasons:
-                        fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
-                        if fixedChainId is not None and fixedChainId != chainId:
+                        remapChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
+                        if remapChainId is not None and remapChainId != chainId:
                             continue
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
@@ -2984,11 +2992,11 @@ class BaseLinearMRParserListener():
                 if self.reasons is not None:
                     if 'non_poly_remap' in self.reasons and cifCompId in self.reasons['non_poly_remap']\
                        and seqId in self.reasons['non_poly_remap'][cifCompId]:
-                        fixedChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None,
+                        remapChainId, fixedSeqId = retrieveRemappedNonPoly(self.reasons['non_poly_remap'], None,
                                                                            chainId, seqId, cifCompId)
                         if fixedSeqId is not None:
                             seqId = _seqId = fixedSeqId
-                        if (fixedChainId is not None and fixedChainId != chainId) or seqId not in ps['auth_seq_id']:
+                        if (remapChainId is not None and remapChainId != chainId) or seqId not in ps['auth_seq_id']:
                             continue
                 updatePolySeqRst(self.__polySeqRst, chainId, _seqId, cifCompId)
                 if atomId is None or len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
@@ -3024,14 +3032,16 @@ class BaseLinearMRParserListener():
         if self.hasNonPolySeq:
             for np in self.__nonPolySeq:
                 chainId, seqId, cifCompId = self.getRealChainSeqId(np, _seqId, None, False)
+                if fixedChainId is not None and chainId != fixedChainId:
+                    continue
                 if self.reasons is not None:
                     if 'seq_id_remap' not in self.reasons and 'chain_seq_id_remap' not in self.reasons:
                         if fixedChainId is not None and fixedChainId != chainId:
                             continue
                     else:
                         if 'chain_seq_id_remap' in self.reasons:
-                            fixedChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
-                            if fixedChainId is not None and fixedChainId != chainId:
+                            remapChainId, fixedSeqId = retrieveRemappedSeqId(self.reasons['chain_seq_id_remap'], chainId, seqId)
+                            if remapChainId is not None and remapChainId != chainId:
                                 continue
                             if fixedSeqId is not None:
                                 seqId = _seqId = fixedSeqId
@@ -6378,18 +6388,7 @@ class BaseLinearMRParserListener():
         """ Trim saveframe(s) without any loop.
         """
 
-        if self.cur_subtype not in self.__lastSfDict:
-            return
-        if self.__lastSfDict[self.cur_subtype]['index_id'] > 0:
-            return
-        for k, v in self.sfDict.items():
-            for item in reversed(v):
-                if item == self.__lastSfDict:
-                    v.remove(item)
-                    if len(v) == 0:
-                        del self.sfDict[k]
-                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
-                    return
+        self.__listIdCounter = trimSfWoLpOf(self.sfDict, self.__lastSfDict, self.cur_subtype, self.__listIdCounter)
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of MR file.
@@ -6474,16 +6473,5 @@ class BaseLinearMRParserListener():
         """ Return a dictionary of pynmrstar saveframes.
         """
 
-        if len(self.sfDict) == 0:
-            return self.__listIdCounter, None
-        ign_keys = []
-        for k, v in self.sfDict.items():
-            for item in reversed(v):
-                if item['index_id'] == 0:
-                    v.remove(item)
-                    if len(v) == 0:
-                        ign_keys.append(k)
-                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
-        for k in ign_keys:
-            del self.sfDict[k]
-        return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict
+        self.__listIdCounter, sfDict = getSfDictOf(self.sfDict, self.__listIdCounter)
+        return self.__listIdCounter, sfDict

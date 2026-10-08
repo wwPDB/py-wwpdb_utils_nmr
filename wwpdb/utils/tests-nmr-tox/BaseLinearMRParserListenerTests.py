@@ -3,12 +3,13 @@
 # Date:  07-Oct-2026  M. Yokochi
 #
 # Updates:
+# 08-Oct-2026  M. Yokochi - add tests for assignCoordPolymerSequenceWithoutCompId() (DAOTHER-7829)
 ##
-"""Regression tests for BaseLinearMRParserListener.assignCoordPolymerSequenceWithChainIdWithoutCompId().
+"""Regression tests for BaseLinearMRParserListener.assignCoordPolymerSequence{WithChainId,}WithoutCompId().
 
-A sequence remap lookup that missed returned None and overwrote the restraint's chain id, so the
-restraint was assigned to every coordinate chain carrying that residue number and recorded in the
-polymer sequence of the restraint file under chain None (DAOTHER-7829).
+A sequence remap lookup that missed returned None and overwrote the restraint's chain id, or the chain id
+fixed by chain_id_remap, so the restraint was assigned to every coordinate chain carrying that residue
+number and recorded in the polymer sequence of the restraint file under chain None (DAOTHER-7829).
 """
 import sys
 import unittest
@@ -35,7 +36,7 @@ class _NefTranslatorStub:
 
 
 class _ListenerStub(BaseLinearMRParserListener):
-    """ Only the state assignCoordPolymerSequenceWithChainIdWithoutCompId() reads, without coordinates. """
+    """ Only the state assignCoordPolymerSequence{WithChainId,}WithoutCompId() read, without coordinates. """
 
     __slots__ = ('allow_ext_seq', 'software_name')
 
@@ -105,6 +106,34 @@ class BaseLinearMRParserListenerTests(unittest.TestCase):
         reasons = {'chain_id_remap': {1: {'chain_id': 'A', 'seq_id': 1}}}
         self.assertEqual(self.__assign(['A', 'B'], reasons, 'B', 7),
                          ([('B', 7, 'ALA', True)], {'B': [7]}))
+
+
+class BaseLinearMRParserListenerWithoutChainIdTests(unittest.TestCase):
+
+    def __assign(self, chainIds, reasons, seqId):
+        listener = _ListenerStub([_chain(c) for c in chainIds], reasons)
+        chainAssign = listener.assignCoordPolymerSequenceWithoutCompId(seqId, 'CA')
+        return sorted(chainAssign), listener.polySeqRst()
+
+    def test_without_reasons(self):
+        # without any chain id, the restraint is ambiguous across the chains
+        self.assertEqual(self.__assign(['A', 'B'], None, 7),
+                         ([('A', 7, 'ALA', True), ('B', 7, 'ALA', True)], {'A': [7], 'B': [7]}))
+
+    def test_chain_id_remap_hit(self):
+        reasons = {'chain_id_remap': {7: {'chain_id': 'A', 'seq_id': 7}}}
+        self.assertEqual(self.__assign(['A', 'B'], reasons, 7),
+                         ([('A', 7, 'ALA', True)], {'A': [7]}))
+
+    def test_chain_id_remap_hit_with_chain_seq_id_remap_miss(self):
+        # the chain id fixed by chain_id_remap must survive a missed lookup of chain_seq_id_remap,
+        # whatever the order of the coordinate chains
+        reasons = {'chain_id_remap': {7: {'chain_id': 'A', 'seq_id': 7}}}
+        reasons.update(CHAIN_SEQ_ID_REMAP)
+        for chainIds in (['A', 'B'], ['B', 'A']):
+            with self.subTest(chainIds=chainIds):
+                self.assertEqual(self.__assign(chainIds, reasons, 7),
+                                 ([('A', 7, 'ALA', True)], {'A': [7]}))
 
 
 if __name__ == '__main__':

@@ -335,6 +335,12 @@
 #                           to NmrVrptUtility (DAOTHER-7829)
 # 07-Oct-2026  M. Yokochi - delegate the copies of selectRealistic{Bond,Chi2Angle}Constraint() in Amber, Rosetta and
 #                           Gromacs MR parser listeners to the same NmrVrptUtility functions (DAOTHER-7829)
+# 08-Oct-2026  M. Yokochi - share getSfDict()/trimSfWoLp() and the local sequence offset searches of MR parser listeners in
+#                           ParserListenerUtil, and fold repeated blocks of BaseStackedMRParserListener's exit() and
+#                           doConsumeFactor_expressions() into nested functions (DAOTHER-7829)
+# 08-Oct-2026  M. Yokochi - trim the last saveframe without any row of MR parser listeners (trimSfWoLp()), which never
+#                           matched, so a later list took a list id that the next file reused; keep the last saveframes
+#                           per listener instance (DAOTHER-7829)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

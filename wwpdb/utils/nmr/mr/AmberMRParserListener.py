@@ -120,6 +120,8 @@ try:
                                                        contentSubtypeOf,
                                                        incListIdCounter,
                                                        decListIdCounter,
+                                                       getSfDictOf,
+                                                       trimSfWoLpOf,
                                                        getSaveframe,
                                                        getLoop,
                                                        getRow,
@@ -222,6 +224,8 @@ except ImportError:
                                            contentSubtypeOf,
                                            incListIdCounter,
                                            decListIdCounter,
+                                           getSfDictOf,
+                                           trimSfWoLpOf,
                                            getSaveframe,
                                            getLoop,
                                            getRow,
@@ -328,6 +332,7 @@ class AmberMRParserListener(ParseTreeListener):
                  'csaRestraints',
                  'geoRestraints',
                  'sfDict',
+                 '__lastSfDict',
                  '__polySeqRst',
                  '__polySeqRstFailed',
                  '__f',
@@ -516,9 +521,6 @@ class AmberMRParserListener(ParseTreeListener):
 
     # default saveframe name for error handling
     __def_err_sf_framecode = None
-
-    # last edited pynmrstar saveframe
-    __lastSfDict = {}
 
     __dist_sander_pat = re.compile(r'(-?\d+) (\S+) (\S+) '
                                    r'(-?\d+) (\S+) (\S+) ?'
@@ -789,6 +791,7 @@ class AmberMRParserListener(ParseTreeListener):
         self.geoRestraints = 0       # AMBER: Generalized distance restraints
 
         self.sfDict = {}  # dictionary of pynmrstar saveframes
+        self.__lastSfDict = {}  # last added pynmrstar saveframe of each restraint subtype
 
         # polymer sequence of MR file
         self.__polySeqRst = []
@@ -11504,18 +11507,7 @@ class AmberMRParserListener(ParseTreeListener):
         """ Trim saveframe(s) without any loop.
         """
 
-        if self.__cur_subtype not in self.__lastSfDict:
-            return
-        if self.__lastSfDict[self.__cur_subtype]['index_id'] > 0:
-            return
-        for k, v in self.sfDict.items():
-            for item in reversed(v):
-                if item == self.__lastSfDict:
-                    v.remove(item)
-                    if len(v) == 0:
-                        del self.sfDict[k]
-                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
-                    return
+        self.__listIdCounter = trimSfWoLpOf(self.sfDict, self.__lastSfDict, self.__cur_subtype, self.__listIdCounter)
 
     def getContentSubtype(self) -> dict:
         """ Return content subtype of AMBER MR file.
@@ -11581,16 +11573,5 @@ class AmberMRParserListener(ParseTreeListener):
         """ Return a dictionary of pynmrstar saveframes.
         """
 
-        if len(self.sfDict) == 0:
-            return self.__listIdCounter, None
-        ign_keys = []
-        for k, v in self.sfDict.items():
-            for item in reversed(v):
-                if item['index_id'] == 0:
-                    v.remove(item)
-                    if len(v) == 0:
-                        ign_keys.append(k)
-                    self.__listIdCounter = decListIdCounter(k[0], self.__listIdCounter)
-        for k in ign_keys:
-            del self.sfDict[k]
-        return self.__listIdCounter, None if len(self.sfDict) == 0 else self.sfDict
+        self.__listIdCounter, sfDict = getSfDictOf(self.sfDict, self.__listIdCounter)
+        return self.__listIdCounter, sfDict

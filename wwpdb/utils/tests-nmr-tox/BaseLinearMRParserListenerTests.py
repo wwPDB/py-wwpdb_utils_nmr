@@ -4,6 +4,7 @@
 #
 # Updates:
 # 08-Oct-2026  M. Yokochi - add tests for assignCoordPolymerSequenceWithoutCompId() (DAOTHER-7829)
+# 08-Oct-2026  M. Yokochi - add a test for a restraint without chain id (DAOTHER-7829)
 ##
 """Regression tests for BaseLinearMRParserListener.assignCoordPolymerSequence{WithChainId,}WithoutCompId().
 
@@ -106,6 +107,12 @@ class BaseLinearMRParserListenerTests(unittest.TestCase):
         reasons = {'chain_id_remap': {1: {'chain_id': 'A', 'seq_id': 1}}}
         self.assertEqual(self.__assign(['A', 'B'], reasons, 'B', 7),
                          ([('B', 7, 'ALA', True)], {'B': [7]}))
+
+    def test_without_chain_id(self):
+        # callers such as BIOSYM pass None for a chain absent from the coordinates: the restraint is then ambiguous
+        # across the chains, as in assignCoordPolymerSequenceWithoutCompId(), instead of being recorded under chain None
+        self.assertEqual(self.__assign(['A', 'B'], None, None, 7),
+                         ([('A', 7, 'ALA', True), ('B', 7, 'ALA', True)], {'A': [7], 'B': [7]}))
 
 
 class BaseLinearMRParserListenerWithoutChainIdTests(unittest.TestCase):

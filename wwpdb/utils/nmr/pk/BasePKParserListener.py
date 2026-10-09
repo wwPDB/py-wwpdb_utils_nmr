@@ -3,6 +3,9 @@
 # Date: 03-Dec-2024
 #
 # Updates:
+# 09-Oct-2026  M. Yokochi - assignCoordPolymerSequenceWithChainIdWithoutCompId() without a chain returns no assignment again,
+#                           so that extractPeakAssignment() falls back to ...WithoutCompId() without pinning the default segment id
+#                           (AttributeError on the bare base instance of XEASY PROT) (DAOTHER-7829)
 # 09-Oct-2026  M. Yokochi - keep the chain id in assignCoordPolymerSequence{WithChainId,}WithoutCompId() instead of
 #                           overwriting it with in-loop sequence remap lookups, which recorded the assignment under
 #                           chain None or spread it to every chain with that residue number; the chain-assignment index
@@ -9852,7 +9855,11 @@ class BasePKParserListener():
     def assignCoordPolymerSequenceWithChainIdWithoutCompId(self, fixedChainId: str, seqId: int, atomId: str, index: int
                                                            ) -> List[Tuple[str, int, str, bool]]:
         """ Assign polymer sequences of the coordinates of a given chain.
+            @return: no assignment without a chain, so that callers fall back to assignCoordPolymerSequenceWithoutCompId()
         """
+
+        if fixedChainId is None:
+            return []
 
         return self.assignCoordPolymerSequenceWithoutCompId(seqId, atomId, index, fixedChainId)
 

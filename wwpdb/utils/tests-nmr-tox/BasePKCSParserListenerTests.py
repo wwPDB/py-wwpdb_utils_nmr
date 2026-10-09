@@ -4,6 +4,7 @@
 #
 # Updates:
 # 09-Oct-2026  M. Yokochi - add a test for a None chain id (DAOTHER-7829)
+# 09-Oct-2026  M. Yokochi - add a test for the base peak list listener of XEASY PROT (DAOTHER-7829)
 ##
 """Regression tests for assignCoordPolymerSequence{WithChainId,}WithoutCompId() of BasePKParserListener and
 BaseCSParserListener.
@@ -26,6 +27,7 @@ else:
 
 from wwpdb.utils.nmr.pk.BasePKParserListener import BasePKParserListener
 from wwpdb.utils.nmr.cs.BaseCSParserListener import BaseCSParserListener
+import wwpdb.utils.nmr.pk.XeasyPROTParserListener as xeasyProtListener
 
 
 class _NefTranslatorStub:
@@ -137,6 +139,21 @@ class BasePKCSParserListenerTests(unittest.TestCase):
                 chainAssign = listener.assignCoordPolymerSequenceWithoutCompId(7, 'CA', 0)
                 self.assertEqual((sorted(chainAssign), listener.rst()),
                                  ([('A', 7, 'ALA', True), ('B', 7, 'ALA', True)], {'A': [7], 'B': [7]}))
+
+
+class XeasyPROTBasePKTests(unittest.TestCase):
+
+    def test_class_level_defaults_are_writable(self):
+        # XEASY PROT drives a base peak list listener of its own; writing a class-level default outside __slots__ on a bare
+        # BasePKParserListener raised AttributeError ('... object attribute ... is read-only')
+        for cls, writable in ((BasePKParserListener, False), (getattr(xeasyProtListener, '_BasePKParserListener'), True)):
+            with self.subTest(cls=cls.__module__):
+                listener = object.__new__(cls)
+                try:
+                    setattr(listener, '_BasePKParserListener__defaultSegId', 'A')
+                    self.assertTrue(writable)
+                except AttributeError:
+                    self.assertFalse(writable)
 
 
 if __name__ == '__main__':

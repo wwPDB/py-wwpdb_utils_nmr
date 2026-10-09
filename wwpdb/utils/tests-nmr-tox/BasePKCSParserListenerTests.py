@@ -3,6 +3,7 @@
 # Date:  09-Oct-2026  M. Yokochi
 #
 # Updates:
+# 09-Oct-2026  M. Yokochi - add a test for a None chain id (DAOTHER-7829)
 ##
 """Regression tests for assignCoordPolymerSequence{WithChainId,}WithoutCompId() of BasePKParserListener and
 BaseCSParserListener.
@@ -118,6 +119,15 @@ class BasePKCSParserListenerTests(unittest.TestCase):
                     listener = self.__listener(cls, chainIds, reasons)
                     chainAssign = listener.assignCoordPolymerSequenceWithoutCompId(7, 'CA', 0)
                     self.assertEqual((sorted(chainAssign), listener.rst()), ([('A', 7, 'ALA', True)], {'A': [7]}))
+
+    def test_with_chain_id_none(self):
+        # callers fall back to assignCoordPolymerSequenceWithoutCompId() on no assignment, so a None chain must not assign:
+        # that would pin the default segment id in extractPeakAssignment(), which XEASY PROT's bare base instance cannot store
+        for cls in (_PK, _CS):
+            with self.subTest(cls=cls.__name__):
+                listener = self.__listener(cls, ['A', 'B'], None)
+                self.assertEqual(listener.assignCoordPolymerSequenceWithChainIdWithoutCompId(None, 7, 'CA', 0), [])
+                self.assertEqual((listener.rst(), listener.f), ({}, []))
 
     def test_without_reasons(self):
         # without any chain id, the restraint is ambiguous across the chains

@@ -22,7 +22,7 @@ CI (`azure-pipelines.yml`, py3.9) runs four tox environments. Reproduce them exa
 tox -e format_pep8-py39     # flake8 --max-line-length=132
 tox -e lint_pylint-py39     # pylint --disable=R,C --rcfile=pylintrc
 tox -e py39                 # unit tests
-tox -e test_coverage-py39   # coverage, --fail-under=18
+tox -e test_coverage-py39   # coverage, --fail-under=20
 ```
 
 Directly, without tox:

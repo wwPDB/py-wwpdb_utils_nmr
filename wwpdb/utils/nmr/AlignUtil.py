@@ -4,6 +4,7 @@
 #
 # Updates:
 # 29-Sep-2026  M. Yokochi - add writePrettyJson(), which streams the output of getPrettyJson() to a file (DAOTHER-7829, 9785)
+# 13-Oct-2026  M. Yokochi - use cache in alignPolymerSequence() and assignPolymerSequence() (6x63 unit test, DAOTHER-7829, 9785)
 ##
 """ Utilities for pairwise alignment.
     @author: Masashi Yokochi
@@ -1058,6 +1059,7 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
     hasMultimer = False
 
     truncated = None
+    sa_cache = {}
 
     _polySeqRst = copy.deepcopy(polySeqRst)
 
@@ -1084,6 +1086,16 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
                 if len(ps1['comp_id']) == len(ps2['comp_id']):
                     if not any(cmp2 not in cmp1 for cmp1, cmp2 in zip(ps1['comp_id'], ps2['comp_id'])):
                         ps2['comp_id'] = copy.copy(ps1['comp_id'])
+
+            if len(sa_cache) > 0 and chain_id2 in sa_cache:
+                _sa = next((_sa['seq_align'] for _sa in sa_cache[chain_id2] if chain_id in _sa['ident_chain_ids']), None)
+                if _sa is not None:
+                    _sa['ref_chain_id'] = chain_id
+                    _sa['test_chain_id'] = chain_id2
+
+                    seqAlign.append(copy.copy(_sa))
+
+                    continue
 
             pA.clear()
             pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
@@ -1513,6 +1525,15 @@ def alignPolymerSequence(pA, polySeqModel: List[dict], polySeqRst: List[dict],
             if 'identical_auth_chain_id' in ps1:
                 hasMultimer = True
 
+            if len(compIdMapping) == 0 and truncated is None and len(tabooList) == 0 and len(inhibitList) == 0\
+               and len(polySeqModel) > 1 and 'identical_chain_id' in ps1 and len(ps1['identical_chain_id']) > 1:
+                if chain_id2 not in sa_cache:
+                    sa_cache[chain_id2] = []
+                sa_cache[chain_id2].append({'ident_chain_ids': ps1['identical_auth_chain_id'
+                                                                   if chain_id_name.startswith('auth')
+                                                                   else 'identical_chain_id'],
+                                            'seq_align': copy.copy(seq_align)})
+
             seqAlign.append(seq_align)
 
     if truncated is not None:
@@ -1568,6 +1589,7 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
         return seqAlign, compIdMapping
 
     truncated = None
+    sa_cache = {}
 
     for i1, ps1 in enumerate(polySeqModel):
         chain_id_name = 'auth_chain_id' if 'auth_chain_id' in ps1 else 'chain_id'
@@ -1591,6 +1613,16 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
                 if len(ps1['comp_id']) == len(ps2['comp_id']):
                     if not any(cmp2 not in cmp1 for cmp1, cmp2 in zip(ps1['comp_id'], ps2['comp_id'])):
                         ps2['comp_id'] = copy.copy(ps1['comp_id'])
+
+            if len(sa_cache) > 0 and chain_id2 in sa_cache:
+                _sa = next((_sa['seq_align'] for _sa in sa_cache[chain_id2] if chain_id in _sa['ident_chain_ids']), None)
+                if _sa is not None:
+                    _sa['ref_chain_id'] = chain_id
+                    _sa['test_chain_id'] = chain_id2
+
+                    seqAlign.append(copy.copy(_sa))
+
+                    continue
 
             pA.clear()
             pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
@@ -1886,6 +1918,15 @@ def alignPolymerSequenceWithConflicts(pA, polySeqModel: List[dict], polySeqRst: 
             if has_auth_seq_id1:
                 seq_align['ref_auth_seq_id'] = _ps1['auth_seq_id']
 
+            if len(compIdMapping) == 0 and truncated is None and len(polySeqModel) > 1\
+               and 'identical_chain_id' in ps1 and len(ps1['identical_chain_id']) > 1:
+                if chain_id2 not in sa_cache:
+                    sa_cache[chain_id2] = []
+                sa_cache[chain_id2].append({'ident_chain_ids': ps1['identical_auth_chain_id'
+                                                                   if chain_id_name.startswith('auth')
+                                                                   else 'identical_chain_id'],
+                                            'seq_align': copy.copy(seq_align)})
+
             seqAlign.append(seq_align)
 
     if truncated is not None:
@@ -1964,6 +2005,7 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
         mat.append(cost)
 
     chainAssign = []
+    ca_cache = {}
 
     for row, col in indices:
 
@@ -2009,6 +2051,19 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
 
         ps1 = next(ps1 for ps1 in polySeqModel if ps1[chain_id_name] == chain_id)
         ps2 = next(ps2 for ps2 in polySeqRst if ps2['chain_id'] == chain_id2)
+
+        if len(ca_cache) > 0 and chain_id2 in ca_cache:
+            _ca = next((_ca['chain_assign'] for _ca in ca_cache[chain_id2] if chain_id in _ca['ident_chain_ids']), None)
+            if _ca is not None:
+                _ca['ref_chain_id'] = chain_id
+                _ca['test_chain_id'] = chain_id2
+
+                result['conflict'] = _ca['conflict']
+                result['unmapped'] = _ca['unmapped']
+
+                chainAssign.append(copy.copy(_ca))
+
+                continue
 
         pA.clear()
         pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
@@ -2177,6 +2232,15 @@ def assignPolymerSequence(pA, ccU, fileType: str, polySeqModel: List[dict], poly
 
                 result['conflict'] = ca['conflict']
                 result['unmapped'] = ca['unmapped']
+
+        if len(warnings) == 0 and len(polySeqModel) > 1\
+           and 'identical_chain_id' in ps1 and len(ps1['identical_chain_id']) > 1:
+            if chain_id2 not in ca_cache:
+                ca_cache[chain_id2] = []
+            ca_cache[chain_id2].append({'ident_chain_ids': ps1['identical_auth_chain_id'
+                                                               if chain_id_name.startswith('auth')
+                                                               else 'identical_chain_id'],
+                                        'chain_assign': copy.copy(ca)})
 
         chainAssign.append(ca)
 

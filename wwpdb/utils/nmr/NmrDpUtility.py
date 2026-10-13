@@ -344,7 +344,7 @@
 # 09-Oct-2026  M. Yokochi - merge assignCoordPolymerSequenceWithChainIdWithoutCompId() into ...WithoutCompId(), share
 #                           getSfDictOf(), and fold repeated code of BasePKParserListener (validatePeak{2,3,4}D(), J-coupling/
 #                           relayed transfer remediation, extractPeakAssignment()) and BaseCSParserListener
-#                           (extractAssignment()) (DAOTHER-7829)
+#                           (extractChemShiftAssignment()) (DAOTHER-7829)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi

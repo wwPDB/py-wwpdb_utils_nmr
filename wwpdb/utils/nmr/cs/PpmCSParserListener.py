@@ -93,7 +93,7 @@ class PpmCSParserListener(ParseTreeListener, BaseCSParserListener):
         if dstFunc is None:
             return
 
-        assignment = self.extractAssignment(1, L, self.cur_line_num, chain_id)
+        assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num, chain_id)
 
         if assignment is None:
             return

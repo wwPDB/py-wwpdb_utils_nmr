@@ -201,7 +201,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         L = f'{seq_id}:{comp_id}:{atom_id}'
 
-        assignment = self.extractAssignment(1, L, index, with_compid=comp_id)
+        assignment = self.extractChemShiftAssignment(1, L, index, with_compid=comp_id)
 
         if assignment is None:
             return
@@ -281,7 +281,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         L = f'{chain_id}:{seq_id}:{comp_id}:{atom_id}'
 
-        assignment = self.extractAssignment(1, L, index, chain_id, comp_id)
+        assignment = self.extractChemShiftAssignment(1, L, index, chain_id, comp_id)
 
         if assignment is None:
             return
@@ -361,7 +361,7 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         L = f'{chain_id}:{seq_id}:{comp_id}:{atom_id}'
 
-        assignment = self.extractAssignment(1, L, index, chain_id, comp_id)
+        assignment = self.extractChemShiftAssignment(1, L, index, chain_id, comp_id)
 
         if assignment is None:
             return

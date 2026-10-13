@@ -268,7 +268,7 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
 
             L = concat_assignment(seq_id, comp_id, atom_id)
 
-            assignment = self.extractAssignment(1, L, index, with_compid=comp_id)
+            assignment = self.extractChemShiftAssignment(1, L, index, with_compid=comp_id)
 
             if assignment is None:
                 return

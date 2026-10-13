@@ -4,12 +4,12 @@
 #
 # Updates:
 # 09-Oct-2026  M. Yokochi - assignCoordPolymerSequenceWithChainIdWithoutCompId() without a chain returns no assignment again,
-#                           so that extractAssignment() falls back to ...WithoutCompId() without pinning the default segment id
-#                           (AttributeError on the bare base instance of XEASY PROT) (DAOTHER-7829)
+#                           so that extractChemShiftAssignment() falls back to ...WithoutCompId() without pinning the default
+#                           segment id (AttributeError on the bare base instance of XEASY PROT) (DAOTHER-7829)
 # 09-Oct-2026  M. Yokochi - keep the chain id in assignCoordPolymerSequence{WithChainId,}WithoutCompId() instead of
 #                           overwriting it with in-loop sequence remap lookups, which recorded the assignment under
 #                           chain None or spread it to every chain with that residue number; the chain-assignment index
-#                           of extractAssignment() no longer clobbers the term index of its loop (DAOTHER-7829)
+#                           of extractChemShiftAssignment() no longer clobbers the term index of its loop (DAOTHER-7829)
 """ ParserLister base class for any chemical shift file.
     @author: Masashi Yokochi
 """
@@ -985,11 +985,11 @@ class BaseCSParserListener():
                                    atom, ambig_code=ambig_code, details=details)
                 sf['loop'].add_data(row)
 
-    def extractAssignment(self, numOfDim: int, string: str, src_index: int,
-                          with_segid: Optional[str] = None, with_compid: Optional[str] = None,
-                          hint: Optional[List[dict]] = None
-                          ) -> Optional[List[dict]]:
-        """ Extract assignment from a given string.
+    def extractChemShiftAssignment(self, numOfDim: int, string: str, src_index: int,
+                                   with_segid: Optional[str] = None, with_compid: Optional[str] = None,
+                                   hint: Optional[List[dict]] = None
+                                   ) -> Optional[List[dict]]:
+        """ Extract chemical shift assignment from a given string.
         """
 
         if numOfDim not in (1, 2, 3, 4) or string is None:

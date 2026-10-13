@@ -80,10 +80,12 @@ except ImportError:
                                   set_sf_tag)
 
 
-__pynmrstar_v3_3__ = version.parse(pynmrstar.__version__) >= version.parse("3.3.0")
+__pynmrstar_v3_6__ = version.parse(pynmrstar.__version__) >= version.parse("3.6.0")
+__pynmrstar_v3_4_to_5__ = version.parse("3.4.0") <= version.parse(pynmrstar.__version__) < version.parse("3.6.0")
 
 
 PYNMRSTAR_LP_OBJ_PAT = re.compile(r"\<pynmrstar\.Loop '(.*)'\>")
+PYNMRSTAR_LINE_NUM_PAT = r".*Error detected on line (\d+).*$" if not __pynmrstar_v3_4_to_5__ else r".*line (\d+).*$"
 
 ONEDEP_ANY_UPLOAD_FILE_NAME_PAT = re.compile(r'^(\S+)\-upload_(\S+)\.V(\d+)$')
 ONEDEP_ANY_FILE_NAME_PAT = re.compile(r'^(\S+)\.V(\d+)$')
@@ -306,13 +308,15 @@ class NmrDpFirstAid:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
-            msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
+            msg_pattern = re.compile(r'^.*' + msg_template + PYNMRSTAR_LINE_NUM_PAT)
 
             try:
 
                 g = msg_pattern.search(msg).groups()
 
                 line_num = int(g[0])
+                if __pynmrstar_v3_6__:
+                    line_num -= 1
 
                 i = 0
 
@@ -351,15 +355,15 @@ class NmrDpFirstAid:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
-            msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
+            msg_pattern = re.compile(r'^.*' + msg_template + PYNMRSTAR_LINE_NUM_PAT)
 
             try:
 
                 g = msg_pattern.search(msg).groups()
 
                 line_num = int(g[0])
-
-                i = 0
+                if __pynmrstar_v3_6__:
+                    line_num -= 1
 
                 _srcPath_next = self.getNextPath(_srcPath)
 
@@ -508,13 +512,15 @@ class NmrDpFirstAid:
             if self.__reg.verbose:
                 self.__reg.log.write(f"+{self.__class_name__}.__validateInputSource() ++ Warning  - {warn}\n")
 
-            msg_pattern = re.compile(r'^.*' + msg_template + r".*on line (\d+).*$")
+            msg_pattern = re.compile(r'^.*' + msg_template + PYNMRSTAR_LINE_NUM_PAT)
 
             try:
 
                 g = msg_pattern.search(msg).groups()
 
                 line_num = int(g[0])
+                if __pynmrstar_v3_6__:
+                    line_num -= 1
 
                 i = 0
 

@@ -924,7 +924,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
     def exitDistance_wo_comp_restraint(self, chainId1: str, seqId1: int, atomId1: str,
                                        chainId2: str, seqId2: int, atomId2: str) -> None:
-        """ Exit a parse tree produced by CyanaMRParser#distance_restraint.
+        """ Process a distance restraint whose atom selections carry no comp_id.
         """
 
         try:

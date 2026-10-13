@@ -73,13 +73,13 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
         self.software_name = 'Olivia'
 
     def enterOlivia_pk(self, ctx: OliviaPKParser.Olivia_pkContext):  # pylint: disable=unused-argument
-        """ Enter a parse tree produced by OliviaPKParser#nmrpipe_pk.
+        """ Enter a parse tree produced by OliviaPKParser#olivia_pk.
         """
 
         self.__spectrum_names = {}
 
     def exitOlivia_pk(self, ctx: OliviaPKParser.Olivia_pkContext):  # pylint: disable=unused-argument
-        """ Exit a parse tree produced by OliviaPKParser#dynamo_mr.
+        """ Exit a parse tree produced by OliviaPKParser#olivia_pk.
         """
 
         self.exit(self.__spectrum_names if len(self.__spectrum_names) > 0 else None)

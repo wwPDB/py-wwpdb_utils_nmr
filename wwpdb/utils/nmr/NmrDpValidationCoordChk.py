@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import copy
 from typing import List, Optional, Tuple, Union
@@ -1533,7 +1533,7 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
                             and atom_id_ == 'P':
                         continue
 
-                    elif ca['conflict'] == 0:  # no conflict in sequenc alignment
+                    elif ca['conflict'] == 0:  # no conflict in sequence alignment
 
                         if comp_id in STD_MON_DICT:
 

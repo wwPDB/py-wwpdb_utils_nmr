@@ -5,7 +5,7 @@
 # Updates:
 # 09-Oct-2019  M. Yokochi - add setCorrectedError() to catch missing mandatory saveframe tag
 # 10-Oct-2019  M. Yokochi - add 'enum_failure_ignorable' warning type
-# 15-Oct-2019  M. Yokochi - add 'encouragement' waring type
+# 15-Oct-2019  M. Yokochi - add 'encouragement' warning type
 # 27-Jan-2020  M. Yokochi - change warning type 'enum_failure' to 'enum_mismatch'
 # 05-Feb-2020  M. Yokochi - move conflicted_data error to warning
 # 10-Feb-2020  M. Yokochi - add methods to retrieve polymer sequence for sample sequence alignment
@@ -139,6 +139,7 @@
 # 27-Jan-2026  M. Yokochi - add hasSequenceMismatchErrorInCsLoop() (DAOTHER-10487)
 # 30-Jun-2026  M. Yokochi - add 'nm-csp-*' file type to support chemical shift perturbation (DAOTHER-9785)
 # 10-Jul-2026  M. Yokochi - add 'ensemble_composition' item in NmrDpReportInputSource class (DAOTHER-9785)
+# 29-Sep-2026  M. Yokochi - stream the report to its JSON file in writeFile() (DAOTHER-7829, 9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -147,9 +148,10 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import copy
+import functools
 import json
 import re
 import sys
@@ -160,13 +162,13 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                STD_MON_DICT,
                                                UNKNOWN_RESIDUE)
-    from wwpdb.utils.nmr.AlignUtil import getPrettyJson
+    from wwpdb.utils.nmr.AlignUtil import writePrettyJson
     from wwpdb.utils.nmr.CifToNmrStar import get_value_safe
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    STD_MON_DICT,
                                    UNKNOWN_RESIDUE)
-    from nmr.AlignUtil import getPrettyJson
+    from nmr.AlignUtil import writePrettyJson
     from nmr.CifToNmrStar import get_value_safe
 
 
@@ -1154,6 +1156,7 @@ class NmrDpReport:
 
         return ''.join(f)
 
+    @functools.lru_cache(maxsize=32)
     def getNmrPolymerSequenceWithModelChainId(self, cif_chain_id: str, label_scheme: bool = True
                                               ) -> Optional[dict]:
         """ Retrieve NMR polymer sequence corresponding to a given coordinate chain_id.
@@ -1251,6 +1254,7 @@ class NmrDpReport:
 
         return None
 
+    @functools.lru_cache(maxsize=32)
     def getModelPolymerSequenceWithNmrChainId(self, nmr_chain_id: str
                                               ) -> Optional[dict]:
         """ Retrieve coordinate polymer sequence corresponding to a given NMR chain_id.
@@ -1548,6 +1552,9 @@ class NmrDpReport:
         """ Clear errors and warnings.
         """
 
+        self.getNmrPolymerSequenceWithModelChainId.cache_clear()
+        self.getModelPolymerSequenceWithNmrChainId.cache_clear()
+
         if not self.__immutable:
 
             self.error.clean()
@@ -1564,7 +1571,7 @@ class NmrDpReport:
                               "++ Warning  - No effects on NMR data processing report because the report is immutable")
 
     def setDiamagnetic(self, diamagnetic: bool) -> None:
-        """ Set diamagetism of molecular assembly.
+        """ Set diamagnetism of molecular assembly.
         """
 
         if isinstance(diamagnetic, bool):
@@ -1594,7 +1601,7 @@ class NmrDpReport:
                               "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
     def setOtherBond(self, other_bond: bool) -> None:
-        """ Set whether molecular assemble has an other bond at least or not.
+        """ Set whether molecular assembly has an other bond at least or not.
         """
 
         if isinstance(other_bond, bool):
@@ -1609,7 +1616,7 @@ class NmrDpReport:
                               "++ Warning  - No effects on NMR data processing report because input variable is not boolean type")
 
     def setCyclicPolymer(self, cyclic_polymer: bool) -> None:
-        """ Set whether molecular assemble contains a cyclic polymer or not.
+        """ Set whether molecular assembly contains a cyclic polymer or not.
         """
 
         if isinstance(cyclic_polymer, bool):
@@ -1707,7 +1714,7 @@ class NmrDpReport:
             return False
 
         with open(out_path, 'w', encoding='utf-8') as file:
-            file.write(getPrettyJson(self.get()))
+            writePrettyJson(self.get(), file)
 
         return True
 
@@ -2308,7 +2315,7 @@ class NmrDpReportError:
         self.chk_rows_pat = re.compile(r'\[Check rows of ([^\[]*)\] (.*)$')
 
     def appendDescription(self, item: str, value: Any) -> None:
-        """ Append an error with a give description.
+        """ Append an error with a given description.
         """
 
         if item in self.items:
@@ -2700,7 +2707,7 @@ class NmrDpReportWarning:
         self.chk_rows_pat = re.compile(r'\[Check rows of ([^\[]*)\] (.*)$')
 
     def appendDescription(self, item: str, value: Any) -> None:
-        """ Append a warning with a give description.
+        """ Append a warning with a given description.
         """
 
         if item in self.items:

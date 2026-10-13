@@ -224,7 +224,7 @@ class CyanaNOAReader:
             walker.walk(listener, tree)
 
             # lexer_error_listener is inconsistent when accessing via return value (2n07)
-            # old lexer_error_listner may be accidentally reused within antler4?
+            # old lexer_error_listener may be accidentally reused within antlr4?
             # anyway, we need to ensure that illegal messaging is avoided.
             if messageList is None and len(listener.getContentSubtype()) > 0:
                 lexer_error_listener = LexerErrorListener(mrFilePath, maxErrorReport=self.__maxLexerErrorReport)

@@ -70,11 +70,11 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
         self.__has_real_vol = reasons is not None and 'has_real_vol' in reasons
 
     def enterSparky_rpk(self, ctx: SparkyRPKParser.Sparky_rpkContext):  # pylint: disable=unused-argument
-        """ Enter a parse tree produced by SparkyRPKParser#sparky_pk.
+        """ Enter a parse tree produced by SparkyRPKParser#sparky_rpk.
         """
 
     def exitSparky_rpk(self, ctx: SparkyRPKParser.Sparky_rpkContext):  # pylint: disable=unused-argument
-        """ Exit a parse tree produced by SparkyRPKParser#sparky_pk.
+        """ Exit a parse tree produced by SparkyRPKParser#sparky_rpk.
         """
 
         self.exit()

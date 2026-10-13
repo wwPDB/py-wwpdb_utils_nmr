@@ -3,6 +3,9 @@
 # Date: 17-Aug-2026
 #
 # Updates:
+# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous NMR unified data before validating
+#                           a large one, which otherwise sets the peak memory of 'nmr-str2str-deposit' (DAOTHER-7829, 9785)
+# 02-Oct-2026  M. Yokochi - return the freed heap to the OS after that collection (6x63: 76-91 MB) (DAOTHER-7829, 9785)
 ##
 """ Input source validation and content subtype detection for NMR data validation.
     @author: Masashi Yokochi
@@ -11,9 +14,10 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import copy
+import gc
 import os
 import re
 import shutil
@@ -38,7 +42,9 @@ try:
                                                BMRB_NMR_STAR_FILE_NAME_PAT,
                                                INTNL_ANY_MR_FILE_NAME_PAT,
                                                PDB_MR_FILE_NAME_PAT,
-                                               WS_PAT)
+                                               WS_PAT,
+                                               MIN_INPUT_SIZE_FOR_GC,
+                                               trim_heap)
     from wwpdb.utils.nmr.NmrDpMrSplitter import (detect_bom,
                                                  convert_codec,
                                                  convert_rtf_to_ascii,
@@ -66,7 +72,9 @@ except ImportError:
                                    BMRB_NMR_STAR_FILE_NAME_PAT,
                                    INTNL_ANY_MR_FILE_NAME_PAT,
                                    PDB_MR_FILE_NAME_PAT,
-                                   WS_PAT)
+                                   WS_PAT,
+                                   MIN_INPUT_SIZE_FOR_GC,
+                                   trim_heap)
     from nmr.NmrDpMrSplitter import (detect_bom,
                                      convert_codec,
                                      convert_rtf_to_ascii,
@@ -705,6 +713,15 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     convert_rtf_to_ascii(srcPath, _srcPath)
                     srcPath = _srcPath
 
+            # The previous NMR unified data, e.g. the one that 'nmr-str2str-deposit' has just written and now
+            # re-reads as the next version, has been dropped from star_data, but it is still reachable through
+            # reference cycles (a plain pynmrstar entry is not cyclic; the cycles come from the surrounding data),
+            # and the full collection that frees it runs rarely once the heap is large. Collect it before the
+            # new entry is parsed: on a 32 MB entry that is 450k objects, 1226 MB -> 666 MB (DAOTHER-7829, 9785).
+            if os.path.exists(srcPath) and os.path.getsize(srcPath) >= MIN_INPUT_SIZE_FOR_GC:
+                gc.collect(2)
+                trim_heap()
+
             is_valid, message = self._reg.nefT.validate_file(srcPath, 'A')  # 'A' for NMR unified data
 
             if not is_valid:
@@ -840,6 +857,10 @@ class NmrDpValidationInput(NmrDpValidationBase):
             proc_ac_file_path_list()
 
             post_internal_processing()
+
+        # release cached input data on NefTranslator because there is no chance
+        # to read the same file hereafter
+        self._reg.nefT.release()
 
         return is_done
 

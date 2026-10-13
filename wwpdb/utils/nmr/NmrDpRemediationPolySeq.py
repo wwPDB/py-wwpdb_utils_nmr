@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import copy
 import re
@@ -221,7 +221,10 @@ class NmrDpRemediationPolySeq(NmrDpRemediationBase):
 
             free_cys = cys_total - disul_cys - other_cys
 
-            if free_cys > 0:
+            if cys_total == 0:  # no modeled CYS, but CYS residues in unmodeled region (6osw)
+                thiol_state = 'unknown'
+
+            elif free_cys > 0:
                 if free_cys == cys_total:
                     thiol_state = 'all free'
                 elif disul_cys > 0 and other_cys > 0:
@@ -1669,6 +1672,7 @@ class NmrDpRemediationPolySeq(NmrDpRemediationBase):
                         thiol_state = 'all other bound'
             else:
                 thiol_state = 'not present'
+
             ent_sf.add_tag('Thiol_state', thiol_state)
             ent_sf.add_tag('Src_method', item['entity_src_method'])
             ent_sf.add_tag('Parent_entity_ID', None if entity_type != 'polymer' else item['entity_parent'])

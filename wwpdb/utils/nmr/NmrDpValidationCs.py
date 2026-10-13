@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import math
 from operator import itemgetter
@@ -278,7 +278,7 @@ class NmrDpValidationCs(NmrDpValidationBase):
                     if len(cs_stats) == 0:
                         if self._reg.ccU.updateChemCompDict(comp_id):
                             parent_comp_id = self._reg.ccU.lastChemCompDict['parent_comp_id']
-                            # DAOTHER-9198: retrieve BMRB chemical shift statittics from parent comp_id if possible (i.e. DNR -> DC)
+                            # DAOTHER-9198: retrieve BMRB chemical shift statistics from parent comp_id if possible (i.e. DNR -> DC)
                             if parent_comp_id in STD_MON_DICT:
                                 cs_stats = self._reg.csStat.get(parent_comp_id)
 

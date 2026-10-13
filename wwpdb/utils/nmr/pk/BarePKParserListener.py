@@ -61,11 +61,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
         self.file_type = 'nm-pea-bar'
 
     def enterBare_pk(self, ctx: BarePKParser.Bare_pkContext):  # pylint: disable=unused-argument
-        """ Enter a parse tree produced by BarePKParser#ccpn_pk.
+        """ Enter a parse tree produced by BarePKParser#bare_pk.
         """
 
     def exitBare_pk(self, ctx: BarePKParser.Bare_pkContext):  # pylint: disable=unused-argument
-        """ Exit a parse tree produced by BarePKParser#ccpn_pk.
+        """ Exit a parse tree produced by BarePKParser#bare_pk.
         """
 
         self.exit()

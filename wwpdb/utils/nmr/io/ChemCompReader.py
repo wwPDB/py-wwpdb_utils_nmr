@@ -105,7 +105,7 @@ CCD_ITEM_DICT = {'chem_comp': [('_chem_comp.id', 'id', 'str', ''),
 
 
 def is_reserved_lig_code(comp_id: str) -> bool:
-    """ Return a given comp_id is reserved for new ligands. (DAOTHER-7204, 7388)
+    """ Return whether a given comp_id is reserved for new ligands. (DAOTHER-7204, 7388)
     """
 
     if comp_id in RESERVED_LIG_CODE:
@@ -370,7 +370,7 @@ class ChemCompReader:
 
     def __getRowList(self, catName: str
                      ) -> List[list]:
-        """ Return a list a list of data from the input category including
+        """ Return a list of a list of data from the input category including
             data types and default value replacement.
         """
 

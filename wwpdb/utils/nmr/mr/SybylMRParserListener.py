@@ -84,11 +84,11 @@ class SybylMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.software_name = 'SYBYL'
 
     def enterSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
-        """ Enter a parse tree produced by SybylMRParser#biosym_mr.
+        """ Enter a parse tree produced by SybylMRParser#sybyl_mr.
         """
 
     def exitSybyl_mr(self, ctx: SybylMRParser.Sybyl_mrContext):  # pylint: disable=unused-argument
-        """ Exit a parse tree produced by SybylMRParser#biosym_mr.
+        """ Exit a parse tree produced by SybylMRParser#sybyl_mr.
         """
 
         self.exit()

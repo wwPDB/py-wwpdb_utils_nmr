@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 from typing import List, Optional, Union
 
@@ -2138,7 +2138,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
 
     def _hasCoordSeq(self, nmr_chain_id: str, nmr_seq_id: str) -> bool:
         """ Return whether a given sequence is in the coordinates.
-            @return: True for corresponding sequence in the coordinates exist, False otherwise
+            @return: True for corresponding sequence in the coordinates exists, False otherwise
         """
 
         cif_ps = self._reg.report.getModelPolymerSequenceWithNmrChainId(nmr_chain_id)

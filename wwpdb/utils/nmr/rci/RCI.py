@@ -13,7 +13,7 @@
     @author: Gary Strangman, Masashi Yokochi
     Reference:
           Mark V. Berjanskii, David S. Wishart (2005) A Simple Method To Predict Protein
-          Flexibility Using Secondary Chemical Shifts. Journal of the American Chemical
+          Flexibility Using Secondary Chemical Shifts. Journal of the American Chemical Society
           DOI: 10.1021/ja054842f
 """
 __docformat__ = "restructuredtext en"
@@ -180,14 +180,14 @@ class RCI:
         self.incomplete_data_use = 1
         self.NoNextProPro_flag = 0  # When 0, next residue correction is used for XPP situation
 
-        self.Random_coil_flag = 4  # 1 - Wishart's random coil, 2 - Wang's random coil, 4 - Shwarzinger, 3 - Lukhin' random coil
-        self.preceed_res_effect_flag = 1  # If 1, use preceeding residue effect
+        self.Random_coil_flag = 4  # 1 - Wishart's random coil, 2 - Wang's random coil, 4 - Schwarzinger, 3 - Lukhin's random coil
+        self.preceed_res_effect_flag = 1  # If 1, use preceding residue effect
         self.next_res_effect_flag = 1  # If 1, use next residue effect
-        self.preceed_preceed_res_effect_flag = 1  # If 1, use preceeding residue of preceeding residue effect
+        self.preceed_preceed_res_effect_flag = 1  # If 1, use preceding residue of preceding residue effect
         self.next_next_res_effect_flag = 1  # If 1, use next residue of  next residue effect
 
-        self.sw_neighbor_flag = 0  # If 1, Shwartz-Wang neighboring residue correction is used
-        self.neighbor_flag = 1  # 0 - Wang neighbor correction, 1 - Swartzinger neighbor correction
+        self.sw_neighbor_flag = 0  # If 1, Schwarzinger-Wang neighboring residue correction is used
+        self.neighbor_flag = 1  # 0 - Wang neighbor correction, 1 - Schwarzinger neighbor correction
         self.nonextpro = 0
         self.nopreceedpro = 0
 
@@ -2741,7 +2741,7 @@ class RCI:
                 ]
             }
 
-        # Original unusued value of -0.77 for Pro for next residue correction is used
+        # Original unused value of -0.77 for Pro for next residue correction is used
         elif self.neighbor_flag == 1 and self.nonextpro == 3:
 
             self.preceed_res_effect = {
@@ -5138,7 +5138,7 @@ class RCI:
                 ]
             }
 
-        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil, 4 - Schwarzinger's, 5 - average of 1,2 & 3
+        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin's random coil, 4 - Schwarzinger's, 5 - average of 1,2 & 3
         if self.Random_coil_flag == 1:
             # Wishart random coil values
             self.random_coil_dic = {
@@ -5165,7 +5165,7 @@ class RCI:
                 "B": [118.6, 174.6, 55.4, 41.1, 8.43, 4.71]
             }
 
-        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil, 4 - Schwarzinger's, 5 - average of 1,2 & 3
+        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin's random coil, 4 - Schwarzinger's, 5 - average of 1,2 & 3
         elif self.Random_coil_flag == 2:
             # Wang's random coil values
             self.random_coil_dic = {
@@ -5192,7 +5192,7 @@ class RCI:
                 "B": [118.7, 175.5, 55.6, 41.2, 8.54, 4.76]
             }
 
-        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin' random coil, 4 - Schwarzinger's, 5 - average of 1, 2 & 3
+        # 1 - Wishart's random coil, 2 - Wang's random coil, 3 - Lukhin's random coil, 4 - Schwarzinger's, 5 - average of 1, 2 & 3
         elif self.Random_coil_flag == 3:
             # Lukhin heteronuclear + Wang proton shifts
             self.random_coil_dic = {
@@ -5250,7 +5250,7 @@ class RCI:
         # Random coil values:1 - Wishart's, 2 - Wang's, 3 - Lukhin's,
         # 4 - Schwarzinger's, 5 - mean of 1 and 4; 6 - average of 1, 2 & 3
         elif self.Random_coil_flag == 5:
-            # Average of Wishart and Shwartz RC
+            # Average of Wishart and Schwarzinger RC
             self.random_coil_dic = {
                 "A": [125.00, 178.15, 52.65, 19.20, 8.29, 4.33],
                 "C": [118.85, 174.95, 58.40, 28.15, 8.43, 4.65],
@@ -5302,7 +5302,7 @@ class RCI:
             }
 
         elif self.Random_coil_flag == 7:
-            # Average of Wang and Shwartz RC
+            # Average of Wang and Schwarzinger RC
             self.random_coil_dic = {
                 "A": [124.41, 177.89, 52.63, 19.14, 8.22, 4.33],
                 "C": [118.45, 175.21, 58.42, 28.92, 8.27, 4.59],
@@ -5327,7 +5327,7 @@ class RCI:
             }
 
         elif self.Random_coil_flag == 8:
-            # Average of Lukin and Shwartz RC
+            # Average of Lukhin and Schwarzinger RC
             self.random_coil_dic = {
                 "A": [125.05, 177.90, 52.61, 19.16, 8.22, 4.33],
                 "C": [119.00, 175.07, 58.30, 28.25, 8.43, 4.65],
@@ -5352,7 +5352,7 @@ class RCI:
             }
 
         elif self.Random_coil_flag == 9:
-            # Average of Mean RC  and Shwartz RC
+            # Average of Mean RC  and Schwarzinger RC
             self.random_coil_dic = {
                 "A": [124.82, 177.98, 52.63, 19.17, 8.25, 4.33],
                 "C": [118.77, 175.07, 58.38, 28.44, 8.38, 4.63],

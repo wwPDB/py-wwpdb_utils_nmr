@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 from typing import Optional, Union
 
@@ -66,7 +66,7 @@ CCA_AUTH_SEQ = 6  # Auth_seq_ID
 
 def get_chem_shift_format(fPath: str
                           ) -> Optional[str]:
-    """ Return chemical shift format for a input file.
+    """ Return chemical shift format for an input file.
     """
 
     with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:

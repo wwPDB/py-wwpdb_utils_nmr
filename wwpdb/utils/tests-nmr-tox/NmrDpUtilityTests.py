@@ -13,20 +13,26 @@
 # 24-Aug-2021  M. Yokochi - add support for XPLOR-NIH planarity restraints (DAOTHER-7265)
 # 27-Jan-2022  M. Yokochi - add restraint types described by XPLOR-NIH, CNS, CYANA, and AMBER systems (NMR restraint remediation)
 # 04-Mar-2022  M. Yokochi - add coordinate geometry restraint (DAOTHER-7690, NMR restraint remediation)
+# 30-Sep-2026  M. Yokochi - add standalone-mode deposit test for NmrVrptUtility's temporary files (DAOTHER-9785)
 #
+import glob
+import json
 import os
+import shutil
+import subprocess
 import sys
 import unittest
 
 from testfixtures import LogCapture
 
-from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
-
+# import commonsetup first: it mocks ConfigInfo, which ChemCompUtil reads when it is imported
 if __package__ is None or __package__ == "":
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from commonsetup import TESTOUTPUT  # noqa:  F401 pylint: disable=import-error,unused-import
 else:
     from .commonsetup import TESTOUTPUT  # noqa: F401 pylint: disable=relative-beyond-top-level
+
+from wwpdb.utils.nmr.NmrDpUtility import NmrDpUtility
 
 skipsome = True
 if os.getenv("FULLTEST") is not None:
@@ -128,6 +134,84 @@ class TestNmrDpUtility(unittest.TestCase):
         self.utility.setLog(os.path.join(TESTOUTPUT, "2l9r-str-consistency-log.json"))
 
         self.utility.op("nmr-str-consistency-check")
+
+    def test_standalone_deposit(self):
+        # Run the deposit operations the way the Docker image does, importing the package as bare nmr.* so that
+        # every except ImportError branch is taken. Blocking wwpdb.utils.nmr is needed because CI installs the
+        # package. The CIF output must survive the NmrVrptUtility run inside calculateOutputStats(), and no
+        # temporary *.str2cif file may be left next to the outputs.
+        utils_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+        work = os.path.join(TESTOUTPUT, "standalone-deposit")
+        shutil.rmtree(work, ignore_errors=True)
+        os.makedirs(work)
+        for f in ("2l9r.str", "2l9r.cif"):
+            shutil.copyfile(os.path.join(self.data_dir_path, f), os.path.join(work, f))
+
+        script = """
+import importlib.abc, os, sys
+class BlockPackage(importlib.abc.MetaPathFinder):
+    def find_spec(self, name, path, target=None):
+        if name == 'wwpdb.utils.nmr' or name.startswith('wwpdb.utils.nmr.'):
+            raise ImportError(name)
+sys.meta_path.insert(0, BlockPackage())
+utils_dir, work = sys.argv[1], sys.argv[2]
+sys.path.insert(0, utils_dir)
+from nmr.NmrDpUtility import NmrDpUtility
+src, cif = os.path.join(work, '2l9r.str'), os.path.join(work, '2l9r.cif')
+report = os.path.join(work, '2l9r-str-consistency-log.json')
+u = NmrDpUtility()
+u.setSource(src)
+u.addInput(name='coordinate_file_path', value=cif, type='file')
+u.setLog(report)
+u.op('nmr-str-consistency-check')
+for op, dst, nmr_cif in (('nmr-str2str-deposit', '2l9r_str2str.str', None),
+                         ('nmr-str2cif-deposit', '2l9r_str2cif.str', '2l9r_str2cif.cif')):
+    u = NmrDpUtility()
+    u.setSource(src)
+    u.addInput(name='coordinate_file_path', value=cif, type='file')
+    u.addInput(name='report_file_path', value=report, type='file')
+    u.setLog(os.path.join(work, op + '-log.json'))
+    u.setDestination(os.path.join(work, dst))
+    if nmr_cif is not None:
+        u.addOutput(name='nmr_cif_file_path', value=os.path.join(work, nmr_cif), type='file')
+    u.op(op)
+"""
+        proc = subprocess.run([sys.executable, "-c", script, utils_dir, work],
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=1800, check=False)
+        self.assertEqual(proc.returncode, 0, proc.stderr[-3000:])
+
+        self.assertTrue(os.path.exists(os.path.join(work, "2l9r_str2str.str")))
+        self.assertTrue(os.path.exists(os.path.join(work, "2l9r_str2cif.str")))
+        self.assertTrue(os.path.exists(os.path.join(work, "2l9r_str2cif.cif")))
+        self.assertEqual(glob.glob(os.path.join(work, "*.str2cif")), [])
+
+    def test_release(self):
+        # release() drops the parsed coordinates, and the next op() re-reads them with the same result;
+        # nmr-cs*/nmr-str* operations release them on their own once they end
+        cR = self.utility._NmrDpUtility__reg.cR  # pylint: disable=protected-access
+
+        def check(log_name, src_name="2l9r.nef", op="nmr-nef-consistency-check"):
+            log_path = os.path.join(TESTOUTPUT, log_name)
+            self.utility.setSource(os.path.join(self.data_dir_path, src_name))
+            self.utility.addInput(name="coordinate_file_path", value=os.path.join(self.data_dir_path, "2l9r.cif"), type="file")
+            self.utility.setLog(log_path)
+            self.utility.op(op)
+            with open(log_path, "r", encoding="utf-8") as ifh:
+                report = json.load(ifh)
+            return report["information"]["status"], report["error"], report["warning"]
+
+        check("2l9r-str-consistency-auto-release-log.json", "2l9r.str", "nmr-str-consistency-check")
+        self.assertIsNone(cR.getDataBlock())
+
+        before = check("2l9r-nef-consistency-before-release-log.json")
+        self.assertIsNotNone(cR.getDataBlock())
+
+        self.utility.release()
+        self.assertIsNone(cR.getDataBlock())
+
+        after = check("2l9r-nef-consistency-after-release-log.json")
+        self.assertIsNotNone(cR.getDataBlock())
+        self.assertEqual(before, after)
 
     def test_nmr_nef_consistency_check_non_std_residue(self):
         self.utility.setSource(os.path.join(self.data_dir_path, "2l9rnonstandard.nef"))

@@ -43,6 +43,20 @@
 # 13-Jul-2026 - my  - implement ensemble composition analysis including cluster analysis (v1.0.9)
 # 05-Aug-2026 - my  - performance enhancement on RMSD calculation (v1.1.0)
 # 10-Sep-2026 - my  - run garbage collection periodically, add dbscan dependency if available (v1.2.0)
+# 17-Sep-2026 - my  - revise cluster analysis incorporating multi-domain conformers like Calmodulin (v1.2.1, 2jt8)
+# 18-Sep-2026 - my  - compile data/filter items once per call and index column values of a category
+#                     in getDictListWithFilter() (performance enhancement)
+# 18-Sep-2026 - my  - stop taking the absolute value of 'range-float' and 'range-int' filter items,
+#                     which discarded row values outside the mirrored range
+# 29-Sep-2026 - my  - add release() to drop the parsed data blocks between workflow operations (DAOTHER-7829, 9785)
+# 29-Sep-2026 - my  - add getDistinctValues() and getFirstValue(), which scan a column without a dictionary per row
+#                     (DAOTHER-7829, 9785)
+# 02-Oct-2026 - my  - parse with SharingPdbxReader, which shares equal values among the parsed rows
+#                     (6x63: 1313 MB -> 453 MB retained, 1330 MB -> 529 MB peak) (DAOTHER-7829, 9785)
+# 02-Oct-2026 - my  - share the values in a copy of mmcif's tokenizer instead of wrapping it (parse time +30% -> +7%),
+#                     and hash the file in chunks (text_md5()) (DAOTHER-7829, 9785)
+# 03-Oct-2026 - my  - remove an unreadable data block cache, which was parsed around on every run, and write
+#                     the cache atomically (DAOTHER-7829, 9785)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -50,11 +64,10 @@ __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook, Masashi Yokochi"
 __email__ = "jwest@rcsb.rutgers.edu, yokochi@protein.osaka-u.ac.jp"
 __license__ = "Creative Commons Attribution 3.0 Unported"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 import collections
 import copy
-import ctypes
 import gc
 import hashlib
 import inspect
@@ -65,8 +78,9 @@ import pickle
 import random
 import re
 import sys
+import warnings
 from operator import itemgetter
-from typing import IO, List, Optional, Tuple
+from typing import Any, IO, List, Optional, Tuple
 
 from mmcif.api.PdbxContainers import DataContainer
 from mmcif.io.PdbxReader import PdbxReader
@@ -95,7 +109,8 @@ try:
                                                LEN_MAJOR_ASYM_ID,
                                                RMSD_OVERLAID_EXACTLY,
                                                RMSD_CUTOFF_FOR_DOMAIN,
-                                               CARTN_DATA_ITEMS)
+                                               CARTN_DATA_ITEMS,
+                                               text_md5)
 except ImportError:
     from nmr.NmrDpConstant import (SUB_DIR_NAME_FOR_CACHE,
                                    EMPTY_VALUE,
@@ -104,8 +119,11 @@ except ImportError:
                                    LEN_MAJOR_ASYM_ID,
                                    RMSD_OVERLAID_EXACTLY,
                                    RMSD_CUTOFF_FOR_DOMAIN,
-                                   CARTN_DATA_ITEMS)
+                                   CARTN_DATA_ITEMS,
+                                   text_md5)
 
+# throw RuntimeWarning as error for bug tracking, any runtimewarning should be handled
+warnings.filterwarnings('error', category=RuntimeWarning, module='CifReader')
 
 # must be one of kabsch_rmsd, quaternion_rmsd, None
 # kabsch_rmsd is a fully-vectorized Kabsch (P.T@Q matmul + 3x3 SVD); it scales
@@ -132,8 +150,135 @@ CIF_ITEM_TYPES = ('str', 'bool',
                   'float', 'range-float', 'abs-float', 'range-abs-float',
                   'enum', 'enum-int', 'starts-with-alnum')
 
+# item types whose filter item carries a 'range' dictionary
+CIF_RANGE_ITEM_TYPES = ('range-int', 'range-abs-int', 'range-float', 'range-abs-float')
+
+# value conversion applied to a row value before the post check of a filter item
+CONV_NONE, CONV_ALNUM, CONV_BOOL, CONV_INT, CONV_FLOAT, CONV_ABS_INT, CONV_ABS_FLOAT = range(7)
+
+# conversion of each filter item type, CONV_ABS_FLOAT being the fall-through
+CIF_FILTER_CONVERSIONS = {'str': CONV_NONE,
+                          'enum': CONV_NONE,
+                          'starts-with-alnum': CONV_ALNUM,
+                          'bool': CONV_BOOL,
+                          'int': CONV_INT,
+                          'enum-int': CONV_INT,
+                          'range-int': CONV_INT,
+                          'float': CONV_FLOAT,
+                          'range-float': CONV_FLOAT,
+                          'abs-int': CONV_ABS_INT,
+                          'range-abs-int': CONV_ABS_INT}
+
+# post check of a filter item
+POST_RANGE, POST_ENUM, POST_EQUAL = range(3)
+
+# value conversion applied to a data item value
+DATA_STR, DATA_ALNUM, DATA_BOOL, DATA_INT, DATA_FLOAT = range(5)
+
+# conversion of each data item type, DATA_FLOAT being the fall-through
+CIF_DATA_CONVERSIONS = {'str': DATA_STR,
+                        'enum': DATA_STR,
+                        'starts-with-alnum': DATA_ALNUM,
+                        'bool': DATA_BOOL,
+                        'int': DATA_INT,
+                        'enum-int': DATA_INT}
+
+# set of empty values, for O(1) membership test in the row loops
+EMPTY_VALUE_SET = frozenset(EMPTY_VALUE)
+
+# minimum number of rows of a category before a column value index is built
+MIN_ROWS_FOR_COLUMN_INDEX = 1000
+
+# maximum number of indexed columns per category
+MAX_INDEXED_COLUMNS_PER_CATEGORY = 8
+
 # threshold for garbage collection for high memory usage of DBSCAN
 GARBAGE_COLLECTION_CYCLES = 32 if SKLEARN_DBSCAN else 128
+
+
+# the mmCIF token regex of mmcif.io.PdbxReader.__tokenizer()
+MMCIF_TOKEN_PAT = re.compile(r"(?:"
+                             r"(?:_(.+?)[.](\S+))"  # _category.attribute
+                             r"|"
+                             r"(?:['](.*?)(?:[']\s|[']$))"  # single quoted strings
+                             r"|"
+                             r'(?:["](.*?)(?:["]\s|["]$))'  # double quoted strings
+                             r"|"
+                             r"(?:\s*#.*$)"  # comments (dumped)
+                             r"|"
+                             r"(\S+)"  # unquoted words
+                             r")")
+
+
+class SharingPdbxReader(PdbxReader):
+    """ PdbxReader that shares one str object among equal values of the parsed rows.
+        PdbxReader creates a new str for every value, e.g. 28.5 M values in 19.3 M str objects for the atom_site
+        of a 134 MB CIF file (6x63), of which only 1.85 M are distinct; sharing them cuts the parsed data blocks
+        from 1313 MB to 453 MB. The values themselves do not change.
+        Sharing has to happen while tokenizing: re-sharing the values of already parsed rows frees the str
+        objects but not the memory, which stays fragmented in the allocator.
+        The tokenizer is that of mmcif.io.PdbxReader (Ethan Merritt, Jay Painter; mmcif, Apache License 2.0)
+        with the sharing done where each token is made: wrapping the original generator instead cost 30%
+        more parse time, this costs 7% (6x63: 22.3 s, wrapped 29.1 s, here 23.9 s).
+        PdbxReader.read() calls its private tokenizer as self.__tokenizer, i.e. self._PdbxReader__tokenizer,
+        which this class overrides, and keeps the line number for its error messages in
+        self._PdbxReader__curLineNumber. Should mmcif rename the former, the override no longer applies and the
+        parse falls back to unshared values; CifReaderTests detects both.
+    """
+
+    def _PdbxReader__tokenizer(self, ifh):  # pylint: disable=invalid-name
+        """ Yield (category name, attribute name, quoted string, word without quotes or white space) per token.
+        """
+
+        pool = {}
+        share = pool.setdefault
+        finditer = MMCIF_TOKEN_PAT.finditer
+
+        fileIter = iter(ifh)
+
+        while True:
+            try:
+                line = next(fileIter)
+                self._PdbxReader__curLineNumber += 1  # pylint: disable=no-member
+
+                # dump comments
+                if line.startswith('#'):
+                    continue
+
+                # gobble up the entire semi-colon/multi-line delimited string
+                if line.startswith(';'):
+                    mlString = [line[1:]]
+                    while True:
+                        line = next(fileIter)
+                        self._PdbxReader__curLineNumber += 1  # pylint: disable=no-member
+                        if line.startswith(';'):
+                            break
+                        mlString.append(line)
+
+                    # remove trailing new-line that is part of the \n; delimiter
+                    mlString[-1] = mlString[-1].rstrip()
+
+                    quotedString = ''.join(mlString)
+                    yield (None, None, share(quotedString, quotedString), None)
+
+                    # process the remainder of the current line
+                    line = line[1:]
+
+                for it in finditer(line):
+                    catName, attName, singleQuoted, doubleQuoted, word = it.groups()
+                    if word is not None:
+                        if word.lower() == 'stop_':
+                            continue
+                        yield (catName, attName, None, share(word, word))
+                    elif singleQuoted is not None:
+                        yield (catName, attName, share(singleQuoted, singleQuoted), None)
+                    elif doubleQuoted is not None:
+                        yield (catName, attName, share(doubleQuoted, doubleQuoted), None)
+                    elif catName is not None or attName is not None:
+                        yield (catName, attName, None, None)
+
+            except StopIteration:
+                return
 
 
 def M(axis: list, theta: float) -> list:
@@ -279,6 +424,7 @@ class CifReader:
                  '__dBlockNameList',
                  '__dBlock',
                  '__categoryNameList',
+                 '__valueIndex',
                  '__hashCode',
                  '__cachePath',
                  '__random_rotaion_test',
@@ -321,6 +467,9 @@ class CifReader:
 
         # the category name list
         self.__categoryNameList = None
+
+        # column value indices of the current datablock, {(category name, column index, conversion): {value: [row]}}
+        self.__valueIndex = {}
 
         # hash code of current cif file
         self.__hashCode = None
@@ -385,6 +534,7 @@ class CifReader:
         self.__dBlockList = None
         self.__dBlockNameList = None
         self.__categoryNameList = None
+        self.__valueIndex = {}
 
         self.__dBlock = None
         self.__hashCode = None
@@ -399,8 +549,7 @@ class CifReader:
                 return False
 
             if self.__use_cache:
-                with open(self.__filePath, 'r', encoding='utf-8', errors='ignore') as ifh:
-                    self.__hashCode = hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
+                self.__hashCode = text_md5(self.__filePath)
 
             return self.__setDataBlock(self.__getDataBlockFromFile())
 
@@ -441,14 +590,20 @@ class CifReader:
                     os.remove(self.__cachePath)
 
                 except Exception:  # pylint: disable=broad-exception-caught
-                    pass
+                    # an unreadable cache, e.g. one that refers to a module that is no longer installed or one that was
+                    # cut short, must go: __setDataBlock() writes the cache only when there is none, so it would
+                    # otherwise be parsed around on every run
+                    try:
+                        os.remove(self.__cachePath)
+                    except OSError:
+                        pass
 
         if self.__dBlockList is None:
             self.__dBlockList, self.__dBlockNameList = [], []
             self.__categoryNameList = {}
 
             with open(self.__filePath, 'r', encoding='utf-8') as ifh:
-                pRd = PdbxReader(ifh)
+                pRd = SharingPdbxReader(ifh)
                 pRd.read(self.__dBlockList)
 
                 is_star = all(container.getType() == 'data' for container in self.__dBlockList)
@@ -474,14 +629,23 @@ class CifReader:
             @return: True for success or False otherwise
         """
 
+        self.__valueIndex = {}
+
         try:
 
             if dataBlock.getType() == 'data':
                 self.__dBlock = dataBlock
 
                 if self.__use_cache and not os.path.exists(self.__cachePath):
-                    with open(self.__cachePath, 'wb') as ofh:
-                        pickle.dump(dataBlock, ofh)
+                    # write a complete cache or none: a dump cut short would leave an unreadable cache behind
+                    tmpPath = f'{self.__cachePath}.{os.getpid()}.tmp'
+                    try:
+                        with open(tmpPath, 'wb') as ofh:
+                            pickle.dump(dataBlock, ofh)
+                        os.replace(tmpPath, self.__cachePath)
+                    finally:
+                        if os.path.exists(tmpPath):
+                            os.remove(tmpPath)
 
                 return True
 
@@ -491,6 +655,18 @@ class CifReader:
         self.__dBlock = None
 
         return False
+
+    def release(self) -> None:
+        """ Release the parsed data blocks, which dominate the memory of this reader for a large structure
+            (1.28 GB for a 134 MB CIF file of 1.36 M atoms). The file path is kept, and the next parse() re-reads the file,
+            because it reuses the parsed data only while the data block is present.
+        """
+
+        self.__dBlockList = None
+        self.__dBlockNameList = None
+        self.__categoryNameList = None
+        self.__valueIndex = {}
+        self.__dBlock = None
 
     def getDirPath(self) -> str:
         """ Return directory path of CIF file.
@@ -509,8 +685,7 @@ class CifReader:
         """
 
         if self.__hashCode is None:
-            with open(self.__filePath, 'r', encoding='utf-8', errors='ignore') as ifh:
-                self.__hashCode = hashlib.md5(ifh.read().encode('utf-8')).hexdigest()
+            self.__hashCode = text_md5(self.__filePath)
 
         return self.__hashCode
 
@@ -669,6 +844,88 @@ class CifReader:
 
         return dList
 
+    def __getItemColumn(self, catName: str, itemName: str, blockName: Optional[str]
+                        ) -> Tuple[Optional[List[list]], int]:
+        """ Return the row list and the column index of a data item, with the same data block switching, empty
+            results and LookupError as getDictListWithFilter() for a single data item.
+        """
+
+        if blockName is not None and self.__dBlock is not None and self.__dBlock.getName() != blockName:
+            self.__setDataBlock(self.getDataBlock(blockName))
+
+        if self.__dBlock is None:
+            return None, -1
+
+        catObj = self.__dBlock.getObj(catName)
+
+        if catObj is None:
+            return None, -1
+
+        iList = catObj.getAttributeList()
+
+        if itemName not in iList:
+            raise LookupError(f"Missing one of data items {[itemName]}.")
+
+        return catObj.getRowList(), iList.index(itemName)
+
+    def getDistinctValues(self, catName: str, itemName: str, itemType: str = 'str',
+                          blockName: Optional[str] = None) -> set:
+        """ Return the distinct values of a data item, converted as getDictListWithFilter() converts a data item
+            of the given type without 'default', i.e. the set of d[itemName] over
+            getDictListWithFilter(catName, [{'name': itemName, 'type': itemType}]), without a dictionary per row:
+            that list cost +263 MB for the 1.36 M atom_site rows of 6x63 only to collect the model numbers
+            (DAOTHER-7829, 9785). Each value converts on its own, so converting the distinct raw values is equivalent.
+        """
+
+        if itemType not in CIF_ITEM_TYPES:
+            raise TypeError(f"Type {itemType} of data item {itemName} must be one of {CIF_ITEM_TYPES}.")
+
+        rowList, idxIt = self.__getItemColumn(catName, itemName, blockName)
+
+        if rowList is None:
+            return set()
+
+        conv = CIF_DATA_CONVERSIONS.get(itemType, DATA_FLOAT)
+
+        values = set()
+
+        for val in {row[idxIt] for row in rowList}:
+            if val in EMPTY_VALUE_SET:
+                val = None
+            if conv == DATA_ALNUM:
+                if not val[0].isalnum() and val[0] != "'":  # same as __buildDictList(), incl. its TypeError on None
+                    val = None
+            elif conv == DATA_BOOL:
+                val = val.lower() in TRUE_VALUE
+            elif conv == DATA_INT:
+                if val is not None:
+                    try:
+                        val = int(val)
+                    except ValueError:
+                        val = None
+            elif conv == DATA_FLOAT and val is not None:
+                val = float(val)
+            values.add(val)
+
+        return values
+
+    def getFirstValue(self, catName: str, itemName: str, blockName: Optional[str] = None) -> Optional[str]:
+        """ Return the first non-empty value of a data item in row order, or None; i.e. the first d[itemName] not in
+            EMPTY_VALUE over getDictListWithFilter(catName, [{'name': itemName, 'type': 'str'}]), without a
+            dictionary per row (DAOTHER-7829, 9785).
+        """
+
+        rowList, idxIt = self.__getItemColumn(catName, itemName, blockName)
+
+        if rowList is None:
+            return None
+
+        for row in rowList:
+            if row[idxIt] not in EMPTY_VALUE_SET:
+                return row[idxIt]
+
+        return None
+
     def getDictListWithFilter(self, catName: str, dataItems: List[dict], filterItems: Optional[List[dict]] = None,
                               blockName: Optional[str] = None
                               ) -> List[dict]:
@@ -701,15 +958,9 @@ class CifReader:
             return []
 
         # get column name index
-        colDict, fcolDict, fetchDict = {}, {}, {}  # 'fetch_first_match': True
-
         iList = catObj.getAttributeList()
 
-        for idxIt, itName in enumerate(iList):
-            if itName in dataNames:
-                colDict[itName] = idxIt
-            if filterNames is not None and itName in filterNames:
-                fcolDict[itName] = idxIt
+        colDict = {itName: idxIt for idxIt, itName in enumerate(iList)}
 
         if set(dataNames) & set(iList) != set(dataNames):
             raise LookupError(f"Missing one of data items {dataNames}.")
@@ -717,128 +968,333 @@ class CifReader:
         if filterItems is not None and set(filterNames) & set(iList) != set(filterNames):
             raise LookupError(f"Missing one of filter items {filterNames}.")
 
+        rowList = catObj.getRowList()
+
+        if filterItems:
+
+            plan = self.__compileFilterPlan(filterItems, colDict)
+
+            if plan is None:  # 'fetch_first_match' filter, or a filter item that lacks its 'value'
+                rowList = self.__filterRowsRowWise(rowList, filterItems, colDict)
+
+            else:
+                rowList, plan = self.__narrowRowsByColumnIndex(catName, rowList, plan)
+
+                for idxIt, conv, post, payload, emptyRejects in plan:
+                    if len(rowList) == 0:
+                        break
+                    rowList = self.__filterRows(rowList, idxIt, conv, post, payload, emptyRejects)
+
+        return self.__buildDictList(rowList, dataItems, colDict, set(dataNames))
+
+    def __compileFilterPlan(self, filterItems: List[dict], colDict: dict) -> Optional[List[tuple]]:  # pylint: disable=no-self-use
+        """ Compile filter items to a list of (column index, value conversion, post check, payload,
+            whether an empty value is rejected), so that the per-item decisions are made once per call
+            instead of once per row.
+            @return: the compiled filter plan, None if the filter items must be processed row-wise
+        """
+
+        plan = []
+
+        for filterItem in filterItems:
+
+            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                return None  # 'abort' depends on the row order
+
+            filterItemType = filterItem['type']
+
+            # CONV_ABS_FLOAT is the fall-through, which covers 'abs-float' and 'range-abs-float'
+            conv = CIF_FILTER_CONVERSIONS.get(filterItemType, CONV_ABS_FLOAT)
+
+            if filterItemType in CIF_RANGE_ITEM_TYPES:
+                post, payload = POST_RANGE, filterItem['range']
+            elif filterItemType in ('enum', 'enum-int'):
+                post, payload = POST_ENUM, frozenset(filterItem['enum'])
+            elif 'value' not in filterItem:
+                return None  # the row-wise code path raises KeyError, but only once a row reaches the comparison
+            else:
+                post, payload = POST_EQUAL, filterItem['value']
+
+            plan.append((colDict[filterItem['name']], conv, post, payload,
+                         'value' in filterItem and filterItem['value'] not in EMPTY_VALUE_SET))
+
+        return plan
+
+    def __filterRows(self, rowList: List[list], idxIt: int, conv: int, post: int, payload: Any,  # pylint: disable=no-self-use
+                     emptyRejects: bool) -> List[list]:
+        """ Return rows that satisfy a compiled filter item.
+        """
+
+        if conv == CONV_NONE:  # no value conversion, which is the common case
+
+            if post == POST_EQUAL:
+                if emptyRejects:
+                    return [row for row in rowList if row[idxIt] == payload]
+                return [row for row in rowList if row[idxIt] in EMPTY_VALUE_SET]
+
+            if post == POST_ENUM:
+                enum = payload - EMPTY_VALUE_SET
+                if emptyRejects:
+                    return [row for row in rowList if row[idxIt] in enum]
+                return [row for row in rowList if row[idxIt] in enum or row[idxIt] in EMPTY_VALUE_SET]
+
+        _rowList = []
+
+        for row in rowList:
+            val = row[idxIt]
+
+            if val in EMPTY_VALUE_SET:
+                if not emptyRejects:
+                    _rowList.append(row)
+                continue
+
+            if conv == CONV_ALNUM:
+                if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
+                    continue
+            elif conv == CONV_BOOL:
+                val = val.lower() in TRUE_VALUE
+            elif conv != CONV_NONE:
+                try:
+                    if conv == CONV_INT:
+                        val = int(val)
+                    elif conv == CONV_FLOAT:
+                        val = float(val)
+                    elif conv == CONV_ABS_INT:
+                        val = abs(int(val))
+                    else:
+                        val = abs(float(val))
+                except ValueError:
+                    continue
+
+            if post == POST_RANGE:
+                if ('min_exclusive' in payload and val <= payload['min_exclusive'])\
+                   or ('min_inclusive' in payload and val < payload['min_inclusive'])\
+                   or ('max_inclusive' in payload and val > payload['max_inclusive'])\
+                   or ('max_exclusive' in payload and val >= payload['max_exclusive'])\
+                   or ('not_equal_to' in payload and val == payload['not_equal_to']):
+                    continue
+            elif post == POST_ENUM:
+                if val not in payload:
+                    continue
+            elif val != payload:
+                continue
+
+            _rowList.append(row)
+
+        return _rowList
+
+    def __filterRowsRowWise(self, rowList: List[list], filterItems: List[dict], colDict: dict  # pylint: disable=no-self-use
+                            ) -> List[list]:
+        """ Return rows that satisfy filter items, evaluating the filter items in order for each row.
+            Required by the 'fetch_first_match' filter, whose 'abort' depends on the row order.
+        """
+
+        fetchDict = {}  # 'fetch_first_match': True
+
         abort = False
 
-        dList = []
-        for row in catObj.getRowList():
+        _rowList = []
+
+        for row in rowList:
             keep = True
-            if filterItems is not None:
-                for filterItem in filterItems:
-                    name = filterItem['name']
-                    val = row[fcolDict[name]]
-                    if val in EMPTY_VALUE:
-                        if 'value' in filterItem and filterItem['value'] not in EMPTY_VALUE:
+            for filterItem in filterItems:
+                name = filterItem['name']
+                val = row[colDict[name]]
+                if val in EMPTY_VALUE:
+                    if 'value' in filterItem and filterItem['value'] not in EMPTY_VALUE:
+                        keep = False
+                        break
+                else:
+                    filterItemType = filterItem['type']
+                    if filterItemType in ('str', 'enum'):
+                        pass
+                    elif filterItemType == 'starts-with-alnum':
+                        if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
                             keep = False
                             break
+                    elif filterItemType == 'bool':
+                        val = val.lower() in TRUE_VALUE
+                    elif filterItemType in ('int', 'enum-int', 'range-int'):
+                        try:
+                            val = int(val)
+                        except ValueError:
+                            keep = False
+                            break
+                    elif filterItemType in ('float', 'range-float'):
+                        try:
+                            val = float(val)
+                        except ValueError:
+                            keep = False
+                            break
+                    elif filterItemType in ('abs-int', 'range-abs-int'):
+                        try:
+                            val = abs(int(val))
+                        except ValueError:
+                            keep = False
+                            break
+                    else:  # 'abs-float', 'range-abs-float'
+                        try:
+                            val = abs(float(val))
+                        except ValueError:
+                            keep = False
+                            break
+                    if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
+                        _range = filterItem['range']
+                        if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
+                           or ('min_inclusive' in _range and val < _range['min_inclusive'])\
+                           or ('max_inclusive' in _range and val > _range['max_inclusive'])\
+                           or ('max_exclusive' in _range and val >= _range['max_exclusive'])\
+                           or ('not_equal_to' in _range and val == _range['not_equal_to']):
+                            keep = False
+                            break
+                    elif filterItemType == 'enum':
+                        if val not in filterItem['enum']:
+                            keep = False
+                            break
+                        if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                            if name not in fetchDict:
+                                fetchDict[name] = val
+                            elif val != fetchDict[name]:
+                                keep = False
+                                abort = True
+                                break
+                    elif filterItemType == 'enum-int':
+                        if val not in filterItem['enum']:
+                            keep = False
+                            break
+                        if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                            if name not in fetchDict:
+                                fetchDict[name] = val
+                            elif val != fetchDict[name]:
+                                keep = False
+                                abort = True
+                                break
                     else:
-                        filterItemType = filterItem['type']
-                        if filterItemType in ('str', 'enum'):
-                            pass
-                        elif filterItemType == 'starts-with-alnum':
-                            if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
+                        if val != filterItem['value']:
+                            keep = False
+                            break
+                        if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
+                            if name not in fetchDict:
+                                fetchDict[name] = val
+                            elif val != fetchDict[name]:
                                 keep = False
+                                abort = True
                                 break
-                        elif filterItemType == 'bool':
-                            val = val.lower() in TRUE_VALUE
-                        elif filterItemType in ('int', 'enum-int'):
-                            try:
-                                val = int(val)
-                            except ValueError:
-                                keep = False
-                                break
-                        elif filterItemType == 'float':
-                            try:
-                                val = float(val)
-                            except ValueError:
-                                keep = False
-                                break
-                        elif filterItemType in ('abs-int', 'range-abs-int'):
-                            try:
-                                val = abs(int(val))
-                            except ValueError:
-                                keep = False
-                                break
-                        else:  # 'range-float', 'range-abs-float'
-                            try:
-                                val = abs(float(val))
-                            except ValueError:
-                                keep = False
-                                break
-                        if filterItemType in ('range-int', 'range-abs-int', 'range-float', 'range-abs-float'):
-                            _range = filterItem['range']
-                            if ('min_exclusive' in _range and val <= _range['min_exclusive'])\
-                               or ('min_inclusive' in _range and val < _range['min_inclusive'])\
-                               or ('max_inclusive' in _range and val > _range['max_inclusive'])\
-                               or ('max_exclusive' in _range and val >= _range['max_exclusive'])\
-                               or ('not_equal_to' in _range and val == _range['not_equal_to']):
-                                keep = False
-                                break
-                        elif filterItemType == 'enum':
-                            if val not in filterItem['enum']:
-                                keep = False
-                                break
-                            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
-                                if name not in fetchDict:
-                                    fetchDict[name] = val
-                                elif val != fetchDict[name]:
-                                    keep = False
-                                    abort = True
-                                    break
-                        elif filterItemType == 'enum-int':
-                            if val not in filterItem['enum']:
-                                keep = False
-                                break
-                            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
-                                if name not in fetchDict:
-                                    fetchDict[name] = val
-                                elif val != fetchDict[name]:
-                                    keep = False
-                                    abort = True
-                                    break
-                        else:
-                            if val != filterItem['value']:
-                                keep = False
-                                break
-                            if 'fetch_first_match' in filterItem and filterItem['fetch_first_match']:
-                                if name not in fetchDict:
-                                    fetchDict[name] = val
-                                elif val != fetchDict[name]:
-                                    keep = False
-                                    abort = True
-                                    break
 
             if keep:
-                tD = {}
-                for dataItem in dataItems:
-                    val = row[colDict[dataItem['name']]]
-                    if val in EMPTY_VALUE:
-                        if 'default-from' in dataItem and dataItem['default-from'] in colDict:
-                            val = row[colDict[dataItem['default-from']]]
-                        else:
-                            val = dataItem.get('default')
-                    dataItemType = dataItem['type']
-                    if dataItemType in ('str', 'enum'):
-                        pass
-                    elif dataItemType == 'starts-with-alnum':
-                        if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
-                            val = None
-                    elif dataItemType == 'bool':
-                        val = val.lower() in TRUE_VALUE
-                    elif dataItemType in ('int', 'enum-int') and val is not None:
+                _rowList.append(row)
+
+            elif abort:
+                break
+
+        return _rowList
+
+    def __narrowRowsByColumnIndex(self, catName: str, rowList: List[list], plan: List[tuple]
+                                  ) -> Tuple[List[list], List[tuple]]:
+        """ Narrow candidate rows using a cached column value index of the most selective equality filter.
+            @return: the candidate rows and the remaining filter plan
+        """
+
+        if len(rowList) < MIN_ROWS_FOR_COLUMN_INDEX:
+            return rowList, plan
+
+        best, bestRowList = -1, None
+
+        for idx, (idxIt, conv, post, payload, emptyRejects) in enumerate(plan):
+
+            # a single value lookup preserves the row order of the category, a union of values would not
+            if post != POST_EQUAL or not emptyRejects or conv not in (CONV_NONE, CONV_INT, CONV_FLOAT):
+                continue
+
+            valueIndex = self.__getColumnIndex(catName, rowList, idxIt, conv)
+
+            if valueIndex is None:
+                continue
+
+            try:
+                _rowList = valueIndex.get(payload, [])
+            except TypeError:  # unhashable filter value, which never matches a row value
+                continue
+
+            if bestRowList is None or len(_rowList) < len(bestRowList):
+                best, bestRowList = idx, _rowList
+
+        if bestRowList is None:
+            return rowList, plan
+
+        return bestRowList, plan[:best] + plan[best + 1:]
+
+    def __getColumnIndex(self, catName: str, rowList: List[list], idxIt: int, conv: int) -> Optional[dict]:
+        """ Return a value to rows index of a given column, building it on the first use.
+            @return: the column value index, None if the category has too many indexed columns already
+        """
+
+        key = (catName, idxIt, conv)
+
+        if key in self.__valueIndex:
+            return self.__valueIndex[key]
+
+        if sum(1 for _catName, _, _ in self.__valueIndex if _catName == catName) >= MAX_INDEXED_COLUMNS_PER_CATEGORY:
+            return None
+
+        valueIndex = {}
+
+        for row in rowList:
+            val = row[idxIt]
+            if conv != CONV_NONE:
+                if val in EMPTY_VALUE_SET:
+                    continue
+                try:
+                    val = int(val) if conv == CONV_INT else float(val)
+                except ValueError:
+                    continue
+            if val in valueIndex:
+                valueIndex[val].append(row)
+            else:
+                valueIndex[val] = [row]
+
+        self.__valueIndex[key] = valueIndex
+
+        return valueIndex
+
+    def __buildDictList(self, rowList: List[list], dataItems: List[dict], colDict: dict,  # pylint: disable=no-self-use
+                        dataNames: set) -> List[dict]:
+        """ Return a list of dictionaries of given rows.
+        """
+
+        plan = []
+
+        for dataItem in dataItems:
+            defaultFrom = dataItem.get('default-from')
+            plan.append((dataItem['alt_name'] if 'alt_name' in dataItem else dataItem['name'],
+                         colDict[dataItem['name']],
+                         CIF_DATA_CONVERSIONS.get(dataItem['type'], DATA_FLOAT),
+                         colDict[defaultFrom] if defaultFrom in dataNames else None,
+                         dataItem.get('default')))
+
+        dList = []
+
+        for row in rowList:
+            tD = {}
+            for name, idxIt, conv, defaultFrom, default in plan:
+                val = row[idxIt]
+                if val in EMPTY_VALUE_SET:
+                    val = row[defaultFrom] if defaultFrom is not None else default
+                if conv == DATA_ALNUM:
+                    if not val[0].isalnum() and val[0] != "'":  # allow apostrophe in starts-with-alnum filter type (6hmo)
+                        val = None
+                elif conv == DATA_BOOL:
+                    val = val.lower() in TRUE_VALUE
+                elif conv == DATA_INT:
+                    if val is not None:
                         try:
                             val = int(val)
                         except ValueError:
                             val = None
-                    elif val is not None:
-                        val = float(val)
-                    if 'alt_name' in dataItem:
-                        tD[dataItem['alt_name']] = val
-                    else:
-                        tD[dataItem['name']] = val
-                dList.append(tD)
-
-            elif abort:
-                break
+                elif conv == DATA_FLOAT and val is not None:
+                    val = float(val)
+                tD[name] = val
+            dList.append(tD)
 
         return dList
 
@@ -1424,6 +1880,7 @@ class CifReader:
                                                                          'enum': ['C', 'N']}])
 
                             bb_atom_sites.extend(ca_atom_sites)
+
                             caRmsd, caWellDefinedRegion, cluster =\
                                 self.__calculateRmsd(polyPeptideChains, polyPeptideLengths,
                                                      totalModels, effModelIds,
@@ -1719,15 +2176,6 @@ class CifReader:
 
         _, v = numpy.linalg.eig(d_ord)
 
-        def run_gc():
-            gc.collect()  # Forces immediate garbage collection
-
-            try:
-                # Forces glibc to release cached memory pools back to the OS
-                ctypes.CDLL("libc.so.6").malloc_trim(0)
-            except (AttributeError, OSError):
-                pass  # Fallback for non-Linux platforms
-
         md5_set = set()
 
         abort = False
@@ -1784,7 +2232,7 @@ class CifReader:
                     del labels
 
                     if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                        run_gc()
+                        gc.collect(0)
 
                         cycle = 0
 
@@ -1883,18 +2331,7 @@ class CifReader:
 
                         _atom_site_ref = _atom_site_dict[1]
                         _atom_site_p = [_a for _a, _l in zip(_atom_site_ref, list_labels) if _l == label]
-                        # """
-                        # gaps = 0
-                        # if label != -1:
-                        #     for chain_id in chain_ids:
-                        #         seq_ids = sorted(set(a['seq_id'] for a in _atom_site_p if a['chain_id'] == chain_id))
-                        #         if len(seq_ids) > 0:
-                        #             gaps = max(seq_ids[-1] + 1 - seq_ids[0] - len(seq_ids), gaps)
-                        #
-                        # if gaps > monomers * 2:  # 2mze
-                        #     score = 0.0
-                        #     break
-                        # """
+
                         for model_id in range(2, total_models + 1):
 
                             if model_id not in eff_model_ids:
@@ -2013,7 +2450,8 @@ class CifReader:
         if self.__verbose and self.__debug:
             self.__log.write(f"feature: {min_result['features']}, "
                              f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
-                             f"clusters: {n_clusters} (effective domains: {len(eff_labels)}), score: {min_score}\n")
+                             f"clusters: {n_clusters} (effective domains: {len(eff_labels)}), noise: {list_labels.count(-1)}, "
+                             f"score: {min_score}\n")
 
         _chain_ids = [a['chain_id'] for a in _atom_site_dict[1]]
         _seq_ids = [a['seq_id'] for a in _atom_site_dict[1]]
@@ -2129,6 +2567,10 @@ class CifReader:
 
         # well-defined regions
 
+        eff_size = size - sum(count for label, count in domains if label not in eff_labels)
+
+        rmsd_cutoff_for_clustering = 0.0
+
         dlist = []
         for chain_id in chain_ids:
             dlist.append([])
@@ -2150,6 +2592,8 @@ class CifReader:
             bb_of = {m: [_a for _a in _bb_atom_site_dict[m]
                          if (_a['chain_id'], _a['seq_id']) in _seq_keys]
                      for m in eff_model_ids}
+
+            fraction = len(_seq_keys) / eff_size
 
             for ref_model_id in range(1, _total_models):
 
@@ -2180,6 +2624,7 @@ class CifReader:
 
             if len(_rmsd) > 0:
                 item['mean_rmsd'] = round(numpy.mean(numpy.array(_rmsd, dtype=float)), 4)
+                rmsd_cutoff_for_clustering += item['mean_rmsd'] * fraction
 
             _, v = numpy.linalg.eig(r)
             x = numpy.delete(numpy.abs(v), numpy.s_[1:], 1)
@@ -2263,49 +2708,60 @@ class CifReader:
 
         # cluster analysis
 
+        # relax too strict RMSD cutoff for clustering analysis < 1.0 (6osw)
+        rmsd_cutoff_for_clustering = max(rmsd_cutoff_for_clustering, 1.0)
+
+        if self.__verbose and self.__debug:
+            self.__log.write(f'rmsd cutoff for clustering: {rmsd_cutoff_for_clustering}\n')
+
         clist = []
 
         matrix_size = (_total_models, _total_models)
 
         d_avr = numpy.zeros(matrix_size, dtype=float)
 
-        # seq_keys (atoms in the effective domains) is model-independent;
-        # precompute the backbone atom list per model once.
-        _seq_keys = frozenset((_a['chain_id'], _a['seq_id'])
-                              for _a, _l in zip(_atom_site_dict[1], list_labels) if _l in eff_labels)
-        bb_of = {m: [_a for _a in _bb_atom_site_dict[m]
-                     if (_a['chain_id'], _a['seq_id']) in _seq_keys]
-                 for m in eff_model_ids}
+        for label in eff_labels:  # balancing among domains with fraction (2jt8)
 
-        for ref_model_id in range(1, total_models):
+            # seq_keys (atoms in the effective domains) is model-independent;
+            # precompute the backbone atom list per model once.
+            _seq_keys = frozenset((_a['chain_id'], _a['seq_id'])
+                                  for _a, _l in zip(_atom_site_dict[1], list_labels) if _l == label)
+            bb_of = {m: [_a for _a in _bb_atom_site_dict[m]
+                         if (_a['chain_id'], _a['seq_id']) in _seq_keys]
+                     for m in eff_model_ids}
 
-            if ref_model_id not in eff_model_ids:
-                continue
+            fraction = len(_seq_keys) / eff_size
 
-            ref_idx = eff_model_ids.index(ref_model_id)
+            for ref_model_id in range(1, total_models):
 
-            _bb_atom_site_p = bb_of[ref_model_id]
-
-            if len(_bb_atom_site_p) == 0:
-                continue
-
-            for test_model_id in range(ref_model_id + 1, total_models + 1):
-
-                if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
+                if ref_model_id not in eff_model_ids:
                     continue
 
-                test_idx = eff_model_ids.index(test_model_id)
+                ref_idx = eff_model_ids.index(ref_model_id)
 
-                _bb_atom_site_q = bb_of[test_model_id]
+                _bb_atom_site_p = bb_of[ref_model_id]
 
-                if len(_bb_atom_site_p) != len(_bb_atom_site_q):
+                if len(_bb_atom_site_p) == 0:
                     continue
 
-                _rmsd_ = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q)
+                for test_model_id in range(ref_model_id + 1, total_models + 1):
 
-                d_avr[ref_idx, test_idx] = d_avr[test_idx, ref_idx] = _rmsd_
+                    if ref_model_id >= test_model_id or test_model_id not in eff_model_ids:
+                        continue
 
-        max_d_avr = min(numpy.max(d_var), RMSD_CUTOFF_FOR_DOMAIN)
+                    test_idx = eff_model_ids.index(test_model_id)
+
+                    _bb_atom_site_q = bb_of[test_model_id]
+
+                    if len(_bb_atom_site_p) != len(_bb_atom_site_q):
+                        continue
+
+                    _rmsd_ = calculate_rmsd(_bb_atom_site_p, _bb_atom_site_q) * fraction
+
+                    d_avr[ref_idx, test_idx] += _rmsd_
+                    d_avr[test_idx, ref_idx] = d_avr[ref_idx, test_idx]
+
+        max_d_avr = min(numpy.max(d_var), rmsd_cutoff_for_clustering)
 
         d_ord = numpy.ones(matrix_size, dtype=float)
 
@@ -2346,9 +2802,9 @@ class CifReader:
 
                 cycle += 1
 
-                for _epsilon in range(2, 11):
+                for _epsilon in range(2, 15):
 
-                    epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.04 to 0.32
+                    epsilon = 2.0 ** (_epsilon / 2.0) / 100.0  # epsilon travels from 0.02 to 1.28 (2jt8)
 
                     if SKLEARN_DBSCAN:
 
@@ -2383,7 +2839,7 @@ class CifReader:
                     del labels
 
                     if cycle % GARBAGE_COLLECTION_CYCLES == 0:
-                        run_gc()
+                        gc.collect(0)
 
                         cycle = 0
 
@@ -2410,7 +2866,7 @@ class CifReader:
                         fraction = float(list_labels.count(label)) / _total_models
 
                         if label == -1:
-                            score += RMSD_CUTOFF_FOR_DOMAIN * fraction
+                            score += rmsd_cutoff_for_clustering * fraction
                             continue
 
                         _rmsd = []
@@ -2490,7 +2946,7 @@ class CifReader:
             if self.__verbose and self.__debug:
                 self.__log.write(f"feature: {min_result['features']}, "
                                  f"min_sample: {min_result['min_samples']}, epsilon: {min_result['epsilon']}, "
-                                 f"clusters: {n_clusters}, score: {min_score}\n")
+                                 f"clusters: {n_clusters}, noise: {list_labels.count(-1)}, score: {min_score}\n")
 
             most_comon = collections.Counter(list_labels).most_common()
 
@@ -2506,8 +2962,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': round((numpy.dot(d_ord[idx], v[0])).real, 4),
-                            'pc2': round((numpy.dot(d_ord[idx], v[1])).real, 4)
+                            'pc1': round((numpy.dot(v[0], d_ord[idx])).real, 4),
+                            'pc2': round((numpy.dot(v[1], d_ord[idx])).real, 4)
                             }
                     pc.append(item)
 
@@ -2560,8 +3016,8 @@ class CifReader:
                     if _label != label:
                         continue
                     item = {'model_id': eff_model_ids[idx],
-                            'pc1': round((numpy.dot(d_ord[idx], v[0])).real, 4),
-                            'pc2': round((numpy.dot(d_ord[idx], v[1])).real, 4)
+                            'pc1': round((numpy.dot(v[0], d_ord[idx])).real, 4),
+                            'pc2': round((numpy.dot(v[1], d_ord[idx])).real, 4)
                             }
                     pc.append(item)
 
@@ -2576,7 +3032,7 @@ class CifReader:
             if self.__verbose and self.__debug:
                 self.__log.write(f'{clist}')
 
-        if cycle > GARBAGE_COLLECTION_CYCLES / 4:
-            run_gc()
+        if cycle > 0:
+            gc.collect(0)
 
         return rlist, dlist, clist

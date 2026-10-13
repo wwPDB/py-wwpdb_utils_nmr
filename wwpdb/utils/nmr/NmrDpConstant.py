@@ -1,8 +1,14 @@
 ##
-# File: NmrUtilConstant.py
+# File: NmrDpConstant.py
 # Date: 07-Jan-2026
 #
 # Updates:
+# 28-Sep-2026  M. Yokochi - add MIN_INPUT_SIZE_FOR_GC (DAOTHER-7829, 9785)
+# 29-Sep-2026  M. Yokochi - import ctypes.util, without which run_gc() silently skipped malloc_trim(),
+#                           and add trim_heap() (DAOTHER-7829, 9785)
+# 29-Sep-2026  M. Yokochi - add MIN_FILE_SIZE_FOR_PARSE_REUSE (DAOTHER-7829, 9785)
+# 02-Oct-2026  M. Yokochi - add text_md5(), which hashes the text of a file in chunks (DAOTHER-7829, 9785)
+# 03-Oct-2026  M. Yokochi - add COVALENT_RADII and COVALENT_BOND_TOLERANCE (DAOTHER-8817)
 ##
 """ Constants for NMR data processing.
     @author: Masashi Yokochi
@@ -11,12 +17,46 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import copy
+import ctypes
+import ctypes.util
+import hashlib
 import re
 
 from rmsd.calculate_rmsd import NAMES_ELEMENT  # noqa: F401 pylint: disable=no-name-in-module,import-error
+
+try:
+    _malloc_trim = ctypes.CDLL(ctypes.util.find_library('c') or 'libc.so.6').malloc_trim
+except (AttributeError, OSError):  # not glibc, e.g. musl, macOS or Windows
+    _malloc_trim = None
+
+
+def trim_heap():
+    """ Return the free memory at the top and in the middle of the glibc heap to the OS.
+        A no-op where glibc is absent.
+    """
+
+    if _malloc_trim is not None:
+        _malloc_trim(0)
+
+
+def text_md5(fPath: str) -> str:
+    """ Return the MD5 digest of the text content of a given file, read as UTF-8 with undecodable bytes ignored
+        and with universal newlines, which is the digest of open(fPath, 'r', encoding='utf-8', errors='ignore')
+        .read().encode('utf-8'). The text is hashed in chunks, so that hashing a large file does not hold the whole
+        file twice, e.g. 270 MB for a 134 MB CIF file.
+    """
+
+    md5 = hashlib.md5()
+
+    with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+        for chunk in iter(lambda: ifh.read(1 << 20), ''):
+            md5.update(chunk.encode('utf-8'))
+
+    return md5.hexdigest()
+
 
 # supported parameter keys as input/output file path(s) for NmrDpUtility class
 MODEL_FILE_PATH_KEY = 'coordinate_file_path'
@@ -112,7 +152,9 @@ VRPT_INPUT_FILE_KEYS = (MODEL_FILE_PATH_KEY,
                         REPORT_FILE_PATH_KEY)
 
 # supported output file names for NmrVrptUtility class
-VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,)
+VRPT_OUTPUT_FILE_KEYS = (RESULT_PKL_FILE_PATH_KEY,
+                         NEXT_STAR_FILE_PATH_KEY,  # used with PYNMRSTAR_OBJ_KEY
+                         NMR_CIF_FILE_PATH_KEY)  # used with PYNMRSTAR_OBJ_KEY
 
 # supported workflow operations of NmrVrptUtility class
 VRPT_WORKFLOW_OPS = ('nmr-cs-validation',
@@ -223,10 +265,10 @@ WELL_KNOWN_ISOTOPE_NUMBERS.extend(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS['P'])
 WELL_KNOWN_ISOTOPE_NUMBERS = tuple(WELL_KNOWN_ISOTOPE_NUMBERS)
 
 # maximum number of rows to perform explicit redundancy check
-MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 20000
+MAX_ROWS_TO_PERFORM_REDUNDANCY_CHECK = 20_000
 
 # maximum number of rows to perform index order check
-MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK = 10000
+MAX_ROWS_TO_PERFORM_INDEX_ORDER_CHECK = 10_000
 
 # maximum number of rows to be used for spectral peak list identification
 MAX_ROWS_TO_CHECK_SPECTRAL_PEAK_IDENTITY = 10
@@ -660,6 +702,24 @@ MAX_MAG_IDENT_ASYM_ID = 2
 
 MAX_ERROR_REPORT = 1
 MAX_ERR_LINE_NUM = 20
+
+# minimum input size (characters of an ANTLR input, or bytes of an NMR-STAR file) that triggers a full
+# garbage collection before it is parsed. A dropped parse tree (cyclic through parentCtx) or NMR unified data
+# (a plain pynmrstar entry is not cyclic, but the one dropped in 'nmr-str2str-deposit' was measured to be
+# reachable only through reference cycles) is freed only by the cyclic GC, whose full collections run
+# rarely once the heap is large (DAOTHER-7829, 9785)
+MIN_INPUT_SIZE_FOR_GC = 500_000
+
+# single-bond covalent radii in angstroms (Cordero et al., Dalton Trans. 2008, 2832-2838; sp3 C, low-spin Mn, Fe, Co) of the
+# elements found in non-standard residues; two heavy atoms of a residue are taken as bonded if they are closer
+# than COVALENT_BOND_TOLERANCE times the sum of their radii, which on the ideal coordinates of the test CCD finds
+# 351 of 352 heavy-atom bonds, missing only a 2.39 A Fe-N coordination, without any non-bonded pair, whereas
+# a flat 2.5 A cutoff also takes most atoms two bonds apart (median 2.44 A) as bonded (DAOTHER-8817)
+COVALENT_RADII = {'B': 0.84, 'C': 0.76, 'N': 0.71, 'O': 0.66, 'F': 0.57, 'SI': 1.11, 'P': 1.07, 'S': 1.05,
+                  'CL': 1.02, 'AS': 1.19, 'SE': 1.20, 'BR': 1.20, 'I': 1.39,
+                  'MG': 1.41, 'CA': 1.76, 'MN': 1.39, 'FE': 1.32, 'CO': 1.26, 'NI': 1.24, 'CU': 1.32, 'ZN': 1.22}
+DEFAULT_COVALENT_RADIUS = 0.76
+COVALENT_BOND_TOLERANCE = 1.15
 
 REPRESENTATIVE_MODEL_ID = 1
 REPRESENTATIVE_ASYM_ID = 'A'
@@ -1207,8 +1267,8 @@ CS_UNUSUAL_ERROR_SCALED_BY_SIGMA = 5.0
 # criterion on chemical shift difference error scaled by its sigma
 CS_DIFF_ERROR_SCALED_BY_SIGMA = 10.0
 
-# hardware limit of NMR prove design in Hz (DAOTHER-7389, issue #1)
-HARD_PROBE_LIMIT = 250000
+# hardware limit of NMR probe design in Hz (DAOTHER-7389, issue #1)
+HARD_PROBE_LIMIT = 250_000
 
 # maximum number of lines as spacer for recognition of MR files
 MR_MAX_SPACER_LINES = 20

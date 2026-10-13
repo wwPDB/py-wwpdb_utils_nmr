@@ -39,7 +39,7 @@ def uncompress_gzip_file(inPath: str, outPath: str) -> None:
 
 
 class ChemCompUpdater:
-    """ Update chemical component dictionary (CCD) and locate them OneDep compatible directory trees.
+    """ Update chemical component dictionary (CCD) and locate them in OneDep compatible directory trees.
     """
 
     def __init__(self, force: bool = False) -> None:
@@ -115,7 +115,7 @@ class ChemCompUpdater:
             logging.error(str(e))
 
     def download(self) -> None:
-        """ Download Chemical Component Dictionary (CCD),
+        """ Download Chemical Component Dictionary (CCD).
         """
 
         try:

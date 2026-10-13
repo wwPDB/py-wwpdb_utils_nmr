@@ -1,5 +1,5 @@
 ##
-# File: LexerErrorListner.py
+# File: LexerErrorListener.py
 # Date: 11-Feb-2022
 #
 # Updates:

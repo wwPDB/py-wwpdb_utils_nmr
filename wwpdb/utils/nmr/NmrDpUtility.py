@@ -87,7 +87,7 @@
 # 05-Jun-2020  M. Yokochi - be compatible with wwpdb.utils.align.alignlib using Python 3 (DAOTHER-5766)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (DAOTHER-5765)
 # 12-Jun-2020  M. Yokochi - overall performance improvement by reusing cached data and code revision
-# 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom
+# 19-Jun-2020  M. Yokochi - do not generate invalid restraints that include self atom
 # 26-Jun-2020  M. Yokochi - add support for covalent bond information (_nef_covalent_links and _Bond categories)
 # 30-Jun-2020  M. Yokochi - ignore third party loops and items gracefully (DAOTHER-5896)
 # 30-Jun-2020  M. Yokochi - prevent pynmrstar's exception due to empty string (DAOTHER-5894)
@@ -216,7 +216,7 @@
 #                           (NMR restraint remediation, 6fw4)
 # 22-May-2024  M. Yokochi - block deposition using a peak list file in any binary format and prevent 'nm-pea-any'
 #                           occasionally matches with 'nm-res-cya' (DAOTHER-9425)
-# 11-Jun-2024  M. Yokcohi - add support for ligand remapping in annotation process (DAOTHER-9286)
+# 11-Jun-2024  M. Yokochi - add support for ligand remapping in annotation process (DAOTHER-9286)
 # 25-Jun-2024  M. Yokochi - strip white spaces in a datablock name derived from the model file (DAOTHER-9511)
 # 28-Jun-2024  M. Yokochi - ignore extraneous input value for numeric tags and replace statistics of chemical shifts
 #                           using remediated loop (DAOTHER-9520)
@@ -277,7 +277,7 @@
 #                           and NmrDpRemediation classes, v5.0.0)
 # 27-Jan-2026  M. Yokochi - raise error when entity exists and sequence inconsistency between the entity and loops,
 #                           instead of warning, do not remediate CS loop in case of the sequence mismatch error (DAOTHER-10487)
-# 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and chache file directory (DAOTHER-9785)
+# 16-Jun-2026  M. Yokochi - add setWorkspace() method to set current working directory and cache file directory (DAOTHER-9785)
 # 30-Jun-2026  M. Yokochi - add support for chemical shift perturbation experiment by adding 'nm-csp-*' file types (DAOTHER-9785)
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 # 13-Jul-2026  M. Yokochi - implement ensemble composition analysis including cluster analysis (DAOTHER-9785)
@@ -291,6 +291,60 @@
 #                           (copyFactor/copyPolySeq/atomKey in ParserListenerUtil, list()/dict()/copy.copy(),
 #                           or no copy at all where the retrieved object is immutable or never mutated),
 #                           and compare atom selections of the 'not' clause via a hashed key set (DAOTHER-10315)
+# 24-Sep-2026  M. Yokochi - add an optional C accelerator (cpp_src/c_listener_util.c, built by
+#                           WWPDB_NMR_BUILD_C_ACCEL=1) for ParserListenerUtil.copyFactor/copyPolySeq/atomKey,
+#                           replace the str(factor) key of the factor cache by ParserListenerUtil.factorKey(),
+#                           and store the SCHRODINGER 'store' clause as a factor dictionary (DAOTHER-7829, 9785)
+# 25-Sep-2026  M. Yokochi - clear the shared PairwiseAlign before each pairwise alignment, which otherwise re-aligns
+#                           every test sequence ever added, and remove quadratic lookups in
+#                           AlignUtil.alignPolymerSequence/assignPolymerSequence (DAOTHER-7829, 9785)
+# 28-Sep-2026  M. Yokochi - return the glibc heap freed by the speedy-antlr C++ lexer/parser to the OS right after
+#                           each parse (AntlrParseUtil.parseAntlr), which otherwise stays resident through the
+#                           listener walk (DAOTHER-7829, 9785)
+# 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous NMR unified data before validating a large one
+#                           (NmrDpValidationInput.validateInputSource), which otherwise sets the peak memory of
+#                           'nmr-str2str-deposit' (DAOTHER-7829, 9785)
+# 29-Sep-2026  M. Yokochi - keep only the run_gc() calls measured to free memory: a full collection at the registry
+#                           reset of op(), trim_heap() alone after a C++ parse, and none at the end of
+#                           NmrDpRemediationMerge.mergeLegacyData(), NmrVrptUtility.op() or CifReader.__calculateRmsd(),
+#                           where nothing was left to collect (DAOTHER-7829, 9785)
+# 29-Sep-2026  M. Yokochi - add release() to drop the parsed coordinates between workflow operations, e.g. before
+#                           running NmrVrptUtility in the same process (DAOTHER-7829, 9785)
+# 29-Sep-2026  M. Yokochi - collect the model numbers and the representative alt_id of atom_site with
+#                           CifReader.getDistinctValues()/getFirstValue() in NmrDpUtility and NmrVrptUtility, instead of
+#                           a dictionary per atom row (+263 MB for 1.36 M rows) (DAOTHER-7829, 9785)
+# 29-Sep-2026  M. Yokochi - hand the NMR-STAR entry parsed by NefTranslator.validate_file() over to the following
+#                           read_input_file() of the same, unchanged large file, instead of parsing it again (DAOTHER-7829, 9785)
+# 30-Sep-2026  M. Yokochi - merge atom selections with a size-adaptive hashed index (appendUniqueAtoms() in
+#                           BaseStackedMRParserListener) in exitSelection() of the XPLOR-NIH, CNS, CHARMM and SCHRODINGER
+#                           listeners and in doIntersectionFactor_expressions(), instead of O(N*M) list scans (DAOTHER-7829, 9785)
+# 01-Oct-2026  M. Yokochi - the speedy-antlr C++ accelerators lex a str stored one byte per character in place
+#                           (cpp_src/latin1_input_stream.h), instead of a UTF-32 copy of the input (DAOTHER-7829, 9785)
+# 02-Oct-2026  M. Yokochi - make the output independent of PYTHONHASHSEED: deduplicate atom selections in first-occurrence
+#                           order, take the first atom as the reference of isAmbigAtomSelection(), keep the data item order
+#                           in NefTranslator.check_data(), order coordinate chains and comp_ids, and NmrVrptUtility's
+#                           chains and residues by first occurrence;
+#                           reset distance_sub_type and bond_flag per restraint in NmrVrptUtility's dist_violation_seq,
+#                           which carried over from the previous restraint when no atom matched the residue (DAOTHER-7829, 8905)
+# 02-Oct-2026  M. Yokochi - hash the text of input files in chunks (NmrDpConstant.text_md5()) instead of holding
+#                           the whole file twice, in CifReader, NmrDpMrSplitter and NmrDpValidationOutStats (DAOTHER-7829, 9785)
+# 05-Oct-2026  M. Yokochi - pass chem_comp_type, the type_symbol of each atom of a pseudo CCD, to NefTranslator, and rebuild
+#                           a cached coordinate assembly checker that lacks it (DAOTHER-8817)
+# 07-Oct-2026  M. Yokochi - fold BaseStackedMRParserListener's validate{Rdc,T1T2,Csa,Pre,Pcs,Ccr}Range() into one helper,
+#                           and move selectRealistic{Bond,Chi2Angle}Constraint(), duplicated in both MR listener bases,
+#                           to NmrVrptUtility (DAOTHER-7829)
+# 07-Oct-2026  M. Yokochi - delegate the copies of selectRealistic{Bond,Chi2Angle}Constraint() in Amber, Rosetta and
+#                           Gromacs MR parser listeners to the same NmrVrptUtility functions (DAOTHER-7829)
+# 08-Oct-2026  M. Yokochi - share getSfDict()/trimSfWoLp() and the local sequence offset searches of MR parser listeners in
+#                           ParserListenerUtil, and fold repeated blocks of BaseStackedMRParserListener's exit() and
+#                           doConsumeFactor_expressions() into nested functions (DAOTHER-7829)
+# 08-Oct-2026  M. Yokochi - trim the last saveframe without any row of MR parser listeners (trimSfWoLp()), which never
+#                           matched, so a later list took a list id that the next file reused; keep the last saveframes
+#                           per listener instance (DAOTHER-7829)
+# 09-Oct-2026  M. Yokochi - merge assignCoordPolymerSequenceWithChainIdWithoutCompId() into ...WithoutCompId(), share
+#                           getSfDictOf(), and fold repeated code of BasePKParserListener (validatePeak{2,3,4}D(), J-coupling/
+#                           relayed transfer remediation, extractPeakAssignment()) and BaseCSParserListener
+#                           (extractChemShiftAssignment()) (DAOTHER-7829)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -299,10 +353,11 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import collections
 import copy
+import gc
 import hashlib
 import itertools
 import os
@@ -1033,6 +1088,21 @@ class NmrDpUtility:
         except Exception as e:  # pylint: disable=broad-exception-caught
             raise ValueError(f"+{self.__class_name__}.addOutput() ++ Error  - " + str(e)) from e
 
+    def release(self) -> None:
+        """ Release the memory held for the coordinate file between workflow operations, e.g. before running
+            an NmrVrptUtility in the same process that is not given this utility's CifReader, and so parses the
+            coordinate file on its own. The parsed coordinates otherwise stay in memory so that the next op() on
+            the same file skips re-parsing it; after release(), the next op() re-reads it. On a 134 MB coordinate
+            file (a single model of 1.36 M atoms) this frees 1.3 GB, and the peak of the following restraint
+            validation drops from 3.5 GB to 2.2 GB (DAOTHER-7829, 9785).
+        """
+
+        self.__reg.cR.release()
+        self.__reg.caC = None  # rebuilt by every op(), see __parseCoordFilePath()
+
+        if not self.__reg.nefT.release():
+            gc.collect(2)
+
     def op(self, op: str) -> bool:
         """ Perform a series of tasks for a given workflow operation.
         """
@@ -1401,7 +1471,7 @@ class NmrDpUtility:
                 if not task():
                     pass
 
-                if self.__reg.debug:
+                if self.__reg.verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__reg.log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
@@ -1418,7 +1488,7 @@ class NmrDpUtility:
                 if not task():
                     pass
 
-                if self.__reg.debug:
+                if self.__reg.verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__reg.log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
@@ -1437,7 +1507,7 @@ class NmrDpUtility:
                     if task.__name__ in (self.__translateNef2Str.__name__, self.__translateStr2Nef.__name__):
                         break
 
-                if self.__reg.debug:
+                if self.__reg.verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__reg.log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
@@ -1449,11 +1519,11 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[0]
             input_source_dic = input_source.get()
 
-            if ((self.__reg.op == 'nmr-cs-mr-merge'
+            if ((op == 'nmr-cs-mr-merge'
                  and self.__reg.report.error.getValueList('missing_mandatory_content',
                                                           input_source_dic['file_name'],
                                                           key='_Atom_chem_shift') is not None)
-                or (self.__reg.op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate')
+                or (op in ('nmr-str2str-deposit', 'nmr-str2cif-deposit', 'nmr-str2cif-annotate')
                     and self.__reg.remediation_mode))\
                and self.__reg.report.isError() and self.__reg.dstPath is not None:
 
@@ -1533,6 +1603,10 @@ class NmrDpUtility:
 
             for v in self.__reg.sf_tag_data.values():
                 v.clear()
+
+            # release memory after executing the following tasks, which may involve processing large files
+            if (op.startswith('nmr-cs') or op.startswith('nmr-str')) and self.__reg.cifChecked:
+                self.release()
 
     def __dumpDpReport(self) -> bool:
         """ Dump current NMR data processing report.
@@ -3190,37 +3264,68 @@ class NmrDpUtility:
                                        if item[0] == seq_id + offset_seq_ids[chain_id] and item[1] == comp_id and len(item) == 3):
                                 common_poly_seq[chain_id].add((seq_id + offset_seq_ids[chain_id], comp_id))
 
-        asm = []  # molecular assembly of a loop
+        def get_array_expr(c):
+            seq_ids = sorted(set(item[0] - offset_seq_ids[c] for item in common_poly_seq[c]))
+            comp_ids, alt_comp_ids = [], []
+
+            for seq_id in seq_ids:
+                _comp_ids = [item[1] for item in common_poly_seq[c] if item[0] - offset_seq_ids[c] == seq_id]
+                if cs_has_alt_comp_id:
+                    _alt_comp_ids = [item[len(item) - 1] for item in common_poly_seq[c]
+                                     if item[0] - offset_seq_ids[c] == seq_id]
+                if len(_comp_ids) == 1:
+                    comp_ids.append(_comp_ids[0])
+                    if cs_has_alt_comp_id:
+                        alt_comp_ids.append(_alt_comp_ids[0])
+                else:
+                    comp_ids.append(next(comp_id for comp_id in _comp_ids if comp_id not in EMPTY_VALUE))
+                    if cs_has_alt_comp_id:
+                        alt_comp_ids.append(next(alt_comp_id for alt_comp_id in _alt_comp_ids
+                                                 if alt_comp_id not in EMPTY_VALUE))
+            return seq_ids, comp_ids, alt_comp_ids
+
+        asm, failed_entity = [], []  # molecular assembly of a loop
 
         for chain_id in sorted(common_poly_seq.keys()):
 
             if len(common_poly_seq[chain_id]) > 0:
-                seq_ids = sorted(set(item[0] - offset_seq_ids[chain_id] for item in common_poly_seq[chain_id]))
-                comp_ids = []
-                if cs_has_alt_comp_id:
-                    alt_comp_ids = []
-
-                for seq_id in seq_ids:
-                    _comp_ids = [item[1] for item in common_poly_seq[chain_id] if item[0] - offset_seq_ids[chain_id] == seq_id]
-                    if cs_has_alt_comp_id:
-                        _alt_comp_ids = [item[len(item) - 1] for item in common_poly_seq[chain_id]
-                                         if item[0] - offset_seq_ids[chain_id] == seq_id]
-                    if len(_comp_ids) == 1:
-                        comp_ids.append(_comp_ids[0])
-                        if cs_has_alt_comp_id:
-                            alt_comp_ids.append(_alt_comp_ids[0])
-                    else:
-                        comp_ids.append(next(comp_id for comp_id in _comp_ids if comp_id not in EMPTY_VALUE))
-                        if cs_has_alt_comp_id:
-                            alt_comp_ids.append(next(alt_comp_id for alt_comp_id in _alt_comp_ids
-                                                     if alt_comp_id not in EMPTY_VALUE))
+                seq_ids, comp_ids, alt_comp_ids = get_array_expr(chain_id)
 
                 if self.__reg.combined_mode and self.__reg.has_star_entity:
                     ent = self.__extractPolymerSequenceInEntityLoopOfChain__(fileListId, chain_id)
 
                     if ent is not None:
-                        asm.append(ent)
-                        continue
+                        if any(comp_id in comp_ids for comp_id in ent['comp_id']):
+                            asm.append(ent)
+
+                        else:
+                            failed_entity.append(chain_id)
+
+                    elif len(failed_entity) > 0:
+                        hit = False
+                        for _chain_id in copy.copy(failed_entity):
+                            ent = self.__extractPolymerSequenceInEntityLoopOfChain__(fileListId, _chain_id)
+
+                            if ent is not None and any(comp_id in comp_ids for comp_id in ent['comp_id']):
+                                _seq_ids, _comp_ids, _alt_comp_ids = get_array_expr(_chain_id)
+                                _ent = {'chain_id': _chain_id, 'seq_id': _seq_ids, 'comp_id': _comp_ids}
+                                if cs_has_alt_comp_id:
+                                    _ent['alt_comp_id'] = _alt_comp_ids
+
+                                asm.append(_ent)
+
+                                ent['chain_id'] = chain_id
+                                asm.append(ent)
+
+                                failed_entity.remove(_chain_id)
+
+                                hit = True
+                                break
+
+                        if not hit:
+                            failed_entity.append(chain_id)
+
+                    continue
 
                 ent = {'chain_id': chain_id, 'seq_id': seq_ids, 'comp_id': comp_ids}
                 if cs_has_alt_comp_id:
@@ -3853,6 +3958,7 @@ class NmrDpUtility:
                             if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                 ps2 = _ps2
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -3890,6 +3996,7 @@ class NmrDpUtility:
                                         if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
+                                        self.__reg.pA.clear()
                                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id_}')
                                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id_)
                                         self.__reg.pA.doAlign()
@@ -4180,6 +4287,7 @@ class NmrDpUtility:
                             if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                 ps2 = _ps2
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -4217,6 +4325,7 @@ class NmrDpUtility:
                                         if sf_framecode2 in ref_chain_ids and chain_id_ in ref_chain_ids[sf_framecode2]:
                                             continue
 
+                                        self.__reg.pA.clear()
                                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id_}')
                                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id_)
                                         self.__reg.pA.doAlign()
@@ -4440,6 +4549,7 @@ class NmrDpUtility:
                                                and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                                 ps2 = _ps2
 
+                                            self.__reg.pA.clear()
                                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                                             self.__reg.pA.doAlign()
@@ -4474,6 +4584,7 @@ class NmrDpUtility:
                                     if len(_ps2['seq_id']) > len(ps2['seq_id']) and len(_ps2['seq_id']) < len(ps1['seq_id']):
                                         ps2 = _ps2
 
+                                    self.__reg.pA.clear()
                                     self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                                     self.__reg.pA.doAlign()
@@ -5723,7 +5834,7 @@ class NmrDpUtility:
                         if lp_category is None:
                             continue
 
-                        # main content of loop has been processed in_testDataConsistencyInLoop()
+                        # main content of loop has been processed in __testDataConsistencyInLoop()
                         if lp_category in LP_CATEGORIES[file_type][content_subtype]:
                             continue
 
@@ -8521,6 +8632,7 @@ class NmrDpUtility:
 
             # DAOTHER-8817
             if self.__reg.caC is not None and 'chem_comp_atom' in self.__reg.caC\
+               and 'chem_comp_type' in self.__reg.caC\
                and 'auth_atom_name_to_id' in self.__reg.caC\
                and 'auth_atom_name_to_id_ext' in self.__reg.caC\
                and 'auth_to_star_seq_ann' in self.__reg.caC\
@@ -8529,7 +8641,8 @@ class NmrDpUtility:
                 self.__reg.nefT.set_chem_comp_dict(self.__reg.caC['chem_comp_atom'],
                                                    self.__reg.caC['chem_comp_bond'],
                                                    self.__reg.caC['chem_comp_topo'],
-                                                   self.__reg.caC['auth_atom_name_to_id'])
+                                                   self.__reg.caC['auth_atom_name_to_id'],
+                                                   self.__reg.caC['chem_comp_type'])
                 return
 
         self.__parseCoordinate()  # need to set representative_model/alt_id values
@@ -8546,7 +8659,8 @@ class NmrDpUtility:
         self.__reg.nefT.set_chem_comp_dict(self.__reg.caC['chem_comp_atom'],
                                            self.__reg.caC['chem_comp_bond'],
                                            self.__reg.caC['chem_comp_topo'],
-                                           self.__reg.caC['auth_atom_name_to_id'])
+                                           self.__reg.caC['auth_atom_name_to_id'],
+                                           self.__reg.caC['chem_comp_type'])
 
     def __validateStrMr(self) -> bool:
         """ Validate restraints of NMR-STAR restraint files.
@@ -8628,7 +8742,7 @@ class NmrDpUtility:
 
             if self.__reg.dstPath is not None:
 
-                # __validateStrPk() will do the same task in later
+                # __validateStrPk() will do the same task later
                 if not any(content_subtype in PK_CONTENT_SUBTYPES for content_type in input_source_dic['content_subtype']):
 
                     if not self.__reg.annotation_mode:
@@ -9016,6 +9130,13 @@ class NmrDpUtility:
 
             input_source.setItemValue('stats_of_exptl_data', stats)
 
+            if self.__reg.op == 'nmr-str-consistency-check' and self.__reg.combined_mode\
+               and REPORT_FILE_PATH_KEY in self.__reg.inputParamDict:
+                fPath = self.__reg.inputParamDict[REPORT_FILE_PATH_KEY]
+
+                if os.access(fPath, os.F_OK) and os.path.getsize(fPath) > 0:
+                    self.__reg.dpV.calculateOutputStats()
+
         return self.__reg.report.getTotalErrors() == __errors
 
     def __detectDimTransferTypeViaThroughSpace(self) -> bool:
@@ -9040,7 +9161,7 @@ class NmrDpUtility:
         sf_list = self.__reg.star_data[0].get_saveframes_by_category(sf_category)
 
         if len(sf_list) == 0:
-            return False  # raised proper recomendation already
+            return False  # raised proper recommendation already
 
         solid_state_nmr = self.__reg.exptl_method == 'SOLID-STATE NMR'
 
@@ -9311,14 +9432,9 @@ class NmrDpUtility:
                         model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags\
                             else 'ndb_model'
 
-                        model_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': model_num_name, 'type': 'int',
-                                                                          'alt_name': 'model_id'}
-                                                                         ])
+                        model_ids = self.__reg.cR.getDistinctValues('atom_site', model_num_name, 'int')
 
                         if len(model_ids) > 0:
-                            model_ids = set(c['model_id'] for c in model_ids)
-
                             self.__reg.representative_model_id = min(model_ids)
                             self.__reg.total_models = len(model_ids)
                             self.__reg.eff_model_ids = sorted(model_ids)
@@ -9348,13 +9464,9 @@ class NmrDpUtility:
                     model_num_name = 'pdbx_PDB_model_num' if 'pdbx_PDB_model_num' in self.__reg.coord_atom_site_tags\
                         else 'ndb_model'
 
-                    model_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': model_num_name, 'type': 'int', 'alt_name': 'model_id'}
-                                                                     ])
+                    model_ids = self.__reg.cR.getDistinctValues('atom_site', model_num_name, 'int')
 
                     if len(model_ids) > 0:
-                        model_ids = set(c['model_id'] for c in model_ids)
-
                         self.__reg.total_models = len(model_ids)
                         self.__reg.eff_model_ids = sorted(model_ids)
 
@@ -9394,15 +9506,10 @@ class NmrDpUtility:
                         self.__reg.log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Warning  - {warn}\n")
 
             if self.__reg.cR.hasItem('atom_site', 'label_alt_id'):
-                alt_ids = self.__reg.cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'label_alt_id', 'type': 'str'}
-                                                               ])
+                alt_id = self.__reg.cR.getFirstValue('atom_site', 'label_alt_id')
 
-                if len(alt_ids) > 0:
-                    for a in alt_ids:
-                        if a['label_alt_id'] not in EMPTY_VALUE:
-                            self.__reg.representative_alt_id = a['label_alt_id']
-                            break
+                if alt_id is not None:
+                    self.__reg.representative_alt_id = alt_id
 
             self.__ensemble_composition = {'total_models': self.__reg.total_models,
                                            'eff_model_ids': self.__reg.eff_model_ids,
@@ -10856,6 +10963,7 @@ class NmrDpUtility:
                             if chain_id != ps2['chain_id']:
                                 continue
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -10912,6 +11020,7 @@ class NmrDpUtility:
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
+                self.__reg.pA.clear()
                 self.__reg.pA.setReferenceSequence(ps1['auth_comp_id'] if 'auth_comp_id' in ps1 else ps2['comp_id'],
                                                    f'REF{chain_id}')
                 self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
@@ -10928,6 +11037,7 @@ class NmrDpUtility:
 
                 if length == unmapped + conflict:
                     if len(ps1['seq_id']) == 1 and 'alt_comp_id' in ps1 and ps1['alt_comp_id'][0] in ps2['comp_id']:
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(ps1['alt_comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -10959,6 +11069,7 @@ class NmrDpUtility:
                     _ps1_ = __ps1
                     _ps2_ = __ps2
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(_ps1_['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(_ps2_['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -11007,6 +11118,7 @@ class NmrDpUtility:
                 if i2 >= LEN_MAJOR_ASYM_ID / 2:  # to process large assembly avoiding forced timeout
                     continue
 
+                self.__reg.pA.clear()
                 self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                 self.__reg.pA.addTestSequence(ps2['auth_comp_id'] if 'auth_comp_id' in ps2 else ps2['comp_id'], chain_id)
                 self.__reg.pA.doAlign()
@@ -11022,6 +11134,7 @@ class NmrDpUtility:
 
                 if length == unmapped + conflict:
                     if len(ps2['seq_id']) == 1 and 'alt_comp_id' in ps2 and ps2['alt_comp_id'][0] in ps1['comp_id']:
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(ps2['alt_comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -11053,6 +11166,7 @@ class NmrDpUtility:
                     _ps1_ = __ps1
                     _ps2_ = __ps2
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(_ps1_['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(_ps2_['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -11090,9 +11204,10 @@ class NmrDpUtility:
         return True
 
     def __compensateLadderHistidinTag__(self, chain_id: str, ps1: dict, ps2: dict) -> dict:
-        """ Compensate ladder-like Histidin tag in polymer sequence 2.
+        """ Compensate ladder-like Histidine tag in polymer sequence 2.
         """
 
+        self.__reg.pA.clear()
         self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
         self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
         self.__reg.pA.doAlign()
@@ -11408,6 +11523,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id2)
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -11436,6 +11552,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -11457,6 +11574,7 @@ class NmrDpUtility:
                             if k1 == k2 == 'comp_id' or k1 not in ps1 or k2 not in ps2:
                                 continue
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(ps1[k1], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(ps2[k2], chain_id)
                             self.__reg.pA.doAlign()
@@ -11680,6 +11798,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id2)
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -11728,6 +11847,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -11761,6 +11881,7 @@ class NmrDpUtility:
                             _ps1 = __ps1
                             _ps2 = __ps2
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -12244,6 +12365,7 @@ class NmrDpUtility:
                     ps1 = next(ps for ps in cif_poly_seq if ps['chain_id'] == chain_id)
                     ps2 = next(ps for ps in nmr_poly_seq if ps['chain_id'] == chain_id2)
 
+                    self.__reg.pA.clear()
                     self.__reg.pA.setReferenceSequence(ps1['comp_id'], f'REF{chain_id}')
                     self.__reg.pA.addTestSequence(ps2['comp_id'], chain_id)
                     self.__reg.pA.doAlign()
@@ -12292,6 +12414,7 @@ class NmrDpUtility:
                         _ps1 = __ps1
                         _ps2 = __ps2
 
+                        self.__reg.pA.clear()
                         self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                         self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                         self.__reg.pA.doAlign()
@@ -12325,6 +12448,7 @@ class NmrDpUtility:
                             _ps1 = __ps1
                             _ps2 = __ps2
 
+                            self.__reg.pA.clear()
                             self.__reg.pA.setReferenceSequence(_ps1['comp_id'], f'REF{chain_id}')
                             self.__reg.pA.addTestSequence(_ps2['comp_id'], chain_id)
                             self.__reg.pA.doAlign()
@@ -13592,7 +13716,7 @@ class NmrDpUtility:
         if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None or self.__reg.star_data_type[0] != 'Entry':
             return False
 
-        # This rediculaus reverse implementation is for OneDep only
+        # This ridiculous reverse implementation is for OneDep only
         if self.__reg.op != 'nmr-cs-mr-merge' and not self.__reg.internal_mode:
 
             if self.__reg.bmrb_only:
@@ -16598,8 +16722,8 @@ class NmrDpUtility:
         return is_done
 
     def __discardPeakListRemediation(self) -> bool:
-        """ Discard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep enviromment
-            @note: This rediculaus reverse implementation is for OneDep only
+        """ Discard remediated spectral peak list (NMR data remediation, Phase 2) in OneDep environment
+            @note: This ridiculous reverse implementation is for OneDep only
         """
 
         if self.__reg.native_combined or not self.__reg.merge_any_pk_as_is:

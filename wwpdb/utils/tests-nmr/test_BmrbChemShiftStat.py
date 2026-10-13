@@ -65,7 +65,7 @@ class TestBmrbChemShiftStat(unittest.TestCase):
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('DA'),
                          ["C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'])
         self.assertEqual(self.bmrb_cs_stat.getBackBoneAtoms('DA', excl_minor_atom=True),
-                         ["H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''", 'P'])
+                         ["H1'", "H2'", "H2''", "H3'", "H4'", "H5'", "H5''"])
         self.assertEqual(set(self.bmrb_cs_stat.getBackBoneAtoms('A')),
                          {"C1'", "C2'", "C3'", "C4'", "C5'", "H1'", "H2'", "H3'", "H4'", "H5'", "H5''", "HO2'", 'P'})
         self.assertEqual(set(self.bmrb_cs_stat.getBackBoneAtoms('A', excl_minor_atom=True)),

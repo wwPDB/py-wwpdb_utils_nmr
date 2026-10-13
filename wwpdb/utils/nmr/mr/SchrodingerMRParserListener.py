@@ -43,7 +43,7 @@ try:
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.SchrodingerMRParser import SchrodingerMRParser
-    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
+    from wwpdb.utils.nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener, appendUniqueAtoms
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (toRegEx,
                                                        copyFactor,
                                                        atomKey,
@@ -81,7 +81,7 @@ except ImportError:
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.SchrodingerMRParser import SchrodingerMRParser
-    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener
+    from nmr.mr.BaseStackedMRParserListener import BaseStackedMRParserListener, appendUniqueAtoms
     from nmr.mr.ParserListenerUtil import (toRegEx,
                                            copyFactor,
                                            atomKey,
@@ -389,7 +389,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             self.numberSelection.clear()
 
     def enterDistance_assign_by_number(self, ctx: SchrodingerMRParser.Distance_assign_by_numberContext):
-        """ Exit a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
+        """ Enter a parse tree produced by SchrodingerMRParser#distance_assign_by_number.
         """
 
         self.distRestraints += 1
@@ -1522,9 +1522,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                             blockSelections[blockId] = _selection
 
                         else:
-                            for _atom in _selection:
-                                if _atom not in blockSelections[blockId]:
-                                    blockSelections[blockId].append(_atom)
+                            appendUniqueAtoms(blockSelections[blockId], _selection)
 
                     stackSelections.clear()
 
@@ -1559,9 +1557,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                 _selection = self.stackSelections.pop()
                 if _selection is not None:
                     if self.con_union_expr:
-                        for _atom in _selection:
-                            if _atom not in atomSelection:
-                                atomSelection.append(_atom)
+                        appendUniqueAtoms(atomSelection, _selection)
                     else:
                         atomSelection = self.intersectionAtom_selections(_selection, atomSelection)
 
@@ -1585,9 +1581,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     blockSelections[blockId] = _selection
 
                 else:
-                    for _atom in _selection:
-                        if _atom not in blockSelections[blockId]:
-                            blockSelections[blockId].append(_atom)
+                    appendUniqueAtoms(blockSelections[blockId], _selection)
 
             self.stackSelections.clear()
 
@@ -1599,9 +1593,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         while self.stackSelections:
             _selection = self.stackSelections.pop()
             if _selection is not None:
-                for _atom in _selection:
-                    if _atom not in atomSelection:
-                        atomSelection.append(_atom)
+                appendUniqueAtoms(atomSelection, _selection)
 
         if '*' in atomSelection:
             atomSelection.remove('*')
@@ -1651,9 +1643,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
             if _term is not None:
                 _atomSelection.extend(_term)
 
-        atomSelection = [dict(s) for s in set(frozenset(atom.items())
-                                              for atom in _atomSelection
-                                              if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
+        atomSelection = [dict(s) for s in dict.fromkeys(frozenset(atom.items())
+                                                        for atom in _atomSelection
+                                                        if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
 
         if len(atomSelection) > 0:
             if self.depth == 0 and not self.top_union_expr:
@@ -1714,9 +1706,9 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                 if _term is not None and not isinstance(_term, str):
                     _atomSelection.extend(_term)
 
-            atomSelection = [dict(s) for s in set(frozenset(atom.items())
-                                                  for atom in _atomSelection
-                                                  if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection
+            atomSelection = [dict(s) for s in dict.fromkeys(frozenset(atom.items())
+                                                            for atom in _atomSelection
+                                                            if isinstance(atom, dict))] if len(_atomSelection) > 1 else _atomSelection  # noqa: E501
 
             if len(atomSelection) > 0:
                 self.stackSelections.append(atomSelection)
@@ -3608,7 +3600,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
         self.exitSelection(ctx)
 
         if len(self.atomSelectionSet) == 1 and len(self.atomSelectionSet[0]) > 0 and self.__cur_store_name not in EMPTY_VALUE:
-            self.storeSet[self.__cur_store_name] = copy.copy(self.atomSelectionSet[0])
+            self.storeSet[self.__cur_store_name] = {'atom_selection': copy.copy(self.atomSelectionSet[0])}
 
         self.atomSelectionSet.clear()
         self.g.clear()

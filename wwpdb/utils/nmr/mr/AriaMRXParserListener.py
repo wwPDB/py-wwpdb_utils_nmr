@@ -560,6 +560,7 @@ class AriaMRXParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if len(longest_substr) == 0:
             return ref_atom_id
 
+        self.pA.clear()
         self.pA.setReferenceSequence(list(longest_substr), 'REFNAME')
         self.pA.addTestSequence(list(max_str), 'NAME')
         self.pA.doAlign()

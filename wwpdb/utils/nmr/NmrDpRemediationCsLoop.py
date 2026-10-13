@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import collections
 import copy
@@ -2373,9 +2373,9 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                                     item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                    if item is not None and poly_seq is not None and any(True for _ps in poly_seq_common
-                                                                                         if _ps['chain_id'] == auth_asym_id
-                                                                                         and auth_seq_id in _ps['seq_id']):
+                                    if item is not None and poly_seq_common is not None\
+                                       and any(True for _ps in poly_seq_common
+                                               if _ps['chain_id'] == auth_asym_id and auth_seq_id in _ps['seq_id']):
                                         entity_assembly_id = item['entity_assembly_id']
                                         entity_id = item['entity_id']
 
@@ -2506,7 +2506,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
 
                                 item = next((item for item in entity_assembly if item['auth_asym_id'] == auth_asym_id), None)
 
-                                if item is not None and poly_seq is not None\
+                                if item is not None and poly_seq_common is not None\
                                     and any(True for _ps in poly_seq_common
                                             if _ps['chain_id'] in (auth_asym_id, str(letterToDigit(auth_asym_id)))
                                             and ref_auth_seq_id in _ps['seq_id']):
@@ -2641,9 +2641,9 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                                         item = next((item for item in entity_assembly
                                                      if item['auth_asym_id'] == auth_asym_id), None)
 
-                                        if item is not None and poly_seq is not None and any(True for _ps in poly_seq_common
-                                                                                             if _ps['chain_id'] == chain_id
-                                                                                             and label_seq_id in _ps['seq_id']):
+                                        if item is not None and poly_seq_common is not None\
+                                           and any(True for _ps in poly_seq_common
+                                                   if _ps['chain_id'] == chain_id and label_seq_id in _ps['seq_id']):
                                             entity_assembly_id = item['entity_assembly_id']
                                             entity_id = item['entity_id']
 

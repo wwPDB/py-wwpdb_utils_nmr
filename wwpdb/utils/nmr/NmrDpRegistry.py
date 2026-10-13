@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import copy
 import os
@@ -98,7 +98,7 @@ class NmrDpRegistry:
     bmrb_only: bool = False
     # whether not to block deposition because of anomalous cs
     nonblk_anomalous_cs: bool = False
-    # whether not to block deposition because bad n-term amino group
+    # whether not to block deposition because of bad n-term amino group
     nonblk_bad_nterm: bool = False
     # whether to update polymer sequence
     update_poly_seq: bool = False

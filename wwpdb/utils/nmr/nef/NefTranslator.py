@@ -13,7 +13,7 @@
 # 05-Feb-2020  M. Yokochi - add 'circular-shift' to relax dihedral angle constraint range error (v2.0.3)
 # 05-Feb-2020  M. Yokochi - convert 'HN' in amino acids to 'H' while NEF->NMR-STAR translation (v2.0.3)
 # 05-Feb-2020  M. Yokochi - rescue NEF atom_id w/o wild card notation in methyl group (v2.0.3)
-# 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methyne/methyl group (v2.0.3)
+# 05-Feb-2020  M. Yokochi - relax NEF atom_id that ends with [xy] in methine/methyl group (v2.0.3)
 # 26-Feb-2020  M. Yokochi - additional support for abnormal NEF atom nomenclature,
 #                           e.g. HDy% in ASN, HEy% in GLN, seen in CCPN_2mtv_docr.nef (v2.0.4)
 # 04-Mar-2020  M. Yokochi - support 'default' of key items and 'default-from' of data items (v2.0.4)
@@ -42,7 +42,7 @@
 # 30-Apr-2020  M. Yokochi - fix pseudoatom mapping in ligand (v2.2.12, DAOTHER-5611)
 # 14-May-2020  M. Yokochi - revise error message for missing mandatory content (v2.2.13, DAOTHER-5681 and 5682)
 # 06-Jun-2020  M. Yokochi - be compatible with pynmrstar v3 (v2.3.0, DAOTHER-5765)
-# 19-Jun-2020  M. Yokochi - do not generate invalid restraints include self atom (v2.3.1)
+# 19-Jun-2020  M. Yokochi - do not generate invalid restraints that include self atom (v2.3.1)
 # 26-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_covalent_links and _Bond (v2.4.0)
 # 30-Jun-2020  M. Yokochi - skip third party loops and items gracefully (v2.5.0, DAOTHER-5896)
 # 30-Jun-2020  M. Yokochi - support bidirectional conversion between _nef_peak and _Peak_row_format (v2.5.0, DAOTHER-5896)
@@ -120,7 +120,7 @@
 # 19-Feb-2025  M. Yokochi - try to extract sequence using Seq_ID_# tags if necessary (v4.2.0)
 # 12-Mar-2025  M. Yokochi - allow to reset auth_seq_id of cs loop if necessary (v4.3.0, DAOTHER-9927)
 # 09-Apr-2025  M. Yokochi - permit missing of chemical shift loop for standalone NMR data conversion service (v4.4.0, DAOTHER-9785)
-# 23-May-2025  M. Yokochi - resolve pseudoatom name of non-standard residue based on local CCD derived from the coordinated
+# 23-May-2025  M. Yokochi - resolve pseudoatom name of non-standard residue based on local CCD derived from the coordinates
 #                           (v4.5.0, DAOTHER-10105)
 # 11-Sep-2025  M. Yokochi - disallow chemical shift zero value except for methyl atoms (DAOTHER-9785)
 # 07-Jan-2026  M. Yokochi - code refactoring (v5.0.0)
@@ -133,6 +133,13 @@
 # 28-May-2026  M. Yokochi - fix conversion from NMR-STAR _Bond loop to NEF _nef_covalent_link loop (DAOTHER-10781, v5.1.0)
 # 09-Jul-2026  M. Yokochi - implement BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
 # 19-Aug-2026  M. Yokochi - refactor check_data() and get_conflict_id_set() for performance gain including minor bug fixes (v5.3.0)
+# 29-Sep-2026  M. Yokochi - hand the entry parsed by validate_file() over to the following read_input_file() of the same,
+#                           unchanged large file, instead of parsing it again (DAOTHER-7829, 9785)
+# 01-Oct-2026  M. Yokochi - extract sequences from the distinct rows of a loop in get_nef_seq(), get_star_seq() and
+#                           get_star_auth_seq(), cutting the garbage collections tripled by per-row containers (DAOTHER-7829, 9785)
+# 03-Oct-2026  M. Yokochi - guess ambiguity code 3 of a non-standard residue by ring flip symmetry, isFlippableRingProtonHost(),
+#                           in reference to phenylalanine (DAOTHER-8817)
+# 05-Oct-2026  M. Yokochi - take the element of a pseudo CCD atom from its type_symbol (chem_comp_type) (DAOTHER-8817)
 ##
 """ Bi-directional translator between NEF and NMR-STAR
     @author: Kumaran Baskaran, Masashi Yokochi
@@ -141,12 +148,14 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "5.3.1"
+__version__ = "5.4.3"
 
 import collections
 import copy
 # import csv
 import functools
+import gc
+import hashlib
 import io
 import itertools
 import logging
@@ -155,7 +164,7 @@ import os
 import re
 import sys
 from operator import itemgetter
-from typing import IO, List, Optional, Tuple, Union
+from typing import Any, IO, List, Optional, Tuple, Union
 
 from packaging import version
 
@@ -197,7 +206,8 @@ try:
                                                READABLE_ITEM_TYPE,
                                                LP_CATEGORIES,
                                                KEY_ITEMS,
-                                               DATA_ITEMS)
+                                               DATA_ITEMS,
+                                               MIN_INPUT_SIZE_FOR_GC)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
                                            getOneLetterCode,
@@ -212,7 +222,9 @@ try:
                                                        translateToStdAtomName,
                                                        translateToStdAtomNameNoRef,
                                                        translateToStdAtomNameWithRef,
-                                                       isLikePheOrTyr)
+                                                       isLikePheOrTyr,
+                                                       isFlippableRingProtonHost,
+                                                       pseudoAtomElement)
 except ImportError:
     from nmr.NmrDpConstant import (LEN_LARGE_ASYM_ID,
                                    LOW_SEQ_COVERAGE,
@@ -247,7 +259,8 @@ except ImportError:
                                    READABLE_ITEM_TYPE,
                                    LP_CATEGORIES,
                                    KEY_ITEMS,
-                                   DATA_ITEMS)
+                                   DATA_ITEMS,
+                                   MIN_INPUT_SIZE_FOR_GC)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
                                getOneLetterCode,
@@ -262,7 +275,9 @@ except ImportError:
                                            translateToStdAtomName,
                                            translateToStdAtomNameNoRef,
                                            translateToStdAtomNameWithRef,
-                                           isLikePheOrTyr)
+                                           isLikePheOrTyr,
+                                           isFlippableRingProtonHost,
+                                           pseudoAtomElement)
 
 
 __package_name__ = 'wwpdb.utils.nmr'
@@ -308,6 +323,22 @@ def get_idx_msg(idx_tag_ids: List[int], tags: List[str], row: dict) -> str:
 
     except KeyError:
         return ''
+
+
+def get_file_identity(in_file: str) -> tuple:
+    """ Return the identity of a file: real path, size, modification time in ns, and MD5 of the content.
+        The content hash catches a rewrite of the same size within one tick of a coarse file system clock.
+    """
+
+    st = os.stat(in_file)
+
+    md5 = hashlib.md5()
+
+    with open(in_file, 'rb') as ifh:
+        for block in iter(lambda: ifh.read(1 << 20), b''):
+            md5.update(block)
+
+    return os.path.realpath(in_file), st.st_size, st.st_mtime_ns, md5.hexdigest()
 
 
 def is_empty_loop(star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop], lp_category: str) -> bool:
@@ -390,6 +421,36 @@ def is_good_data(array: list) -> bool:
     """
 
     return not any(d in EMPTY_VALUE or (isinstance(d, str) and BAD_EXPR_PAT.match(d)) for d in array)
+
+
+def unique_rows(rows: List[list]) -> List[list]:
+    """ Return the distinct rows in the order of their first occurrence, as the original row objects.
+        Restraint loops repeat the same residues massively (6pts: 762,780 rows, 90 distinct), and processing every
+        row allocated enough per-row containers to triple the garbage collections over a large entry
+        (DAOTHER-7829, 9785). Return the rows as they are if one of them holds an unhashable value.
+    """
+
+    distinct = {}
+    setdefault = distinct.setdefault
+
+    try:
+        for row in rows:
+            setdefault(tuple(row), row)
+    except TypeError:
+        return rows
+
+    return list(distinct.values())
+
+
+def is_integer_value(value: Any) -> bool:
+    """ Return whether int() accepts a given value.
+    """
+
+    try:
+        int(value)
+        return True
+    except (ValueError, TypeError):
+        return False
 
 
 def specify_missing_tags(lp_category: str, current_tags: List[str], missing_tags: List[str]) -> str:
@@ -480,6 +541,7 @@ class NefTranslator:
                  'chemCompAtom',
                  'chemCompBond',
                  'chemCompTopo',
+                 'chemCompType',
                  'authAtomNameToId',
                  'star2NefChainMapping',
                  'star2CifChainMapping',
@@ -490,7 +552,9 @@ class NefTranslator:
                  '__cachedDictForValidStarAtomInXplor',
                  '__cachedDictForValidStarAtom',
                  '__cachedDictForStarAtom',
-                 '__cachedDictForNefAtom')
+                 '__cachedDictForNefAtom',
+                 '__parsedFileSize',
+                 '__parsedInput')
 
     def __init__(self, verbose: bool = False, log: IO = sys.stderr,
                  ccU: Optional[ChemCompUtil] = None, csStat: Optional[BmrbChemShiftStat] = None,
@@ -1502,6 +1566,7 @@ class NefTranslator:
         self.chemCompAtom = None
         self.chemCompBond = None
         self.chemCompTopo = None
+        self.chemCompType = None
         # DAOTHER-10105: coordinate derived atom name mapping from pdbx_auth_atom_name to auth_atom_id
         self.authAtomNameToId = None
 
@@ -1525,6 +1590,11 @@ class NefTranslator:
         self.__cachedDictForValidStarAtom = {}
         self.__cachedDictForStarAtom = {}
         self.__cachedDictForNefAtom = {}
+
+        # (file identity, data type, data object) parsed by validate_file(), handed over once to the following
+        # read_input_file() of the same, unchanged file
+        self.__parsedFileSize = 0
+        self.__parsedInput = None
 
     @property
     def pA(self) -> PairwiseAlign:
@@ -1602,10 +1672,10 @@ class NefTranslator:
         translateToStdAtomNameNoRef.cache_clear()
         translateToStdAtomNameWithRef.cache_clear()
 
-    def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict, auth_atom_name_to_id: dict
-                           ) -> None:
+    def set_chem_comp_dict(self, chem_comp_atom: dict, chem_comp_bond: dict, chem_comp_topo: dict, auth_atom_name_to_id: dict,
+                           chem_comp_type: Optional[dict] = None) -> None:
         """ Set chem_comp dictionary derived from ParserListerUtil.coordAssemblyChecker().
-            DAOTHER-8817: construct pseudo CCD from the coordinates
+            DAOTHER-8817: construct pseudo CCD from the coordinates, with the type_symbol of each atom in chem_comp_type
             DAOTHER-10105: add auth_atom_name_to_id to resolve pseudoatom names
         """
 
@@ -1617,6 +1687,9 @@ class NefTranslator:
 
         if isinstance(chem_comp_topo, dict):
             self.chemCompTopo = chem_comp_topo
+
+        if isinstance(chem_comp_type, dict):
+            self.chemCompType = chem_comp_type
 
         if isinstance(auth_atom_name_to_id, dict):
             self.authAtomNameToId = auth_atom_name_to_id
@@ -1657,11 +1730,27 @@ class NefTranslator:
         is_ok = True
         data_type = star_data = None
 
-        try:
+        # avoid ValueError: Empty strings are not allowed as values.
+        # Use the None singleton, or '.' to represent null values. (DAOTHER-10399)
+        pynmrstar.definitions.STR_CONVERSION_DICT[''] = None
 
-            # avoid ValueError: Empty strings are not allowed as values.
-            # Use the None singleton, or '.' to represent null values. (DAOTHER-10399)
-            pynmrstar.definitions.STR_CONVERSION_DICT[''] = None
+        # take over the data object that validate_file() has just parsed from the same file, unless the file has
+        # changed since, e.g. remediated in between; the slot is emptied either way, so no object is handed twice
+        parsed, self.__parsedInput = self.__parsedInput, None
+
+        if parsed is not None:
+            identity, _data_type, _star_data = parsed
+            del parsed
+
+            try:
+                if identity == get_file_identity(in_file):
+                    return True, _data_type, _star_data
+            except OSError:
+                pass
+
+            del _star_data  # drop the stale entry before parsing again
+
+        try:
 
             star_data = pynmrstar.Entry.from_file(in_file)
 
@@ -1695,6 +1784,25 @@ class NefTranslator:
                 else ('Saveframe' if isinstance(star_data, pynmrstar.Saveframe) else 'Loop')
 
         return is_ok, data_type, star_data
+
+    def release(self) -> bool:
+        """ Release the data object parsed by validate_file() that no read_input_file() has taken over.
+            @return: whether GC runned or not.
+        """
+
+        self.__parsedInput = None
+
+        try:
+
+            if self.__parsedFileSize >= MIN_INPUT_SIZE_FOR_GC:
+                gc.collect(2)
+
+                return True
+
+            return False
+
+        finally:
+            self.__parsedFileSize = 0
 
     def check_mandatory_tags(self, in_file: str, file_type: str
                              ) -> Tuple[List[str], List[str]]:
@@ -1790,6 +1898,8 @@ class NefTranslator:
 
         file_type = 'unknown'
 
+        parsed = None
+
         err_template_for_missing_mandatory_loop =\
             "The mandatory loop %r is missing. Deposition of %s is mandatory. Please re-upload the %s file."
         err_template_for_empty_mandatory_loop =\
@@ -1806,6 +1916,8 @@ class NefTranslator:
             is_ok, data_type, star_data = self.read_input_file(in_file)
 
             if is_ok:
+
+                parsed = (data_type, star_data)
 
                 minimal_lp_category_nef_a = ['_nef_chemical_shift', '_nef_distance_restraint']
                 minimal_lp_category_nef_s = ['_nef_chemical_shift']
@@ -2135,6 +2247,15 @@ class NefTranslator:
             is_valid = False
             error.append(str(e))
 
+        # hand the data object, which the checks above only read, over to the read_input_file() that callers run next,
+        # instead of parsing the file again (DAOTHER-7829, 9785)
+        if parsed is not None:
+            try:
+                self.__parsedFileSize = os.path.getsize(in_file)
+                self.__parsedInput = (get_file_identity(in_file),) + parsed
+            except OSError:
+                pass
+
         return is_valid, {'info': info, 'error': error, 'file_type': file_type}
 
     def resolve_sf_names_for_cif(self, star_data: Union[pynmrstar.Entry, pynmrstar.Saveframe, pynmrstar.Loop]  # noqa: E501, pylint: disable=no-self-use,line-too-long
@@ -2241,6 +2362,19 @@ class NefTranslator:
                 return True
             return False
 
+        def has_conflict(rows):
+            """ Return whether two rows share the key of chk_dict below but differ in comp_id. """
+            chk = {}
+            try:
+                for x in rows:
+                    key = (x[2], int(x[0]) if isinstance(x[0], str) else x[0])
+                    comp_id = x[1].upper()
+                    if chk.setdefault(key, comp_id) != comp_id:
+                        return True
+            except (ValueError, TypeError):  # the processing below hits the same error and skips the loop
+                return False
+            return False
+
         for loop in loops:
             cmp_dict, seq_dict = {}, {}
 
@@ -2266,7 +2400,19 @@ class NefTranslator:
                     if len(msg) > 0:
                         raise LookupError(msg)
 
+            # restraint loops repeat the same residues massively (6pts: 762,780 rows, 90 distinct): work on the
+            # distinct rows unless one has to be reported, in which case every row is checked as before
+            # (DAOTHER-7829, 9785)
+            all_seq_data = seq_data
+            rows = unique_rows(seq_data)
             if allow_empty:
+                rows = [row for row in rows if is_good_data(row)]
+            fast = (allow_empty or not any(is_empty(row) for row in rows))\
+                and all(is_integer_value(row[0]) for row in rows)
+
+            if fast:
+                seq_data = rows
+            elif allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
@@ -2283,45 +2429,73 @@ class NefTranslator:
             if len(seq_data) == 0:
                 continue
 
-            for idx, row in enumerate(seq_data):
-                try:
-                    int(row[0])
-                except (ValueError, TypeError):
-                    if idx < len_data:
-                        if skip_empty_value_error(loop, idx):
-                            continue
-                        r = {}
-                        for j, t in enumerate(loop.tags):
-                            r[t] = loop.data[idx][j]
-                        f.append(f"[Invalid data] {seq_id_name} must be an integer. "
-                                 f"#_of_row {idx + 1}, data_of_row {r}.")
+            if not fast:
+                for idx, row in enumerate(seq_data):
+                    try:
+                        int(row[0])
+                    except (ValueError, TypeError):
+                        if idx < len_data:
+                            if skip_empty_value_error(loop, idx):
+                                continue
+                            r = {}
+                            for j, t in enumerate(loop.tags):
+                                r[t] = loop.data[idx][j]
+                            f.append(f"[Invalid data] {seq_id_name} must be an integer. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
                 raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
+            # the uniqueness error below names the conflicting rows as found among every row
+            if fast and has_conflict(seq_data):
+                seq_data = list(filter(is_good_data, all_seq_data)) if allow_empty else all_seq_data
+
             try:
 
-                chain_ids = sorted(set(row[2] for row in seq_data), key=lambda x: (len(x), x))
-                offset_seq_ids = {row[2]: 0 for row in seq_data}
-                for c in chain_ids:
-                    min_seq_id = min(int(row[0]) for row in seq_data if row[2] == c)
+                seq_data_by_chain = {}
+                for x in seq_data:
+                    c = x[2]
+                    if c not in seq_data_by_chain:
+                        seq_data_by_chain[c] = []
+                    if isinstance(x[0], str):
+                        x[0] = int(x[0])
+                    x[1] = x[1].upper()
+                    seq_data_by_chain[c].append(x[:2])
+
+                chain_ids = sorted(list(seq_data_by_chain), key=lambda x: (len(x), x))
+
+                offset_seq_ids = {c: 0 for c in chain_ids}
+                for c, _seq_data in seq_data_by_chain.items():
+                    min_seq_id = min(x[0] for x in _seq_data)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set((row[2], int(row[0]) + offset_seq_ids[row[2]], row[1].upper()) for row in seq_data),
-                                    key=itemgetter(0, 1))
 
-                chk_dict = {(row[2], int(row[0])): row[1].upper() for row in seq_data}
+                sorted_seq, chk_dict = [], {}
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        sorted_seq.append((c, x[0] + offset_seq_ids[c], x[1]))
+                        chk_dict[(c, x[0])] = x[1]
 
-                for row in seq_data:
-                    chk_key = (row[2], int(row[0]))
-                    if chk_dict[chk_key] != row[1].upper():
-                        raise KeyError(f"{lp_category[1:]} loop contains different {comp_id_name} "
-                                       f"({row[1]} and {chk_dict[chk_key]}) "
-                                       f"with the same {chain_id_name} {row[2]}, {seq_id_name} {row[0]}.")
+                sorted_seq = sorted(set(sorted_seq), key=itemgetter(0, 1))
 
-                for c in chain_ids:
-                    cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        chk_key = (c, x[0])
+                        if chk_dict[chk_key] != x[1]:
+                            raise KeyError(f"{lp_category[1:]} loop contains different {comp_id_name} "
+                                           f"({x[1]} and {chk_dict[chk_key]}) "
+                                           f"with the same {chain_id_name} {c}, {seq_id_name} {x[0]}.")
+
+                sorted_seq_by_chain = {}
+                for x in sorted_seq:
+                    c = x[0]
+                    if c not in sorted_seq_by_chain:
+                        sorted_seq_by_chain[c] = []
+                    sorted_seq_by_chain[c].append(x[1:])
+
+                for c, _sorted_seq in sorted_seq_by_chain.items():
+                    cmp_dict[c] = [x[1] for x in _sorted_seq]
+                    seq_dict[c] = [x[0] - offset_seq_ids[c] for x in _sorted_seq]
 
                 asm = []  # assembly of a loop
 
@@ -3979,7 +4153,19 @@ class NefTranslator:
                                                  alt_seq_id_name, alt_seq_id_offset, alt_chain_id_name,
                                                  allow_empty, allow_gap, check_identity, coord_assembly_checker)
 
+            # restraint loops repeat the same residues massively (6pts: 762,780 rows, 90 distinct): work on the
+            # distinct rows unless one has to be reported, in which case every row is checked as before;
+            # a uniqueness conflict below is acted on by its existence alone
+            # (DAOTHER-7829, 9785)
+            rows = unique_rows(seq_data)
             if allow_empty:
+                rows = [row for row in rows if is_good_data(row)]
+            fast = (allow_empty or not any(is_empty(row) for row in rows))\
+                and all(is_integer_value(row[0]) for row in rows)
+
+            if fast:
+                seq_data = rows
+            elif allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
@@ -3996,18 +4182,19 @@ class NefTranslator:
             if len(seq_data) == 0:
                 continue
 
-            for idx, row in enumerate(seq_data):
-                try:
-                    int(row[0])
-                except (ValueError, TypeError):
-                    if idx < len_data:
-                        if skip_empty_value_error(loop, idx):
-                            continue
-                        r = {}
-                        for j, t in enumerate(loop.tags):
-                            r[t] = loop.data[idx][j]
-                        f.append(f"[Invalid data] {seq_id_name} must be an integer. "
-                                 f"#_of_row {idx + 1}, data_of_row {r}.")
+            if not fast:
+                for idx, row in enumerate(seq_data):
+                    try:
+                        int(row[0])
+                    except (ValueError, TypeError):
+                        if idx < len_data:
+                            if skip_empty_value_error(loop, idx):
+                                continue
+                            r = {}
+                            for j, t in enumerate(loop.tags):
+                                r[t] = loop.data[idx][j]
+                            f.append(f"[Invalid data] {seq_id_name} must be an integer. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
                 if seq_id_name == 'Comp_index_ID' and 'Auth_asym_ID' in loop.tags and 'Auth_seq_ID' in loop.tags\
@@ -4020,42 +4207,65 @@ class NefTranslator:
 
             try:
 
-                chain_ids = sorted(set(row[2] for row in seq_data))
-                offset_seq_ids = {row[2]: 0 for row in seq_data}
-                for c in chain_ids:
-                    min_seq_id = min(int(row[0]) for row in seq_data if row[2] == c)
+                seq_data_by_chain = {}
+                for x in seq_data:
+                    c = x[2]
+                    if c not in seq_data_by_chain:
+                        seq_data_by_chain[c] = []
+                    if isinstance(x[0], str):
+                        x[0] = int(x[0])
+                    x[1] = x[1].upper()
+                    seq_data_by_chain[c].append(x[:2])
+
+                chain_ids = sorted(list(seq_data_by_chain), key=lambda x: (len(str(x)), str(x)))
+
+                offset_seq_ids = {c: 0 for c in chain_ids}
+                for c, _seq_data in seq_data_by_chain.items():
+                    min_seq_id = min(x[0] for x in _seq_data)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set((row[2], int(row[0]) + offset_seq_ids[row[2]], row[1].upper()) for row in seq_data),
-                                    key=itemgetter(0, 1))
-                chk_dict = {(row[2], int(row[0])): row[1].upper() for row in seq_data}
 
-                for row in seq_data:
-                    chk_key = (row[2], int(row[0]))
-                    if chk_dict[chk_key] != row[1].upper():
+                sorted_seq, chk_dict = [], {}
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        sorted_seq.append((c, x[0] + offset_seq_ids[c], x[1]))
+                        chk_dict[(c, x[0])] = x[1]
 
-                        if seq_id_name != alt_seq_id_name and alt_seq_id_name in loop.tags:
+                sorted_seq = sorted(set(sorted_seq), key=itemgetter(0, 1))
 
-                            seq_tags = [seq_id_name, alt_seq_id_name]
-                            _seq_data = loop.get_tag(seq_tags)
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        chk_key = (c, x[0])
+                        if chk_dict[chk_key] != x[1]:
 
-                            offset = None
+                            if seq_id_name != alt_seq_id_name and alt_seq_id_name in loop.tags:
 
-                            for _row in _seq_data:
-                                try:
-                                    offset = int(_row[0]) - int(_row[1])
-                                    break
-                                except ValueError:
-                                    continue
+                                _seq_data_ = loop.get_tag([seq_id_name, alt_seq_id_name])
 
-                            if offset is not None:
-                                return self.get_star_seq(star_data, lp_category, alt_seq_id_name, comp_id_name, chain_id_name,
-                                                         alt_seq_id_name, offset, alt_chain_id_name,
-                                                         allow_empty, allow_gap, check_identity, coord_assembly_checker)
+                                offset = None
 
-                for c in chain_ids:
-                    cmp_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
+                                for _row_ in _seq_data_:
+                                    try:
+                                        offset = int(_row_[0]) - int(_row_[1])
+                                        break
+                                    except ValueError:
+                                        continue
+
+                                if offset is not None:
+                                    return self.get_star_seq(star_data, lp_category, alt_seq_id_name, comp_id_name, chain_id_name,
+                                                             alt_seq_id_name, offset, alt_chain_id_name,
+                                                             allow_empty, allow_gap, check_identity, coord_assembly_checker)
+
+                sorted_seq_by_chain = {}
+                for x in sorted_seq:
+                    c = x[0]
+                    if c not in sorted_seq_by_chain:
+                        sorted_seq_by_chain[c] = []
+                    sorted_seq_by_chain[c].append(x[1:])
+
+                for c, _sorted_seq in sorted_seq_by_chain.items():
+                    cmp_dict[c] = [x[1] for x in _sorted_seq]
+                    seq_dict[c] = [x[0] - offset_seq_ids[c] for x in _sorted_seq]
 
                 has_alt_comp_id = False
                 if lp_category == '_Atom_chem_shift' and self.__remediation_mode\
@@ -4301,6 +4511,19 @@ class NefTranslator:
 
         seq_id_col = 3
 
+        def has_conflict(rows):
+            """ Return whether two rows share the key of chk_dict below but differ in auth_comp_id. """
+            chk = {}
+            try:
+                for x in rows:
+                    key = (x[4], int(x[3]) if isinstance(x[3], str) else x[3], x[2],
+                           x[0].strip() if isinstance(x[0], str) else str(x[0]))
+                    if chk.setdefault(key, x[1]) != x[1]:
+                        return True
+            except (ValueError, TypeError):  # the processing below hits the same error and skips the loop
+                return False
+            return False
+
         for loop in loops:
             seq_dict, acmp_dict, aseq_dict, asym_dict = {}, {}, {}, {}
 
@@ -4340,7 +4563,19 @@ class NefTranslator:
                     if len(msg) > 0:
                         raise LookupError(msg)
 
+            # restraint loops repeat the same residues massively (6pts: 762,780 rows, 90 distinct): work on the
+            # distinct rows unless one has to be reported, in which case every row is checked as before
+            # (DAOTHER-7829, 9785)
+            all_seq_data = seq_data
+            rows = unique_rows(seq_data)
             if allow_empty:
+                rows = [row for row in rows if is_good_data(row)]
+            fast = (allow_empty or not any(is_empty(row) for row in rows))\
+                and all(is_integer_value(row[seq_id_col]) for row in rows)
+
+            if fast:
+                seq_data = rows
+            elif allow_empty:
                 # seq_data = list(filter(is_data, seq_data))
                 seq_data = list(filter(is_good_data, seq_data))  # DAOTHER-7389, issue #3
             else:
@@ -4357,49 +4592,78 @@ class NefTranslator:
             if len(seq_data) == 0:
                 continue
 
-            for idx, row in enumerate(seq_data):
-                try:
-                    int(row[seq_id_col])
-                except (ValueError, TypeError):
-                    if idx < len_data:
-                        if skip_empty_value_error(loop, idx):
-                            continue
-                        r = {}
-                        for j, t in enumerate(loop.tags):
-                            r[t] = loop.data[idx][j]
-                        f.append(f"[Invalid data] {seq_id_name} must be an integer. "
-                                 f"#_of_row {idx + 1}, data_of_row {r}.")
+            if not fast:
+                for idx, row in enumerate(seq_data):
+                    try:
+                        int(row[seq_id_col])
+                    except (ValueError, TypeError):
+                        if idx < len_data:
+                            if skip_empty_value_error(loop, idx):
+                                continue
+                            r = {}
+                            for j, t in enumerate(loop.tags):
+                                r[t] = loop.data[idx][j]
+                            f.append(f"[Invalid data] {seq_id_name} must be an integer. "
+                                     f"#_of_row {idx + 1}, data_of_row {r}.")
 
             if len(f) > 0:
                 raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
+            # the uniqueness error below names the conflicting rows as found among every row
+            if fast and has_conflict(seq_data):
+                seq_data = list(filter(is_good_data, all_seq_data)) if allow_empty else all_seq_data
+
             try:
 
-                chain_ids = sorted(set(row[4] for row in seq_data), key=lambda x: (len(x), x))
-                offset_seq_ids = {row[4]: 0 for row in seq_data}
-                for c in chain_ids:
-                    min_seq_id = min(int(row[3]) for row in seq_data if row[4] == c)
+                seq_data_by_chain = {}
+                for x in seq_data:
+                    c = x[4]
+                    if c not in seq_data_by_chain:
+                        seq_data_by_chain[c] = []
+                    if isinstance(x[3], str):
+                        x[3] = int(x[3])
+                    if isinstance(x[0], str):
+                        x[0] = x[0].strip()
+                    else:
+                        x[0] = str(x[0])
+                    seq_data_by_chain[c].append(x[:4])
+
+                chain_ids = sorted(list(seq_data_by_chain), key=lambda x: (len(str(x)), str(x)))
+
+                offset_seq_ids = {c: 0 for c in chain_ids}
+                for c, _seq_data in seq_data_by_chain.items():
+                    min_seq_id = min(x[3] for x in _seq_data)
                     if min_seq_id < 0:
                         offset_seq_ids[c] = min_seq_id * -1
-                sorted_seq = sorted(set((row[4], int(row[3]) + offset_seq_ids[row[4]], row[2],
-                                         row[0].strip() if isinstance(row[0], str) else str(row[0]), row[1]) for row in seq_data),
-                                    key=itemgetter(0, 1))
 
-                chk_dict = {(row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0])):
-                            row[1] for row in seq_data}
+                sorted_seq, chk_dict = [], {}
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        sorted_seq.append((c, x[3] + offset_seq_ids[c], x[2], x[0], x[1]))
+                        chk_dict[(c, x[3], x[2], x[0])] = x[1]
 
-                for row in seq_data:
-                    chk_key = (row[4], int(row[3]), row[2], row[0].strip() if isinstance(row[0], str) else str(row[0]))
-                    if chk_dict[chk_key] != row[1]:
-                        raise KeyError(f"Author sequence must be unique. {chain_id_name} {row[4]}, {seq_id_name} {row[3]}, "
-                                       f"{auth_asym_id_name} {row[2]}, {auth_seq_id_name} {row[0]}, "
-                                       f"{auth_comp_id_name} {row[1]} vs {chk_dict[chk_key]}.")
+                sorted_seq = sorted(set(sorted_seq), key=itemgetter(0, 1))
 
-                for c in chain_ids:
-                    acmp_dict[c] = [x[4] for x in sorted_seq if x[0] == c]
-                    aseq_dict[c] = [x[3] for x in sorted_seq if x[0] == c]
-                    asym_dict[c] = [x[2] for x in sorted_seq if x[0] == c]
-                    seq_dict[c] = [x[1] - offset_seq_ids[c] for x in sorted_seq if x[0] == c]
+                for c, _seq_data in seq_data_by_chain.items():
+                    for x in _seq_data:
+                        chk_key = (c, x[3], x[2], x[0])
+                        if chk_dict[chk_key] != x[1]:
+                            raise KeyError(f"Author sequence must be unique. {chain_id_name} {c}, {seq_id_name} {x[3]}, "
+                                           f"{auth_asym_id_name} {x[2]}, {auth_seq_id_name} {x[0]}, "
+                                           f"{auth_comp_id_name} {x[1]} vs {chk_dict[chk_key]}.")
+
+                sorted_seq_by_chain = {}
+                for x in sorted_seq:
+                    c = x[0]
+                    if c not in sorted_seq_by_chain:
+                        sorted_seq_by_chain[c] = []
+                    sorted_seq_by_chain[c].append(x[1:])
+
+                for c, _sorted_seq in sorted_seq_by_chain.items():
+                    acmp_dict[c] = [x[3] for x in _sorted_seq]
+                    aseq_dict[c] = [x[2] for x in _sorted_seq]
+                    asym_dict[c] = [x[1] for x in _sorted_seq]
+                    seq_dict[c] = [x[0] - offset_seq_ids[c] for x in _sorted_seq]
 
                 asm = []  # assembly of a loop
 
@@ -4537,16 +4801,16 @@ class NefTranslator:
             if len(f) > 0:
                 raise UserWarning('\n'.join(sorted(list(set(f)), key=f.index)))
 
-            comps = sorted(set(row[0].upper() for row in pair_data if row[0] not in EMPTY_VALUE))
+            comp_ids = sorted(set(row[0].upper() for row in pair_data if row[0] not in EMPTY_VALUE))
             sorted_comp_atom = sorted(set((row[0].upper(), row[1]) for row in pair_data),
                                       key=itemgetter(0, 1))
 
-            for c in comps:
+            for c in comp_ids:
                 atm_dict[c] = [x[1] for x in sorted_comp_atom if x[0] == c]
 
             asm = []  # assembly of a loop
 
-            for c in comps:
+            for c in comp_ids:
                 ent = {}  # entity
 
                 ent['comp_id'] = c
@@ -4589,7 +4853,7 @@ class NefTranslator:
                                    lp_category: str, atom_type_name: str, isotope_number_name: str, atom_id_name: str,
                                    allow_empty: bool
                                    ) -> List[List[dict]]:
-        """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in n NEF/NMR-STAR file.
+        """ Extract unique pairs of atom_type, isotope number, and atom_id from assigned chemical shifts in an NEF/NMR-STAR file.
             @author: Masashi Yokochi
             @return: list of unique pairs of atom_type, isotope number, and atom_id for each CS loop
         """
@@ -5271,7 +5535,7 @@ class NefTranslator:
                                     raise LookupError(msg)
 
                 tags = [k['name'] for k in key_items]
-                for data_name in set(data_names) & set(loop.tags):
+                for data_name in [d for d in data_names if d in loop.tags]:
                     tags.append(data_name)
 
                 tag_len = len(tags)
@@ -7583,9 +7847,11 @@ class NefTranslator:
                             if len_v == 2:
                                 return 2  # methylene/amino
                             if len_v == 1:
-                                if k[0] == 'C' and self.chemCompTopo is not None and comp_id in self.chemCompTopo\
-                                   and any(len(tv) == 2 and tv[0][0] == 'C' and tv[1][0] == 'C'
-                                           for tk, tv in self.chemCompTopo[comp_id].items() if tk == k):
+                                comp_type = None if self.chemCompType is None else self.chemCompType.get(comp_id)
+                                if pseudoAtomElement(k, comp_type) == 'C' and self.chemCompTopo is not None\
+                                   and comp_id in self.chemCompTopo\
+                                   and isFlippableRingProtonHost(self.chemCompTopo[comp_id], self.chemCompBond[comp_id], k,
+                                                                 comp_type):
                                     return 3  # aromatic opposite
                                 return 1
                 return None
@@ -8485,9 +8751,11 @@ class NefTranslator:
                                 if len_v == 2:
                                     return 2  # methylene/amino
                                 if len_v == 1:
-                                    if k[0] == 'C' and self.chemCompTopo is not None and comp_id in self.chemCompTopo\
-                                       and any(len(tv) == 2 and tv[0][0] == 'C' and tv[1][0] == 'C'
-                                               for tk, tv in self.chemCompTopo[comp_id].items() if tk == k):
+                                    comp_type = None if self.chemCompType is None else self.chemCompType.get(comp_id)
+                                    if pseudoAtomElement(k, comp_type) == 'C' and self.chemCompTopo is not None\
+                                       and comp_id in self.chemCompTopo\
+                                       and isFlippableRingProtonHost(self.chemCompTopo[comp_id], self.chemCompBond[comp_id], k,
+                                                                     comp_type):
                                         return 3  # aromatic opposite
                                     return 1
                     return None
@@ -10056,6 +10324,7 @@ class NefTranslator:
             if len(longest_substr) == 0:
                 return atom_sel[0]
 
+            self.__pA.clear()
             self.__pA.setReferenceSequence(list(longest_substr), 'REFNAME')
             self.__pA.addTestSequence(list(max_str), 'NAME')
             self.__pA.doAlign()

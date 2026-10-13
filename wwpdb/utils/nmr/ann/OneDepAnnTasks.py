@@ -244,6 +244,7 @@ def get_nmr_software(name: str) -> str:
     for software in NMR_SOFTWERE_LIST:
         _software = software.lower()
 
+        pA.clear()
         pA.setReferenceSequence(list(_software), 'REFNAME')
         pA.addTestSequence(list(_name), 'NAME')
         pA.doAlign()
@@ -426,7 +427,7 @@ class OneDepAnnTasks:
                             '_Software', 'Details', 1, None),
                            ('pdbx_nmr_software', 'details',
                             '_Spectral_peak_list', 'Text_data_format', 1, None),
-                           # map_code '-11' indicates children loops has metadata to be merged
+                           # map_code '-11' indicates child loops have metadata to be merged
                            ('pdbx_nmr_software', 'name',
                             '_Software', 'Name', -11, None),
                            # ('pdbx_nmr_software', 'name',

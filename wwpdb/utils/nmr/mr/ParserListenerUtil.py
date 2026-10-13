@@ -12,6 +12,14 @@
 # 19-Nov-2024  M. Yokochi - add support for pH titration data (NMR restraint remediation)
 # 06-Mar-2025  M. Yokochi - add support for coupling constant data (NMR restraint remediation Phase 2)
 # 30-Jun-2026  M. Yokochi - add getCspRow() to support chemical shift perturbation (v1.1.0)
+# 24-Sep-2026  M. Yokochi - add factorKey() and bind atomKey()/copyFactor()/copyPolySeq()/factorKey()
+#                           to the optional C accelerator when it is available (DAOTHER-10315)
+# 03-Oct-2026  M. Yokochi - add buildPseudoChemCompBond(), which bonds heavy atoms by covalent radii instead of a flat
+#                           2.5 A cutoff, and isFlippableRingProtonHost() (DAOTHER-8817)
+# 03-Oct-2026  M. Yokochi - test the legacy PDB records in startsWithPdbRecord() with one str.startswith() call and
+#                           a set lookup instead of a scan over the records (DAOTHER-7829, 9785)
+# 05-Oct-2026  M. Yokochi - pseudo CCD: take elements from type_symbol (chem_comp_type), and accept five-membered rings and
+#                           rings without a substituent on the mirror axis in isFlippableRingProtonHost() (DAOTHER-8817)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -80,7 +88,11 @@ try:
                                                CARTN_DATA_ITEMS,
                                                REMEDIATE_BACKBONE_ANGLE_NAME_PAT,
                                                DEFAULT_LIST_ID_COUNTER,
-                                               INSTRUCTION_FOR_FULL_SEQUENCE)
+                                               INSTRUCTION_FOR_FULL_SEQUENCE,
+                                               COVALENT_RADII,
+                                               DEFAULT_COVALENT_RADIUS,
+                                               COVALENT_BOND_TOLERANCE,
+                                               LOCAL_OFFSET_ATTEMPT)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            alignPolymerSequence,
                                            assignPolymerSequence,
@@ -130,7 +142,11 @@ except ImportError:
                                    CARTN_DATA_ITEMS,
                                    REMEDIATE_BACKBONE_ANGLE_NAME_PAT,
                                    DEFAULT_LIST_ID_COUNTER,
-                                   INSTRUCTION_FOR_FULL_SEQUENCE)
+                                   INSTRUCTION_FOR_FULL_SEQUENCE,
+                                   COVALENT_RADII,
+                                   DEFAULT_COVALENT_RADIUS,
+                                   COVALENT_BOND_TOLERANCE,
+                                   LOCAL_OFFSET_ATTEMPT)
     from nmr.AlignUtil import (letterToDigit,
                                alignPolymerSequence,
                                assignPolymerSequence,
@@ -166,6 +182,52 @@ def copyPolySeq(polySeq: List[dict]) -> List[dict]:
     """
 
     return [{k: (list(v) if v.__class__ is list else v) for k, v in ps.items()} for ps in polySeq]
+
+
+def factorKey(factor: dict) -> tuple:
+    """ Return a hashable canonical form of a factor dictionary, which compares equal exactly
+        when the factor dictionaries compare equal. Used as the key of the factor cache of
+        BaseStackedMRParserListener in place of str(factor), which has to build a repr of the
+        whole factor. Both keys induce the same cache partition; this one skips the number and
+        string formatting, but only wins once compiled - see factorCacheKey (DAOTHER-10315).
+    """
+
+    return tuple((k, tuple(tuple(a.items()) if a.__class__ is dict else a for a in v) if v.__class__ is list else v)
+                 for k, v in factor.items())
+
+
+# Optional C accelerator for the four helpers above, which dominate the factor cache of
+# BaseStackedMRParserListener.doConsumeFactor_expressions(). It is compiled only where the
+# speedy-antlr-tool accelerators are (see setup.py and the Dockerfile builder stage), so the
+# ImportError path is the normal one for a pip-installed package.
+#
+# The import is relative on purpose. The package resolves as wwpdb.utils.nmr in OneDep and as
+# bare nmr in standalone mode, and a relative import is the one form that binds the same name
+# in both without a try:/except ImportError: pair that could drift apart. The sa_*.py shims
+# reach their own extensions the same way.
+try:
+    from . import c_listener_util
+except ImportError:
+    c_listener_util = None
+
+USE_C_IMPLEMENTATION = c_listener_util is not None
+
+# Handles on the Python bodies, so ParserListenerUtilTests can assert that the two
+# implementations agree, and so a profiling run can compare them in place.
+atomKeyPy, copyFactorPy, copyPolySeqPy, factorKeyPy = atomKey, copyFactor, copyPolySeq, factorKey
+
+if USE_C_IMPLEMENTATION:
+    atomKey = c_listener_util.atomKey  # noqa: F811 pylint: disable=function-redefined,c-extension-no-member
+    copyFactor = c_listener_util.copyFactor  # noqa: F811 pylint: disable=function-redefined,c-extension-no-member
+    copyPolySeq = c_listener_util.copyPolySeq  # noqa: F811 pylint: disable=function-redefined,c-extension-no-member
+    factorKey = c_listener_util.factorKey  # noqa: F811 pylint: disable=function-redefined,c-extension-no-member
+
+# The cache key of doConsumeFactor_expressions(). Either key is cheap here, because the factors
+# reaching it are small - measured over the DAOTHER-10315 entry, 117k calls averaging 1.8 atom
+# selections, so str() costs ~0.07 s over the whole run. The interpreted tuple key is about
+# twice that and the compiled one about a third of it, so the tuple key is worth taking only
+# when it is compiled, and the interpreted build keeps the repr key it has always used.
+factorCacheKey = factorKey if USE_C_IMPLEMENTATION else str
 
 
 def toRegEx(string: str) -> str:
@@ -348,7 +410,7 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                     and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 2lgm exclude H5 for segment identifier via DT:H5
                 return f'H6{atomId[-1]}'
             elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
-                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 fir segment identifier via DT:H5
+                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 for segment identifier via DT:H5
                 return f'H2{atomId[-1]}'
             elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
                     and atomId[-1] in ('1', '2'):
@@ -1038,7 +1100,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                     and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 2lgm exclude H5 for segment identifier via DT:H5
                 return f'H6{atomId[-1]}'
             elif refCompId in ('DG', 'G') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
-                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 fir segment identifier via DT:H5
+                    and atomId[1] != '5' and atomId[-1] in ('1', '2'):  # 6g99, 2lgm exclude H5 for segment identifier via DT:H5
                 return f'H2{atomId[-1]}'
             elif refCompId in ('DC', 'C') and atomId[0] == 'H' and lenAtomId == 3 and atomId[1].isdigit()\
                     and atomId[-1] in ('1', '2'):
@@ -1595,6 +1657,7 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                 _atomId_ = []
                 iterAtomId = list(atomId)
                 for _atomId in canAtomIdList:
+                    pA.clear()
                     pA.setReferenceSequence(iterAtomId, f'REF{refCompId}')
                     pA.addTestSequence(list(_atomId), refCompId)
                     pA.doAlign()
@@ -2418,7 +2481,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                          prevResult: Optional[dict] = None,
                          nmrPolySeq: Optional[List[dict]] = None, fullCheck: bool = True) -> dict:
     """ Check assembly of the coordinates for MR/PT parser listener.
-        @return: properties about of the assembly of the coordinates
+        @return: properties of the assembly of the coordinates
     """
 
     changed = has_nonpoly_only = gen_ent_asm_from_nonpoly = False
@@ -2608,6 +2671,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                     ps1 = next(ps1 for ps1 in nmrPolySeq if ps1['chain_id'] == test_chain_id)
                     ps2 = next(ps2 for ps2 in polySeq if ps2['auth_chain_id'] == ref_chain_id)
 
+                    pA.clear()
                     pA.setReferenceSequence(ps1['comp_id'], f'REF{test_chain_id}')
                     pA.addTestSequence(ps2['comp_id'], test_chain_id)
                     pA.doAlign()
@@ -3213,6 +3277,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
     chemCompAtom = None if prevResult is None else prevResult.get('chem_comp_atom')
     chemCompBond = None if prevResult is None else prevResult.get('chem_comp_bond')
     chemCompTopo = None if prevResult is None else prevResult.get('chem_comp_topo')
+    chemCompType = None if prevResult is None else prevResult.get('chem_comp_type')
     authAtomNameToId = None if prevResult is None else prevResult.get('auth_atom_name_to_id')
     authAtomNameToIdExt = None if prevResult is None else prevResult.get('auth_atom_name_to_id_ext')
 
@@ -3328,12 +3393,12 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
             coordAtomSite, labelToAuthSeq = {}, {}
 
             # DAOTHER-8817
-            chemCompAtom, chemCompBond, chemCompTopo = {}, {}, {}
+            chemCompAtom, chemCompBond, chemCompTopo, chemCompType = {}, {}, {}, {}
 
             # DAOTHER-8828
             authAtomNameToId, authAtomNameToIdExt = {}, {}
 
-            chainIds = set(c['chain_id'] for c in coord)
+            chainIds = dict.fromkeys(c['chain_id'] for c in coord)
             for chainId in chainIds:
                 seqIds = set(c['seq_id'] for c in coord if c['chain_id'] == chainId)
                 for seqId in seqIds:
@@ -3410,10 +3475,10 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                     break
                             if found:
                                 break
-                    compIds = list(set(c['comp_id'] for c in coord
-                                       if c['chain_id'] == chainId and c['seq_id'] is not None
-                                       and c['seq_id'] == seqId))
-                    if len(compIds) > 1:  # 2kny: split implict ins_code of atom_site
+                    compIds = list(dict.fromkeys(c['comp_id'] for c in coord
+                                                 if c['chain_id'] == chainId and c['seq_id'] is not None
+                                                 and c['seq_id'] == seqId))
+                    if len(compIds) > 1:  # 2kny: split implicit ins_code of atom_site
                         coordAtomSite[seqKey]['split_comp_id'] = compIds
                         for compId in compIds:
                             seqKey = (chainId, seqId, compId)
@@ -3481,38 +3546,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                             resCoordDict = {c['atom_id']: to_np_array(c)
                                             for c in cR.getDictListWithFilter('atom_site', dataItems, filterItems)}
 
-                            chemCompBond[compId], chemCompTopo[compId] = {}, {}
-
-                            for proton in atomIds:
-                                if proton[0] in PROTON_BEGIN_CODE:
-
-                                    bonded = None
-                                    distance = 1.5
-
-                                    for heavy in atomIds:
-                                        if heavy[0] not in PROTON_BEGIN_CODE and proton in resCoordDict and heavy in resCoordDict:
-                                            _distance = numpy.linalg.norm(resCoordDict[proton] - resCoordDict[heavy])
-
-                                            if _distance < distance:
-                                                distance = _distance
-                                                bonded = heavy
-
-                                    if bonded is not None:
-                                        if bonded not in chemCompBond[compId]:
-                                            chemCompBond[compId][bonded] = []
-                                        chemCompBond[compId][bonded].append(proton)
-
-                            for heavy in atomIds:
-                                if heavy[0] not in PROTON_BEGIN_CODE:
-                                    for heavy2 in atomIds:
-                                        if heavy2[0] not in PROTON_BEGIN_CODE and heavy2 != heavy\
-                                           and heavy in resCoordDict and heavy2 in resCoordDict:
-                                            _distance = numpy.linalg.norm(resCoordDict[heavy] - resCoordDict[heavy2])
-
-                                            if _distance < 2.5:
-                                                if heavy not in chemCompTopo[compId]:
-                                                    chemCompTopo[compId][heavy] = []
-                                                chemCompTopo[compId][heavy].append(heavy2)
+                            chemCompType[compId] = dict(zip(atomIds, typeSymbols))
+                            chemCompBond[compId], chemCompTopo[compId] = buildPseudoChemCompBond(atomIds, typeSymbols, resCoordDict)
 
                             if altAuthAtomId is not None:
                                 for c in coord:
@@ -3586,7 +3621,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                                  filterItemByRepModelId)
 
                 if len(unobs) > 0:
-                    chainIds = set(u['chain_id'] for u in unobs)
+                    chainIds = dict.fromkeys(u['chain_id'] for u in unobs)
                     for chainId in chainIds:
                         seqIds = set(int(u['seq_id']) for u in unobs if u['chain_id'] == chainId and u['seq_id'] is not None)
                         for seqId in seqIds:
@@ -4593,6 +4628,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
             'chem_comp_atom': chemCompAtom,
             'chem_comp_bond': chemCompBond,
             'chem_comp_topo': chemCompTopo,
+            'chem_comp_type': chemCompType,
             'auth_atom_name_to_id': authAtomNameToId,
             'auth_atom_name_to_id_ext': authAtomNameToIdExt,
             'split_ligand': splitLigand}
@@ -4789,7 +4825,7 @@ def isLongRangeRestraint(atoms: List[dict], polySeq: Optional[List[dict]] = None
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any(True for seqId in seqIds if seqId is None):
+    if None in seqIds:
         return False
 
     chainIds = [a['chain_id'] for a in atoms]
@@ -4926,7 +4962,7 @@ def getAltProtonIdInBondConstraint(atoms: List[dict], csStat
     if len(atoms) < 2:
         return None, None
 
-    if any(True for a in atoms if a is None):
+    if None in atoms:
         return None, None
 
     for a in atoms:
@@ -4997,7 +5033,7 @@ def isAsymmetricRangeRestraint(atoms: List[dict], chainIdSet: List[str], symmetr
 
     seqIds = [a['seq_id'] for a in atoms]
 
-    if any(True for seqId in seqIds if seqId is None):
+    if None in seqIds:
         return False
 
     commonSeqId = collections.Counter(seqIds).most_common()
@@ -5074,8 +5110,8 @@ def guessCompIdFromAtomIdWoLimit(atomIds: List[str], polySeq: List[dict], nefT, 
 
 def hasIntraChainRestraint(atomSelectionSet: List[List[dict]]
                            ) -> Tuple[bool, Optional[set]]:
-    """ Return whether intra-chain distance restraints in the atom selection.
-        @return: whether intra-chain distrance restraints, representative set of chain_id
+    """ Return whether there are intra-chain distance restraints in the atom selection.
+        @return: whether intra-chain distance restraints, representative set of chain_id
     """
 
     for atom1, atom2 in itertools.product(atomSelectionSet[0],
@@ -5087,7 +5123,7 @@ def hasIntraChainRestraint(atomSelectionSet: List[List[dict]]
 
 
 def hasInterChainRestraint(atomSelectionSet: List[List[dict]]) -> bool:
-    """ Return whether inter-chain distance restraints in the atom selection.
+    """ Return whether there are inter-chain distance restraints in the atom selection.
     """
 
     for atom1, atom2 in itertools.product(atomSelectionSet[0],
@@ -5123,43 +5159,34 @@ def isAmbigAtomSelection(atoms: List[dict], csStat) -> bool:
     if len(atoms) < 2:
         return False
 
-    if any(True for a in atoms if a is None):
+    if None in atoms:
         return False
 
+    # a missing key yields None, which is in EMPTY_VALUE
     for a in atoms:
-        if 'chain_id' not in a or a['chain_id'] in EMPTY_VALUE:
-            return True
-        if 'seq_id' not in a or a['seq_id'] in EMPTY_VALUE:
-            return True
-        if 'comp_id' not in a or a['comp_id'] in EMPTY_VALUE:
-            return True
-        if 'atom_id' not in a or a['atom_id'] in EMPTY_VALUE:
+        if a.get('chain_id') in EMPTY_VALUE or a.get('seq_id') in EMPTY_VALUE\
+           or a.get('comp_id') in EMPTY_VALUE or a.get('atom_id') in EMPTY_VALUE:
             return True
 
-    chainIds = [a['chain_id'] for a in atoms]
+    a0 = atoms[0]
+    chainId, seqId, atomType = a0['chain_id'], a0['seq_id'], a0['atom_id'][0]
 
-    if len(collections.Counter(chainIds).most_common()) > 1:
+    if any(a['chain_id'] != chainId for a in atoms):
         return True
 
-    seqIds = [a['seq_id'] for a in atoms]
-
-    if any(True for seqId in seqIds if seqId is None):
-        return False
-
-    commonSeqId = collections.Counter(seqIds).most_common()
-
-    if len(commonSeqId) > 1:
+    if any(a['seq_id'] != seqId for a in atoms):
         return True
 
-    atomIds = list(set(a['atom_id'] for a in atoms))
+    if any(a['atom_id'][0] != atomType for a in atoms):
+        return True
 
-    commonAtomId = collections.Counter(atomIds).most_common()
+    atomIds = list(dict.fromkeys(a['atom_id'] for a in atoms))
 
-    if len(commonAtomId) == 1:
+    if len(atomIds) == 1:
         return False
 
     atomId0 = atomIds[0]
-    compId = atoms[0]['comp_id']
+    compId = a0['comp_id']
 
     _protonsInGroup = csStat.getProtonsInSameGroup(compId, atomId0, True)
     geminalAtom = csStat.getGeminalAtom(compId, atomId0)
@@ -5369,7 +5396,7 @@ def getTypeOfDihedralRestraint(polypeptide: bool, polynucleotide: bool, carbohyd
 
         elif lenCommonSeqId == 2:
 
-            # ALPHA or EPSILON or ZETA or THETA or or THETA'
+            # ALPHA or EPSILON or ZETA or THETA or THETA'
             testDataType = ['ALPHA', 'EPSILON', 'ZETA', 'THETA', "THETA'"]
 
             for dataType in testDataType:
@@ -5657,7 +5684,7 @@ def fixBackboneAtomsOfDihedralRestraint(angleName: str, atoms: List[dict], curre
 
 
 def isLikePheOrTyr(compId: str, ccU) -> bool:
-    """ Return whether a given comp_id is amino acid with flippable symmetrical ring like phenylalanine or tryrosine.
+    """ Return whether a given comp_id is amino acid with flippable symmetrical ring like phenylalanine or tyrosine.
     """
 
     if compId in ('PHE', 'TYR'):
@@ -5676,8 +5703,143 @@ def isLikePheOrTyr(compId: str, ccU) -> bool:
     return False
 
 
+def pseudoAtomElement(atomId: str, compType: Optional[dict] = None) -> str:
+    """ Return the element of an atom of a pseudo CCD (DAOTHER-8817): its type_symbol in the coordinates when known,
+        otherwise the first letter of the atom_id, as the pseudo CCD used to take it for every atom.
+        @param compType: type_symbol of each atom_id of the residue, {atom_id: type_symbol}
+    """
+
+    if compType is not None:
+        typeSymbol = compType.get(atomId)
+        if isinstance(typeSymbol, str) and typeSymbol not in EMPTY_VALUE:
+            return typeSymbol.upper()
+
+    return atomId[0]
+
+
+def isPseudoProton(atomId: str, compType: Optional[dict] = None) -> bool:
+    """ Return whether an atom of a pseudo CCD is a hydrogen (or deuterium), see pseudoAtomElement() (DAOTHER-8817).
+    """
+
+    if compType is not None:
+        typeSymbol = compType.get(atomId)
+        if isinstance(typeSymbol, str) and typeSymbol not in EMPTY_VALUE:
+            return typeSymbol.upper() in ('H', 'D')
+
+    return atomId[0] in PROTON_BEGIN_CODE
+
+
+def buildPseudoChemCompBond(atomIds: List[str], typeSymbols: List[str], resCoordDict: dict) -> Tuple[dict, dict]:
+    """ Return the bonds of a non-standard residue derived from the coordinates of one of its instances (DAOTHER-8817):
+        the protons attached to each heavy atom, {heavy: [proton, ...]}, where a proton belongs to the nearest
+        heavy atom within 1.5 A, and the heavy atoms bonded to each heavy atom, {heavy: [heavy, ...]}, where two heavy
+        atoms are bonded if they are closer than COVALENT_BOND_TOLERANCE times the sum of their covalent radii.
+        Protons and heavy atoms are told apart by type_symbol, see isPseudoProton().
+        @param atomIds: atom_ids of the residue
+        @param typeSymbols: type_symbol of each atom_id
+        @param resCoordDict: Cartesian coordinates of the residue, {atom_id: numpy array}
+    """
+
+    bond, topo = {}, {}
+
+    compType = dict(zip(atomIds, typeSymbols))
+    protons = [a for a in atomIds if isPseudoProton(a, compType)]
+    heavies = [a for a in atomIds if not isPseudoProton(a, compType)]
+
+    for proton in protons:
+
+        bonded = None
+        distance = 1.5
+
+        for heavy in heavies:
+            if proton in resCoordDict and heavy in resCoordDict:
+                _distance = numpy.linalg.norm(resCoordDict[proton] - resCoordDict[heavy])
+
+                if _distance < distance:
+                    distance = _distance
+                    bonded = heavy
+
+        if bonded is not None:
+            if bonded not in bond:
+                bond[bonded] = []
+            bond[bonded].append(proton)
+
+    radius = {atomId: COVALENT_RADII.get(pseudoAtomElement(atomId, compType), DEFAULT_COVALENT_RADIUS)
+              for atomId in heavies}
+
+    for heavy in heavies:
+        for heavy2 in heavies:
+            if heavy2 != heavy and heavy in resCoordDict and heavy2 in resCoordDict:
+                _distance = numpy.linalg.norm(resCoordDict[heavy] - resCoordDict[heavy2])
+
+                if _distance < COVALENT_BOND_TOLERANCE * (radius[heavy] + radius[heavy2]):
+                    if heavy not in topo:
+                        topo[heavy] = []
+                    topo[heavy].append(heavy2)
+
+    return bond, topo
+
+
+def isFlippableRingProtonHost(compTopo: dict, compBond: dict, atomId: str, compType: Optional[dict] = None) -> bool:
+    """ Return whether a heavy atom of a non-standard residue, carrying one proton, lies off a mirror axis of its
+        five- or six-membered ring, so that its proton exchanges with the mirror one, like HD1/HD2 and HE1/HE2 of
+        phenylalanine (ambiguity code 3) (DAOTHER-8817).
+        The ring has to be invariant under the mirror, comparing each ring atom by its element, its number of protons,
+        and the elements of its neighbors outside the ring. The axis of a six-membered ring runs through two opposite
+        atoms, e.g. CG and CZ of phenylalanine, and that of a five-membered ring through an atom and the midpoint of
+        the opposite bond, e.g. N1 of a pyrrol-1-yl; a ring without substituents, e.g. a free benzene, has such axes too.
+        atomId must not lie on the axis. This tells HD1/HD2 and HE1/HE2 of phenylalanine and tyrosine (code 3) from HZ
+        of phenylalanine and from the ring protons of tryptophan and histidine (code 1). Elements come from
+        pseudoAtomElement().
+        @param compTopo: heavy atoms bonded to each heavy atom, see buildPseudoChemCompBond()
+        @param compBond: protons attached to each heavy atom, see buildPseudoChemCompBond()
+        @param compType: type_symbol of each atom_id of the residue, {atom_id: type_symbol}
+    """
+
+    neighbors = compTopo.get(atomId)
+
+    if neighbors is None or len(neighbors) != 2 or len(compBond.get(atomId, [])) != 1:
+        return False
+
+    first, last = neighbors
+
+    def rings_of_size(size: int) -> list:
+        # rings through atomId: [atomId, first, ..., last], size atoms
+        found = []
+
+        def extend(path: list):
+            if len(path) == size - 2:
+                if last in compTopo.get(path[-1], []):
+                    found.append([atomId] + path + [last])
+                return
+            for nxt in compTopo.get(path[-1], []):
+                if nxt not in path and nxt not in (atomId, last):
+                    extend(path + [nxt])
+
+        extend([first])
+        return found
+
+    def signature(ring: list, idx: int) -> tuple:
+        a = ring[idx]
+        return (pseudoAtomElement(a, compType), len(compBond.get(a, [])),
+                tuple(sorted(pseudoAtomElement(n, compType) for n in compTopo.get(a, []) if n not in ring)))
+
+    for size in (6, 5):
+        for ring in rings_of_size(size):
+            sig = [signature(ring, i) for i in range(size)]
+            for axis in range(size):
+                # the mirror through ring[axis] maps ring[axis + k] to ring[axis - k]; for a six-membered ring the axis
+                # also runs through ring[axis + 3], for a five-membered ring through the midpoint of the opposite bond
+                if axis == 0 or (size == 6 and axis == 3):
+                    continue  # atomId lies on the axis
+                if all(sig[(axis + k) % size] == sig[(axis - k) % size] for k in range(1, size // 2 + 1)):
+                    return True
+
+    return False
+
+
 def isLikeHis(compId: str, ccU) -> bool:
-    """ Return whether a given comp_id is like histigine.
+    """ Return whether a given comp_id is like histidine.
     """
 
     if compId == 'HIS':
@@ -5704,7 +5866,7 @@ def getRdcCode(atoms: List[dict]
     if len(atoms) != 2:
         return None
 
-    if any(True for a in atoms if a is None):
+    if None in atoms:
         return None
 
     atom1 = atoms[0]
@@ -5751,16 +5913,22 @@ def getRdcCode(atoms: List[dict]
     return 'RDC_other'
 
 
+# legacy PDB records, and the blank-padded ones without their trailing blank, for startsWithPdbRecord()
+_PDB_RECORDS_FOR_PREFIX_TEST = {False: (LEGACY_PDB_RECORDS,
+                                        frozenset(r[:-1] for r in LEGACY_PDB_RECORDS if r.endswith(' '))),
+                                True: (LEGACY_PDB_RECORDS_WO_REMARK,
+                                       frozenset(r[:-1] for r in LEGACY_PDB_RECORDS_WO_REMARK if r.endswith(' ')))}
+
+
 def startsWithPdbRecord(line: str, ignoreRemark: bool = False) -> bool:
     """ Return whether a given line string starts with legacy PDB records.
     """
 
-    PDB_RECORDS = LEGACY_PDB_RECORDS_WO_REMARK if ignoreRemark else LEGACY_PDB_RECORDS
+    pdbRecords, paddedRecords = _PDB_RECORDS_FOR_PREFIX_TEST[bool(ignoreRemark)]
 
-    if any(line.startswith(pdb_record) for pdb_record in PDB_RECORDS):
-        return True
-
-    return any(line[:-1] == pdb_record[:-1] for pdb_record in PDB_RECORDS if pdb_record.endswith(' '))
+    # str.startswith() takes the tuple of records at once, and a padded record such as 'TITLE ' also matches a line
+    # that is the record name followed by one more character, e.g. 'TITLE\n'
+    return line.startswith(pdbRecords) or line[:-1] in paddedRecords
 
 
 def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
@@ -5854,7 +6022,7 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
 def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = None
                       ) -> Optional[List[dict]]:
     """ Return structurally connected partner residues for a given residue.
-        @return: list of partner residues for a given residue descrived in struct_conn loop
+        @return: list of partner residues for a given residue described in struct_conn loop
     """
 
     if cR is None or not cR.hasCategory('struct_conn'):
@@ -5892,7 +6060,7 @@ def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = Non
     except Exception:  # pylint: disable=broad-exception-caught
         return None
 
-    return [dict(s) for s in set(frozenset(sc.items()) for sc in struct_conn if isinstance(sc, dict))]
+    return [dict(s) for s in dict.fromkeys(frozenset(sc.items()) for sc in struct_conn if isinstance(sc, dict))]
 
 
 def getWatsonCrickPtnr(cR, authAsymId: str
@@ -6361,6 +6529,73 @@ def decListIdCounter(mrSubtype: str, listIdCounter: dict, reduced: bool = True,
             listIdCounter[contentSubtype] -= 1
 
     return listIdCounter
+
+
+def trimSfWoLpOf(sfDict: dict, lastSfDict: dict, curSubtype: str, listIdCounter: dict) -> dict:
+    """ Trim the last saveframe of the current restraint subtype if it has no row, and return the list id counter.
+    """
+
+    if curSubtype not in lastSfDict:
+        return listIdCounter
+    if lastSfDict[curSubtype]['index_id'] > 0:
+        return listIdCounter
+    for k, v in sfDict.items():
+        for item in reversed(v):
+            if item is lastSfDict[curSubtype]:
+                v.remove(item)
+                if len(v) == 0:
+                    del sfDict[k]
+                return decListIdCounter(k[0], listIdCounter)
+    return listIdCounter
+
+
+def getSfDictOf(sfDict: dict, listIdCounter: dict, reservedListIds: Optional[dict] = None) -> Tuple[dict, Optional[dict]]:
+    """ Remove pynmrstar saveframes without any row, and return the list id counter and the remaining saveframes.
+    """
+
+    if len(sfDict) == 0:
+        return listIdCounter, None
+    ign_keys = []
+    for k, v in sfDict.items():
+        for item in reversed(v):
+            if item['index_id'] == 0:
+                v.remove(item)
+                if len(v) == 0:
+                    ign_keys.append(k)
+                listIdCounter = decListIdCounter(k[0], listIdCounter, reservedListIds=reservedListIds)
+    for k in ign_keys:
+        del sfDict[k]
+    return listIdCounter, None if len(sfDict) == 0 else sfDict
+
+
+def nearestLocalOffset(offset: dict, seqId: int) -> Any:
+    """ Return the sequence offset registered for the sequence code nearest to a given one, within LOCAL_OFFSET_ATTEMPT.
+        @return: the offset, or the offset dictionary as is if no sequence code was found
+    """
+
+    for shift in range(1, LOCAL_OFFSET_ATTEMPT):
+        if seqId + shift in offset:
+            return offset[seqId + shift]
+        if seqId - shift in offset:
+            return offset[seqId - shift]
+    return offset
+
+
+def indexOfAuthSeqIdAcrossGap(ps: dict, seqId: int, offset: int) -> Optional[int]:
+    """ Return the index of the author sequence code for a given sequence code and offset, searching across a gap in
+        the author sequence within LOCAL_OFFSET_ATTEMPT.
+    """
+
+    for shift in range(1, LOCAL_OFFSET_ATTEMPT):
+        if seqId + shift + offset in ps['auth_seq_id']:
+            idx = ps['auth_seq_id'].index(seqId + shift + offset) - shift
+            if 0 <= idx < len(ps['auth_seq_id']):
+                return idx
+        if seqId - shift + offset in ps['auth_seq_id']:
+            idx = ps['auth_seq_id'].index(seqId - shift + offset) + shift
+            if 0 <= idx < len(ps['auth_seq_id']):
+                return idx
+    return None
 
 
 def retrieveOriginalFileName(filePath: str) -> str:
@@ -9323,7 +9558,7 @@ def selectCoordAtoms(cR, caC: dict, nefT, chainAssign: List[Tuple[str, int, str,
                      modelNumName: str = 'PDB_model_num', offset: int = 1
                      ) -> Tuple[List[dict], str]:
     """ Select atoms of the coordinates.
-        @return atom selection, warning mesage (None for valid case)
+        @return atom selection, warning message (None for valid case)
     """
 
     atomSelection = []
@@ -9605,7 +9840,7 @@ def testCoordAtomIdConsistency(caC: dict, ccU, authChainId: str, chainId: str, s
                                enableWarning: bool = True
                                ) -> Optional[str]:
     """ Check existence of specified atom in the coordinates.
-        @return: waring message (None for valid case)
+        @return: warning message (None for valid case)
     """
 
     found = False

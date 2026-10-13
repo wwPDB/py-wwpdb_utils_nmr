@@ -21,6 +21,14 @@
 #                           (DAOTHER-9785, 10893, v1.3.1)
 # 09-Sep-2026  M. Yokochi - calculate number of chemical shifts mapped to unmodeled residues as unmapped warning
 #                           (DAOTHER-9785, 10987, v1.3.2)
+# 16-Sep-2026  M. Yokochi - allow to run chemical shift analysis without coordinates (DAOTHER-9785, v1.3.3)
+# 30-Sep-2026  M. Yokochi - import NEXT_STAR_FILE_PATH_KEY in standalone mode too, and remove the temporary CIF file of
+#                           a pynmrstar object only when its path was not given (DAOTHER-9785)
+# 03-Oct-2026  M. Yokochi - detect duplicated chemical shifts within each list, which the check against the dictionary
+#                           of all lists never did, and look up the shifts of each residue for the random coil index
+#                           instead of scanning all shifts of the list per residue (DAOTHER-7829, 9785)
+# 03-Oct-2026  M. Yokochi - keep the workflow tasks as functions instead of bound methods, so that an instance is not
+#                           a reference cycle and is freed as soon as it is dropped (DAOTHER-7829, 9785)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -31,10 +39,11 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "v1.3.2"
+__version__ = "v1.3.3"
 
 import collections
 import copy
+import gc
 import gzip
 import math
 import os
@@ -42,6 +51,7 @@ import pickle
 import sys
 import tempfile
 import time
+import warnings
 from operator import itemgetter
 from typing import Any, IO, List, Optional, Tuple
 
@@ -53,6 +63,7 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                                NMR_CIF_FILE_PATH_KEY,
                                                NMR_STR_FILE_PATH_KEY,
+                                               NEXT_STAR_FILE_PATH_KEY,
                                                RESULT_PKL_FILE_PATH_KEY,
                                                REPORT_FILE_PATH_KEY,
                                                CIF_READER_OBJ_KEY,
@@ -72,6 +83,8 @@ try:
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                REPRESENTATIVE_ASYM_ID,
+                                               CARTN_DATA_ITEMS,
+                                               THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                DIST_ERROR_MAX,
                                                ANGLE_ERROR_MAX,
                                                RDC_ERROR_MAX,
@@ -102,6 +115,7 @@ except ImportError:
     from nmr.NmrDpConstant import (MODEL_FILE_PATH_KEY,
                                    NMR_CIF_FILE_PATH_KEY,
                                    NMR_STR_FILE_PATH_KEY,
+                                   NEXT_STAR_FILE_PATH_KEY,
                                    RESULT_PKL_FILE_PATH_KEY,
                                    REPORT_FILE_PATH_KEY,
                                    CIF_READER_OBJ_KEY,
@@ -121,6 +135,8 @@ except ImportError:
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    REPRESENTATIVE_ASYM_ID,
+                                   CARTN_DATA_ITEMS,
+                                   THRESHOLD_FOR_CIRCULAR_SHIFT,
                                    DIST_ERROR_MAX,
                                    ANGLE_ERROR_MAX,
                                    RDC_ERROR_MAX,
@@ -148,6 +164,9 @@ except ImportError:
                                            getRdcCode)
     from nmr.rci.RCI import RCI
 
+
+# throw RuntimeWarning as error for bug tracking, any runtimewarning should be handled
+warnings.filterwarnings('error', category=RuntimeWarning, module='NmrVrptUtility')
 
 NMR_VTF_DIST_VIOL_CUTOFF = 0.1
 NMR_VTF_DIHED_VIOL_CUTOFF = 1.0
@@ -467,7 +486,7 @@ def angle_target_values(target_value: Optional[float], target_value_uncertainty:
 
                 target_value = target_value_aclock if target_value_vote_aclock > target_value_vote_clock else target_value_clock
 
-            else:  # estimate target value by comparing lower_limit and upper_limit value, CYANA)
+            else:  # estimate target value by comparing lower_limit and upper_limit value (CYANA)
                 target_value = target_value_aclock if lower_bound <= upper_bound else target_value_clock
 
         except TypeError:
@@ -527,6 +546,304 @@ def angle_error(lower_bound: Optional[float], upper_bound: Optional[float], targ
         return 0.0
 
     return min(angle_diff(upper_bound, angle), angle_diff(lower_bound, angle))
+
+
+def select_realistic_bond_constraint(listener: Any, atom1: dict, atom2: dict,
+                                     alt_atom_id1: Optional[str], alt_atom_id2: Optional[str], dst_func: dict,
+                                     verbose: bool, log: IO) -> Tuple[dict, dict]:
+    """ Return realistic bond constraint taking into account the current coordinates.
+        @param listener: MR parser listener providing hasCoord, cR and the atom_site item names
+    """
+
+    if not listener.hasCoord:
+        return atom1, atom2
+
+    try:
+
+        cR = listener.cR
+        authAsymId, authSeqId, authAtomId = listener.authAsymId, listener.authSeqId, listener.authAtomId
+        modelNumName = listener.modelNumName
+        representativeModelId, representativeAltId = listener.representativeModelId, listener.representativeAltId
+
+        _p1 =\
+            cR.getDictListWithFilter('atom_site',
+                                     CARTN_DATA_ITEMS,
+                                     [{'name': authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                      {'name': authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                      {'name': authAtomId, 'type': 'str', 'value': atom1['atom_id']},
+                                      {'name': modelNumName, 'type': 'int',
+                                       'value': representativeModelId},
+                                      {'name': 'label_alt_id', 'type': 'enum',
+                                       'enum': (representativeAltId,)}
+                                      ])
+
+        if len(_p1) != 1:
+            return atom1, atom2
+
+        p1 = to_np_array(_p1[0])
+
+        _p2 =\
+            cR.getDictListWithFilter('atom_site',
+                                     CARTN_DATA_ITEMS,
+                                     [{'name': authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                      {'name': authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                      {'name': authAtomId, 'type': 'str', 'value': atom2['atom_id']},
+                                      {'name': modelNumName, 'type': 'int',
+                                       'value': representativeModelId},
+                                      {'name': 'label_alt_id', 'type': 'enum',
+                                       'enum': (representativeAltId,)}
+                                      ])
+
+        if len(_p2) != 1:
+            return atom1, atom2
+
+        p2 = to_np_array(_p2[0])
+
+        d_org = distance(p1, p2)
+
+        lower_limit = dst_func.get('lower_limit')
+        if lower_limit is not None:
+            lower_limit = float(lower_limit)
+        upper_limit = dst_func.get('upper_limit')
+        if upper_limit is not None:
+            upper_limit = float(upper_limit)
+
+        if alt_atom_id1 is not None:
+
+            _p1 =\
+                cR.getDictListWithFilter('atom_site',
+                                         CARTN_DATA_ITEMS,
+                                         [{'name': authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                          {'name': authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                          {'name': authAtomId, 'type': 'str', 'value': alt_atom_id1},
+                                          {'name': modelNumName, 'type': 'int',
+                                           'value': representativeModelId},
+                                          {'name': 'label_alt_id', 'type': 'enum',
+                                           'enum': (representativeAltId,)}
+                                          ])
+
+            if len(_p1) != 1:
+                return atom1, atom2
+
+            p1_alt = to_np_array(_p1[0])
+
+            d_alt = distance(p1_alt, p2)
+
+            if dist_error(lower_limit, upper_limit, d_org) > dist_error(lower_limit, upper_limit, d_alt):
+                if 'auth_atom_id' not in atom1:
+                    atom1['auth_atom_id'] = atom1['atom_id']
+                atom1['atom_id'] = alt_atom_id1
+
+        elif alt_atom_id2 is not None:
+
+            _p2 =\
+                cR.getDictListWithFilter('atom_site',
+                                         CARTN_DATA_ITEMS,
+                                         [{'name': authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                          {'name': authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                          {'name': authAtomId, 'type': 'str', 'value': alt_atom_id2},
+                                          {'name': modelNumName, 'type': 'int',
+                                           'value': representativeModelId},
+                                          {'name': 'label_alt_id', 'type': 'enum',
+                                           'enum': (representativeAltId,)}
+                                          ])
+
+            if len(_p2) != 1:
+                return atom1, atom2
+
+            p2_alt = to_np_array(_p2[0])
+
+            d_alt = distance(p1, p2_alt)
+
+            if dist_error(lower_limit, upper_limit, d_org) > dist_error(lower_limit, upper_limit, d_alt):
+                if 'auth_atom_id' not in atom2:
+                    atom2['auth_atom_id'] = atom2['atom_id']
+                atom2['atom_id'] = alt_atom_id2
+
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        if verbose:
+            log.write(f"+{listener.__class_name__}.selectRealisticBondConstraint() ++ Error  - {str(e)}")
+
+    return atom1, atom2
+
+
+def select_realistic_chi2_angle_constraint(listener: Any, atom1: dict, atom2: dict, atom3: dict, atom4: dict,
+                                           dst_func: dict, verbose: bool, log: IO,
+                                           correct_circular_shift: bool = True) -> dict:
+    """ Return realistic chi2 angle constraint taking into account the current coordinates.
+        @param listener: MR parser listener providing hasCoord, cR and the atom_site item names
+    """
+
+    if not listener.hasCoord:
+        return dst_func
+
+    try:
+
+        cR = listener.cR
+        authAsymId, authSeqId, authAtomId = listener.authAsymId, listener.authSeqId, listener.authAtomId
+        modelNumName = listener.modelNumName
+        representativeModelId, representativeAltId = listener.representativeModelId, listener.representativeAltId
+
+        _p1 =\
+            cR.getDictListWithFilter('atom_site',
+                                     CARTN_DATA_ITEMS,
+                                     [{'name': authAsymId, 'type': 'str', 'value': atom1['chain_id']},
+                                      {'name': authSeqId, 'type': 'int', 'value': atom1['seq_id']},
+                                      {'name': authAtomId, 'type': 'str', 'value': atom1['atom_id']},
+                                      {'name': modelNumName, 'type': 'int',
+                                       'value': representativeModelId},
+                                      {'name': 'label_alt_id', 'type': 'enum',
+                                       'enum': (representativeAltId,)}
+                                      ])
+
+        if len(_p1) != 1:
+            return dst_func
+
+        p1 = to_np_array(_p1[0])
+
+        _p2 =\
+            cR.getDictListWithFilter('atom_site',
+                                     CARTN_DATA_ITEMS,
+                                     [{'name': authAsymId, 'type': 'str', 'value': atom2['chain_id']},
+                                      {'name': authSeqId, 'type': 'int', 'value': atom2['seq_id']},
+                                      {'name': authAtomId, 'type': 'str', 'value': atom2['atom_id']},
+                                      {'name': modelNumName, 'type': 'int',
+                                       'value': representativeModelId},
+                                      {'name': 'label_alt_id', 'type': 'enum',
+                                       'enum': (representativeAltId,)}
+                                      ])
+
+        if len(_p2) != 1:
+            return dst_func
+
+        p2 = to_np_array(_p2[0])
+
+        _p3 =\
+            cR.getDictListWithFilter('atom_site',
+                                     CARTN_DATA_ITEMS,
+                                     [{'name': authAsymId, 'type': 'str', 'value': atom3['chain_id']},
+                                      {'name': authSeqId, 'type': 'int', 'value': atom3['seq_id']},
+                                      {'name': authAtomId, 'type': 'str', 'value': atom3['atom_id']},
+                                      {'name': modelNumName, 'type': 'int',
+                                       'value': representativeModelId},
+                                      {'name': 'label_alt_id', 'type': 'enum',
+                                       'enum': (representativeAltId,)}
+                                      ])
+
+        if len(_p3) != 1:
+            return dst_func
+
+        p3 = to_np_array(_p3[0])
+
+        _p4 =\
+            cR.getDictListWithFilter('atom_site',
+                                     CARTN_DATA_ITEMS,
+                                     [{'name': authAsymId, 'type': 'str', 'value': atom4['chain_id']},
+                                      {'name': authSeqId, 'type': 'int', 'value': atom4['seq_id']},
+                                      {'name': authAtomId, 'type': 'str', 'value': 'CD1'},
+                                      {'name': modelNumName, 'type': 'int',
+                                       'value': representativeModelId},
+                                      {'name': 'label_alt_id', 'type': 'enum',
+                                       'enum': (representativeAltId,)}
+                                      ])
+
+        if len(_p4) != 1:
+            return dst_func
+
+        p4 = to_np_array(_p4[0])
+
+        chi2 = dihedral_angle(p1, p2, p3, p4)
+
+        _p4 =\
+            cR.getDictListWithFilter('atom_site',
+                                     CARTN_DATA_ITEMS,
+                                     [{'name': authAsymId, 'type': 'str', 'value': atom4['chain_id']},
+                                      {'name': authSeqId, 'type': 'int', 'value': atom4['seq_id']},
+                                      {'name': authAtomId, 'type': 'str', 'value': 'CD2'},
+                                      {'name': modelNumName, 'type': 'int',
+                                       'value': representativeModelId},
+                                      {'name': 'label_alt_id', 'type': 'enum',
+                                       'enum': (representativeAltId,)}
+                                      ])
+
+        if len(_p4) != 1:
+            return dst_func
+
+        alt_p4 = to_np_array(_p4[0])
+
+        alt_chi2 = dihedral_angle(p1, p2, p3, alt_p4)
+
+        target_value = dst_func.get('target_value')
+        if target_value is not None:
+            target_value = float(target_value)
+        target_value_uncertainty = dst_func.get('target_value_uncertainty')
+        if target_value_uncertainty is not None:
+            target_value_uncertainty = float(target_value_uncertainty)
+
+        lower_limit = dst_func.get('lower_limit')
+        if lower_limit is not None:
+            lower_limit = float(lower_limit)
+        upper_limit = dst_func.get('upper_limit')
+        if upper_limit is not None:
+            upper_limit = float(upper_limit)
+
+        lower_linear_limit = dst_func.get('lower_linear_limit')
+        if lower_linear_limit is not None:
+            lower_linear_limit = float(lower_linear_limit)
+        upper_linear_limit = dst_func.get('upper_linear_limit')
+        if upper_linear_limit is not None:
+            upper_linear_limit = float(upper_linear_limit)
+
+        target_value, lower_bound, upper_bound =\
+            angle_target_values(target_value, target_value_uncertainty,
+                                lower_limit, upper_limit,
+                                lower_linear_limit, upper_linear_limit)
+
+        if target_value is None:
+            return dst_func
+
+        if angle_error(lower_bound, upper_bound, target_value, chi2) >\
+           angle_error(lower_bound, upper_bound, target_value, alt_chi2):
+            target_value = dst_func.get('target_value')
+            if target_value is not None:
+                target_value = float(target_value) + 180.0
+            lower_limit = dst_func.get('lower_limit')
+            if lower_limit is not None:
+                lower_limit = float(lower_limit) + 180.0
+            upper_limit = dst_func.get('upper_limit')
+            if upper_limit is not None:
+                upper_limit = float(upper_limit) + 180.0
+
+            if lower_linear_limit is not None:
+                lower_linear_limit += 180.0
+            if upper_linear_limit is not None:
+                upper_linear_limit += 180.0
+
+            _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
+                                 dtype=float)
+
+            shift = 0.0
+            if correct_circular_shift:
+                if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
+                    shift = -(numpy.nanmax(_array) // 360) * 360
+                elif numpy.nanmax(_array) <= -THRESHOLD_FOR_CIRCULAR_SHIFT:
+                    shift = -(numpy.nanmin(_array) // 360) * 360
+            if target_value is not None:
+                dst_func['target_value'] = str(target_value + shift)
+            if lower_limit is not None:
+                dst_func['lower_limit'] = str(lower_limit + shift)
+            if upper_limit is not None:
+                dst_func['upper_limit'] = str(upper_limit + shift)
+            if lower_linear_limit is not None:
+                dst_func['lower_linear_limit'] = str(lower_linear_limit + shift)
+            if upper_linear_limit is not None:
+                dst_func['upper_linear_limit'] = str(upper_linear_limit + shift)
+
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        if verbose:
+            log.write(f"+{listener.__class_name__}.selectRealisticChi2AngleConstraint() ++ Error  - {str(e)}")
+
+    return dst_func
 
 
 def rdc_dmax(atom_type_1: str, atom_type_2: str, bond_distance: float, hz_unit: bool = True):
@@ -841,7 +1158,7 @@ def predict_tautomer_state_of_histidine(cg_chem_shift: Optional[float], cd2_chem
 
 def predict_rotamer_state_of_leucine(cd1_chem_shift: Optional[float], cd2_chem_shift: Optional[float]
                                      ) -> Tuple[float, float]:
-    """ Return prediction of rotermeric state of Leucine using assigned CD1 and CD2 chemical shifts.
+    """ Return prediction of rotameric state of Leucine using assigned CD1 and CD2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
@@ -886,7 +1203,7 @@ def predict_rotamer_state_of_leucine(cd1_chem_shift: Optional[float], cd2_chem_s
 
 def predict_rotamer_state_of_valine(cg1_chem_shift: Optional[float], cg2_chem_shift: Optional[float]
                                     ) -> Tuple[float, float]:
-    """ Return prediction of rotermeric state of Valine using assigned CG1 and CG2 chemical shifts.
+    """ Return prediction of rotameric state of Valine using assigned CG1 and CG2 chemical shifts.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Dependence of Amino Acid Side Chain 13C Shifts on Dihedral Angle: Application to Conformational Analysis.
@@ -928,7 +1245,7 @@ def predict_rotamer_state_of_valine(cg1_chem_shift: Optional[float], cg2_chem_sh
 
 def predict_rotamer_state_of_isoleucine(cd1_chem_shift: Optional[float]
                                         ) -> Tuple[float, float, float]:
-    """ Return prediction of rotermeric state of Isoleucine using assigned CD1 chemical shift.
+    """ Return prediction of rotameric state of Isoleucine using assigned CD1 chemical shift.
         @return: probability of gauche+, trans, gauche-
         Reference:
           Determination of Isoleucine Side-Chain Conformations in Ground and Excited States of Proteins from Chemical Shifts.
@@ -1178,40 +1495,46 @@ class NmrVrptUtility:
         # whether molecular assembly is diamagnetic.
         self.__is_diamagnetic = True
 
-        __csValidTasks = [self.__parseCoordinate,
-                          self.__parseNmrData,
-                          self.__parseNmrDpReport,
-                          self.__checkPreviousCsAnalysis,
-                          self.__retrieveCoordAssemblyChecker,
-                          self.__extractCoordAtomSites,
-                          self.__extractEntityInstances,
-                          self.__extractChemicalShifts,
-                          self.__validateChemicalShifts,
-                          self.__summarizeCommonCsAnalysis,
-                          self.__outputResultsAsPickleFile]
+        # the tasks are functions, called with the instance, rather than bound methods, which would make each instance a
+        # reference cycle (instance -> task list -> bound method -> instance) that holds its coordinates, NMR data and
+        # report until a full garbage collection, e.g. the previous NMR unified data in 'nmr-str2str-deposit'
+        __csValidTasks = [NmrVrptUtility.__parseCoordinate,
+                          NmrVrptUtility.__parseNmrData,
+                          NmrVrptUtility.__parseNmrDpReport,
+                          NmrVrptUtility.__checkPreviousCsAnalysis,
+                          NmrVrptUtility.__retrieveCoordAssemblyChecker,
+                          NmrVrptUtility.__extractCoordAtomSites,
+                          NmrVrptUtility.__extractEntityInstances,
+                          NmrVrptUtility.__extractChemicalShifts,
+                          NmrVrptUtility.__validateChemicalShifts,
+                          NmrVrptUtility.__summarizeCommonCsAnalysis,
+                          NmrVrptUtility.__outputResultsAsPickleFile]
 
-        __mrValidTasks = [self.__parseCoordinate,
-                          self.__parseNmrData,
-                          self.__checkPreviousMrAnalysis,
-                          self.__retrieveCoordAssemblyChecker,
-                          self.__extractCoordAtomSites,
-                          self.__extractGenDistConstraints,
-                          self.__extractTorsionAngleConstraints,
-                          self.__extractRdcConstraints,
-                          self.__validateDistanceRestraints,
-                          self.__validateDihedralAngleRestraints,
-                          self.__validateRdcRestraints,
-                          self.__summarizeCommonMrAnalysis,
-                          self.__summarizeDistanceRestraintAnalysis,
-                          self.__summarizeDihedralAngleRestraintAnalysis,
-                          self.__summarizeRdcRestraintAnalysis,
-                          self.__outputResultsAsPickleFile]
+        __mrValidTasks = [NmrVrptUtility.__parseCoordinate,
+                          NmrVrptUtility.__parseNmrData,
+                          NmrVrptUtility.__checkPreviousMrAnalysis,
+                          NmrVrptUtility.__retrieveCoordAssemblyChecker,
+                          NmrVrptUtility.__extractCoordAtomSites,
+                          NmrVrptUtility.__extractGenDistConstraints,
+                          NmrVrptUtility.__extractTorsionAngleConstraints,
+                          NmrVrptUtility.__extractRdcConstraints,
+                          NmrVrptUtility.__validateDistanceRestraints,
+                          NmrVrptUtility.__validateDihedralAngleRestraints,
+                          NmrVrptUtility.__validateRdcRestraints,
+                          NmrVrptUtility.__summarizeCommonMrAnalysis,
+                          NmrVrptUtility.__summarizeDistanceRestraintAnalysis,
+                          NmrVrptUtility.__summarizeDihedralAngleRestraintAnalysis,
+                          NmrVrptUtility.__summarizeRdcRestraintAnalysis,
+                          NmrVrptUtility.__outputResultsAsPickleFile]
 
         # dictionary of processing tasks of each workflow operation
         self.__procTasksDict = {'nmr-cs-validation': __csValidTasks,
                                 'nmr-mr-validation': __mrValidTasks,
                                 'nmr-chemical-shift-validation': __csValidTasks,
                                 'nmr-restraint-validation': __mrValidTasks}  # for backward compatibility
+
+        # Pre-run GC to avoid OOM because NmrVrptUtility requires a mount of memory
+        gc.collect(2)
 
     @property
     def version(self) -> str:
@@ -1358,21 +1681,40 @@ class NmrVrptUtility:
 
                 start_time = time.time()
 
-                if not task():
+                if not task(self):
                     break
 
-                if self.__debug and self.__verbose:
+                if self.__verbose:
                     end_time = time.time()
                     if end_time - start_time > 1.0:
                         self.__log.write(f"op: {op}, task: {task.__name__}, elapsed time: {end_time - start_time:.1f} sec\n")
 
         return self.__results
 
+    def release(self) -> None:
+        """ Release the memory held for the coordinates and NMR data.
+        """
+
+        # back to the initial state, which the next op expects, e.g. __extractEntityInstances() tests for None
+        self.__coordinates = None
+        self.__entityInstance = None
+
+        self.__rR.release()
+        self.__nmrDataPath = None
+
+        # check self.__cR is not borrowed from NmrDpUtility before releasing memory for the cooridnates
+        if not self.__use_cache:
+            self.__cR.release()
+
+        self.__cifPath = None
+
+        gc.collect(2)
+
     def __parseCoordinate(self) -> bool:
         """ Parse coordinates.
         """
 
-        def extract_emsemble():
+        def extract_ensemble():
 
             try:
 
@@ -1403,14 +1745,9 @@ class NmrVrptUtility:
 
                         try:
 
-                            model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                        [{'name': 'pdbx_PDB_model_num', 'type': 'int',
-                                                                          'alt_name': 'model_id'}
-                                                                         ])
+                            model_ids = self.__cR.getDistinctValues('atom_site', 'pdbx_PDB_model_num', 'int')
 
                             if len(model_ids) > 0:
-                                model_ids = set(c['model_id'] for c in model_ids)
-
                                 self.__representative_model_id = min(model_ids)
                                 self.__total_models = len(model_ids)
                                 self.__eff_model_ids = sorted(model_ids)
@@ -1436,14 +1773,9 @@ class NmrVrptUtility:
 
                     try:
 
-                        model_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                                    [{'name': 'pdbx_PDB_model_num', 'type': 'int',
-                                                                      'alt_name': 'model_id'}
-                                                                     ])
+                        model_ids = self.__cR.getDistinctValues('atom_site', 'pdbx_PDB_model_num', 'int')
 
                         if len(model_ids) > 0:
-                            model_ids = set(c['model_id'] for c in model_ids)
-
                             self.__total_models = len(model_ids)
                             self.__eff_model_ids = sorted(model_ids)
 
@@ -1453,15 +1785,10 @@ class NmrVrptUtility:
                             self.__log.write(f"+{self.__class_name__}.__parseCoordinate() ++ Error  - {str(e)}\n")
 
                 if self.__cR.hasItem('atom_site', 'label_alt_id'):
-                    alt_ids = self.__cR.getDictListWithFilter('atom_site',
-                                                              [{'name': 'label_alt_id', 'type': 'str'}
-                                                               ])
+                    alt_id = self.__cR.getFirstValue('atom_site', 'label_alt_id')
 
-                    if len(alt_ids) > 0:
-                        for a in alt_ids:
-                            if a['label_alt_id'] not in EMPTY_VALUE:
-                                self.__representative_alt_id = a['label_alt_id']
-                                break
+                    if alt_id is not None:
+                        self.__representative_alt_id = alt_id
 
                 if self.__cR.hasCategory('chem_comp_atom'):
 
@@ -1489,6 +1816,9 @@ class NmrVrptUtility:
 
             self.__cifPath = self.__cR.getFilePath()
 
+            if self.__cifPath is None:
+                return True
+
             if self.__use_cache:
 
                 if self.__dirPath is None:
@@ -1502,7 +1832,7 @@ class NmrVrptUtility:
 
                 self.__cifHashCode = self.__cR.getHashCode()
 
-            extract_emsemble()
+            extract_ensemble()
 
             return True
 
@@ -1528,7 +1858,7 @@ class NmrVrptUtility:
 
             return False
 
-        extract_emsemble()
+        extract_ensemble()
 
         return True
 
@@ -1580,8 +1910,10 @@ class NmrVrptUtility:
 
                 if self.__cR.parse(fPath):
                     self.__cifPath = fPath
+
                     if self.__use_cache:
                         self.__cifHashCode = self.__cR.getHashCode()
+
                     return True
 
             except Exception:  # pylint: disable=broad-exception-caught
@@ -1664,8 +1996,10 @@ class NmrVrptUtility:
 
                 if self.__rR.parse(fPath):
                     self.__nmrDataPath = fPath
+
                     if self.__use_cache:
                         self.__nmrDataHashCode = self.__rR.getHashCode()
+
                     return True
 
             except Exception:  # pylint: disable=broad-exception-caught
@@ -1686,7 +2020,13 @@ class NmrVrptUtility:
 
             fPath = self.__inputParamDict[NMR_STR_FILE_PATH_KEY]
 
-            _fPath = self.getNextPath(fPath, '.str2cif')
+            has_safe_cif_path = False
+
+            if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict and self.__outputParamDict[NMR_CIF_FILE_PATH_KEY] is not None:
+                _fPath = self.__outputParamDict[NMR_CIF_FILE_PATH_KEY]
+                has_safe_cif_path = True
+            else:
+                _fPath = self.getNextPath(fPath, '.str2cif')
 
             try:
 
@@ -1708,8 +2048,10 @@ class NmrVrptUtility:
 
                     if self.__rR.parse(_fPath):
                         self.__nmrDataPath = fPath
+
                         if self.__use_cache:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
+
                         return True
 
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -1717,8 +2059,9 @@ class NmrVrptUtility:
 
             finally:
                 try:
-                    if os.path.exists(_fPath):
-                        os.remove(_fPath)
+                    if not has_safe_cif_path:
+                        if os.path.exists(_fPath):
+                            os.remove(_fPath)
                 except OSError:
                     pass
 
@@ -1726,8 +2069,19 @@ class NmrVrptUtility:
 
             master_entry = self.__inputParamDict[PYNMRSTAR_OBJ_KEY]
 
-            _fPath = get_temp_path(None, '.str')
-            __fPath = f'{_fPath}.str2cif'
+            has_safe_star_path = has_safe_cif_path = False
+
+            if NEXT_STAR_FILE_PATH_KEY in self.__outputParamDict and self.__outputParamDict[NEXT_STAR_FILE_PATH_KEY] is not None:
+                _fPath = self.__outputParamDict[NEXT_STAR_FILE_PATH_KEY]
+                has_safe_star_path = True
+            else:
+                _fPath = get_temp_path(None, '.str')
+
+            if NMR_CIF_FILE_PATH_KEY in self.__outputParamDict and self.__outputParamDict[NMR_CIF_FILE_PATH_KEY] is not None:
+                __fPath = self.__outputParamDict[NMR_CIF_FILE_PATH_KEY]
+                has_safe_cif_path = True
+            else:
+                __fPath = f'{_fPath}.str2cif'
 
             try:
 
@@ -1751,8 +2105,10 @@ class NmrVrptUtility:
 
                     if self.__rR.parse(__fPath):
                         self.__nmrDataPath = _fPath
+
                         if self.__use_cache:
                             self.__nmrDataHashCode = self.__rR.getHashCode()
+
                         return True
 
             except Exception as e:  # pylint: disable=broad-exception-caught
@@ -1760,10 +2116,12 @@ class NmrVrptUtility:
 
             finally:
                 try:
-                    if os.path.exists(_fPath):
-                        os.remove(_fPath)
-                    if os.path.exists(__fPath):
-                        os.remove(__fPath)
+                    if not has_safe_star_path:
+                        if os.path.exists(_fPath):
+                            os.remove(_fPath)
+                    if not has_safe_cif_path:
+                        if os.path.exists(__fPath):
+                            os.remove(__fPath)
                 except OSError:
                     pass
 
@@ -1873,8 +2231,8 @@ class NmrVrptUtility:
         if self.__has_prev_results:
             return True
 
-        if self.__cifPath is None:
-            return False
+        if self.__coordinates is None:
+            return self.__extractEntityInstancesFromNmr()
 
         vrpt_entity_instance_cache_path = vrpt_entity_uninstance_cache_path = None
 
@@ -1991,8 +2349,13 @@ class NmrVrptUtility:
                         self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
 
                         if self.__ccU.updateChemCompDict(comp_id):
+                            peptide_like = self.__csStat.peptideLike(comp_id)
                             for cca in self.__ccU.lastAtomDictList:
-                                if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                if cca['type_symbol'] in NMR_OBS_NUCS\
+                                   and (cca['leaving_atom_flag'] != 'Y'
+                                        or (peptide_like
+                                            and cca['n_terminal_atom_flag'] == 'N'
+                                            and cca['c_terminal_atom_flag'] == 'N')):
                                     self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
 
                 else:
@@ -2006,8 +2369,13 @@ class NmrVrptUtility:
                         self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
 
                         if self.__ccU.updateChemCompDict(comp_id):
+                            peptide_like = self.__csStat.peptideLike(comp_id)
                             for cca in self.__ccU.lastAtomDictList:
-                                if cca['type_symbol'] in NMR_OBS_NUCS and cca['leaving_atom_flag'] != 'Y':
+                                if cca['type_symbol'] in NMR_OBS_NUCS\
+                                   and (cca['leaving_atom_flag'] != 'Y'
+                                        or (peptide_like
+                                            and cca['n_terminal_atom_flag'] == 'N'
+                                            and cca['c_terminal_atom_flag'] == 'N')):
                                     self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
 
             for ps in self.__caC['polymer_sequence']:
@@ -2053,11 +2421,12 @@ class NmrVrptUtility:
                     if seq_id is None or not self.__ccU.updateChemCompDict(comp_id):
                         continue
                     self.__entityUninstance[auth_chain_id][seq_key] =\
-                        {'seq_id': seq_id, 'atoms': [cca['atom_id'] for cca in self.__ccU.lastAtomDictList
-                                                     if cca['leaving_atom_flag'] != 'Y'
-                                                     or (self.__csStat.peptideLike(comp_id)
-                                                         and cca['n_terminal_atom_flag'] == 'N'
-                                                         and cca['c_terminal_atom_flag'] == 'N')]}
+                        {'seq_id': seq_id,
+                         'atoms': [cca['atom_id'] for cca in self.__ccU.lastAtomDictList
+                                   if cca['leaving_atom_flag'] != 'Y'
+                                   or (self.__csStat.peptideLike(comp_id)
+                                       and cca['n_terminal_atom_flag'] == 'N'
+                                       and cca['c_terminal_atom_flag'] == 'N')]}
 
             # DAOTHER-10987
             if 'coord_unobs_atom' in self.__caC and self.__caC['coord_unobs_atom'] is not None:
@@ -2092,6 +2461,170 @@ class NmrVrptUtility:
 
         return False
 
+    def __extractEntityInstancesFromNmr(self) -> bool:
+        """ Extract entity instances of NMR data file.
+            @author: Masashi Yokochi
+        """
+
+        self.__entityInstance, self.__entityUninstance = {}, {}
+
+        NMR_OBS_NUCS = set(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.keys())
+
+        try:
+
+            has_chem_comp_assembly = False
+
+            lp_category = 'Chem_comp_assembly'
+
+            for datablock_name in self.__rR.getDataBlockNameList():
+
+                if not self.__rR.hasCategory(lp_category, datablock_name):
+                    continue
+
+                has_chem_comp_assembly = True
+
+                for row in self.__rR.getDictList(lp_category, datablock_name):
+                    auth_chain_id = row['Entity_assembly_ID']
+                    seq_id = row['Comp_index_ID']
+                    auth_seq_id = row['Seq_ID']
+                    comp_id = row['Comp_ID']
+
+                    seq_key = (auth_seq_id, comp_id)
+
+                    if auth_chain_id not in self.__entityInstance:
+                        self.__entityInstance[auth_chain_id] = {}
+
+                    if seq_key not in self.__entityInstance[auth_chain_id]:
+                        self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                    if self.__ccU.updateChemCompDict(comp_id):
+                        peptide_like = self.__csStat.peptideLike(comp_id)
+                        for cca in self.__ccU.lastAtomDictList:
+                            if cca['type_symbol'] in NMR_OBS_NUCS\
+                               and (cca['leaving_atom_flag'] != 'Y'
+                                    or (peptide_like
+                                        and cca['n_terminal_atom_flag'] == 'N'
+                                        and cca['c_terminal_atom_flag'] == 'N')):
+                                self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
+
+                    if 'Auth_variant_ID' in row:
+                        variant_id = row['Auth_variant_ID']
+
+                        if variant_id in EMPTY_VALUE:
+                            continue
+
+                        variants = variant_id.split(',')
+
+                        for v in variants:
+                            v = v.strip()
+
+                            if not v.startswith('-'):
+                                continue
+
+                            if auth_chain_id not in self.__entityUninstance:
+                                self.__entityUninstance[auth_chain_id] = {}
+
+                            if seq_key not in self.__entityUninstance[auth_chain_id]:
+                                self.__entityUninstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                            self.__entityUninstance[auth_chain_id][seq_key]['atoms'].append(v[1:])
+
+            if not has_chem_comp_assembly:
+
+                lp_category = 'Entity_assembly'
+
+                entity_id_mapping = {}
+
+                for datablock_name in self.__rR.getDataBlockNameList():
+
+                    if not self.__rR.hasCategory(lp_category, datablock_name):
+                        continue
+
+                    for row in self.__rR.getDictList(lp_category, datablock_name):
+                        auth_chain_id = row['ID']
+                        entity_id = row['Entity_ID']
+
+                        if auth_chain_id in EMPTY_VALUE or entity_id in EMPTY_VALUE:
+                            continue
+
+                        entity_id_mapping[entity_id] = auth_chain_id
+
+                if len(entity_id_mapping) > 0:
+
+                    lp_category = 'Entity_comp_index'
+
+                    for datablock_name in self.__rR.getDataBlockNameList():
+
+                        if not self.__rR.hasCategory(lp_category, datablock_name):
+                            continue
+
+                        for row in self.__rR.getDictList(lp_category, datablock_name):
+                            seq_id = row['ID']
+                            auth_seq_id = row['Auth_seq_ID']
+                            comp_id = row['Comp_ID']
+                            entity_id = row['Entity_ID']
+
+                            if auth_seq_id in EMPTY_VALUE or not auth_seq_id.isdigit():
+                                auth_seq_id = seq_id
+
+                            if entity_id in entity_id_mapping:
+                                auth_chain_id = entity_id_mapping[entity_id]
+
+                                if auth_chain_id not in self.__entityInstance:
+                                    self.__entityInstance[auth_chain_id] = {}
+
+                                seq_key = (auth_seq_id, comp_id)
+
+                                if seq_key not in self.__entityInstance[auth_chain_id]:
+                                    self.__entityInstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                                if self.__ccU.updateChemCompDict(comp_id):
+                                    peptide_like = self.__csStat.peptideLike(comp_id)
+                                    for cca in self.__ccU.lastAtomDictList:
+                                        if cca['type_symbol'] in NMR_OBS_NUCS\
+                                           and (cca['leaving_atom_flag'] != 'Y'
+                                                or (peptide_like
+                                                    and cca['n_terminal_atom_flag'] == 'N'
+                                                    and cca['c_terminal_atom_flag'] == 'N')):
+                                            self.__entityInstance[auth_chain_id][seq_key]['atoms'].append(cca['atom_id'])
+
+            lp_category = 'Entity_deleted_atom'
+
+            for datablock_name in self.__rR.getDataBlockNameList():
+
+                if not self.__rR.hasCategory(lp_category, datablock_name):
+                    continue
+
+                for row in self.__rR.getDictList(lp_category, datablock_name):
+                    auth_chain_id = row['Entity_assembly_ID']
+                    seq_id = row['Comp_index_ID']
+                    auth_seq_id = row['Seq_ID']
+                    comp_id = row['Comp_ID']
+                    atom_id = row['Atom_ID']
+
+                    if auth_seq_id in EMPTY_VALUE or not auth_seq_id.isdigit():
+                        auth_seq_id = seq_id
+
+                    if auth_chain_id not in self.__entityUninstance:
+                        self.__entityUninstance[auth_chain_id] = {}
+
+                    seq_key = (auth_seq_id, comp_id)
+
+                    if seq_key not in self.__entityUninstance[auth_chain_id]:
+                        self.__entityUninstance[auth_chain_id][seq_key] = {'seq_id': seq_id, 'atoms': []}
+
+                    self.__entityUninstance[auth_chain_id][seq_key]['atoms'].append(atom_id)
+
+            return len(self.__entityInstance) > 0
+
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            self.__log.write(f"Exception occurred while processing {os.path.basename(self.__nmrDataPath)}\n")
+            self.__log.write(f"+{self.__class_name__}.__extractEntityInstancesFromNmr() ++ Error  - {str(e)}\n")
+
+            self.__entityInstance = self.__entityUninstance = None
+
+        return False
+
     def __extractCoordAtomSites(self) -> bool:
         """ Extract atom_site of coordinate file.
             @author: Masashi Yokochi
@@ -2105,7 +2638,7 @@ class NmrVrptUtility:
             return True
 
         if self.__cifPath is None:
-            return False
+            return True
 
         vrpt_atom_id_cache_path = vrpt_atom_site_cache_path = None
 
@@ -2233,7 +2766,7 @@ class NmrVrptUtility:
             @author: Masashi Yokochi
             @note: Derived from wwpdb.apps.validation.src.ChemicalShiftsValidation.BMRBChemicalShiftAnalysis.get_chemical_shifts,
                    written by Aleksandras Gutmanas, Kumaran Baskaran
-            @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of chemical shifts,
+            @change: class method, use of wwpdb.utils.nmr.io.CifReader, improve readability of chemical shifts
         """
 
         if self.__has_prev_results:
@@ -2241,6 +2774,8 @@ class NmrVrptUtility:
 
         if self.__nmrDataPath is None:
             return False
+
+        has_coord = self.__coordinates is not None
 
         self.__chemShiftMeta = []
         self.__chemShiftTotal, self.__chemShiftDict, self.__chemShiftUnparsed = {}, {}, {}
@@ -2263,16 +2798,28 @@ class NmrVrptUtility:
                 self.__chemShiftMeta.append((idx, sf_framecode, list_id))
                 self.__chemShiftTotal[list_id] = self.__rR.getRowLength(lp_category, datablock_name)
 
-                data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
-                              {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                              {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                              {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
-                              {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
-                              {'name': 'Val', 'type': 'float', 'alt_name': 'value'},
-                              {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
-                              {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
-                               'enum': ALLOWED_AMBIGUITY_CODES},
-                              ]
+                if has_coord:
+                    data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                  {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                  {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                  {'name': 'Val', 'type': 'float', 'alt_name': 'value'},
+                                  {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
+                                  {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
+                                   'enum': ALLOWED_AMBIGUITY_CODES},
+                                  ]
+                else:
+                    data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                  {'name': 'Entity_assembly_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                  {'name': 'Comp_index_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                  {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                  {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                  {'name': 'Val', 'type': 'float', 'alt_name': 'value'},
+                                  {'name': 'Val_err', 'type': 'float', 'alt_name': 'error'},
+                                  {'name': 'Ambiguity_code', 'type': 'enum-int', 'alt_name': 'ambig_code',
+                                   'enum': ALLOWED_AMBIGUITY_CODES},
+                                  ]
 
                 tags = self.__rR.getAttributeList(lp_category, datablock_name)
 
@@ -2297,15 +2844,26 @@ class NmrVrptUtility:
 
                     if self.__chemShiftTotal[list_id] > len(data):
 
-                        data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
-                                      {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
-                                      {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
-                                      {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
-                                      {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
-                                      {'name': 'Val', 'type': 'str', 'alt_name': 'value'},
-                                      {'name': 'Val_err', 'type': 'str', 'alt_name': 'error'},
-                                      {'name': 'Ambiguity_code', 'type': 'str', 'alt_name': 'ambig_code'}
-                                      ]
+                        if has_coord:
+                            data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                          {'name': 'Auth_asym_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                          {'name': 'Auth_seq_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                          {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                          {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                          {'name': 'Val', 'type': 'str', 'alt_name': 'value'},
+                                          {'name': 'Val_err', 'type': 'str', 'alt_name': 'error'},
+                                          {'name': 'Ambiguity_code', 'type': 'str', 'alt_name': 'ambig_code'}
+                                          ]
+                        else:
+                            data_items = [{'name': 'ID', 'type': 'int', 'alt_name': 'id'},
+                                          {'name': 'Entity_assembly_ID', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                          {'name': 'Comp_index_ID', 'type': 'int', 'alt_name': 'auth_seq_id'},
+                                          {'name': 'Comp_ID', 'type': 'str', 'alt_name': 'comp_id'},
+                                          {'name': 'Atom_ID', 'type': 'str', 'alt_name': 'atom_id'},
+                                          {'name': 'Val', 'type': 'str', 'alt_name': 'value'},
+                                          {'name': 'Val_err', 'type': 'str', 'alt_name': 'error'},
+                                          {'name': 'Ambiguity_code', 'type': 'str', 'alt_name': 'ambig_code'}
+                                          ]
 
                         if 'PDB_ins_code' in tags:
                             data_items.append({'name': 'PDB_ins_code', 'type': 'str', 'alt_name': 'ins_code', 'default': '?'})
@@ -2619,7 +3177,7 @@ class NmrVrptUtility:
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
 
-                    seq_keys = set([seq_key_1, seq_key_2])
+                    seq_keys = dict.fromkeys([seq_key_1, seq_key_2])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__distRestSeqDict:
@@ -2823,7 +3381,7 @@ class NmrVrptUtility:
                     seq_key_3 = (auth_asym_id_3, auth_seq_id_3, comp_id_3)
                     seq_key_4 = (auth_asym_id_4, auth_seq_id_4, comp_id_4)
 
-                    seq_keys = set([seq_key_1, seq_key_2, seq_key_3, seq_key_4])
+                    seq_keys = dict.fromkeys([seq_key_1, seq_key_2, seq_key_3, seq_key_4])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__dihedRestSeqDict:
@@ -3031,7 +3589,7 @@ class NmrVrptUtility:
                     seq_key_1 = (auth_asym_id_1, auth_seq_id_1, comp_id_1)
                     seq_key_2 = (auth_asym_id_2, auth_seq_id_2, comp_id_2)
 
-                    seq_keys = set([seq_key_1, seq_key_2])
+                    seq_keys = dict.fromkeys([seq_key_1, seq_key_2])
 
                     for seq_key in seq_keys:
                         if seq_key not in self.__rdcRestSeqDict:
@@ -3271,11 +3829,10 @@ class NmrVrptUtility:
         if self.__chemShiftDict is None or len(self.__chemShiftDict) == 0 or self.__has_prev_results:
             return True
 
-        if self.__coordinates is None:
-            return False
-
         self.__chemShiftUniqDict, self.__chemShiftOutlier, self.__chemShiftDuplicated, \
             self.__chemShiftUnmapped, self.__chemShiftUnmodeled = {}, {}, {}, {}, {}
+
+        has_coord = self.__coordinates is not None
 
         try:
 
@@ -3349,7 +3906,7 @@ class NmrVrptUtility:
                     else:
                         cs_key = (cs_auth_chain_id, str(cs_auth_seq_id) + cs['ins_code'], cs_comp_id, cs_atom_id)
 
-                    if cs_key not in self.__chemShiftUniqDict:
+                    if cs_key not in self.__chemShiftUniqDict[list_id]:
                         self.__chemShiftUniqDict[list_id][cs_key] = {'value': cs_value,
                                                                      'error': cs_error,
                                                                      'ambig_code': ambig_code}
@@ -3373,29 +3930,31 @@ class NmrVrptUtility:
                         z_score = round((cs['value'] - avg_value) / std_value, 2)
 
                         if abs(z_score) > 5.0:
-                            na = self.__getNearestAromaticRing(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
-                            pa = self.__getNearestParaFerroMagneticAtom(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
-
                             details = None
-                            if na is None and pa is None:
-                                pass
-                            elif pa is None:
-                                if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0 or na['ring_distance'] > VICINITY_AROMATIC:
+
+                            if has_coord:
+                                na = self.__getNearestAromaticRing(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
+                                pa = self.__getNearestParaFerroMagneticAtom(cs_auth_chain_id, cs_auth_seq_id, cs_atom_id)
+
+                                if na is None and pa is None:
                                     pass
+                                elif pa is None:
+                                    if (na['ring_angle'] - MAGIC_ANGLE) * z_score < 0.0 or na['ring_distance'] > VICINITY_AROMATIC:
+                                        pass
+                                    else:
+                                        details = "The nearest aromatic ring "\
+                                            f"({na['auth_chain_id']}:{na['auth_seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
+                                            f"is located at a distance of {na['ring_distance']}Å, "\
+                                            f"and has an elevation angle of {na['ring_angle']}° with the ring plane. "\
+                                            "It may explain a primary factor behind the outlier."
                                 else:
-                                    details = "The nearest aromatic ring "\
-                                        f"({na['auth_chain_id']}:{na['auth_seq_id']}:{na['comp_id']}:{na['ring_atoms']}) "\
-                                        f"is located at a distance of {na['ring_distance']}Å, "\
-                                        f"and has an elevation angle of {na['ring_angle']}° with the ring plane. "\
-                                        "It may explain a primary factor behind the outlier."
-                            else:
-                                if pa['distance'] > VICINITY_PARAMAGNETIC:
-                                    pass
-                                else:
-                                    details = "The nearest paramagnetic/ferromagnetic atom "\
-                                        f"({pa['auth_chain_id']}:{pa['auth_seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
-                                        f"is located at a distance of {pa['distance']}Å. "\
-                                        "It may explain a primary factor behind the outlier."
+                                    if pa['distance'] > VICINITY_PARAMAGNETIC:
+                                        pass
+                                    else:
+                                        details = "The nearest paramagnetic/ferromagnetic atom "\
+                                            f"({pa['auth_chain_id']}:{pa['auth_seq_id']}:{pa['comp_id']}:{pa['atom_id']}) "\
+                                            f"is located at a distance of {pa['distance']}Å. "\
+                                            "It may explain a primary factor behind the outlier."
 
                             out_cs_values = list(cs_key)
                             out_cs_values.extend([cs_value, ambig_code, z_score,
@@ -4048,8 +4607,8 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__distRestDict.items():
 
-                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
-                has_member_id = any(True for r in restraints if r['member_id'] is not None)
+                has_combination_id = any(r['combination_id'] is not None for r in restraints)
+                has_member_id = any(r['member_id'] is not None for r in restraints)
 
                 self.__distRestDictWithCombKey[rest_key] = {}
 
@@ -4066,11 +4625,14 @@ class NmrVrptUtility:
                     self.__distRestDictWithCombKey[rest_key][(None, None)] = restraints
 
                 elif not has_combination_id and has_member_id:
-                    member_ids = set(r['member_id'] for r in restraints)
+                    r_by_mem = {}
+                    for r in restraints:
+                        member_id = r['member_id']
+                        if member_id not in r_by_mem:
+                            r_by_mem[member_id] = []
+                        r_by_mem[member_id].append(r)
 
-                    for member_id in member_ids:
-                        _restraints = [r for r in restraints if r['member_id'] == member_id]
-
+                    for member_id, _restraints in r_by_mem.items():
                         _error_per_model = calc_dist_rest_viol(rest_key, _restraints)
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4079,11 +4641,14 @@ class NmrVrptUtility:
                         self.__distRestDictWithCombKey[rest_key][(None, member_id)] = _restraints
 
                 elif has_combination_id and not has_member_id:
-                    combination_ids = set(r['combination_id'] for r in restraints)
+                    r_by_comb = {}
+                    for r in restraints:
+                        combination_id = r['combination_id']
+                        if combination_id not in r_by_comb:
+                            r_by_comb[combination_id] = []
+                        r_by_comb[combination_id].append(r)
 
-                    for combination_id in combination_ids:
-                        _restraints = [r for r in restraints if r['combination_id'] == combination_id]
-
+                    for combination_id, _restraints in r_by_comb.items():
                         _error_per_model = calc_dist_rest_viol(rest_key, _restraints)
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4092,16 +4657,18 @@ class NmrVrptUtility:
                         self.__distRestDictWithCombKey[rest_key][(combination_id, None)] = _restraints
 
                 else:
-                    combination_ids = set(r['combination_id'] for r in restraints)
-                    member_ids = set(r['member_id'] for r in restraints)
+                    r_by_comb_and_mem = {}
+                    for r in restraints:
+                        combination_id = r['combination_id']
+                        member_id = r['member_id']
+                        if combination_id not in r_by_comb_and_mem:
+                            r_by_comb_and_mem[combination_id] = {}
+                        if member_id not in r_by_comb_and_mem[combination_id]:
+                            r_by_comb_and_mem[combination_id][member_id] = []
+                        r_by_comb_and_mem[combination_id][member_id].append(r)
 
-                    for combination_id in combination_ids:
-
-                        for member_id in member_ids:
-                            _restraints = [r for r in restraints
-                                           if r['combination_id'] == combination_id
-                                           and r['member_id'] == member_id]
-
+                    for combination_id, _r_by_mem in r_by_comb_and_mem.items():
+                        for member_id, _restraints in _r_by_mem.items():
                             _error_per_model = calc_dist_rest_viol(rest_key, _restraints)
 
                             fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4230,7 +4797,7 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__dihedRestDict.items():
 
-                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
+                has_combination_id = any(r['combination_id'] is not None for r in restraints)
 
                 self.__dihedRestDictWithCombKey[rest_key] = {}
 
@@ -4247,11 +4814,14 @@ class NmrVrptUtility:
                     self.__dihedRestDictWithCombKey[rest_key][(None,)] = restraints
 
                 else:
-                    combination_ids = set(r['combination_id'] for r in restraints)
+                    r_by_comb = {}
+                    for r in restraints:
+                        combination_id = r['combination_id']
+                        if combination_id not in r_by_comb:
+                            r_by_comb[combination_id] = []
+                        r_by_comb[combination_id].append(r)
 
-                    for combination_id in combination_ids:
-                        _restraints = [r for r in restraints if r['combination_id'] == combination_id]
-
+                    for combination_id, _restraints in r_by_comb.items():
                         _error_per_model = calc_dihed_rest_viol(rest_key, _restraints)
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4397,7 +4967,7 @@ class NmrVrptUtility:
 
             for rest_key, restraints in self.__rdcRestDict.items():
 
-                has_combination_id = any(True for r in restraints if r['combination_id'] is not None)
+                has_combination_id = any(r['combination_id'] is not None for r in restraints)
 
                 self.__rdcRestDictWithCombKey[rest_key] = {}
 
@@ -4414,11 +4984,14 @@ class NmrVrptUtility:
                     self.__rdcRestDictWithCombKey[rest_key][(None,)] = restraints
 
                 else:
-                    combination_ids = set(r['combination_id'] for r in restraints)
+                    r_by_comb = {}
+                    for r in restraints:
+                        combination_id = r['combination_id']
+                        if combination_id not in r_by_comb:
+                            r_by_comb[combination_id] = []
+                        r_by_comb[combination_id].append(r)
 
-                    for combination_id in combination_ids:
-                        _restraints = [r for r in restraints if r['combination_id'] == combination_id]
-
+                    for combination_id, _restraints in r_by_comb.items():
                         _error_per_model = calc_rdc_rest_viol(rest_key, _restraints)
 
                         fill_smaller_error_for_each_model(_error_per_model, min_error_per_model,
@@ -4512,9 +5085,11 @@ class NmrVrptUtility:
                     sum_of_squared_errors = ((rdc_exp_array - rdc_calc_array) ** 2).sum()
                     sum_of_squared_values = (rdc_exp_array ** 2).sum()
 
-                    m = numpy.corrcoef(rdc_exp_array, rdc_calc_array)
-
-                    q_scores[k]['r'] = round(m[0, 1], 2)
+                    if rdc_exp_array.std() == 0.0 or rdc_calc_array.std() == 0.0:
+                        q_scores[k]['r'] = None
+                    else:
+                        m = numpy.corrcoef(rdc_exp_array, rdc_calc_array)
+                        q_scores[k]['r'] = round(m[0, 1], 2)
                     q_scores[k]['r2'] =\
                         round(1.0 - sum_of_squared_errors / total_sum_of_square, 2)\
                         if total_sum_of_square > 0.0 else 1.0
@@ -4561,6 +5136,8 @@ class NmrVrptUtility:
             self.__log.write("There are no assigned chemical shifts that need to be analyzed.\n")
             return False
 
+        has_coord = self.__coordinates is not None
+
         # metadata, bookkeeping
 
         self.__results = {'meta_data': (os.path.basename(self.__nmrDataPath), self.__chemShiftMeta),
@@ -4576,10 +5153,21 @@ class NmrVrptUtility:
 
         # solid-state NMR
 
-        exptl = self.__cR.getDictList('exptl')
+        if has_coord:
+            exptl = self.__cR.getDictList('exptl')
 
-        self.__results['ssnmr'] =\
-            exptl[0]['method'] == 'SOLID-STATE NMR' if len(exptl) > 0 and 'method' in exptl[0] else False
+            self.__results['ssnmr'] =\
+                exptl[0]['method'] == 'SOLID-STATE NMR' if len(exptl) > 0 and 'method' in exptl[0] else False
+
+        else:
+            self.__results['ssnmr'] = False
+
+            if self.__rR.hasItem('Entry', 'Experimental_method_subtype'):
+                entry = self.__rR.getDictList('Entry')
+
+                self.__results['ssnmr'] =\
+                    entry[0]['Experimental_method_subtype'] == 'solid-state'\
+                    if len(entry) > 0 and 'Experimental_method_subtype' in entry[0] else False
 
         # completeness of assigned chemical shifts
 
@@ -4684,7 +5272,7 @@ class NmrVrptUtility:
 
                 output[task_key]['stereomethyl'][1] += 1
 
-        if self.__inputReport is None:
+        if self.__inputReport is None and has_coord:
             polySeq = []
 
             polySeqPdbMonIdName = 'pdb_mon_id' if self.__cR.hasItem('pdbx_poly_seq_scheme', 'pdb_mon_id') else 'mon_id'
@@ -4762,7 +5350,7 @@ class NmrVrptUtility:
             for auth_chain_id, v in self.__entityInstance.items():
                 well_defined_region = []
 
-                if self.__inputReport is None:
+                if self.__inputReport is None and has_coord:
                     cif_ps = next((ps for ps in polySeq if ps['auth_chain_id'] == auth_chain_id), None)
 
                     if cif_ps is not None:
@@ -4771,7 +5359,8 @@ class NmrVrptUtility:
                                 well_defined_region.extend(item['seq_id'])
 
                 else:
-                    cif_ps = self.__inputReport.getModelPolymerSequenceOf(auth_chain_id, label_scheme=False)
+                    cif_ps = self.__inputReport.getModelPolymerSequenceOf(auth_chain_id, label_scheme=False)\
+                        if has_coord else self.__inputReport.getNmrPolymerSequenceOf(auth_chain_id)
 
                     if cif_ps is not None:
                         if 'well_defined_region' in cif_ps:
@@ -4854,17 +5443,30 @@ class NmrVrptUtility:
         for list_id, cs_data in self.__chemShiftUniqDict.items():
             rci_result[list_id] = {}
 
-            auth_chain_ids = list(set(cs_key[0] for cs_key in cs_data))
+            auth_chain_ids = list(dict.fromkeys(cs_key[0] for cs_key in cs_data))
+
+            # assigned shifts of each residue, {(auth_chain_id, auth_seq_id, comp_id): {cs_key: cs_vals}}, in the order of
+            # cs_data, so that each residue looks its shifts up instead of scanning all shifts of the list
+            cs_data_by_residue = {}
+            for cs_key, cs_vals in cs_data.items():
+                if cs_key[1].isdigit() and cs_vals['value'] not in EMPTY_VALUE:
+                    residue_key = (cs_key[0], int(cs_key[1]), cs_key[2])
+                    if residue_key not in cs_data_by_residue:
+                        cs_data_by_residue[residue_key] = {}
+                    cs_data_by_residue[residue_key][cs_key] = cs_vals
 
             for auth_chain_id in auth_chain_ids:
-                ps = next((ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id), None)
+                if has_coord:
+                    ps = next((ps for ps in self.__caC['polymer_sequence'] if ps['auth_chain_id'] == auth_chain_id), None)
+                elif self.__inputReport is not None:
+                    ps = self.__inputReport.getNmrPolymerSequenceOf(auth_chain_id)
 
                 if ps is None:
                     continue
 
                 rci_residues, rci_assignments, seq_ids_wo_assign, oxidized_cys_seq_ids = [], [], [], []
 
-                for auth_seq_id, comp_id in zip(ps['auth_seq_id'], ps['comp_id']):
+                for auth_seq_id, comp_id in zip(ps['auth_seq_id'] if 'auth_seq_id' in ps else ps['seq_id'], ps['comp_id']):
 
                     if comp_id not in EMPTY_VALUE:
                         if comp_id not in STD_MON_DICT:
@@ -4875,9 +5477,7 @@ class NmrVrptUtility:
                     else:
                         continue
 
-                    _cs_data = {k: v for k, v in cs_data.items()
-                                if k[0] == auth_chain_id and k[1].isdigit() and int(k[1]) == auth_seq_id
-                                and k[2] == comp_id and v['value'] not in EMPTY_VALUE}
+                    _cs_data = cs_data_by_residue.get((auth_chain_id, auth_seq_id, comp_id), {})
 
                     if len(_cs_data) == 0:
                         continue
@@ -4938,7 +5538,14 @@ class NmrVrptUtility:
                                       and cs['value'] not in EMPTY_VALUE]
 
                     if len(unmap_cs_data_) > 0:
-                        unmap_rci_residues = []
+                        unmap_rci_residues, unmap_rci_residue_set = [], set()
+
+                        unmap_cs_data_by_residue = {}
+                        for cs in unmap_cs_data_:
+                            residue_key = (cs['auth_seq_id'], cs['comp_id'])
+                            if residue_key not in unmap_cs_data_by_residue:
+                                unmap_cs_data_by_residue[residue_key] = []
+                            unmap_cs_data_by_residue[residue_key].append(cs)
 
                         for cs in unmap_cs_data_:
                             auth_seq_id = int(cs['auth_seq_id'])
@@ -4951,9 +5558,9 @@ class NmrVrptUtility:
                                 if not self.__csStat.peptideLike(comp_id):
                                     continue
 
-                                residue = [comp_id, auth_seq_id]
-                                if residue not in unmap_rci_residues:
-                                    unmap_rci_residues.append(residue)
+                                if (comp_id, auth_seq_id) not in unmap_rci_residue_set:
+                                    unmap_rci_residue_set.add((comp_id, auth_seq_id))
+                                    unmap_rci_residues.append([comp_id, auth_seq_id])
 
                         if len(unmap_rci_residues) > 0:
                             rci_residues.extend(unmap_rci_residues)
@@ -4961,9 +5568,7 @@ class NmrVrptUtility:
 
                             for comp_id, auth_seq_id in unmap_rci_residues:
 
-                                _unmap_cs_data = [cs for cs in unmap_cs_data_
-                                                  if cs['auth_seq_id'] == auth_seq_id
-                                                  and cs['comp_id'] == comp_id]
+                                _unmap_cs_data = unmap_cs_data_by_residue.get((auth_seq_id, comp_id), [])
 
                                 if len(_unmap_cs_data) == 0:
                                     continue
@@ -5026,6 +5631,8 @@ class NmrVrptUtility:
 
         if has_rci_results:
             self.__results['rci_version'] = rci.version
+
+        self.__chemShiftDict = None
 
         return True
 
@@ -5271,7 +5878,7 @@ class NmrVrptUtility:
                             continue
 
                         atom_ids = set()
-                        distance_type = None
+                        distance_type = distance_sub_type = bond_flag = None
 
                         for r in self.__distRestDictWithCombKey[rest_key][comb_key]:
                             seq_key_1 = (r['atom_key_1'][0], r['atom_key_1'][1], r['atom_key_1'][2])
@@ -5304,6 +5911,8 @@ class NmrVrptUtility:
                                                              err])
 
             self.__results['dist_violation_seq'] = dist_violation_seq
+
+            self.__distRestDict = None
 
             return True
 
@@ -5547,10 +6156,10 @@ class NmrVrptUtility:
                             if angle_type is None:
                                 angle_type = r['angle_type']
 
-                        atom_ids = list(set(atom_ids_1))
-                        atom_ids.extend(list(set(atom_ids_2)))
-                        atom_ids.extend(list(set(atom_ids_3)))
-                        atom_ids.extend(list(set(atom_ids_4)))
+                        atom_ids = list(dict.fromkeys(atom_ids_1))
+                        atom_ids.extend(list(dict.fromkeys(atom_ids_2)))
+                        atom_ids.extend(list(dict.fromkeys(atom_ids_3)))
+                        atom_ids.extend(list(dict.fromkeys(atom_ids_4)))
 
                         angle_violation_seq[_seq_key].append([rest_key[0],
                                                               rest_key[1],
@@ -5559,6 +6168,8 @@ class NmrVrptUtility:
                                                               err])
 
             self.__results['angle_violation_seq'] = angle_violation_seq
+
+            self.__dihedRestDict = None
 
             return True
 
@@ -5786,8 +6397,8 @@ class NmrVrptUtility:
                             if rdc_type is None:
                                 rdc_type = r['rdc_type']
 
-                        atom_ids = list(set(atom_ids_1))
-                        atom_ids.extend(list(set(atom_ids_2)))
+                        atom_ids = list(dict.fromkeys(atom_ids_1))
+                        atom_ids.extend(list(dict.fromkeys(atom_ids_2)))
 
                         rdc_violation_seq[_seq_key].append([rest_key[0],
                                                             rest_key[1],
@@ -5799,6 +6410,8 @@ class NmrVrptUtility:
 
             if len(self.__rdcCorrPlotDict) > 0:
                 self.__results['rdc_correlation_plot'] = self.__rdcCorrPlotDict
+
+            self.__rdcRestDict = None
 
             return True
 

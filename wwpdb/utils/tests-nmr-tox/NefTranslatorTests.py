@@ -40,6 +40,7 @@ else:
 
 from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
 
+__pynmrstar_v3_6__ = version.parse(pynmrstar.__version__) >= version.parse("3.6.0")
 __pynmrstar_v3_4__ = version.parse(pynmrstar.__version__) >= version.parse("3.4.0")
 
 skipsome = True
@@ -119,7 +120,12 @@ class TestNefTranslator(unittest.TestCase):
         read_out = self.neft.read_input_file(os.path.join(self.data_dir_path, "nonsense.nef"))
         self.assertEqual(read_out[0], False)
 
-        if __pynmrstar_v3_4__:
+        if __pynmrstar_v3_6__:
+            self.assertEqual(read_out[1],
+                             'Invalid file. NMR-STAR files must start with \'data_\' followed by '
+                             'the data name. Did you accidentally select the wrong file? '
+                             'Your file started with \'A\'. Error detected on line 3.')
+        elif __pynmrstar_v3_4__:
             self.assertEqual(read_out[1],
                              'Invalid file. NMR-STAR files must start with \'data_\' followed by '
                              'the data name. Did you accidentally select the wrong file? '

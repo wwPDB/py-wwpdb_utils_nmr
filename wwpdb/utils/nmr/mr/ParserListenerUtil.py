@@ -20,6 +20,8 @@
 #                           a set lookup instead of a scan over the records (DAOTHER-7829, 9785)
 # 05-Oct-2026  M. Yokochi - pseudo CCD: take elements from type_symbol (chem_comp_type), and accept five-membered rings and
 #                           rings without a substituent on the mirror axis in isFlippableRingProtonHost() (DAOTHER-8817)
+# 13-Oct-2026  M. Yokochi - group the poly_seq_scheme mappings by auth_asym_id once in coordAssemblyChecker() instead of
+#                           scanning them per chain of a large assembly (DAOTHER-7829, 9785)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -4158,24 +4160,27 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                     else:
 
+                        mappingsOfAuthAsymId = {}
+                        for item in mappings:
+                            mappingsOfAuthAsymId.setdefault(item['auth_asym_id'], []).append(item)
+
                         for _authAsymId in authAsymIds:
                             labelAsymIds = []
-                            for item in mappings:
-                                if item['auth_asym_id'] == _authAsymId:
-                                    has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                    seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
-                                    authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
-                                        (entityAssemblyId, item['seq_id'], entityId, True)
-                                    authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
-                                    if has_ins_code_val:
-                                        authToInsCode[seqKey] = item['ins_code']
-                                    # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
-                                    authToEntityType[seqKey] = entityPolyType
-                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
-                                        _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
-                                        authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
-                                    if item['label_asym_id'] not in labelAsymIds:
-                                        labelAsymIds.append(item['label_asym_id'])
+                            for item in mappingsOfAuthAsymId.get(_authAsymId, ()):
+                                has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
+                                seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['comp_id'])
+                                authToStarSeq[seqKey] = authToStarSeqAnn[seqKey] =\
+                                    (entityAssemblyId, item['seq_id'], entityId, True)
+                                authToOrigSeq[seqKey] = (item['alt_seq_id'], item['alt_comp_id'])
+                                if has_ins_code_val:
+                                    authToInsCode[seqKey] = item['ins_code']
+                                # e.g. polypeptide(L), polyribonucleotide, polydeoxyribonucleotide
+                                authToEntityType[seqKey] = entityPolyType
+                                if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                    _seqKey = (item['auth_asym_id'], item['auth_seq_id'], item['auth_comp_id'])
+                                    authToStarSeqAnn[_seqKey] = authToStarSeq[seqKey]
+                                if item['label_asym_id'] not in labelAsymIds:
+                                    labelAsymIds.append(item['label_asym_id'])
 
                             ext_mappings = 0
                             ext_fw = 0.0
@@ -4192,19 +4197,18 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                                         nstdMonomer = 'yes'
                                     ext_fw += ccU.getEffectiveFormulaWeight(extSeq['comp_id'])
 
-                            for item in mappings:
-                                if item['auth_asym_id'] == _authAsymId:
-                                    altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
-                                    if altKey not in authToStarSeq:
-                                        has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
-                                        authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
-                                            (entityAssemblyId, item['seq_id'], entityId, True)
-                                        if has_ins_code_val:
-                                            authToInsCode[altKey] = item['ins_code']
-                                        authToEntityType[altKey] = entityPolyType
-                                        if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
-                                            _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
-                                            authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
+                            for item in mappingsOfAuthAsymId.get(_authAsymId, ()):
+                                altKey = (item['auth_asym_id'], item['alt_seq_id'], item['comp_id'])
+                                if altKey not in authToStarSeq:
+                                    has_ins_code_val = has_ins_code and item['ins_code'] not in EMPTY_VALUE
+                                    authToStarSeq[altKey] = authToStarSeqAnn[altKey] =\
+                                        (entityAssemblyId, item['seq_id'], entityId, True)
+                                    if has_ins_code_val:
+                                        authToInsCode[altKey] = item['ins_code']
+                                    authToEntityType[altKey] = entityPolyType
+                                    if item['comp_id'] != item['auth_comp_id']:  # DAOTHER-8817
+                                        _altKey = (item['auth_asym_id'], item['alt_seq_id'], item['auth_comp_id'])
+                                        authToStarSeqAnn[_altKey] = authToStarSeq[altKey]
 
                             for extSeq in nmrExtPolySeq:
                                 if extSeq['auth_chain_id'] == _authAsymId:

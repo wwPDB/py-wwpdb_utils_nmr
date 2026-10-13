@@ -5,6 +5,8 @@
 # Test that CifReader parses with SharingPdbxReader, which shares one str object among equal values,
 # and that the parsed content is the same as that of mmcif's PdbxReader (DAOTHER-7829, 9785).
 # 02-Oct-2026  M. Yokochi - test that the chunked hash code equals the digest of the whole text (DAOTHER-7829, 9785)
+# 13-Oct-2026  M. Yokochi - test that data blocks set by setDataBlockList() read as those written to a file and parsed back
+#                           (DAOTHER-7829, 9785)
 ##
 """Test cases for the value sharing parse of CifReader."""
 import hashlib
@@ -15,6 +17,7 @@ import shutil
 import sys
 import unittest
 
+from mmcif.io.IoAdapterPy import IoAdapterPy
 from mmcif.io.PdbxReader import PdbxReader
 
 # import commonsetup first: it mocks ConfigInfo, which ChemCompUtil reads when it is imported
@@ -55,6 +58,44 @@ _struct.title
 title
 ;
 #
+"""
+
+STAR_TEXT = """data_TEST
+
+save_entry_information
+    _Entry.Sf_category    entry_information
+    _Entry.ID             TEST
+    _Entry.Title
+;
+A multi-line
+title
+;
+    _Entry.Details        'quoted value'
+
+    loop_
+        _Entry_author.Ordinal
+        _Entry_author.Family_name
+        _Entry_author.Entry_ID
+
+        1  "O'Brien"  TEST
+        2  Smith      TEST
+    stop_
+save_
+
+save_distance_constraint_list_1
+    _Gen_dist_constraint_list.Sf_category    general_distance_constraints
+    _Gen_dist_constraint_list.ID             1
+
+    loop_
+        _Gen_dist_constraint.ID
+        _Gen_dist_constraint.Atom_ID_1
+        _Gen_dist_constraint.Distance_upper_bound_val
+
+        1  HA   5.0
+        2  HB2  .
+        3  HB3  ?
+    stop_
+save_
 """
 
 
@@ -166,6 +207,40 @@ class TestCifReader(unittest.TestCase):
         _cR.cacheDirPath = cacheDir
         self.assertTrue(_cR.parse(self.cif_path))
         self.assertEqual(len(_cR.getDictList('atom_site')), 6)
+
+    def test_set_data_block_list_as_parsed_back(self):
+        # NmrVrptUtility used to write the saveframes of an NMR-STAR file to a CIF file only to parse them back;
+        # it now hands the parsed data blocks to setDataBlockList(), which must give the same reader content
+        starPath = os.path.join(TESTOUTPUT, 'cif_reader_test.str')
+        cifPath = os.path.join(TESTOUTPUT, 'cif_reader_test.str2cif')
+        with open(starPath, 'w', encoding='utf-8') as ofh:
+            ofh.write(STAR_TEXT)
+
+        myIo = IoAdapterPy(False, sys.stderr)
+        containerList = myIo.readFile(starPath)
+        for c in containerList:
+            c.setType('data')
+        myIo.writeFile(cifPath, containerList=containerList[1:])
+        cR = CifReader(False, sys.stderr, use_cache=False)
+        self.assertTrue(cR.parse(cifPath))
+
+        containerList = read_containers(SharingPdbxReader, starPath)
+        for c in containerList:
+            c.setType('data')
+        _cR = CifReader(False, sys.stderr, use_cache=False)
+        self.assertTrue(_cR.setDataBlockList(containerList[1:], starPath, 'hash'))
+
+        self.assertEqual(dump(_cR.getDataBlockList()), dump(cR.getDataBlockList()))
+        self.assertEqual(_cR.getDataBlockNameList(), cR.getDataBlockNameList())
+        # the active data block, which a call without a block name reads, is the same one as well
+        self.assertEqual(_cR.getDataBlock().getName(), cR.getDataBlock().getName())
+        self.assertEqual(_cR.getDictList('Gen_dist_constraint'), cR.getDictList('Gen_dist_constraint'))
+        self.assertEqual(_cR.getDictList('Entry_author', 'entry_information'), cR.getDictList('Entry_author', 'entry_information'))
+        self.assertEqual(_cR.getDictList('Entry', 'entry_information'), cR.getDictList('Entry', 'entry_information'))
+        self.assertEqual(_cR.getDictList('Entry')[0]['Title'], '\nA multi-line\ntitle')
+        self.assertEqual((_cR.getFilePath(), _cR.getHashCode()), (starPath, 'hash'))
+
+        self.assertFalse(CifReader(False, sys.stderr, use_cache=False).setDataBlockList([], starPath))
 
 
 if __name__ == "__main__":

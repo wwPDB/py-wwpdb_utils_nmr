@@ -7,6 +7,8 @@
 # 28-Sep-2026  M. Yokochi - collect the cyclic garbage of the previous parse tree before a large parse (DAOTHER-7829, 9785)
 # 03-Oct-2026  M. Yokochi - give the C++ parsers an input stream without the per-character list of code points, which
 #                           only the pure-Python lexer reads (DAOTHER-7829, 9785)
+# 13-Oct-2026  M. Yokochi - drop the no-op TerminalNodeImpl.__setattr__ and iterate the children in getToken() without
+#                           a generator, two hot spots of the ANTLR Python runtime (DAOTHER-7829, 9785)
 ##
 """ A single ANTLR parse driver shared by every *Reader class in this package.
 
@@ -27,8 +29,8 @@ __version__ = "1.0.0"
 import gc
 from typing import Optional, Tuple
 
-from antlr4 import CommonTokenStream, InputStream, PredictionMode
-from antlr4.tree.Tree import ParseTree
+from antlr4 import CommonTokenStream, InputStream, ParserRuleContext, PredictionMode
+from antlr4.tree.Tree import ParseTree, TerminalNode, TerminalNodeImpl
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (MAX_ERROR_REPORT,
@@ -45,6 +47,42 @@ except ImportError:
     from nmr.mr.ParserErrorListener import ParserErrorListener
     from nmr.mr.SpeedyAntlrErrorListener import createSpeedyAntlrErrorListener
 
+
+# Two hot spots of the ANTLR Python runtime (antlr4-python3-runtime 4.13), replaced here by equivalents because every
+# Reader imports this module. Measured on the DAOTHER-10315 entry (26.7 MB XPLOR-NIH, 3.6 M terminal nodes, 16 M token
+# lookups by the listeners' ctx.<Token>() calls):
+# - TerminalNodeImpl.__setattr__ only calls super().__setattr__(), but being a Python method it doubles the cost of
+#   creating every terminal node, which the C++ parsers do through Python attribute assignment.
+# - ParserRuleContext.getToken() iterates over a generator, getChildren(), for each child.
+
+
+def _getToken(self, ttype: int, i: int):
+    """ ParserRuleContext.getToken() without the generator: the i-th child terminal node of the token type.
+    """
+
+    children = self.children
+    if children is None:
+        return None
+    for child in children:
+        if isinstance(child, TerminalNode) and child.symbol.type == ttype:
+            if i == 0:
+                return child
+            i -= 1
+    return None
+
+
+def _isPassThroughSetattr(func) -> bool:
+    """ Return whether a given __setattr__ does nothing but call super().__setattr__(), so that dropping it changes nothing.
+    """
+
+    code = getattr(func, '__code__', None)
+    return code is not None and code.co_names == ('super', '__setattr__')
+
+
+if _isPassThroughSetattr(TerminalNodeImpl.__dict__.get('__setattr__')):
+    del TerminalNodeImpl.__setattr__
+
+ParserRuleContext.getToken = _getToken
 
 # A parse tree is cyclic (each child's parentCtx points back at its parent), so a tree that has
 # been walked and dropped is freed only by the cyclic GC, and the full collection that reaches it

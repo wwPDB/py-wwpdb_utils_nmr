@@ -222,7 +222,7 @@ class NmrDpRemediationPolySeq(NmrDpRemediationBase):
             free_cys = cys_total - disul_cys - other_cys
 
             if cys_total == 0:  # no modeled CYS, but CYS residues in unmodeled region (6osw)
-                thiol_state = 'not present'
+                thiol_state = 'unknown'
 
             elif free_cys > 0:
                 if free_cys == cys_total:
@@ -1672,6 +1672,7 @@ class NmrDpRemediationPolySeq(NmrDpRemediationBase):
                         thiol_state = 'all other bound'
             else:
                 thiol_state = 'not present'
+
             ent_sf.add_tag('Thiol_state', thiol_state)
             ent_sf.add_tag('Src_method', item['entity_src_method'])
             ent_sf.add_tag('Parent_entity_ID', None if entity_type != 'polymer' else item['entity_parent'])

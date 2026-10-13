@@ -172,7 +172,7 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                             chain_id, L = concat_assignment(atom)
 
-                            assignment = self.extractAssignment(1, L, index, chain_id)
+                            assignment = self.extractChemShiftAssignment(1, L, index, chain_id)
 
                             if assignment is None:
                                 continue
@@ -213,7 +213,7 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                                     chain_id, L = concat_assignment(atom)
 
-                                    assignment = self.extractAssignment(1, L, index, chain_id)
+                                    assignment = self.extractChemShiftAssignment(1, L, index, chain_id)
 
                                     if assignment is None:
                                         continue
@@ -254,7 +254,7 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                                 chain_id, L = concat_assignment(atom)
 
-                                assignment = self.extractAssignment(1, L, index, chain_id)
+                                assignment = self.extractChemShiftAssignment(1, L, index, chain_id)
 
                                 if assignment is None:
                                     continue
@@ -294,7 +294,7 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                         chain_id, L = concat_assignment(atom)
 
-                        assignment = self.extractAssignment(1, L, index, chain_id)
+                        assignment = self.extractChemShiftAssignment(1, L, index, chain_id)
 
                         if assignment is None:
                             return

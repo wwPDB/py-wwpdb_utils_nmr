@@ -140,7 +140,7 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                 L = f'{seq_id}:{self.__comp_id}:{atom_id}'
 
-                assignment = self.extractAssignment(1, L, index, with_compid=self.__comp_id)
+                assignment = self.extractChemShiftAssignment(1, L, index, with_compid=self.__comp_id)
 
                 if assignment is None:
                     continue
@@ -153,7 +153,7 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         L = f'{seq_id}:{self.__comp_id}:{atom_ids[0]}'
 
-        assignment = self.extractAssignment(1, L, index, with_compid=self.__comp_id)
+        assignment = self.extractChemShiftAssignment(1, L, index, with_compid=self.__comp_id)
 
         if assignment is None:
             return

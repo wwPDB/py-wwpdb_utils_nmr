@@ -57,6 +57,9 @@
 #                     and hash the file in chunks (text_md5()) (DAOTHER-7829, 9785)
 # 03-Oct-2026 - my  - remove an unreadable data block cache, which was parsed around on every run, and write
 #                     the cache atomically (DAOTHER-7829, 9785)
+# 13-Oct-2026 - my  - add setDataBlockList(), and look up the first row of each residue, the residues of each chain and
+#                     the entity type of each chain once in getPolymerSequence() instead of scanning per residue/row
+#                     (6x63: 60% of the run) (DAOTHER-7829, 9785)
 ##
 """ A collection of classes for parsing CIF files, extracting polymer sequence, and RMSD calculation.
 """
@@ -557,6 +560,39 @@ class CifReader:
             if self.__verbose and 'loop_ declaration outside of data_ block or save_ frame' not in str(e):
                 self.__log.write(f"+{self.__class_name__} ++ Error  - Parse {self.__filePath} failed {str(e)}\n")
             return False
+
+    def setDataBlockList(self, dBlockList: List[DataContainer], filePath: str, hashCode: Optional[str] = None) -> bool:
+        """ Set data blocks parsed elsewhere, as parse() sets those it reads from a file, including which data block is
+            active. getFilePath() and getHashCode() return 'filePath' and 'hashCode' afterwards.
+            This spares writing parsed data blocks to a file only to parse them back.
+            @return: True for success or False otherwise
+        """
+
+        self.__dBlockList = dBlockList
+        self.__dBlockNameList = []
+        self.__categoryNameList = {}
+        self.__valueIndex = {}
+
+        self.__dBlock = None
+        self.__hashCode = hashCode
+
+        self.__filePath = filePath
+        self.__dirPath = os.path.dirname(filePath)
+
+        # activate the data block that __getDataBlockFromFile() returns for a file of these data blocks: the last one
+        # listed, not the first, because its listing loop reuses the name of its argument 'blockName'
+        blockName = None
+
+        is_star = all(container.getType() == 'data' for container in dBlockList)
+        for container in dBlockList:
+            if is_star or container.getType() != 'data':
+                blockName = container.getName()
+                self.__dBlockNameList.append(blockName)
+
+        self.__dBlock = next((dBlock for dBlock in dBlockList
+                              if dBlock.getType() == 'data' and (blockName is None or dBlock.getName() == blockName)), None)
+
+        return self.__dBlock is not None
 
     def __getDataBlockFromFile(self, blockName: Optional[str] = None
                                ) -> Optional[DataContainer]:
@@ -1364,6 +1400,18 @@ class CifReader:
 
         etypes = set(e['type'] for e in entityPoly if 'pdbx_strand_id' in e)
 
+        etypeOfChain = {}
+
+        def get_etype(c: str) -> Optional[str]:
+            """ Return the entity_poly.type of a chain, looked up once per chain instead of once per row.
+            """
+
+            if c not in etypeOfChain:
+                etypeOfChain[c] = next((e['type'] for e in entityPoly
+                                        if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+
+            return etypeOfChain[c]
+
         # DAOTHER-9674
         for row in rowList:
             for j in range(lenKeyItems):
@@ -1373,8 +1421,7 @@ class CifReader:
                         if catName == 'pdbx_poly_seq_scheme':
                             if 'alt_name' in keyItems[j] and keyItems[j]['alt_name'] == 'auth_comp_id':
                                 c = row[altDict['chain_id']]
-                                etype = next((e['type'] for e in entityPoly
-                                              if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                                etype = get_etype(c)
                                 if etype is not None and 'polypeptide' not in etype:
                                     if c not in unmapSeqIds:
                                         unmapSeqIds[c], unmapAuthSeqIds[c] = [], []
@@ -1394,8 +1441,7 @@ class CifReader:
             for row in rowList:
                 if row[altDict['auth_comp_id']] not in EMPTY_VALUE:
                     c = row[altDict['chain_id']]
-                    etype = next((e['type'] for e in entityPoly
-                                  if 'pdbx_strand_id' in e and c in e['pdbx_strand_id'].split(',')), None)
+                    etype = get_etype(c)
                     if etype is not None and 'polypeptide' not in etype:
                         if c not in mapAuthSeqIds:
                             mapAuthSeqIds[c] = []
@@ -1480,9 +1526,13 @@ class CifReader:
                                    f"{iList[seq_id_col]} {row[seq_id_col]}, "
                                    f"{iList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
+            seqOfChain = {c: [] for c in chainIds}
+            for x in sortedSeq:
+                seqOfChain[x[0]].append(x)
+
             for c in chainIds:
-                compDict[c] = [x[2] for x in sortedSeq if x[0] == c]
-                seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
+                compDict[c] = [x[2] for x in seqOfChain[c]]
+                seqDict[c] = [x[1] for x in seqOfChain[c]]
 
         else:
             if catName == 'pdbx_nonpoly_scheme':
@@ -1511,11 +1561,15 @@ class CifReader:
                                    f"{iList[label_seq_col]} {row[label_seq_col]}, "
                                    f"{iList[comp_id_col]} {row[comp_id_col]} vs {keyDict[key]}.")
 
+            seqOfChain = {c: [] for c in chainIds}
+            for x in sortedSeq:
+                seqOfChain[x[0]].append(x)
+
             for c in chainIds:
-                compDict[c] = [x[4] for x in sortedSeq if x[0] == c]
-                seqDict[c] = [x[1] for x in sortedSeq if x[0] == c]
-                insCodeDict[c] = [x[2] for x in sortedSeq if x[0] == c]
-                labelSeqDict[c] = [x[3] for x in sortedSeq if x[0] == c]
+                compDict[c] = [x[4] for x in seqOfChain[c]]
+                seqDict[c] = [x[1] for x in seqOfChain[c]]
+                insCodeDict[c] = [x[2] for x in seqOfChain[c]]
+                labelSeqDict[c] = [x[3] for x in seqOfChain[c]]
 
         chainIds = []
         for x in sortedSeq:
@@ -1529,10 +1583,15 @@ class CifReader:
                     authChainDict[c] = row[auth_chain_id_col]
 
         if authScheme:
+            # the first row of each (chain, seq_id), in place of a scan of rowList per residue,
+            # which was O(residues x rows) and took most of the time of a large assembly (6x63)
+            firstRowOfSeq = {}
+            for row in rowList:
+                firstRowOfSeq.setdefault((row[chain_id_col], int(row[seq_id_col])), row)
             for c in chainIds:
                 authSeqDict[c] = []
                 for s in seqDict[c]:
-                    row = next((row for row in rowList if row[chain_id_col] == c and int(row[seq_id_col]) == s), None)
+                    row = firstRowOfSeq.get((c, s))
                     if row is not None:
                         if row[auth_seq_id_col] not in EMPTY_VALUE:
                             try:

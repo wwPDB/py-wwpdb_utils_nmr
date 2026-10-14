@@ -345,6 +345,12 @@
 #                           getSfDictOf(), and fold repeated code of BasePKParserListener (validatePeak{2,3,4}D(), J-coupling/
 #                           relayed transfer remediation, extractPeakAssignment()) and BaseCSParserListener
 #                           (extractChemShiftAssignment()) (DAOTHER-7829)
+# 13-Oct-2026  M. Yokochi - performance: skip the NMR-STAR -> CIF -> CifReader round trip of NmrVrptUtility, remove
+#                           per-residue scans in CifReader.getPolymerSequence() and coordAssemblyChecker(), and patch two
+#                           hot spots of the ANTLR Python runtime in AntlrParseUtil (CPU time, 6x63: -74%, 6cc9: -22%,
+#                           6pts: -16%, DAOTHER-10315: -6%) (DAOTHER-7829, 9785)
+# 14-Oct-2026  M. Yokochi - admit a compiled accelerator only when it matches its Python code (AccelUtil.py), and build
+#                           binary wheels with the accelerators next to the pure-Python package (cibuildwheel.toml) (DAOTHER-9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -353,7 +359,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.3"
+__version__ = "5.4.4"
 
 import collections
 import copy

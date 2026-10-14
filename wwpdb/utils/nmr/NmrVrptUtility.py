@@ -29,6 +29,9 @@
 #                           instead of scanning all shifts of the list per residue (DAOTHER-7829, 9785)
 # 03-Oct-2026  M. Yokochi - keep the workflow tasks as functions instead of bound methods, so that an instance is not
 #                           a reference cycle and is freed as soon as it is dropped (DAOTHER-7829, 9785)
+# 13-Oct-2026  M. Yokochi - hand the data blocks parsed from the NMR-STAR file to CifReader instead of writing them to
+#                           a CIF file and parsing it back, which cost about 100 s on 6cc9; write the CIF file only when
+#                           its path is given (DAOTHER-7829, 9785)
 ##
 """ Wrapper class for NMR chemical shifts and restraints analysis.
     @author: Masashi Yokochi
@@ -100,11 +103,13 @@ try:
                                                GYROMAGNETIC_RATIOS,
                                                PERMEABILITY_0,
                                                PLANCK_CONSTANT,
-                                               REDUCED_PLANCK_CONSTANT)
+                                               REDUCED_PLANCK_CONSTANT,
+                                               text_md5)
     from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
     from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from wwpdb.utils.nmr.NmrDpReport import NmrDpReport
     from wwpdb.utils.nmr.io.CifReader import (CifReader,
+                                              SharingPdbxReader,
                                               calculate_uninstanced_coord,
                                               to_np_array)
     from wwpdb.utils.nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -152,11 +157,13 @@ except ImportError:
                                    GYROMAGNETIC_RATIOS,
                                    PERMEABILITY_0,
                                    PLANCK_CONSTANT,
-                                   REDUCED_PLANCK_CONSTANT)
+                                   REDUCED_PLANCK_CONSTANT,
+                                   text_md5)
     from nmr.ChemCompUtil import ChemCompUtil
     from nmr.BmrbChemShiftStat import BmrbChemShiftStat
     from nmr.NmrDpReport import NmrDpReport
     from nmr.io.CifReader import (CifReader,
+                                  SharingPdbxReader,
                                   calculate_uninstanced_coord,
                                   to_np_array)
     from nmr.mr.ParserListenerUtil import (coordAssemblyChecker,
@@ -1959,6 +1966,51 @@ class NmrVrptUtility:
 
         return True
 
+    def __parseNmrStarAsCif(self, strPath: str, cifPath: Optional[str] = None) -> bool:
+        """ Parse the saveframes of an NMR-STAR file into self.__rR as CIF data blocks, and write them to 'cifPath' too,
+            unless it is None. getHashCode() of the reader then returns the digest of the NMR-STAR file.
+            The data blocks used to be written to a CIF file in any case, only to be parsed back: that round trip cost
+            about 100 s of CPU per call for the 112 MB NMR-STAR file of 6cc9, and gave the data blocks parsed here.
+            @return: True for success or False otherwise
+        """
+
+        if strPath.endswith(('.gz', '.bz2', '.xz', '.zip')):
+            containerList = IoAdapterPy(False, self.__log).readFile(strPath)
+
+        else:
+            containerList = []
+
+            # as IoAdapterPy.readFile() did, keep the data blocks parsed before an error, if any
+            try:
+                with open(strPath, 'r', encoding='utf-8', errors='ignore') as ifh:
+                    SharingPdbxReader(ifh).read(containerList)
+            except Exception:  # pylint: disable=broad-exception-caught
+                pass
+
+        if containerList is None or len(containerList) < 2:
+            return False
+
+        if self.__verbose:
+            self.__log.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
+
+        for c in containerList:
+            c.setType('data')
+
+        dBlockList = containerList[1:]
+
+        # the CIF writer skipped a category without rows, as the last one parsed before a syntax error can be
+        for dBlock in dBlockList:
+            for catName in [catName for catName in dBlock.getObjNameList() if not dBlock.getObj(catName).getRowList()]:
+                dBlock.remove(catName)
+
+        if cifPath is not None:
+            IoAdapterPy(False, self.__log).writeFile(cifPath, containerList=dBlockList)
+
+        self.__rR = CifReader(self.__verbose, self.__log,
+                              use_cache=False)
+
+        return self.__rR.setDataBlockList(dBlockList, strPath, text_md5(strPath) if self.__use_cache else None)
+
     def __checkNmrDataInputSource(self) -> bool:
         """ Check input source of NMR data.
         """
@@ -2030,29 +2082,13 @@ class NmrVrptUtility:
 
             try:
 
-                myIo = IoAdapterPy(False, self.__log)
-                containerList = myIo.readFile(fPath)
+                if self.__parseNmrStarAsCif(fPath, _fPath if has_safe_cif_path else None):
+                    self.__nmrDataPath = fPath
 
-                if containerList is not None and len(containerList) > 1:
+                    if self.__use_cache:
+                        self.__nmrDataHashCode = self.__rR.getHashCode()
 
-                    if self.__verbose:
-                        self.__log.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
-
-                    for c in containerList:
-                        c.setType('data')
-
-                    myIo.writeFile(_fPath, containerList=containerList[1:])
-
-                    self.__rR = CifReader(self.__verbose, self.__log,
-                                          use_cache=False)
-
-                    if self.__rR.parse(_fPath):
-                        self.__nmrDataPath = fPath
-
-                        if self.__use_cache:
-                            self.__nmrDataHashCode = self.__rR.getHashCode()
-
-                        return True
+                    return True
 
             except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__log.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")
@@ -2087,29 +2123,13 @@ class NmrVrptUtility:
 
                 master_entry.write_to_file(_fPath, show_comments=False, skip_empty_loops=True, skip_empty_tags=False)
 
-                myIo = IoAdapterPy(False, self.__log)
-                containerList = myIo.readFile(_fPath)
+                if self.__parseNmrStarAsCif(_fPath, __fPath if has_safe_cif_path else None):
+                    self.__nmrDataPath = _fPath
 
-                if containerList is not None and len(containerList) > 1:
+                    if self.__use_cache:
+                        self.__nmrDataHashCode = self.__rR.getHashCode()
 
-                    if self.__verbose:
-                        self.__log.write(f"Input container list is {[(c.getName(), c.getType()) for c in containerList]!r}\n")
-
-                    for c in containerList:
-                        c.setType('data')
-
-                    myIo.writeFile(__fPath, containerList=containerList[1:])
-
-                    self.__rR = CifReader(self.__verbose, self.__log,
-                                          use_cache=False)
-
-                    if self.__rR.parse(__fPath):
-                        self.__nmrDataPath = _fPath
-
-                        if self.__use_cache:
-                            self.__nmrDataHashCode = self.__rR.getHashCode()
-
-                        return True
+                    return True
 
             except Exception as e:  # pylint: disable=broad-exception-caught
                 self.__log.write(f"+{self.__class_name__}.__checkNmrDataInputSource() ++ Error  - {str(e)}\n")

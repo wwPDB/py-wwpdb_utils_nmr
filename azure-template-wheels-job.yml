@@ -1,0 +1,95 @@
+# File: azure-template-wheels-job.yml
+# Date: 14-Oct-2026 my binary wheels with the compiled accelerators (cibuildwheel.toml)
+#
+# One build job per CPython version, because each compiles the ANTLR C++ runtime
+# and 42 parsers. Then one publish job uploads that OS's wheels to PyPI.
+#
+# The publish job waits for the pure-Python tox job too, so binary wheels never go
+# out for a version whose tests failed. Each wheel only adds speed to an install
+# that the pure wheel already serves, so uploads need no ordering: a failed or
+# late binary upload leaves pip on the pure wheel.
+#
+##
+parameters:
+  os: "linux"
+  pythons: []           # cibuildwheel selectors without the '-*', e.g. ['cp39', 'cp310']
+  dependsOnTox: "build_test_py39_linux"
+
+jobs:
+- ${{ each python in parameters.pythons }}:
+  - job: ${{ format('wheels_{0}_{1}', parameters.os, python) }}
+    timeoutInMinutes: 0
+    pool:
+      ${{ if eq(parameters.os, 'macos') }}:
+        vmImage: 'macOS-latest'
+      ${{ if eq(parameters.os, 'linux') }}:
+        vmImage: 'ubuntu-latest'
+
+    steps:
+      # cibuildwheel itself needs Python 3.11 or later; it installs the target
+      # interpreters on its own (manylinux containers, python.org installers on macOS).
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.12'
+          addToPath: true
+        displayName: setup python
+      #
+      - checkout: self
+        submodules: true
+      #
+      - script: python -m pip install --upgrade pip cibuildwheel==4.3.1
+        displayName: 'Install cibuildwheel'
+      #
+      - script: python -m cibuildwheel --config-file cibuildwheel.toml --output-dir wheelhouse
+        env:
+          CIBW_BUILD: ${{ format('{0}-*', python) }}
+        displayName: ${{ format('Build and check {0} wheels', python) }}
+      #
+      - script: ls -l wheelhouse
+        displayName: 'Listing of built wheels'
+      #
+      - publish: wheelhouse
+        artifact: ${{ format('wheels_{0}_{1}', parameters.os, python) }}
+
+- job: ${{ format('publish_wheels_{0}', parameters.os) }}
+
+  variables:
+    isMaster: $[eq(variables['Build.SourceBranch'], 'refs/heads/master')]
+    isDevelop: $[eq(variables['Build.SourceBranch'], 'refs/heads/develop')]
+
+  pool:
+    vmImage: 'ubuntu-latest'
+  dependsOn:
+  - ${{ parameters.dependsOnTox }}
+  - ${{ each python in parameters.pythons }}:
+    - ${{ format('wheels_{0}_{1}', parameters.os, python) }}
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), or(eq(variables.isMaster, true), eq(variables.isDevelop, true)))
+  #
+  steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.12'
+        addToPath: true
+      displayName: setup python
+    #
+    - checkout: none
+    #
+    - ${{ each python in parameters.pythons }}:
+      - download: current
+        artifact: ${{ format('wheels_{0}_{1}', parameters.os, python) }}
+    #
+    - script: ls -lR $(Pipeline.Workspace)
+      displayName: "Listing of downloaded wheels"
+    #
+    - script: python -m pip install --upgrade pip twine
+      displayName: "Install packaging tools"
+    #
+    - task: DownloadSecureFile@1
+      name: pypicred
+      displayName: "Download PyPI credentials"
+      inputs:
+        secureFile: "PYPIRC-AZURE"
+    #
+    - script: twine upload --verbose --skip-existing -r pypi --config-file $(pypicred.secureFilePath) $(Pipeline.Workspace)/wheels_*/*.whl
+      displayName: ${{ format('Upload {0} binary wheels to PyPi ...', parameters.os) }}
+      continueOnError: true

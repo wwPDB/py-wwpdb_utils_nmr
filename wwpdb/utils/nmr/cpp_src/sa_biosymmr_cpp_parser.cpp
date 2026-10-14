@@ -177,8 +177,17 @@ extern "C" {
 }
 
 
+// wwPDB: see AccelUtil.py
+#ifndef WWPDB_GRAMMAR_FINGERPRINT
+#define WWPDB_GRAMMAR_FINGERPRINT ""
+#endif
+
 PyMODINIT_FUNC
 PyInit_sa_biosymmr_cpp_parser(void) {
     PyObject *m = PyModule_Create(&module);
+    if (m != NULL && PyModule_AddStringConstant(m, "GRAMMAR_FINGERPRINT", WWPDB_GRAMMAR_FINGERPRINT) < 0) {
+        Py_DECREF(m);
+        return NULL;
+    }
     return m;
 }

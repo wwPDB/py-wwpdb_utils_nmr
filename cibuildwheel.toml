@@ -1,0 +1,64 @@
+# File: cibuildwheel.toml
+# Date: 14-Oct-2026
+#
+# Binary wheels that carry the compiled accelerators (the speedy-antlr-tool C++
+# parsers and c_listener_util), published next to the pure-Python sdist and
+# py2.py3-none-any wheel of the same version by azure-template-wheels-job.yml.
+#
+# pip prefers a binary wheel that matches the interpreter and platform, and takes
+# the pure wheel everywhere else (CPython 3.7/3.8, Windows, musl, PyPy, other
+# architectures), so no install ever compiles anything. A wheel whose accelerators
+# do not match its Python code falls back to Python at import (AccelUtil.py); the
+# test step below refuses to let such a wheel be published.
+#
+# This is passed with --config-file on purpose. A pyproject.toml would also be read
+# by pip and change how every sdist install builds.
+#
+# Local trial (Linux, needs Docker; one interpreter takes a while, the ANTLR C++
+# runtime alone is ~140 translation units):
+#   pipx run cibuildwheel==4.3.1 --config-file cibuildwheel.toml --only cp312-manylinux_x86_64
+
+[tool.cibuildwheel]
+# 3.9 is the oldest CPython c_listener_util.c builds for. The free-threaded builds
+# (cp313t, cp314t) are not selected: neither extension declares Py_mod_gil, so
+# importing one would turn the GIL back on.
+build = "cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
+skip = "*-musllinux_*"
+
+# Wheels are checked from a scratch directory against the installed package, with
+# every dependency installed. The check fails unless all 42 parsers and
+# c_listener_util import, match their Python code and are in use.
+test-command = "python {project}/tools/check_accelerators.py --require-compiled"
+
+[tool.cibuildwheel.environment]
+WWPDB_NMR_BUILD_SPEEDY_ANTLR = "1"
+WWPDB_NMR_BUILD_C_ACCEL = "1"
+WWPDB_NMR_BUILD_JOBS = "4"
+# No debug info: it takes each parser from ~25 MB to ~2 MB, as strip does in the
+# Dockerfile. A flag given later on the command line wins, and setuptools appends
+# these after Python's own -g.
+CFLAGS = "-g0"
+CXXFLAGS = "-g0"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+# mmcif has no cp39 manylinux wheel, so installing a wheel for its test builds mmcif
+# from source, which needs CMake (undeclared in mmcif's build requirements) and, as
+# for the tox jobs, flex and bison.
+before-all = "dnf install -y flex bison"
+before-test = "pip install cmake"
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+# An x86_64 agent cross-compiles arm64 but cannot run it.
+test-skip = "*-macosx_arm64"
+
+[tool.cibuildwheel.macos.environment]
+WWPDB_NMR_BUILD_SPEEDY_ANTLR = "1"
+WWPDB_NMR_BUILD_C_ACCEL = "1"
+WWPDB_NMR_BUILD_JOBS = "4"
+CFLAGS = "-g0"
+CXXFLAGS = "-g0"
+# The C++17 library parts the ANTLR runtime uses (std::any, std::variant) need 10.14
+# or later. cibuildwheel raises arm64 to 11.0 by itself.
+MACOSX_DEPLOYMENT_TARGET = "10.15"

@@ -91,7 +91,12 @@ def parse(stream:InputStream, entry_rule_name:str, sa_err_listener:SA_ErrorListe
 try:
     from . import sa_rosettamr_cpp_parser
 except ImportError:
-    USE_CPP_IMPLEMENTATION = False
+    sa_rosettamr_cpp_parser = None
+
+# wwPDB: use the C++ parser only when it was compiled from the same grammar as the
+# Python parser, and record which path this grammar takes (see AccelUtil.py).
+from ..AccelUtil import acceptAccelerator
+USE_CPP_IMPLEMENTATION = acceptAccelerator(__name__, sa_rosettamr_cpp_parser, RosettaMRLexer, RosettaMRParser)
 
 def _cpp_parse(stream:InputStream, entry_rule_name:str, sa_err_listener:SA_ErrorListener=None,
                prediction_mode_sll:bool=False) -> ParseTree:

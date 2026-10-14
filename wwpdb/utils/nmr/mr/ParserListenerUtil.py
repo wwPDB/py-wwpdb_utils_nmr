@@ -22,6 +22,7 @@
 #                           rings without a substituent on the mirror axis in isFlippableRingProtonHost() (DAOTHER-8817)
 # 13-Oct-2026  M. Yokochi - group the poly_seq_scheme mappings by auth_asym_id once in coordAssemblyChecker() instead of
 #                           scanning them per chain of a large assembly (DAOTHER-7829, 9785)
+# 14-Oct-2026  M. Yokochi - bind the C accelerator only when its API_VERSION matches (AccelUtil.py) (DAOTHER-9785)
 """ Utilities for MR/PT parser listener.
     @author: Masashi Yokochi
 """
@@ -212,7 +213,11 @@ try:
 except ImportError:
     c_listener_util = None
 
-USE_C_IMPLEMENTATION = c_listener_util is not None
+from ..AccelUtil import acceptCAccelerator  # noqa: E402 pylint: disable=wrong-import-position
+
+# Bound only when the extension implements the API these Python bodies were written against,
+# so that a stale build cannot change results (see AccelUtil.py).
+USE_C_IMPLEMENTATION = acceptCAccelerator(__name__.rpartition('.')[0] + '.c_listener_util', c_listener_util)
 
 # Handles on the Python bodies, so ParserListenerUtilTests can assert that the two
 # implementations agree, and so a profiling run can compare them in place.

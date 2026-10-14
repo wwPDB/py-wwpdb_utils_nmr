@@ -19,10 +19,17 @@
  *
  * Built only when WWPDB_NMR_BUILD_C_ACCEL=1 is set (see setup.py and the
  * Dockerfile builder stage), exactly like the speedy-antlr-tool accelerators.
+ *
+ * 14-Oct-2026  M. Yokochi - export API_VERSION, which ParserListenerUtil checks
+ *                           before binding these functions (AccelUtil.py)
  */
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+
+/* Bump together with C_LISTENER_UTIL_API_VERSION in wwpdb/utils/nmr/AccelUtil.py
+ * whenever a function here stops matching its Python body. */
+#define C_LISTENER_UTIL_API_VERSION 1
 
 #ifndef Py_IS_TYPE
 #define Py_IS_TYPE(ob, type) (Py_TYPE(ob) == (type))
@@ -684,5 +691,12 @@ static struct PyModuleDef c_listener_util_module = {
 PyMODINIT_FUNC
 PyInit_c_listener_util(void)
 {
-    return PyModule_Create(&c_listener_util_module);
+    PyObject *m = PyModule_Create(&c_listener_util_module);
+
+    if (m != NULL && PyModule_AddIntConstant(m, "API_VERSION", C_LISTENER_UTIL_API_VERSION) < 0) {
+        Py_DECREF(m);
+        return NULL;
+    }
+
+    return m;
 }

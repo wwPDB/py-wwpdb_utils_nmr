@@ -43,4 +43,10 @@ jobs:
   - template: azure-template-publish-job.yml
     parameters: {tox: 'py39', python: '3.9', os: 'linux'}
   #
+  # Binary wheels with the compiled accelerators, alongside the pure sdist/wheel above
+  - template: azure-template-wheels-job.yml
+    parameters: {os: 'linux', pythons: ['cp39', 'cp310', 'cp311', 'cp312', 'cp313', 'cp314']}
+  - template: azure-template-wheels-job.yml
+    parameters: {os: 'macos', pythons: ['cp39', 'cp310', 'cp311', 'cp312', 'cp313', 'cp314']}
+  #
 

@@ -4,8 +4,11 @@
 # Update:
 #  7-Aug-2026 my optional speedy-antlr-tool C++ parser accelerators
 # 24-Sep-2026 my optional C accelerator for ParserListenerUtil (DAOTHER-10315)
+# 14-Oct-2026 my compile each accelerator's grammar fingerprint in (AccelUtil.py), ship the ANTLR C++ runtime
+#                licence in binary wheels, and honour WWPDB_NMR_BUILD_JOBS (DAOTHER-9785)
 #
 import glob
+import importlib.util
 import json
 import os
 import re
@@ -38,6 +41,34 @@ MANIFEST_PATH = os.path.join(CPP_SRC_DIR, 'speedy_antlr_manifest.json')
 # as more grammars are bridged.
 ANTLR_CFLAGS = ['-std=c++17', '-DANTLR4CPP_STATIC', '-Wno-overloaded-virtual', '-Wno-deprecated-declarations']
 
+# The serialized ATN that ANTLR writes into a generated C++ lexer or parser.
+SERIALIZED_ATN = re.compile(r'serializedATNSegment\[\]\s*=\s*\{([^}]*)\}')
+
+
+def loadAccelUtil():
+    """ wwpdb/utils/nmr/AccelUtil.py, loaded by path: importing the package would need
+        its runtime dependencies at build time. AccelUtil uses the standard library only.
+    """
+
+    spec = importlib.util.spec_from_file_location('AccelUtil', os.path.join('wwpdb', 'utils', 'nmr', 'AccelUtil.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    return module
+
+
+def serializedAtn(name: str) -> list:
+    """ The serialized ATN of a generated C++ lexer or parser, e.g. 'XplorMRLexer'.
+    """
+
+    with open(os.path.join(CPP_SRC_DIR, name + '.cpp'), 'r', encoding='utf-8') as ifh:
+        bodies = SERIALIZED_ATN.findall(ifh.read())
+
+    if len(bodies) != 1:
+        raise RuntimeError(f'{name}.cpp: expected one serializedATNSegment, found {len(bodies)}.')
+
+    return [int(value) for value in bodies[0].split(',') if value.strip()]
+
 
 def speedyAntlrLibraries() -> list:
     """ The ANTLR4 C++ runtime, compiled once and shared by every accelerator.
@@ -68,6 +99,10 @@ def speedyAntlrExtensions() -> list:
     # grammar's lexer.
     sharedSources = [os.path.join(CPP_SRC_DIR, name) for name in manifest.get('shared_sources', [])]
 
+    # Each accelerator carries the fingerprint of the grammar it is compiled from, and its
+    # shim uses it only when that matches the Python lexer and parser (AccelUtil.py).
+    atnFingerprint = loadAccelUtil().atnFingerprint
+
     extensions = []
 
     for entry in manifest['extensions']:
@@ -77,11 +112,18 @@ def speedyAntlrExtensions() -> list:
             raise RuntimeError(f'{entry["module"]}: generated sources are missing {missing}; '
                                'run tools/gen_speedy_antlr.py first.')
 
+        if 'lexer' not in entry or 'parser' not in entry:
+            raise RuntimeError(f'{entry["module"]}: the manifest predates grammar fingerprints; '
+                               'run tools/gen_speedy_antlr.py --repatch --all first.')
+
+        fingerprint = atnFingerprint(serializedAtn(entry['lexer']), serializedAtn(entry['parser']))
+
         extensions.append(
             Extension(f'wwpdb.utils.nmr.{entry["subpackage"]}.{entry["module"]}',
                       sources=sources,
                       include_dirs=[CPP_SRC_DIR, CPP_RUNTIME_DIR],
                       libraries=['antlr4_cpp_runtime'],
+                      define_macros=[('WWPDB_GRAMMAR_FINGERPRINT', f'"{fingerprint}"')],
                       extra_compile_args=ANTLR_CFLAGS,
                       language='c++'))
 
@@ -119,6 +161,15 @@ def cAccelExtensions() -> list:
 
 buildCAccel = os.environ.get('WWPDB_NMR_BUILD_C_ACCEL', '') not in ('', '0', 'false', 'False')
 
+# 'pip wheel' and cibuildwheel cannot pass build_ext -j, so a wheel build takes the number
+# of parallel compile jobs from here. build_clib (the ANTLR runtime) stays serial.
+buildJobs = os.environ.get('WWPDB_NMR_BUILD_JOBS', '')
+buildOptions = {'build_ext': {'parallel': int(buildJobs)}} if buildJobs.isdigit() and int(buildJobs) > 1 else {}
+
+# The ANTLR4 C++ runtime (BSD-3-Clause) is linked statically into every speedy-antlr
+# accelerator, so a binary wheel must carry its licence.
+licenseFiles = ['LICENSE'] + ([os.path.join(CPP_RUNTIME_DIR, 'LICENSE.txt')] if buildSpeedyAntlr else [])
+
 with open('wwpdb/utils/nmr/__init__.py', 'r', encoding='utf-8') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
                         fd.read(), re.MULTILINE).group(1)
@@ -136,6 +187,7 @@ setup(
     url='https://github.com/wwpdb/py-wwpdb_utils_nmr',
     #
     license='Apache 2.0',
+    license_files=licenseFiles,
     classifiers=[
         'Development Status :: 3 - Alpha',
         # 'Development Status :: 5 - Production/Stable',
@@ -183,6 +235,7 @@ setup(
         'test': ['coverage'],
     },
     python_requires='>=3.7',
+    options=buildOptions,
     command_options={
         'build_sphinx': {
             'project': ('setup.py', thisPackage),

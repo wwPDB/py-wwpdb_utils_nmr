@@ -7,6 +7,8 @@
 # 01-Oct-2026  M. Yokochi - lex a one-byte-per-character str in place (latin1_input_stream.h) (DAOTHER-7829, 9785)
 # 08-Oct-2026  M. Yokochi - require speedy-antlr-tool 1.4.4, which ships the parse-tree reference leak fix
 #                           (upstream PR #19); drop the local support-library patch
+# 14-Oct-2026  M. Yokochi - export GRAMMAR_FINGERPRINT from each accelerator and admit it in the shim only when it
+#                           matches the Python parser (AccelUtil.py); add --repatch (DAOTHER-9785)
 ##
 """ Generate the speedy-antlr-tool C++ accelerators for this package's grammars.
 
@@ -24,8 +26,15 @@
          argument (see PREDICTION_MODE_NOTE below), and do_parse() so that a str
          stored one byte per character is lexed in place by
          cpp_src/latin1_input_stream.h instead of a UTF-32 copy,
-      4. writes cpp_src/speedy_antlr_manifest.json, which setup.py reads to
-         declare the extensions.
+      4. patches the module init to export GRAMMAR_FINGERPRINT, and the shim to
+         use the accelerator only when that matches its Python parser
+         (AccelUtil.py),
+      5. writes cpp_src/speedy_antlr_manifest.json, which setup.py reads to
+         declare the extensions and to compute the fingerprints.
+
+    --repatch re-applies steps 3 to 5 to the committed sources without
+    regenerating them, after a patch is added here; it needs neither Java nor
+    speedy-antlr-tool.
 
     The Python target is deliberately NOT regenerated. The committed
     <Grammar>Lexer.py/<Grammar>Parser.py are byte-identical to a fresh
@@ -44,6 +53,7 @@
         python3 tools/gen_speedy_antlr.py --list
         python3 tools/gen_speedy_antlr.py XplorMR NmrPipeCS
         python3 tools/gen_speedy_antlr.py --all
+        python3 tools/gen_speedy_antlr.py --repatch --all
     @author: Masashi Yokochi
 """
 import argparse
@@ -178,6 +188,26 @@ CPP_PATCHES = [
          '        }\n'
          '        antlr4::CharStream &cpp_stream = *cpp_stream_holder;\n'),
     ]),
+    # setup.py defines WWPDB_GRAMMAR_FINGERPRINT from the serialized ATNs of the
+    # generated C++ lexer and parser (AccelUtil.atnFingerprint). A build that does
+    # not go through setup.py exports an empty one, which the shim rejects.
+    ('the module exports the fingerprint of the grammar it was compiled from', [
+        ('PyMODINIT_FUNC\n',
+         '// wwPDB: see AccelUtil.py\n'
+         '#ifndef WWPDB_GRAMMAR_FINGERPRINT\n'
+         '#define WWPDB_GRAMMAR_FINGERPRINT ""\n'
+         '#endif\n'
+         '\n'
+         'PyMODINIT_FUNC\n'),
+        ('    PyObject *m = PyModule_Create(&module);\n'
+         '    return m;\n',
+         '    PyObject *m = PyModule_Create(&module);\n'
+         '    if (m != NULL && PyModule_AddStringConstant(m, "GRAMMAR_FINGERPRINT", WWPDB_GRAMMAR_FINGERPRINT) < 0) {\n'
+         '        Py_DECREF(m);\n'
+         '        return NULL;\n'
+         '    }\n'
+         '    return m;\n'),
+    ]),
 ]
 
 # speedy-antlr-tool names the lexer after the parser ('<X>Parser' -> '<X>Lexer'),
@@ -226,6 +256,24 @@ SHIM_PATCHES = [
          '        parser._interp.predictionMode = PredictionMode.SLL\n'),
         ('do_parse(%(parser)s, stream, entry_rule_name, sa_err_listener)',
          'do_parse(%(parser)s, stream, entry_rule_name, sa_err_listener, prediction_mode_sll)'),
+    ]),
+    # An extension that imports is not necessarily one built from this grammar:
+    # a stale in-place build after a grammar change would parse differently
+    # without raising anything.
+    ('the accelerator is used only when its grammar fingerprint matches', [
+        ('try:\n'
+         '    from . import %(shim)s_cpp_parser\n'
+         'except ImportError:\n'
+         '    USE_CPP_IMPLEMENTATION = False\n',
+         'try:\n'
+         '    from . import %(shim)s_cpp_parser\n'
+         'except ImportError:\n'
+         '    %(shim)s_cpp_parser = None\n'
+         '\n'
+         '# wwPDB: use the C++ parser only when it was compiled from the same grammar as the\n'
+         '# Python parser, and record which path this grammar takes (see AccelUtil.py).\n'
+         'from ..AccelUtil import acceptAccelerator\n'
+         'USE_CPP_IMPLEMENTATION = acceptAccelerator(__name__, %(shim)s_cpp_parser, %(lexer)s, %(parser)s)\n'),
     ]),
 ]
 
@@ -410,10 +458,21 @@ def generate(spec: GrammarSpec) -> dict:
         entry_rule_names=[spec.entryRule],
     )
 
+    return patch(spec)
+
+
+def patch(spec: GrammarSpec) -> dict:
+    """ Apply the wwPDB patches to one grammar's generated C++ entry and shim.
+        Every patch is idempotent, so this is safe on already patched sources.
+        @return: its manifest entry
+    """
+
+    shim = f'sa_{spec.name.lower()}'
     assumedLexer = spec.name + 'Lexer'
     substitutions = {'parser': spec.parserName,
                      'lexer': spec.lexerName,
-                     'assumedLexer': assumedLexer}
+                     'assumedLexer': assumedLexer,
+                     'shim': shim}
 
     cppEntry = os.path.join(CPP_SRC_DIR, f'{shim}_cpp_parser.cpp')
     shimPath = os.path.join(NMR_DIR, spec.subPackage, f'{shim}.py')
@@ -430,6 +489,8 @@ def generate(spec: GrammarSpec) -> dict:
             'subpackage': spec.subPackage,
             'shim': shim,
             'grammar': spec.name,
+            'lexer': spec.lexerName,
+            'parser': spec.parserName,
             'entry_rule': spec.entryRule,
             'readers': [module for module, _, _ in spec.readers],
             'sources': generatedSources(spec)}
@@ -466,6 +527,8 @@ def main() -> int:
     parser.add_argument('grammars', nargs='*', help='grammar names, e.g. XplorMR')
     parser.add_argument('--all', action='store_true', help='generate every discovered grammar')
     parser.add_argument('--list', action='store_true', help='list discovered grammars and exit')
+    parser.add_argument('--repatch', action='store_true',
+                        help='re-apply the patches to the committed sources without regenerating them')
     args = parser.parse_args()
 
     grammars = discoverGrammars()
@@ -492,6 +555,11 @@ def main() -> int:
     if unknown:
         parser.error(f'unknown grammar(s): {", ".join(unknown)}; '
                      f'known: {", ".join(sorted(grammars))}')
+
+    if args.repatch:
+        entries = [patch(grammars[name]) for name in names]
+        writeManifest(entries)
+        return 0
 
     checkSpeedyAntlrVersion()
     fetchCppRuntime()

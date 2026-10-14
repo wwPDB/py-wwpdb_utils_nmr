@@ -10,6 +10,8 @@
       "subpackage": "mr",
       "shim": "sa_ambermr",
       "grammar": "AmberMR",
+      "lexer": "AmberMRLexer",
+      "parser": "AmberMRParser",
       "entry_rule": "amber_mr",
       "readers": [
         "AmberMRReader"
@@ -28,6 +30,8 @@
       "subpackage": "mr",
       "shim": "sa_amberpt",
       "grammar": "AmberPT",
+      "lexer": "AmberPTLexer",
+      "parser": "AmberPTParser",
       "entry_rule": "amber_pt",
       "readers": [
         "AmberPTReader"
@@ -46,6 +50,8 @@
       "subpackage": "mr",
       "shim": "sa_ariamr",
       "grammar": "AriaMR",
+      "lexer": "AriaMRLexer",
+      "parser": "AriaMRParser",
       "entry_rule": "aria_mr",
       "readers": [
         "AriaMRReader"
@@ -64,6 +70,8 @@
       "subpackage": "cs",
       "shim": "sa_barecs",
       "grammar": "BareCS",
+      "lexer": "BareCSLexer",
+      "parser": "BareCSParser",
       "entry_rule": "bare_cs",
       "readers": [
         "BareCSReader"
@@ -82,6 +90,8 @@
       "subpackage": "mr",
       "shim": "sa_baremr",
       "grammar": "BareMR",
+      "lexer": "BareMRLexer",
+      "parser": "BareMRParser",
       "entry_rule": "bare_mr",
       "readers": [
         "BareMRReader"
@@ -100,6 +110,8 @@
       "subpackage": "mr",
       "shim": "sa_barepdb",
       "grammar": "BarePDB",
+      "lexer": "BarePDBLexer",
+      "parser": "BarePDBParser",
       "entry_rule": "bare_pdb",
       "readers": [
         "BarePDBReader"
@@ -118,6 +130,8 @@
       "subpackage": "pk",
       "shim": "sa_barepk",
       "grammar": "BarePK",
+      "lexer": "BarePKLexer",
+      "parser": "BarePKParser",
       "entry_rule": "bare_pk",
       "readers": [
         "BarePKReader"
@@ -136,6 +150,8 @@
       "subpackage": "mr",
       "shim": "sa_biosymmr",
       "grammar": "BiosymMR",
+      "lexer": "BiosymMRLexer",
+      "parser": "BiosymMRParser",
       "entry_rule": "biosym_mr",
       "readers": [
         "BiosymMRReader"
@@ -154,6 +170,8 @@
       "subpackage": "pk",
       "shim": "sa_ccpnpk",
       "grammar": "CcpnPK",
+      "lexer": "CcpnPKLexer",
+      "parser": "CcpnPKParser",
       "entry_rule": "ccpn_pk",
       "readers": [
         "CcpnPKReader"
@@ -172,6 +190,8 @@
       "subpackage": "mr",
       "shim": "sa_charmmcrd",
       "grammar": "CharmmCRD",
+      "lexer": "CharmmCRDLexer",
+      "parser": "CharmmCRDParser",
       "entry_rule": "charmm_crd",
       "readers": [
         "CharmmCRDReader"
@@ -190,6 +210,8 @@
       "subpackage": "mr",
       "shim": "sa_charmmmr",
       "grammar": "CharmmMR",
+      "lexer": "CharmmMRLexer",
+      "parser": "CharmmMRParser",
       "entry_rule": "charmm_mr",
       "readers": [
         "CharmmMRReader"
@@ -208,6 +230,8 @@
       "subpackage": "mr",
       "shim": "sa_cnsmr",
       "grammar": "CnsMR",
+      "lexer": "CnsMRLexer",
+      "parser": "CnsMRParser",
       "entry_rule": "cns_mr",
       "readers": [
         "CnsMRReader"
@@ -226,6 +250,8 @@
       "subpackage": "mr",
       "shim": "sa_cyanamr",
       "grammar": "CyanaMR",
+      "lexer": "CyanaMRLexer",
+      "parser": "CyanaMRParser",
       "entry_rule": "cyana_mr",
       "readers": [
         "CyanaMRReader"
@@ -244,6 +270,8 @@
       "subpackage": "mr",
       "shim": "sa_cyananoa",
       "grammar": "CyanaNOA",
+      "lexer": "CyanaNOALexer",
+      "parser": "CyanaNOAParser",
       "entry_rule": "cyana_noa",
       "readers": [
         "CyanaNOAReader"
@@ -262,6 +290,8 @@
       "subpackage": "mr",
       "shim": "sa_dynamomr",
       "grammar": "DynamoMR",
+      "lexer": "DynamoMRLexer",
+      "parser": "DynamoMRParser",
       "entry_rule": "dynamo_mr",
       "readers": [
         "DynamoMRReader"
@@ -280,6 +310,8 @@
       "subpackage": "cs",
       "shim": "sa_garretcs",
       "grammar": "GarretCS",
+      "lexer": "GarretCSLexer",
+      "parser": "GarretCSParser",
       "entry_rule": "garret_cs",
       "readers": [
         "GarretCSReader"
@@ -298,6 +330,8 @@
       "subpackage": "mr",
       "shim": "sa_gromacsmr",
       "grammar": "GromacsMR",
+      "lexer": "GromacsMRLexer",
+      "parser": "GromacsMRParser",
       "entry_rule": "gromacs_mr",
       "readers": [
         "GromacsMRReader"
@@ -316,6 +350,8 @@
       "subpackage": "mr",
       "shim": "sa_gromacspt",
       "grammar": "GromacsPT",
+      "lexer": "GromacsPTLexer",
+      "parser": "GromacsPTParser",
       "entry_rule": "gromacs_pt",
       "readers": [
         "GromacsPTReader"
@@ -334,6 +370,8 @@
       "subpackage": "mr",
       "shim": "sa_isdmr",
       "grammar": "IsdMR",
+      "lexer": "IsdMRLexer",
+      "parser": "IsdMRParser",
       "entry_rule": "isd_mr",
       "readers": [
         "IsdMRReader"
@@ -352,6 +390,8 @@
       "subpackage": "cs",
       "shim": "sa_nmrpipecs",
       "grammar": "NmrPipeCS",
+      "lexer": "NmrPipeCSLexer",
+      "parser": "NmrPipeCSParser",
       "entry_rule": "nmrpipe_cs",
       "readers": [
         "NmrPipeCSReader"
@@ -370,6 +410,8 @@
       "subpackage": "pk",
       "shim": "sa_nmrpipepk",
       "grammar": "NmrPipePK",
+      "lexer": "NmrPipePKLexer",
+      "parser": "NmrPipePKParser",
       "entry_rule": "nmrpipe_pk",
       "readers": [
         "NmrPipePKReader"
@@ -388,6 +430,8 @@
       "subpackage": "cs",
       "shim": "sa_nmrstar2cs",
       "grammar": "NmrStar2CS",
+      "lexer": "NmrStar2CSLexer",
+      "parser": "NmrStar2CSParser",
       "entry_rule": "nmrstar2_cs",
       "readers": [
         "NmrStar2CSReader"
@@ -406,6 +450,8 @@
       "subpackage": "pk",
       "shim": "sa_nmrviewnpk",
       "grammar": "NmrViewNPK",
+      "lexer": "NmrViewPKLexer",
+      "parser": "NmrViewNPKParser",
       "entry_rule": "nmrview_npk",
       "readers": [
         "NmrViewNPKReader"
@@ -424,6 +470,8 @@
       "subpackage": "pk",
       "shim": "sa_nmrviewpk",
       "grammar": "NmrViewPK",
+      "lexer": "NmrViewPKLexer",
+      "parser": "NmrViewPKParser",
       "entry_rule": "nmrview_pk",
       "readers": [
         "NmrViewPKReader"
@@ -442,6 +490,8 @@
       "subpackage": "cs",
       "shim": "sa_oliviacs",
       "grammar": "OliviaCS",
+      "lexer": "OliviaCSLexer",
+      "parser": "OliviaCSParser",
       "entry_rule": "olivia_cs",
       "readers": [
         "OliviaCSReader"
@@ -460,6 +510,8 @@
       "subpackage": "pk",
       "shim": "sa_oliviapk",
       "grammar": "OliviaPK",
+      "lexer": "OliviaPKLexer",
+      "parser": "OliviaPKParser",
       "entry_rule": "olivia_pk",
       "readers": [
         "OliviaPKReader"
@@ -478,6 +530,8 @@
       "subpackage": "cs",
       "shim": "sa_pippcs",
       "grammar": "PippCS",
+      "lexer": "PippCSLexer",
+      "parser": "PippCSParser",
       "entry_rule": "pipp_cs",
       "readers": [
         "PippCSReader"
@@ -496,6 +550,8 @@
       "subpackage": "pk",
       "shim": "sa_ponderosapk",
       "grammar": "PonderosaPK",
+      "lexer": "PonderosaPKLexer",
+      "parser": "PonderosaPKParser",
       "entry_rule": "ponderosa_pk",
       "readers": [
         "PonderosaPKReader"
@@ -514,6 +570,8 @@
       "subpackage": "cs",
       "shim": "sa_ppmcs",
       "grammar": "PpmCS",
+      "lexer": "PpmCSLexer",
+      "parser": "PpmCSParser",
       "entry_rule": "ppm_cs",
       "readers": [
         "PpmCSReader"
@@ -532,6 +590,8 @@
       "subpackage": "mr",
       "shim": "sa_rosettamr",
       "grammar": "RosettaMR",
+      "lexer": "RosettaMRLexer",
+      "parser": "RosettaMRParser",
       "entry_rule": "rosetta_mr",
       "readers": [
         "RosettaMRReader"
@@ -550,6 +610,8 @@
       "subpackage": "mr",
       "shim": "sa_schrodingermr",
       "grammar": "SchrodingerMR",
+      "lexer": "SchrodingerMRLexer",
+      "parser": "SchrodingerMRParser",
       "entry_rule": "schrodinger_mr",
       "readers": [
         "SchrodingerMRReader"
@@ -568,6 +630,8 @@
       "subpackage": "pk",
       "shim": "sa_sparkynpk",
       "grammar": "SparkyNPK",
+      "lexer": "SparkyPKLexer",
+      "parser": "SparkyNPKParser",
       "entry_rule": "sparky_npk",
       "readers": [
         "SparkyNPKReader"
@@ -586,6 +650,8 @@
       "subpackage": "pk",
       "shim": "sa_sparkypk",
       "grammar": "SparkyPK",
+      "lexer": "SparkyPKLexer",
+      "parser": "SparkyPKParser",
       "entry_rule": "sparky_pk",
       "readers": [
         "SparkyPKReader"
@@ -604,6 +670,8 @@
       "subpackage": "pk",
       "shim": "sa_sparkyrpk",
       "grammar": "SparkyRPK",
+      "lexer": "SparkyPKLexer",
+      "parser": "SparkyRPKParser",
       "entry_rule": "sparky_rpk",
       "readers": [
         "SparkyRPKReader"
@@ -622,6 +690,8 @@
       "subpackage": "pk",
       "shim": "sa_sparkyspk",
       "grammar": "SparkySPK",
+      "lexer": "SparkySPKLexer",
+      "parser": "SparkySPKParser",
       "entry_rule": "sparky_spk",
       "readers": [
         "SparkySPKReader"
@@ -640,6 +710,8 @@
       "subpackage": "mr",
       "shim": "sa_sybylmr",
       "grammar": "SybylMR",
+      "lexer": "SybylMRLexer",
+      "parser": "SybylMRParser",
       "entry_rule": "sybyl_mr",
       "readers": [
         "SybylMRReader"
@@ -658,6 +730,8 @@
       "subpackage": "pk",
       "shim": "sa_vnmrpk",
       "grammar": "VnmrPK",
+      "lexer": "VnmrPKLexer",
+      "parser": "VnmrPKParser",
       "entry_rule": "vnmr_pk",
       "readers": [
         "VnmrPKReader"
@@ -676,6 +750,8 @@
       "subpackage": "pk",
       "shim": "sa_xeasypk",
       "grammar": "XeasyPK",
+      "lexer": "XeasyPKLexer",
+      "parser": "XeasyPKParser",
       "entry_rule": "xeasy_pk",
       "readers": [
         "XeasyPKReader"
@@ -694,6 +770,8 @@
       "subpackage": "pk",
       "shim": "sa_xeasyprot",
       "grammar": "XeasyPROT",
+      "lexer": "XeasyPROTLexer",
+      "parser": "XeasyPROTParser",
       "entry_rule": "xeasy_prot",
       "readers": [
         "XeasyPROTReader",
@@ -713,6 +791,8 @@
       "subpackage": "pk",
       "shim": "sa_xml",
       "grammar": "XML",
+      "lexer": "XMLLexer",
+      "parser": "XMLParser",
       "entry_rule": "document",
       "readers": [
         "AriaMRXReader",
@@ -734,6 +814,8 @@
       "subpackage": "mr",
       "shim": "sa_xplormr",
       "grammar": "XplorMR",
+      "lexer": "XplorMRLexer",
+      "parser": "XplorMRParser",
       "entry_rule": "xplor_nih_mr",
       "readers": [
         "XplorMRReader"
@@ -752,6 +834,8 @@
       "subpackage": "pk",
       "shim": "sa_xwinnmrpk",
       "grammar": "XwinNmrPK",
+      "lexer": "XwinNmrPKLexer",
+      "parser": "XwinNmrPKParser",
       "entry_rule": "xwinnmr_pk",
       "readers": [
         "XwinNmrPKReader"

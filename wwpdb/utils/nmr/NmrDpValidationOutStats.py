@@ -23,7 +23,6 @@ import numpy
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (PYNMRSTAR_OBJ_KEY,
                                                NEXT_STAR_FILE_PATH_KEY,
-                                               NMR_CIF_FILE_PATH_KEY,
                                                REPORT_FILE_PATH_KEY,
                                                SF_CATEGORIES,
                                                LP_CATEGORIES,
@@ -43,7 +42,6 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (PYNMRSTAR_OBJ_KEY,
                                    NEXT_STAR_FILE_PATH_KEY,
-                                   NMR_CIF_FILE_PATH_KEY,
                                    REPORT_FILE_PATH_KEY,
                                    SF_CATEGORIES,
                                    LP_CATEGORIES,

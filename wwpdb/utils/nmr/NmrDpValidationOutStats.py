@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.3"
+__version__ = "5.4.4"
 
 import copy
 import os
@@ -23,7 +23,6 @@ import numpy
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (PYNMRSTAR_OBJ_KEY,
                                                NEXT_STAR_FILE_PATH_KEY,
-                                               NMR_CIF_FILE_PATH_KEY,
                                                REPORT_FILE_PATH_KEY,
                                                SF_CATEGORIES,
                                                LP_CATEGORIES,
@@ -43,7 +42,6 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (PYNMRSTAR_OBJ_KEY,
                                    NEXT_STAR_FILE_PATH_KEY,
-                                   NMR_CIF_FILE_PATH_KEY,
                                    REPORT_FILE_PATH_KEY,
                                    SF_CATEGORIES,
                                    LP_CATEGORIES,
@@ -455,9 +453,10 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                 vrpt_util.addOutput(name=NEXT_STAR_FILE_PATH_KEY,
                                     value=self._reg.dstPath, type='file')
 
-            if NMR_CIF_FILE_PATH_KEY in self._reg.outputParamDict:
-                vrpt_util.addOutput(name=NMR_CIF_FILE_PATH_KEY,
-                                    value=self._reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], type='file')
+            # reduce unnecessary IO because of NmrVrptUtility.__parseNmrStarAsCif()
+            # if NMR_CIF_FILE_PATH_KEY in self._reg.outputParamDict:
+            #     vrpt_util.addOutput(name=NMR_CIF_FILE_PATH_KEY,
+            #                         value=self._reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], type='file')
 
             if REPORT_FILE_PATH_KEY in self._reg.inputParamDict:
                 fPath = self._reg.inputParamDict[REPORT_FILE_PATH_KEY]

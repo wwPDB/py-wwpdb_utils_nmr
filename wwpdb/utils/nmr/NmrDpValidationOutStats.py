@@ -455,9 +455,10 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                 vrpt_util.addOutput(name=NEXT_STAR_FILE_PATH_KEY,
                                     value=self._reg.dstPath, type='file')
 
-            if NMR_CIF_FILE_PATH_KEY in self._reg.outputParamDict:
-                vrpt_util.addOutput(name=NMR_CIF_FILE_PATH_KEY,
-                                    value=self._reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], type='file')
+            # reduce unnecessary IO because of NmrVrptUtility.__parseNmrStarAsCif()
+            # if NMR_CIF_FILE_PATH_KEY in self._reg.outputParamDict:
+            #     vrpt_util.addOutput(name=NMR_CIF_FILE_PATH_KEY,
+            #                         value=self._reg.outputParamDict[NMR_CIF_FILE_PATH_KEY], type='file')
 
             if REPORT_FILE_PATH_KEY in self._reg.inputParamDict:
                 fPath = self._reg.inputParamDict[REPORT_FILE_PATH_KEY]

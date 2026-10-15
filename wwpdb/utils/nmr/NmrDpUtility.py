@@ -3490,6 +3490,9 @@ class NmrDpUtility:
         if not self.__reg.combined_mode:
             return self.__extractPolymerSequenceInEntityLoop__(file_list_id)
 
+        if file_list_id >= len(self.__reg.star_data):
+            return False
+
         for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category('assembly'):
 
             try:
@@ -10178,7 +10181,8 @@ class NmrDpUtility:
 
         if src_id < 0:
 
-            if not self.__reg.combined_mode and self.__reg.permit_missing_legacy_dist_restraint:  # no exception
+            if (not self.__reg.combined_mode and self.__reg.permit_missing_legacy_dist_restraint)\
+               or self.__reg.conversion_server:  # no exception
 
                 if len(self.__reg.suspended_errors_for_lazy_eval) > 0:
                     for msg in self.__reg.suspended_errors_for_lazy_eval:

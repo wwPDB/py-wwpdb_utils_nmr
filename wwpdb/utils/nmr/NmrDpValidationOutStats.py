@@ -792,10 +792,11 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
             if has_rdc and 'rdc_correlation_plot' in vrpt_mr:
                 rdc_correlation_plot = vrpt_mr['rdc_correlation_plot']
 
-                input_source_ = self._reg.report_prev.input_sources[0]
+                try:
 
-                if input_source_ is not None:
+                    input_source_ = self._reg.report_prev.input_sources[0]
                     input_source_dic_ = input_source_.get()
+
                     content_subtypes_ = input_source_dic_['content_subtype']
 
                     if 'rdc_restraint' in content_subtypes_ and 'stats_of_exptl_data' in input_source_dic_:
@@ -808,6 +809,9 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                                 if list_id in rdc_correlation_plot:
                                     rdc_stat['correlation_plot'] = rdc_correlation_plot[list_id]
+
+                except TypeError:
+                    pass
 
             def get_dist_violations_per_model():
                 violations_per_model = []

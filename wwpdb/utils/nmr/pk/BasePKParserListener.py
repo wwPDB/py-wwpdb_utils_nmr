@@ -5004,14 +5004,26 @@ class BasePKParserListener():
                 self.f.append(f"[Range value warning] {self.getCurrentSpectralPeak(n=index)}"
                               f"The position_{dim}='{pos}' should be within range {CS_RESTRAINT_RANGE}.")
 
-        if height is not None and float(height) != 0.0:
-            dstFunc['height'] = height
-        if volume is not None and float(volume) != 0.0:
-            dstFunc['volume'] = volume
-        if height_uncertainty is not None and float(height_uncertainty) != 0.0:
-            dstFunc['height_uncertainty'] = height_uncertainty
-        if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
-            dstFunc['volume_uncertainty'] = volume_uncertainty
+        try:
+            if height is not None and float(height) != 0.0:
+                dstFunc['height'] = height
+        except ValueError:
+            pass
+        try:
+            if volume is not None and float(volume) != 0.0:
+                dstFunc['volume'] = volume
+        except ValueError:
+            pass
+        try:
+            if height_uncertainty is not None and float(height_uncertainty) != 0.0:
+                dstFunc['height_uncertainty'] = height_uncertainty
+        except ValueError:
+            pass
+        try:
+            if volume_uncertainty is not None and float(volume_uncertainty) != 0.0:
+                dstFunc['volume_uncertainty'] = volume_uncertainty
+        except ValueError:
+            pass
 
         if 'height' not in dstFunc and 'volume' not in dstFunc and not self.__internal:
             self.f.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"

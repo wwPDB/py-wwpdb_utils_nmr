@@ -1917,7 +1917,7 @@ class NmrDpMrSplitter:
                                     else:
                                         atom_unlikes += 1
 
-                            if len(values) == 4:
+                            if len(values) == 4 and none not in vaklues[1:3]:
                                 v = (values[1] + values[2]) / 2.0
 
                                 if DIST_RANGE_MIN <= v <= DIST_RANGE_MAX:

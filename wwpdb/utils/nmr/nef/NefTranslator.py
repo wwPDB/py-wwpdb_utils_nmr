@@ -8916,7 +8916,7 @@ class NefTranslator:
 
                 elif atm_set == [7, 8]:  # startswith [%*]
 
-                    atom_type = ref_atom[8]
+                    atom_type = ref_atom[8].lstrip('*')
                     wc_code = ref_atom[7]
 
                     if wc_code == '%':

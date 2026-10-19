@@ -1044,7 +1044,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         weight = 1.0
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
+        if not self.hasPolySeq and not self.hasNonPolySeq or None in (atomId1, atomId2):
             return
 
         self.retrieveLocalSeqScheme()

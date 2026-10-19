@@ -5163,7 +5163,7 @@ class BaseStackedMRParserListener():
                                         atomId = retrieveAtomIdFromMRMap(self.ccU, self.mrAtomNameMapping,
                                                                          __seqId, authCompId, atomId, __coordAtomSite)
                                     __atomIds = self.__getAtomIdList(_factor, __compId, atomId)
-                                    if __atomIds[0] in __atomSiteAtomId:
+                                    if len(__atomIds) > 0 and __atomIds[0] in __atomSiteAtomId:
                                         offsets.add(__seqId - seqId)
 
                                 if len(offsets) > 0:
@@ -5522,7 +5522,11 @@ class BaseStackedMRParserListener():
                                             self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
-                                            _atomId = self.__getAtomIdList(_factor, _compId, atomId)[0]
+                                            _atomIds = self.__getAtomIdList(_factor, _compId, atomId)
+                                            if len(_atomIds) > 0:
+                                                _atomId = _atomIds[0]
+                                            else:
+                                                continue
                                             skip = self.with_axis and self.__multiPolymer\
                                                 and not all('identical_chain_id' in ps for ps in self.polySeq)
                                             if _atomId in _coordAtomSite['atom_id']\
@@ -5593,7 +5597,11 @@ class BaseStackedMRParserListener():
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
-                                            _atomId = self.__getAtomIdList(_factor, _compId, atomId)[0]
+                                            _atomIds = self.__getAtomIdList(_factor, _compId, atomId)
+                                            if len(_atomIds) > 0:
+                                                _atomId = _atomIds[0]
+                                            else:
+                                                continue
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
@@ -5646,7 +5654,11 @@ class BaseStackedMRParserListener():
                                             self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck, asis=False)
                                         if _coordAtomSite is not None and not may_exist:
                                             _compId = _coordAtomSite['comp_id']
-                                            _atomId = self.__getAtomIdList(_factor, _compId, atomId)[0]
+                                            _atomIds = self.__getAtomIdList(_factor, _compId, atomId)
+                                            if len(_atomIds) > 0:
+                                                _atomId = _atomIds[0]
+                                            else:
+                                                continue
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 # _atom = {}
                                                 # _atom['comp_id'] = _compId
@@ -5692,7 +5704,9 @@ class BaseStackedMRParserListener():
                                         _seqKey, _coordAtomSite = self.getCoordAtomSiteOf(chainId, _seqId_, cifCheck=cifCheck)
                                         if _coordAtomSite is not None:
                                             _compId = _coordAtomSite['comp_id']
-                                            _atomId = self.__getAtomIdList(_factor, _compId, atomId)[0]
+                                            _atomIds = self.__getAtomIdList(_factor, _compId, atomId)
+                                            if len(_atomIds) > 0:
+                                                _atomId = _atomIds[0]
                                             if _atomId in _coordAtomSite['atom_id']:
                                                 _atom = {}
                                                 _atom['comp_id'] = _compId
@@ -5950,8 +5964,12 @@ class BaseStackedMRParserListener():
                                                         or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
                                                     __compId = __coordAtomSite['comp_id']
                                                     __atomIds = self.__getAtomIdList(_factor, __compId, atomId)
+                                                    if len(__atomIds) > 0:
+                                                        __atomId = __atomIds[0]
+                                                    else:
+                                                        continue
                                                     if compId != __compId\
-                                                       and __atomIds[0] in __coordAtomSite['atom_id']:
+                                                       and __atomId in __coordAtomSite['atom_id']:
                                                         update_label_seq_scheme()
                                                         if isChainSpecified:
                                                             update_inhibit_label_seq_scheme(chainId)
@@ -6058,8 +6076,12 @@ class BaseStackedMRParserListener():
                                                 or seqId != __seqId):  # 2lr1, 2lqc, 1qkg
                                             __compId = __coordAtomSite['comp_id']
                                             __atomIds = self.__getAtomIdList(_factor, __compId, atomId)
+                                            if len(__atomIds) > 0:
+                                                __atomId = __atomIds[0]
+                                            else:
+                                                continue
                                             # 2ld5
-                                            if compId != __compId and __atomIds[0] in __coordAtomSite['atom_id']\
+                                            if compId != __compId and __atomId in __coordAtomSite['atom_id']\
                                                and self.csStat.getTypeOfCompId(compId) == self.csStat.getTypeOfCompId(__compId):
                                                 update_label_seq_scheme_w_assert()
                                                 if isChainSpecified:
@@ -6523,7 +6545,7 @@ class BaseStackedMRParserListener():
                                     _atomIds = self.__getAtomIdList(_factor,
                                                                     self.__coordUnobsAtom[_seqKey]['comp_id'],
                                                                     _factor['atom_id'][0])
-                                    if _atomIds[0] in self.__coordUnobsAtom[_seqKey]['atom_ids']:
+                                    if len(_atomIds) > 0 and _atomIds[0] in self.__coordUnobsAtom[_seqKey]['atom_ids']:
                                         unobs_seq = True
                             elif len(_factor['chain_id']) > 1 and len(_factor['seq_id']) == 1:
                                 _chainId_ = []
@@ -6566,10 +6588,11 @@ class BaseStackedMRParserListener():
                                     if _seqKey in self.__coordUnobsRes:
                                         unobs_seq = True  # 2n25
                                     if _seqKey in self.__coordUnobsAtom and 'atom_id' in _factor and len(_factor['atom_id']) > 0:
-                                        _atomIds[0] =\
+                                        _atomIds =\
                                             self.__getAtomIdList(_factor,
-                                                                 self.__coordUnobsAtom[_seqKey]['comp_id'], _factor['atom_id'][0])
-                                        if _atomIds in self.__coordUnobsAtom[_seqKey]['atom_ids']:
+                                                                 self.__coordUnobsAtom[_seqKey]['comp_id'],
+                                                                 _factor['atom_id'][0])
+                                        if len(_atomIds) > 0 and _atomIds[0] in self.__coordUnobsAtom[_seqKey]['atom_ids']:
                                             unobs_seq = True
                             if (no_ext_seq or self.reasons is None) and not unobs_seq:
                                 if no_ext_seq:  # 2laz

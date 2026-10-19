@@ -1072,20 +1072,17 @@ def get_peak_list_format(fPath: str, asCode: bool = False
 
                     try:
 
-                        i = 0
-
                         fPath_next = get_temp_path(fPath)
 
                         with open(fPath, 'r', encoding='utf-8', errors='ignore') as ifh, \
                                 open(fPath_next, 'w', encoding='utf-8') as ofh:
-                            for _line in ifh:
-                                if i == idx - 1:
+                            for _idx, _line in enumerate(ifh):
+                                if _idx == idx - 1:
                                     ofh.write('label dataset sw sf\n')
-                                elif i == idx:
+                                elif _idx == idx:
                                     pass
                                 else:
                                     ofh.write(_line)
-                                i += 1
 
                         os.replace(fPath_next, fPath)
 

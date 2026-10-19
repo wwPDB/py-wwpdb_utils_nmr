@@ -5195,6 +5195,9 @@ class BaseLinearMRParserListener():
             _array = numpy.array([target_value, lower_limit, upper_limit],
                                  dtype=float)
 
+            if numpy.isnan(_array).all():
+                return None
+
             shift = None
             if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
                 shift = -(numpy.nanmax(_array) // 360) * 360
@@ -5288,6 +5291,9 @@ class BaseLinearMRParserListener():
         if self.__correctCircularShift:
             _array = numpy.array([target_value, lower_limit, upper_limit],
                                  dtype=float)
+
+            if numpy.isnan(_array).all():
+                return None
 
             shift = None
             if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:

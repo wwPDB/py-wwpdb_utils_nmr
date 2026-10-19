@@ -129,7 +129,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             chainId1, seqId1, compId1, atomId1 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
             chainId2, seqId2, compId2, atomId2 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection or None in (atomId1, atomId2):
                 self.distRestraints -= 1
                 return
 
@@ -281,7 +281,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             chainId1, seqId1, compId1, atomId1 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
             chainId2, seqId2, compId2, atomId2 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
 
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection or None in (atomId1, atomId2):
                 self.dihedRestraints -= 1
                 return
 
@@ -459,7 +459,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             chainId3, seqId3, compId3, atomId3 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(2)))
             chainId4, seqId4, compId4, atomId4 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
 
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection or None in (atomId1, atomId2, atomId3, atomId4):
                 self.dihedRestraints -= 1
                 return
 
@@ -697,7 +697,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             chainId3, seqId3, compId3, atomId3 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(2)))
             chainId4, seqId4, compId4, atomId4 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
 
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
+            if len(self.numberSelection) == 0 or None in self.numberSelection or None in (atomId1, atomId2, atomId3, atomId4):
                 self.dihedRestraints -= 1
                 return
 
@@ -861,7 +861,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         chirality = str(ctx.Chiral_code())
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
+        if not self.hasPolySeq and not self.hasNonPolySeq or atomId1 is None:
             return
 
         self.retrieveLocalSeqScheme()
@@ -927,7 +927,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         chainId4, seqId4, compId4, atomId4 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
         chainId5, seqId5, compId5, atomId5 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(4)))
 
-        if not self.hasPolySeq and not self.hasNonPolySeq:
+        if not self.hasPolySeq and not self.hasNonPolySeq or None in (atomId1, atomId2, atomId3, atomId4, atomId5):
             return
 
         self.retrieveLocalSeqScheme()

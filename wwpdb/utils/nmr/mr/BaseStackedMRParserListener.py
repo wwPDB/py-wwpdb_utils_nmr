@@ -2487,16 +2487,18 @@ class BaseStackedMRParserListener():
                         if len(pro_hn_atom_not_found_warnings) + len(gly_hb_atom_not_found_warnings) > 0:
                             for chain_id in self.reasonsForReParsing['label_seq_offset']:
                                 pro_seq_ids, gly_seq_ids = set(), set()
-                                for f in pro_hn_atom_not_found_warnings:
-                                    g = self.__pro_hn_atom_not_found_pat.search(f).groups()
-                                    if g[0] != chain_id:
-                                        continue
-                                    pro_seq_ids.add(int(g[1]))
-                                for f in gly_hb_atom_not_found_warnings:
-                                    g = self.__gly_hb_atom_not_found_pat.search(f).groups()
-                                    if g[0] != chain_id:
-                                        continue
-                                    gly_seq_ids.add(int(g[1]))
+                                if len(pro_hn_atom_not_found_warnings) > 0:
+                                    for f in pro_hn_atom_not_found_warnings:
+                                        g = self.__pro_hn_atom_not_found_pat.search(f).groups()
+                                        if g[0] != chain_id:
+                                            continue
+                                        pro_seq_ids.add(int(g[1]))
+                                if len(gly_hb_atom_not_found_warnings) > 0:
+                                    for f in gly_hb_atom_not_found_warnings:
+                                        g = self.__gly_hb_atom_not_found_pat.search(f).groups()
+                                        if g[0] != chain_id:
+                                            continue
+                                        gly_seq_ids.add(int(g[1]))
                                 if len(pro_seq_ids) + len(gly_seq_ids) == 0:
                                     continue
                                 ps = next((ps for ps in self.polySeq if ps['chain_id'] == chain_id), None)
@@ -2917,6 +2919,9 @@ class BaseStackedMRParserListener():
         if self.__correctCircularShift:
             _array = numpy.array([target_value, lower_limit, upper_limit, lower_linear_limit, upper_linear_limit],
                                  dtype=float)
+
+            if numpy.isnan(_array).all():
+                return None
 
             shift = None
             if numpy.nanmin(_array) >= THRESHOLD_FOR_CIRCULAR_SHIFT:
@@ -6888,7 +6893,7 @@ class BaseStackedMRParserListener():
             if atomId[-1].isdigit() and int(atomId[-1]) <= len(atomIds):
                 atomIds = [atomIds[int(atomId[-1]) - 1]]
 
-        if details is not None or atomId.endswith('"'):
+        if details is not None or (atomId is not None and atomId.endswith('"')):
             _atomId = toNefEx(translateToStdAtomName(atomId, compId, ccU=self.ccU, unambig=False))
             if _atomId != atomId:
                 atomIds = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId)[0]

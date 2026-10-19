@@ -672,10 +672,16 @@ def convert_codec(inPath: str, outPath: str, in_codec: str = 'utf-8', out_codec:
     """ Convert codec of input file.
     """
 
-    with open(inPath, 'rb') as ifh, \
-            open(outPath, 'w+b') as ofh:
-        contents = ifh.read()
-        ofh.write(contents.decode(in_codec).encode(out_codec))
+    try:
+
+        with open(inPath, 'rb') as ifh, \
+                open(outPath, 'w+b') as ofh:
+            contents = ifh.read()
+            ofh.write(contents.decode(in_codec).encode(out_codec))
+
+    except UnicodeDecodeError:
+        if in_codec != 'utf-8':
+            convert_codec(inPath, outPath, 'utf-8', out_codec)
 
 
 def convert_rtf_to_ascii(inPath: str, outPath: str) -> None:

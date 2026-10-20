@@ -7967,6 +7967,12 @@ class NmrDpMrSplitter:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cya')
 
+            if _is_valid and 'assign' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (1pg9)
+                _is_valid = False
+                _err = ''
+                _valid_types = {}
+                _possible_types = {}
+
             is_valid |= _is_valid
             err += _err
             if _genuine_type is not None and 'nm-res-noa' not in genuine_type:

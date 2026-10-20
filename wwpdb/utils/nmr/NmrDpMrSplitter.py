@@ -3239,7 +3239,8 @@ class NmrDpMrSplitter:
                 if file_type in LINEAR_MR_FILE_TYPES:
                     with open(src_file, 'r', encoding='utf-8', errors='ignore') as ifh:
                         for line in ifh:
-                            if 'Submitted Coord H atom name' in line:
+                            if 'Submitted Coord H atom name' in line\
+                               or 'Entry H atom name' in line:
                                 input_source.setItemValue('file_type', 'nm-res-mr')
                                 return self.extractPublicMrFileIntoLegacyMr()
 
@@ -3467,7 +3468,8 @@ class NmrDpMrSplitter:
                                 has_cif_format = True
 
                         # skip MR footer
-                        if 'Submitted Coord H atom name' in line:
+                        if 'Submitted Coord H atom name' in line\
+                           or 'Entry H atom name' in line:
                             fofh.write(line)
                             footer = True
                             continue
@@ -3600,7 +3602,8 @@ class NmrDpMrSplitter:
                                     continue
 
                                 # skip MR footer
-                                if 'Submitted Coord H atom name' in line:
+                                if 'Submitted Coord H atom name' in line\
+                                   or 'Entry H atom name' in line:
                                     break
 
                                 ofh.write(line)
@@ -3788,7 +3791,8 @@ class NmrDpMrSplitter:
                                             continue
 
                                 # skip MR footer
-                                if 'Submitted Coord H atom name' in line:
+                                if 'Submitted Coord H atom name' in line\
+                                   or 'Entry H atom name' in line:
                                     break
 
                                 ofh.write(line)

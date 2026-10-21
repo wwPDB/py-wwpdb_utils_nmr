@@ -245,17 +245,15 @@ class NmrDpFirstAid:
                     j -= 1
 
             j += 1
-            i = 0
 
             _srcPath_next = self.getNextPath(_srcPath)
 
             with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                     open(_srcPath_next, 'w', encoding='utf-8') as ofh:
                 ofh.write(f'data_{os.path.basename(srcPath)}\n\n')
-                for line in ifh:
-                    if i < j:
+                for idx, line in enumerate(ifh):
+                    if idx < j:
                         ofh.write(line)
-                    i += 1
 
                 _srcPath = ofh.name
                 tmpPaths.append(_srcPath)
@@ -318,18 +316,15 @@ class NmrDpFirstAid:
                 if __pynmrstar_v3_6__:
                     line_num -= 1
 
-                i = 0
-
                 _srcPath_next = self.getNextPath(_srcPath)
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath_next, 'w', encoding='utf-8') as ofh:
-                    for line in ifh:
-                        if i == line_num:
+                    for idx, line in enumerate(ifh):
+                        if idx == line_num:
                             ofh.write('stop_\n')
                         ofh.write(line)
-                        i += 1
-                    if i == line_num:
+                    if idx == line_num:
                         ofh.write('stop_\n')
 
                     _srcPath = ofh.name
@@ -369,11 +364,10 @@ class NmrDpFirstAid:
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath_next, 'w', encoding='utf-8') as ofh:
-                    for line in ifh:
-                        if i == line_num - 1:
+                    for idx, line in enumerate(ifh):
+                        if idx == line_num - 1:
                             ofh.write('loop_\n')
                         ofh.write(line)
-                        i += 1
 
                     _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
@@ -522,18 +516,15 @@ class NmrDpFirstAid:
                 if __pynmrstar_v3_6__:
                     line_num -= 1
 
-                i = 0
-
                 _srcPath_next = self.getNextPath(_srcPath)
 
                 with open(_srcPath, 'r', encoding='utf-8') as ifh, \
                         open(_srcPath_next, 'w', encoding='utf-8') as ofh:
-                    for line in ifh:
-                        if i != line_num:
+                    for idx, line in enumerate(ifh):
+                        if idx != line_num:
                             ofh.write(line)
                         else:
                             ofh.write(f"save_{os.path.basename(srcPath)}\n")
-                        i += 1
 
                     _srcPath = ofh.name
                     tmpPaths.append(_srcPath)
@@ -1063,7 +1054,9 @@ class NmrDpFirstAid:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
+                            iso_num = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])\
+                                if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '?'
+                            row.append(iso_num)
 
                         loop.add_tag(f'{lp_category}.isotope_number')
 
@@ -1080,7 +1073,9 @@ class NmrDpFirstAid:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row[iso_num_col] = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])
+                            iso_num = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])\
+                                if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '?'
+                            row[iso_num_col] = iso_num
 
             elif content_subtype == 'dihed_restraint':
 
@@ -1357,7 +1352,9 @@ class NmrDpFirstAid:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
+                            iso_num = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])\
+                                if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '?'
+                            row.append(iso_num)
 
                         loop.add_tag(f'{lp_category}.Atom_isotope_number')
 
@@ -1374,7 +1371,9 @@ class NmrDpFirstAid:
                             atom_type = row[atom_name_col][0]
                             if atom_type in ('Q', 'M'):
                                 atom_type = 'H'
-                            row[iso_num_col] = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])
+                            iso_num = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])\
+                                if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS else '?'
+                            row[iso_num_col] = str(iso_num)
 
             elif content_subtype == 'dist_restraint':  # backward compatibility
 
@@ -1472,7 +1471,13 @@ class NmrDpFirstAid:
 
                         for row in loop:
                             atom_type = re.sub(r'\d+', '', row[axis_code_name_col])
-                            row.append(str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0]))
+                            iso_num = '?'
+                            if len(atom_type) > 0:
+                                if atom_type in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    iso_num = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type][0])
+                                elif atom_type[0] in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    iso_num = str(ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[atom_type[0]][0])
+                            row.append(iso_num)
 
                         loop.add_tag(f'{lp_category}.Atom_isotope_number')
 

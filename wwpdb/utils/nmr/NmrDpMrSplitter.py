@@ -7760,7 +7760,8 @@ class NmrDpMrSplitter:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cha', agreed_w_cns=agreed_w_cns)
 
-            if _is_valid and 'assi' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (2f40)
+            if _is_valid and '-div_try' in file_path\
+               and 'assi' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (2f40)
                 _is_valid = False
                 _err = ''
                 _valid_types = {}
@@ -7973,7 +7974,8 @@ class NmrDpMrSplitter:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cya')
 
-            if _is_valid and 'assi' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (1pg9)
+            if _is_valid and '-div_try' in file_path\
+               and 'assi' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (1pg9)
                 _is_valid = False
                 _err = ''
                 _valid_types = {}
@@ -8275,7 +8277,9 @@ class NmrDpMrSplitter:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
 
-                        if len(_err) > 0:
+                        # improve error message (1pg9, 2f40)
+                        if len(_err) > 0\
+                           and not (('XPLOR-NIH' in err or 'CNS' in err) and _mr_format_name in ('CYANA', 'CHARMM')):
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, "\
                                 "the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth'\

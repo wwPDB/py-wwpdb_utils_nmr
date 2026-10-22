@@ -353,7 +353,8 @@
 #                           binary wheels with the accelerators next to the pure-Python package (cibuildwheel.toml) (DAOTHER-9785)
 # 16-Oct-2026  M. Yokochi - add 'permit_missing_cs_file' input parameter (DAOTHER-7829, 8905, NMR data remediation Phase 3)
 # 21-Oct-2026  M. Yokochi - fix system clash whole handling case of missing _Spectral_dim.Atom_isotope_number tag (DAOTHER-11129)
-# 22-Oct-2026  M. Yokochi - rerun check workflow in case sequence mismatch errors are raised for cs and mr loops (DAOTHER-11129)
+# 22-Oct-2026  M. Yokochi - enable in-place remediation in nmr-str-consistency-check workflow
+#                           when sequence mismatch errors are raised for cs and mr loops (DAOTHER-11129)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -6841,7 +6842,7 @@ class NmrDpUtility:
         """ Remediate assigned chemical shift loop based on coordinates.
         """
 
-        if not self.__reg.combined_mode and self.__reg.has_star_entity\
+        if not self.__reg.combined_mode and not self.__reg.bmrb_only and self.__reg.has_star_entity\
            and self.__reg.report.error.hasSequenceMismatchErrorInCsLoop():  # DAOTHER-10487
             return False
 

@@ -7760,8 +7760,10 @@ class NmrDpMrSplitter:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cha', agreed_w_cns=agreed_w_cns)
 
+            _err_ = _err.lower()
             if _is_valid and '-div_try' in file_path\
-               and 'assi' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (2f40)
+               and ('assi' in _err_ or 'resi' in _err_)\
+               and '(' in _err and ')' in _err:  # improve error message (2f40, 1hx2)
                 _is_valid = False
                 _err = ''
                 _valid_types = {}
@@ -7974,8 +7976,10 @@ class NmrDpMrSplitter:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cya')
 
+            _err_ = _err.lower()
             if _is_valid and '-div_try' in file_path\
-               and 'assi' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (1pg9)
+               and ('assi' in _err_ or 'resi' in _err_)\
+               and '(' in _err and ')' in _err:  # improve error message (1pg9, 1hx2)
                 _is_valid = False
                 _err = ''
                 _valid_types = {}

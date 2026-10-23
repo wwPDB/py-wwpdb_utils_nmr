@@ -7978,8 +7978,8 @@ class NmrDpMrSplitter:
 
             _err_ = _err.lower()
             if _is_valid and '-div_try' in file_path\
-               and ((('assi' in _err_ or 'resi' in _err_)\
-                     and '(' in _err and ')' in _err)\
+               and ((('assi' in _err_ or 'resi' in _err_)
+                     and '(' in _err and ')' in _err)
                     or ':' in _err):   # improve error message (1pg9, 1hx2, 1sy8)
                 _is_valid = False
                 _err = ''

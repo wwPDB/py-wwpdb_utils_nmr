@@ -152,8 +152,17 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+            def get_rep_atom_id(name):
+                if '|' in name:
+                    return name.split('|', 1)[0]
+                if ',' in name:
+                    return name.split(',', 1)[0]
+                return name
+
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                             get_rep_atom_id(atomId1))
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                             get_rep_atom_id(atomId2))
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -294,7 +303,10 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target_value = None
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            weight = self.numberSelection[2]
+            if len(self.numberSelection) > 2:
+                weight = self.numberSelection[2]
+            else:
+                weight = 1.0
             # weight_ub = self.numberSelection[3]
             # max_penalty = self.numberSelection[4]
 
@@ -303,8 +315,17 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.retrieveLocalSeqScheme()
 
-            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
-            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
+            def get_rep_atom_id(name):
+                if '|' in name:
+                    return name.split('|', 1)[0]
+                if ',' in name:
+                    return name.split(',', 1)[0]
+                return name
+
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                             get_rep_atom_id(atomId1))
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                             get_rep_atom_id(atomId2))
 
             if 0 in (len(chainAssign1), len(chainAssign2)):
                 return
@@ -741,7 +762,10 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target_value = None
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            weight = self.numberSelection[2]
+            if len(self.numberSelection) > 2:
+                weight = self.numberSelection[2]
+            else:
+                weight = 1.0
             # weight_ub = self.numberSelection[3]
             # weight_max = self.numberSelection[4]
 
@@ -1270,8 +1294,17 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         if not any(True for ps in self.polySeq if ps['auth_chain_id'] == chainId2):
             chainId2 = None
 
-        chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])
-        chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])
+        def get_rep_atom_id(name):
+            if '|' in name:
+                return name.split('|', 1)[0]
+            if ',' in name:
+                return name.split(',', 1)[0]
+            return name
+
+        chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1,
+                                                                               get_rep_atom_id(atomId1))
+        chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2,
+                                                                               get_rep_atom_id(atomId2))
 
         if 0 in (len(chainAssign1), len(chainAssign2)):
             return

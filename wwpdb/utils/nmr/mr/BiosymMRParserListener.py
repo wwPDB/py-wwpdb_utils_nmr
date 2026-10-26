@@ -303,7 +303,10 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target_value = None
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            weight = self.numberSelection[2]
+            if len(self.numberSelection) > 2:
+                weight = self.numberSelection[2]
+            else:
+                weight = 1.0
             # weight_ub = self.numberSelection[3]
             # max_penalty = self.numberSelection[4]
 
@@ -759,7 +762,10 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target_value = None
             lower_limit = self.numberSelection[0]
             upper_limit = self.numberSelection[1]
-            weight = self.numberSelection[2]
+            if len(self.numberSelection) > 2:
+                weight = self.numberSelection[2]
+            else:
+                weight = 1.0
             # weight_ub = self.numberSelection[3]
             # weight_max = self.numberSelection[4]
 

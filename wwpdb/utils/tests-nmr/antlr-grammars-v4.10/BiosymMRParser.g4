@@ -22,8 +22,10 @@ biosym_mr:
 	(
 	distance_restraints |
 	distance_constraints |
+	distance_wo_w_constraints |
 	dihedral_angle_restraints |
 	dihedral_angle_constraints |
+	dihedral_angle_wo_w_constraints |
 	chirality_constraints |
 	prochirality_constraints |
 	mixing_time |
@@ -51,7 +53,16 @@ distance_constraints:
 distance_constraint:
 	Ordinal? Atom_selection Atom_selection
 	number number						// lower limit, upper limit
-	(number number number)?;				// weights for lower bound, upper bound, maximum penalty
+	number number number;					// weights for lower bound, upper bound, maximum penalty
+
+/* BIOSYM - Distance constraints
+*/
+distance_wo_w_constraints:
+	distance_wo_w_constraint+;
+
+distance_wo_w_constraint:
+	Ordinal? Atom_selection Atom_selection
+	number number;						// lower limit, upper limit
 
 /* BIOSYM - Dihedral angle restraints
  See also https://www.chem.uzh.ch/robinson/felixman/habas.html
@@ -74,7 +85,16 @@ dihedral_angle_constraints:
 dihedral_angle_constraint:
 	Ordinal? Atom_selection Atom_selection Atom_selection Atom_selection
 	number number						// range for lower bound, upper bound
-	(number number number)?;				// weights for lower bound, upper bound, maximum penalty
+	number number number;					// weights for lower bound, upper bound, maximum penalty
+
+/* BIOSYM - Dihedral angle constraints
+*/
+dihedral_angle_wo_w_constraints:
+	dihedral_angle_wo_w_constraint+;
+
+dihedral_angle_wo_w_constraint:
+	Ordinal? Atom_selection Atom_selection Atom_selection Atom_selection
+	number number;						// range for lower bound, upper bound
 
 /* BIOSYM - Chirality constraints
  See also https://www.chem.uzh.ch/robinson/felixman/felix-restraints.html

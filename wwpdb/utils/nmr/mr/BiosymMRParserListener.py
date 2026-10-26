@@ -429,6 +429,31 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.numberSelection.clear()
 
+    def enterDistance_wo_w_constraints(self, ctx: BiosymMRParser.Distance_wo_w_constraintsContext
+                                       ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#distance_wo_w_constraints.
+        """
+
+        self.cur_subtype = 'dist'
+
+    def exitDistance_wo_w_constraints(self, ctx: BiosymMRParser.Distance_constraintsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BiosymMRParser#distance_wo_w_constraints.
+        """
+
+    def enterDistance_wo_w_constraint(self, ctx: BiosymMRParser.Distance_constraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#distance_wo_w_constraint.
+        """
+
+        self.distRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    def exitDistance_wo_w_constraint(self, ctx: BiosymMRParser.Distance_wo_w_constraintContext):
+        """ Exit a parse tree produced by BiosymMRParser#distance_wo_w_constraint.
+        """
+
+        self.exitDistance_constraint(ctx)
+
     def __splitAtomSelectionExpr(self, atomSelection: str  # pylint: disable=no-self-use
                                  ) -> Tuple[str, int, str, str]:
         """ Split BIOSYM atom selection expression.
@@ -895,6 +920,33 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         finally:
             self.numberSelection.clear()
+
+    def enterDihedral_angle_wo_w_constraints(self, ctx: BiosymMRParser.Dihedral_angle_wo_w_constraintsContext
+                                             ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#dihedral_angle_wo_w_constraints.
+        """
+
+        self.cur_subtype = 'dihed'
+
+    def exitDihedral_angle_wo_w_constraints(self, ctx: BiosymMRParser.Dihedral_angle_wo_w_constraintsContext
+                                            ):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BiosymMRParser#dihedral_angle_wo_w_constraints.
+        """
+
+    def enterDihedral_angle_wo_w_constraint(self, ctx: BiosymMRParser.Dihedral_angle_wo_w_constraintContext
+                                            ):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#dihedral_angle_wo_w_constraint.
+        """
+
+        self.dihedRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    def exitDihedral_angle_wo_w_constraint(self, ctx: BiosymMRParser.Dihedral_angle_wo_w_constraintContext):
+        """ Exit a parse tree produced by BiosymMRParser#dihedral_angle_wo_w_constraint.
+        """
+
+        self.exitDihedral_angle_constraint(ctx)
 
     def delegateCouplingRestraint(self) -> bool:
         """ Check whether dihedral angle restraint is delegated to J-coupling restraint

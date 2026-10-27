@@ -7765,7 +7765,7 @@ class NmrDpMrSplitter:
                                                                     'nm-res-cha', agreed_w_cns=agreed_w_cns)
 
             _err_ = _err.lower()
-            if _is_valid and '-div_try' in file_path\
+            if _is_valid and '-div_try' in file_path and '-corrected' not in file_path\
                and ('assi' in _err_ or 'resi' in _err_)\
                and '(' in _err and ')' in _err:  # improve error message (2f40, 1hx2)
                 _is_valid = False
@@ -7981,7 +7981,7 @@ class NmrDpMrSplitter:
                                                                     'nm-res-cya')
 
             _err_ = _err.lower()
-            if _is_valid and '-div_try' in file_path\
+            if _is_valid and '-div_try' in file_path and '-corrected' not in file_path\
                and ((('assi' in _err_ or 'resi' in _err_)
                      and '(' in _err and ')' in _err)
                     or ':' in _err):   # improve error message (1pg9, 1hx2, 1sy8)

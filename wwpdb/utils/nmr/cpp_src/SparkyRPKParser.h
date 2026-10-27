@@ -273,6 +273,7 @@ public:
     antlr4::tree::TerminalNode *Note_2d_ex();
     antlr4::tree::TerminalNode *Note_3d_ex();
     antlr4::tree::TerminalNode *Note_4d_ex();
+    antlr4::tree::TerminalNode *Note_ex();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

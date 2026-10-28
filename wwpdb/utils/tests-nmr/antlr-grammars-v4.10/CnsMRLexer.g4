@@ -33,7 +33,7 @@ Asymptote:		'ASYM' 'P'? 'T'? 'O'? 'T'? 'E'?;	// Class_names Real
 Average:		'AVER' 'A'? 'G'? (('I'? 'N'? 'G'?) | 'E'?) -> pushMode(AVER_MODE);	// Class_names Noe_avr_methods
 Bhig:			'BHIG';					// Class_names Real
 Ceiling:		'CEIL' 'I'? 'N'? 'G'?;			// = Real
-Classification:		'CLAS' 'S'? 'I'? 'F'? 'I'? 'C'? 'A'? 'T'? 'I'? 'O'? 'N'?;	// Class_name
+Classification:		'CLAS' 'S'? 'I'? 'F'? 'I'? 'C'? 'A'? 'T'? 'I'? 'O'? 'N'? -> pushMode(CLAS_MODE);	// Class_name
 CountViol:		'COUN' 'T'? 'V'? 'I'? 'O'? 'L'?;	// Class_name
 Cv:			'CV';					// = Integer
 Den:			'DEN';					// Initialize | ( Update Gamma = Real Kappa = Real )
@@ -453,6 +453,14 @@ mode AVER_MODE; // Inside of Averaging tag
 
 Averaging_methods:	('R-6' | 'R-3' | 'SUM' | 'CENT' 'E'? 'R'?) -> popMode;
 
+mode CLAS_MODE; // Inside of Classification tag
+
+Equ_op_CL:		'=';
+
+Class_name:	(SIMPLE_NAME | '*') -> popMode;
+
+SPACE_CL:		[ \t\r\n]+ -> skip;
+
 Class_name_AM:		SIMPLE_NAME | '*';
 
 SPACE_AM:		[ \t\r\n]+ -> skip;
@@ -480,7 +488,7 @@ Include:		'INCL' 'U'? 'D'? 'E'?;			// Class_name*
 
 End_FL:			'END' -> popMode;
 
-Class_name:		SIMPLE_NAME;
+Class_name_FL:		SIMPLE_NAME;
 Any_class:		'*';
 
 SPACE_FL:		[ \t\r\n]+ -> skip;

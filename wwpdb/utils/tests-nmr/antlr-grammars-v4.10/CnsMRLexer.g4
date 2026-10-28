@@ -114,7 +114,7 @@ Group:			'GROU' 'P'?;				// Group { planar_group_statement } End
 //Print_any:		'?';
 
 // group_statement
-Selection:		'SELE' 'C'? 'T'? 'I'? 'O'? 'N'?;	// = selection
+Selection:		'SELE' 'C'? 'T'? 'I'? 'O'? 'N'? '='?;	// = selection
 Weight:			'WEIG' 'H'? 'T'?;			// = Real
 
 /* CNS: Plane restraints - Syntax - restraints/harmonic
@@ -286,7 +286,7 @@ Ncs:			'NCS';
 //Initialize:		'INIT' 'I'? 'A'? 'L'? 'I'? 'Z'? 'E'?;
 //Print_any:		'?';
 
-Equivalence:		'EQUI' 'V'? 'A'? 'L'? 'E'? 'N'? 'C'? 'E'?;
+Equivalence:		'EQUI' 'V'? 'A'? 'L'? 'E'? 'N'? 'C'? 'E'? '='?;
 								// = selection
 Sigb:			'SIGB';					// = Real
 //Weight:		'WEIG' 'H'? 'T'?;			// = Real
@@ -378,8 +378,8 @@ Loop:			'LOOP' -> pushMode(LOOP_LABEL_MODE);
 /* Three-dimentional vectors - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
-Tail:			'TAIL';
-Head:			'HEAD';
+Tail:			'TAIL' '='?;
+Head:			'HEAD' '='?;
 
 // Logical operations
 Or_op:			'OR';

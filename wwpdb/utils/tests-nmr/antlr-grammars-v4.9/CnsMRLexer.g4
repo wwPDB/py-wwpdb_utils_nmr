@@ -142,7 +142,7 @@ Group:			G R O U P?;				// Group { planar_group_statement } End
 //Print_any:		'?';
 
 // group_statement
-Selection:		S E L E C? T? I? O? N?;			// = selection
+Selection:		S E L E C? T? I? O? N? '='?;		// = selection
 Weight:			W E I G H? T?;				// = Real
 
 /* CNS: Plane restraints - Syntax - restraints/harmonic
@@ -314,7 +314,7 @@ Ncs:			N C S;
 //Initialize:		I N I T I? A? L? I? Z? E?;
 //Print_any:		'?';
 
-Equivalence:		E Q U I V? A? L? E? N? C? E?;		// = selection
+Equivalence:		E Q U I V? A? L? E? N? C? E? '='?;	// = selection
 Sigb:			S I G B;				// = Real
 //Weight:		W E I G H? T?;				// = Real
 
@@ -405,8 +405,8 @@ Loop:			L O O P -> pushMode(LOOP_LABEL_MODE);
 /* Three-dimentional vectors - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
-Tail:			T A I L;
-Head:			H E A D;
+Tail:			T A I L '='?;
+Head:			H E A D '='?;
 
 // Logical operations
 Or_op:			O R;

@@ -144,7 +144,7 @@ noe_annotation:
 	(Volume | Vol) Equ_op? number_a |
 	Ppm1 Equ_op? number_a |
 	Ppm2 Equ_op? number_a |
-	Cv Equ_op? number_a |
+	Cv Equ_op? number_a? |
 	Comma;
 
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral

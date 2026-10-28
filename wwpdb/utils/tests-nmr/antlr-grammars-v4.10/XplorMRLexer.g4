@@ -182,7 +182,7 @@ Initialize:		'INIT' 'I'? 'A'? 'L'? 'I'? 'Z'? 'E'?;
 //Print_any:		'?';
 
 // group_statement
-Selection:		'SELE' 'C'? 'T'? 'I'? 'O'? 'N'?;	// = selection
+Selection:		'SELE' 'C'? 'T'? 'I'? 'O'? 'N'? '='?;	// = selection
 Weight:			'WEIG' 'H'? 'T'?;			// = Real
 
 /* XPLOR-NIH: Harmonic coordiate restraints - Syntax
@@ -554,7 +554,7 @@ Ncs:			'NCS';
 //Initialize:		'INIT' 'I'? 'A'? 'L'? 'I'? 'Z'? 'E'?;
 //Print_any:		'?';
 
-Equivalence:		'EQUI' 'V'? 'A'? 'L'? 'E'? 'N'? 'C'? 'E'?;
+Equivalence:		'EQUI' 'V'? 'A'? 'L'? 'E'? 'N'? 'C'? 'E'? '='?;
 								// = selection
 Sigb:			'SIGB';					// = Real
 //Weight:		'WEIG' 'H'? 'T'?;			// = Real
@@ -643,8 +643,8 @@ Loop:			'LOOP' -> pushMode(LOOP_LABEL_MODE);
 /* Three-dimentional vectors - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node15.html
 */
-Tail:			'TAIL';
-Head:			'HEAD';
+Tail:			'TAIL' '='?;
+Head:			'HEAD' '='?;
 
 // Logical operations
 Or_op:			'OR';

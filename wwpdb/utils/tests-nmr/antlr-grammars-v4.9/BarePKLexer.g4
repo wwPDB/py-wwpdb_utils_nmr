@@ -52,8 +52,8 @@ RETURN:			[\r\n]+;
 fragment COMMENT_START_CHAR:	('#' | '!' | '\\' | '&' | '/' | '*' | '=');
 
 //ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | [Rr] [Ee] [Mm] [Aa] [Rr] [Kk] [Ss]?) ' '* -> channel(HIDDEN);
-LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | [Rr] [Ee] [Mm] [Aa] [Rr] [Kk] [Ss]?) ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | [Rr] [Ee] [Mm] [Aa] [Rr] [Kk] [Ss]?) ' '* RETURN -> channel(HIDDEN);
+LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR '*'+ | COMMENT_START_CHAR '='+ | [Rr] [Ee] [Mm] [Aa] [Rr] [Kk] [Ss]?) ~[\r\n]* RETURN -> channel(HIDDEN);
 
 mode PEAK_MODE;
 

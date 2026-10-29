@@ -394,7 +394,7 @@ if __name__ == "__main__":
     reader.parse('../../tests-nmr/mock-data-remediation/2ku0/2ku0-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2ku0/2ku0.cif',
                  None)
-    sys.exit()
+
     reader = AmberMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-combine-at-upload/bmr36811/data/D_1300065840_mr-upload_P1.amber.V1',

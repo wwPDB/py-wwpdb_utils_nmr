@@ -308,6 +308,10 @@ DIJ:			'DIJ'
 			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 DCUT:			'DCUT'
 			-> pushMode(REAL_PARAM_MODE);		// = Real
+FJ:			'FJ'
+			-> pushMode(REAL_PARAM_MODE);		// = Real
+DFAC_AL:		'DFAC_AL'
+			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 
 FREEZEMOL:		'FREEZEMOL';				// = Logical
 

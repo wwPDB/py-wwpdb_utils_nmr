@@ -336,6 +336,10 @@ DIJ:			D I J
 			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 DCUT:			D C U T
 			-> pushMode(REAL_PARAM_MODE);		// = Real
+FJ:			F J
+			-> pushMode(REAL_PARAM_MODE);		// = Real
+DFAC_AL:		D F A C '_' A L
+			-> pushMode(REAL_ARRAY_MODE);		// = RealArray
 
 FREEZEMOL:		F R E E Z E M O L;			// = Logical
 

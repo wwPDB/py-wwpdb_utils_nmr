@@ -145,6 +145,8 @@ class NmrDpFirstAid:
                         except IndexError:
                             pass
 
+                    err += ' ' + message['error'][0]
+
                 if not self.__reg.remediation_mode or not missing_loop or file_list_id > 0:
 
                     if self.__reg.op != 'nmr-str-replace-cs' or not self.__reg.bmrb_only:
@@ -753,6 +755,8 @@ class NmrDpFirstAid:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
                     except IndexError:
                         pass
+
+                err += ' ' + message['error'][0]
 
             if not self.__reg.remediation_mode or not missing_loop or file_list_id > 0:
 

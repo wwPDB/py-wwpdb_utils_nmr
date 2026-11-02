@@ -13,7 +13,7 @@
 parameters:
   os: "linux"
   pythons: []           # cibuildwheel selectors without the '-*', e.g. ['cp39', 'cp310']
-  dependsOnTox: "build_test_py39_linux"
+  dependsOnTox: "build_test_py311_linux"
 
 jobs:
 - ${{ each python in parameters.pythons }}:

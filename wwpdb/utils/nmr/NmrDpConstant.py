@@ -881,20 +881,20 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'EPSILON': ["C4'", "C3'", "O3'", 'P'],  # i, i, i, i+1
                           'ZETA': ["C3'", "O3'", 'P', "O5'"],  # i, i, i+1, i+1
                           # aka. CHIN (nucleic CHI angle)
-                          'CHI': {'Y': [re.compile(r"O[45]'"), "C1'", 'N1', 'C2'],  # for pyrimidines (i.e. C, T, U) N1/3
-                                  'R': [re.compile(r"O[45]'"), "C1'", 'N9', 'C4']  # for purines (i.e. G, A) N1/3/7/9
+                          'CHI': {'Y': ["O4'", "C1'", 'N1', 'C2'],  # for pyrimidines (i.e. C, T, U) N1/3
+                                  'R': ["O4'", "C1'", 'N9', 'C4']  # for purines (i.e. G, A) N1/3/7/9
                                   },
                           'ETA': ["C4'", 'P', "C4'", 'P'],  # i-1, i, i, i+1
                           'THETA': ['P', "C4'", 'P', "C4'"],  # i, i, i+1, i+1
                           "ETA'": ["C1'", 'P', "C1'", 'P'],  # i-1, i, i, i+1
                           "THETA'": ['P', "C1'", 'P', "C1'"],  # i, i, i+1, i+1
-                          'NU0': ["C4'", re.compile(r"O[45]'"), "C1'", "C2'"],  # 1s74 A3A O5'
-                          'NU1': [re.compile(r"O[45]'"), "C1'", "C2'", "C3'"],
+                          'NU0': ["C4'", "O45'", "C1'", "C2'"],  # 1s74 A3A O5'
+                          'NU1': ["O4'", "C1'", "C2'", "C3'"],
                           'NU2': ["C1'", "C2'", "C3'", "C4'"],
-                          'NU3': ["C2'", "C3'", "C4'", re.compile(r"O[45]'")],
-                          'NU4': ["C3'", "C4'", re.compile(r"O[45]'"), "C1'"],
-                          'TAU0': ["C4'", re.compile(r"O[45]'"), "C1'", "C2'"],  # identical to NU0
-                          'TAU1': [re.compile(r"O[45]'"), "C1'", "C2'", "C3'"],  # identical to NU1
+                          'NU3': ["C2'", "C3'", "C4'", "O4'"],
+                          'NU4': ["C3'", "C4'", "O4'", "C1'"],
+                          'TAU0': ["C4'", "O4'", "C1'", "C2'"],  # identical to NU0
+                          'TAU1': ["O4'", "C1'", "C2'", "C3'"],  # identical to NU1
                           'TAU2': ["C1'", "C2'", "C3'", "C4'"],  # identical to NU2
                           'TAU3': ["C2'", "C3'", "C4'", re.compile(r"O[45]'")],  # identical to NU3
                           'TAU4': ["C3'", "C4'", re.compile(r"O[45]'"), "C1'"],  # identical to NU4

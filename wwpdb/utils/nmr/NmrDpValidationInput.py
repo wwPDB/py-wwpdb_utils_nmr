@@ -110,6 +110,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
             if not has_key_value(self._reg.inputParamDict, CS_FILE_PATH_LIST_KEY) and self._reg.permit_missing_cs_file:
                 self._reg.star_data.append(pynmrstar.Entry.from_scratch('dummy'))
                 self._reg.star_data_type.append('Entry')
+                self._reg.cs_file_path_list_len = 0
                 return True
 
             for csListId, cs in enumerate(self._reg.inputParamDict[CS_FILE_PATH_LIST_KEY], start=offset):

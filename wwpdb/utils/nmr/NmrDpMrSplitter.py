@@ -3662,6 +3662,21 @@ class NmrDpMrSplitter:
                         if not is_valid or not self.__reg.has_star_chem_shift:
                             _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
                             if _is_valid:
+                                if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
+                                    _mrPath = self.getNextPath(mrPath, '.cif2str')
+                                    if self.__reg.c2S.convert(mrPath, _mrPath):
+                                        mrPath = _mrPath
+                                    del self.__reg.report.input_sources[insert_index]
+                                    input_source = self.__reg.report.input_sources[0]
+                                    input_source.setItemValue('file_name', mrPath)
+                                    input_source.setItemValue('file_type', file_type)
+                                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                                    input_source.setItemValue('content_subtype', {'chem_shift': 1})
+                                    self.__reg.cs_file_path_list_len = 1
+                                    self.__reg.file_path_list_len -= 1
+                                    insert_index = 0
+                                    file_subtype = 'S'
+                                    is_valid = True
                                 has_cs_str = True
 
                         self.__reg.original_error_message.append(message)
@@ -3708,8 +3723,8 @@ class NmrDpMrSplitter:
                                 if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
                                     if len(self.__reg.star_data_type) == self.__reg.file_path_list_len:
-                                        del self.__reg.star_data_type[-1]
-                                        del self.__reg.star_data[-1]
+                                        del self.__reg.star_data_type[-1 if file_subtype != 'S' else 0]
+                                        del self.__reg.star_data[-1 if file_subtype != 'S' else 0]
 
                                     self.__reg.star_data_type.append(star_data_type)
                                     self.__reg.star_data.append(star_data)
@@ -3722,8 +3737,9 @@ class NmrDpMrSplitter:
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
-                                               if mr_content_subtype in content_subtype):
+                                        if content_subtype is not None\
+                                           and any(True for mr_content_subtype in self.__reg.mr_content_subtypes
+                                                   if mr_content_subtype in content_subtype):
                                             self.__reg.mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 

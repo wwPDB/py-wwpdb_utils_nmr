@@ -127,12 +127,15 @@ class NmrDpFirstAid:
 
                 if len(message['error']) > 0:
 
+                    concat_err = False
+
                     if any(True for err_message in message['error'] if 'The mandatory loop' in err_message):
 
                         err = ''
                         for err_message in message['error']:
                             if 'No such file or directory' not in err_message:
                                 err += re.sub('not in list', 'unknown item.', err_message) + ' '
+                                concat_err = True
                         err = err[:-1]
 
                     else:
@@ -141,6 +144,10 @@ class NmrDpFirstAid:
                         for err_message in self.__reg.original_error_message[file_list_id]['error']:
                             if 'No such file or directory' not in err_message:
                                 err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+                                concat_err = True
+
+                    if not concat_err:
+                        err += ' ' + message['error'][0]
 
                 if not self.__reg.remediation_mode or not missing_loop or file_list_id > 0:
 
@@ -733,12 +740,15 @@ class NmrDpFirstAid:
 
             if len(message['error']) > 0:
 
+                concat_err = False
+
                 if any(True for err_message in message['error'] if 'The mandatory loop' in err_message):
 
                     err = ''
                     for err_message in message['error']:
                         if 'No such file or directory' not in err_message:
                             err += re.sub('not in list', 'unknown item.', err_message) + ' '
+                            concat_err = True
                     err = err[:-1]
 
                 else:
@@ -747,6 +757,10 @@ class NmrDpFirstAid:
                     for err_message in self.__reg.original_error_message[file_list_id]['error']:
                         if 'No such file or directory' not in err_message:
                             err += ' ' + re.sub('not in list', 'unknown item.', err_message)
+                            concat_err = True
+
+                if not concat_err:
+                    err += ' ' + message['error'][0]
 
             if not self.__reg.remediation_mode or not missing_loop or file_list_id > 0:
 

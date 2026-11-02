@@ -40,6 +40,7 @@ Assignment_4d_ex:	ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH_AXIS '-' ASS_EACH
 Note_2d_ex:		Assignment_2d_ex ('/' Assignment_2d_ex)* '(' ALPHA_NUM+ '=' Float ')';
 Note_3d_ex:		Assignment_3d_ex ('/' Assignment_3d_ex)* '(' ALPHA_NUM+ '=' Float ')';
 Note_4d_ex:		Assignment_4d_ex ('/' Assignment_4d_ex)* '(' ALPHA_NUM+ '=' Float ')';
+Note_ex:		ASS_EACH_AXIS ('/' ASS_EACH_AXIS)* ('(' ALPHA_NUM+ '=' Float ')')?;
 
 Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
@@ -59,8 +60,8 @@ RETURN:			[\r\n]+;
 fragment COMMENT_START_CHAR:	('!' | ';' | '\\' | '&' | '/' | '*' | '=');
 
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | COMMENT_START_CHAR | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* RETURN -> channel(HIDDEN);
-LINE_COMMENT:		(('#' (' ' | ALPHA_NUM)) | COMMENT_START_CHAR | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* RETURN -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | COMMENT_START_CHAR | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* -> channel(HIDDEN);
+LINE_COMMENT:		(('#' (' ' | ALPHA_NUM)) | COMMENT_START_CHAR | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
 
 mode LABEL_MODE;
 

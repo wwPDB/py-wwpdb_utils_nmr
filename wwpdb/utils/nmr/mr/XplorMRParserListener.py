@@ -53,6 +53,7 @@ try:
                                                AUTH_ATOM_CARTN_DATA_ITEMS,
                                                PTNR1_AUTH_ATOM_DATA_ITEMS,
                                                PTNR2_AUTH_ATOM_DATA_ITEMS,
+                                               HALF_SPIN_NUCLEUS,
                                                PARAMAGNETIC_ELEMENTS,
                                                FERROMAGNETIC_ELEMENTS,
                                                LANTHANOID_ELEMENTS,
@@ -116,6 +117,7 @@ except ImportError:
                                    AUTH_ATOM_CARTN_DATA_ITEMS,
                                    PTNR1_AUTH_ATOM_DATA_ITEMS,
                                    PTNR2_AUTH_ATOM_DATA_ITEMS,
+                                   HALF_SPIN_NUCLEUS,
                                    PARAMAGNETIC_ELEMENTS,
                                    FERROMAGNETIC_ELEMENTS,
                                    LANTHANOID_ELEMENTS,
@@ -1217,10 +1219,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                               f"The weight value '{scale}' should be a positive value.")
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
-            lower_linear_limit = None
-            upper_linear_limit = None
+            lower_limit = upper_limit = lower_linear_limit = upper_linear_limit = None
 
             if self.noePotential == 'biharmonic':
                 lower_limit = target - dminus
@@ -1503,10 +1502,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 exponent = 2
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
-            lower_linear_limit = None
-            upper_linear_limit = None
+            lower_limit = upper_limit = lower_linear_limit = upper_linear_limit = None
 
             if delta > 0.0:
                 if exponent in (2, 4):
@@ -1729,8 +1725,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
@@ -2053,10 +2048,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             delta = abs(self.numberSelection[1])
 
             if len(self.numberSelection) > 3:
-                lower_limit_1 = None
-                upper_limit_1 = None
-                lower_limit_2 = None
-                upper_limit_2 = None
+                lower_limit_1 = upper_limit_1 = lower_limit_2 = upper_limit_2 = None
 
                 target_value_1 = self.numberSelection[0]
                 target_value_2 = self.numberSelection[3]
@@ -2079,8 +2071,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     return
 
             else:
-                lower_limit = None
-                upper_limit = None
+                lower_limit = upper_limit = None
 
                 if self.potential == 'square' and delta > 0.0:
                     target_value = target
@@ -2483,8 +2474,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
@@ -2688,8 +2678,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
@@ -3167,8 +3156,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             delta = abs(self.numberSelection[1])
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if len(self.atomSelectionSet) == 4 and self.hasPolySeq and not self.in_block:
 
@@ -3224,8 +3212,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = abs(self.numberSelection[3])
 
                 target_value = target
-                lower_limit = None
-                upper_limit = None
+                lower_limit = upper_limit = None
 
                 if self.potential != 'harmonic' and delta > 0.0:
                     lower_limit = target - delta
@@ -4454,8 +4441,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
@@ -4910,8 +4896,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 cminus = cplus = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if self.potential == 'square':
                 lower_limit = target - cminus
@@ -5300,8 +5285,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if self.potential == 'square' and delta > 0.0:
                 lower_limit = target - delta
@@ -5447,8 +5431,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if delta > 0.0:
                 lower_limit = target - delta
@@ -5537,8 +5520,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if delta > 0.0:
                 lower_limit = target - delta
@@ -5892,8 +5874,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 delta = 0.0
 
             target_value = target
-            lower_limit = None
-            upper_limit = None
+            lower_limit = upper_limit = None
 
             if delta > 0.0:
                 lower_limit = target - delta
@@ -7254,10 +7235,46 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if not self.hasPolySeq and not self.hasNonPolySeq:
                     return
 
+                def get_chain_atom_score(name):
+                    chain_like = atom_like = 0
+                    if any(name in ps['auth_chain_id'] for ps in self.polySeq):
+                        chain_like += 2
+                    if name in self.csStat.getAtomLikeNameSet():
+                        chain_like -= 1
+                        atom_like += 2
+                    if name[0].upper() in HALF_SPIN_NUCLEUS:
+                        atom_like += 1
+                    return chain_like - atom_like
+
                 # these indices are necessary to deal with mixing case of 'Simple_name' and 'Simple_names'
-                simpleNameIndex = simpleNamesIndex = 0
-                if ctx.Simple_name(0):
-                    chainId = str(ctx.Simple_name(0))
+                simpleNameIndex = simpleNamesIndex = dqStringIndex = 0
+
+                t = s = -1
+                if ctx.Logical() or (ctx.Simple_name(0) and ctx.Simple_name(1))\
+                   or (ctx.Simple_names(0) and ctx.Simple_names(1))\
+                   or (ctx.Double_quote_string(0) and ctx.Double_quote_string(1)):
+                    pass
+                else:
+                    name_score = [None] * 3
+                    if ctx.Simple_name(0):
+                        name_score[0] = get_chain_atom_score(str(ctx.Simple_name(0)))
+                    if ctx.Simple_names(0):
+                        name_score[1] = get_chain_atom_score(str(ctx.Simple_names(0)))
+                    if ctx.Double_quote_string(0):
+                        name_score[2] = get_chain_atom_score(str(ctx.Double_quote_string(0)).strip('"').strip())
+                    t = name_score.index(max(filter(None, name_score), default=None))
+                    s = name_score.index(min(filter(None, name_score), default=None))
+
+                if (ctx.Simple_name(0) and t in (-1, 0))\
+                   or (ctx.Double_quote_string(0) and t in (-1, 2)):
+                    if ctx.Simple_name(0) and t in (-1, 0):
+                        chainId = str(ctx.Simple_name(0))
+                        simpleNameIndex += 1
+                    elif ctx.Double_quote_string(0) and t in (-1, 2):
+                        chainId = str(ctx.Double_quote_string(0)).strip('"').strip()
+                        if len(chainId) == 0:
+                            return
+                        dqStringIndex += 1
                     self.factor['chain_id'] = [ps['auth_chain_id'] for ps in self.polySeq
                                                if ps['auth_chain_id'] == self.getRealChainId(chainId, ps['auth_chain_id'])]
                     if self.hasNonPolySeq:
@@ -7265,10 +7282,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             _chainId = np['auth_chain_id']
                             if _chainId == self.getRealChainId(chainId, _chainId) and _chainId not in self.factor['chain_id']:
                                 self.factor['chain_id'].append(_chainId)
-                    if len(self.factor['chain_id']) > 0:
-                        simpleNameIndex += 1
 
-                if simpleNameIndex == 0 and ctx.Simple_names(0):
+                elif ctx.Simple_names(0) and t in (-1, 1):
                     chainId = str(ctx.Simple_names(0))
                     if self.reasons is not None and 'segment_id_mismatch' in self.reasons\
                        and chainId in self.reasons['segment_id_mismatch']\
@@ -7321,7 +7336,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 if ctx.Integer(0):
                     self.factor['seq_id'] = [int(str(ctx.Integer(0)))]
 
-                if ctx.Integers():
+                elif ctx.Integers():
                     seqId = str(ctx.Integers())
                     seqId_ex = toRegEx(seqId)
                     _seqIdSelect = set()
@@ -7364,8 +7379,14 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         if any(True for cca in self.ccU.lastAtomDictList if cca['atom_id'] == atomId):
                                             _atomIdSelect.add(atomId)
 
-                elif ctx.Simple_name(simpleNameIndex):
-                    atomId = str(ctx.Simple_name(simpleNameIndex))
+                elif (ctx.Simple_name(simpleNameIndex) and s in (-1, 0))\
+                        or (ctx.Double_quote_string(dqStringIndex) and s in (-1, 2)):
+                    if ctx.Simple_name(simpleNameIndex) and s in (-1, 0):
+                        atomId = str(ctx.Simple_name(simpleNameIndex))
+                    elif ctx.Double_quote_string(dqStringIndex) and s in (-1, 2):
+                        atomId = str(ctx.Double_quote_string(dqStringIndex)).strip('"').strip()
+                        if len(atomId) == 0:
+                            return
                     for chainId in self.factor['chain_id']:
                         psList = [ps for ps in self.fullPolySeq if ps['auth_chain_id'] == chainId]
                         for ps in psList:
@@ -7378,7 +7399,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                         if any(True for cca in self.ccU.lastAtomDictList if cca['atom_id'] == atomId):
                                             _atomIdSelect.add(atomId)
 
-                elif ctx.Simple_names(simpleNamesIndex):
+                elif ctx.Simple_names(simpleNamesIndex) and s in (-1, 1):
                     atomId = translateToStdAtomName(str(ctx.Simple_names(simpleNamesIndex)),
                                                     None if 'comp_id' not in self.factor else self.factor['comp_id'][0],
                                                     ccU=self.ccU)
@@ -8354,8 +8375,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                                         'enum': (self.representativeAltId,)}
                                                        ])
 
-                    lastCompId = None
-                    pseudoAtoms = None
+                    lastCompId = pseudoAtoms = None
 
                     for _atom in _atomSelection:
                         compId = _atom['comp_id']
@@ -8870,7 +8890,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         """ Enter a parse tree produced by XplorMRParser#classification.
         """
 
-        self.classification = self.getClass_name(ctx.class_name())
+        self.classification = str(ctx.Class_name())
 
     def exitClassification(self, ctx: XplorMRParser.ClassificationContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by XplorMRParser#classification.
@@ -8911,6 +8931,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         if ctx.Improper():
             return str(ctx.Improper())
+
+        if ctx.Average():
+            return str(ctx.Average())
 
         return None
 

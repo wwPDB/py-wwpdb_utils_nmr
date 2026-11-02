@@ -40,10 +40,13 @@ COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 /* DIANA restraint headers */
 NoeUpp:			'NOEUPP';
 NoeLow:			'NOELOW';
+HBUpp:			'HBUPP';
+HBLow:			'HBLOW';
 SSUpp:			'SSUPP';
 SSLow:			'SSLOW';
-JCoupl:			'JCOUPL';
+Jcoupl:			'JCOUPL';
 Angle:			'ANGLE';
+Stereo:			'STEREO';
 Shifts:			'SHIFTS'; // ignored later
 
 /* extensions for torsion angle restraints */
@@ -70,7 +73,7 @@ Link:			'LINK';
 /* CYANA 3.0 Reference Macnual - stereoassign macro
  See also http://www.cyana.org/wiki/index.php/CYANA_Macro:_stereoassign
 */
-Atom_stereo:		'ATOM' ' '+ 'STEREO' -> mode(PRINT_MODE);
+Atom_stereo:		'ATOM' ' '+ Stereo -> mode(PRINT_MODE);
 
 Var:			'VAR' -> mode(VARIABLE_MODE);
 Unset:			'UNSET' -> mode(VARIABLE_MODE);
@@ -101,8 +104,8 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		(';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'? | 'JNRL' | 'END') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'? | 'JNRL' | 'END') ~[\r\n]* -> channel(HIDDEN);
 
 mode COMMENT_MODE;
 
@@ -119,6 +122,16 @@ Residue1:		'RESIDUE1';
 Residue2:		'RESIDUE2';
 
 Equ_op_HB:		'=';
+
+Atom1_equ:		'ATOM1=';
+Atom2_equ:		'ATOM2=';
+Residue1_equ:		'RESIDUE1=';
+Residue2_equ:		'RESIDUE2=';
+
+Concat_atom_1:		'ATOM1=' SIMPLE_NAME;
+Concat_atom_2:		'ATOM2=' SIMPLE_NAME;
+Concat_res_1:		'RESIDUE1=' ('+' | '-')? DECIMAL;
+Concat_res_2:		'RESIDUE2=' ('+' | '-')? DECIMAL;
 
 Integer_HB:		('+' | '-')? DECIMAL;
 Simple_name_HB:		SIMPLE_NAME;

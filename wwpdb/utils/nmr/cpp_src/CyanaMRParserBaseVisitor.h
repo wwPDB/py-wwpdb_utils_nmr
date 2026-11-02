@@ -127,6 +127,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitDiana_hbond_restraints(CyanaMRParser::Diana_hbond_restraintsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitDiana_hbond_restraint(CyanaMRParser::Diana_hbond_restraintContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitDiana_torsion_angle_restraints(CyanaMRParser::Diana_torsion_angle_restraintsContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -140,6 +148,10 @@ public:
   }
 
   virtual std::any visitDiana_coupling_constant_restraint(CyanaMRParser::Diana_coupling_constant_restraintContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitDiana_stereoassign_macro(CyanaMRParser::Diana_stereoassign_macroContext *ctx) override {
     return visitChildren(ctx);
   }
 

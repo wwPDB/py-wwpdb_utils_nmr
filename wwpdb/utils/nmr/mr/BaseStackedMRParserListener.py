@@ -1813,6 +1813,8 @@ class BaseStackedMRParserListener():
 
                         cyclicPolymer = {}
 
+                        duplex_w_offset = False
+
                         for ca in self.__chainAssign:
                             ref_chain_id = ca['ref_chain_id']
                             test_chain_id = ca['test_chain_id']
@@ -1832,13 +1834,30 @@ class BaseStackedMRParserListener():
                                and not any(True for k, v in seq_id_mapping.items()
                                            if v in poly_seq_model['seq_id']
                                            and k == poly_seq_model['auth_seq_id'][poly_seq_model['seq_id'].index(v)]):
-                                seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
+                                ps = next(ps for ps in self.polySeq if ps['auth_chain_id'] == test_chain_id)
+                                # 1x2v
+                                if 'identical_chain_id' in ps and len(ps['identical_chain_id']) == 1\
+                                   and any(True for m in seqIdRemap if m['chain_id'] in ps['identical_chain_id'])\
+                                   and not any(True for m in seqIdRemap if m['chain_id'] == test_chain_id)\
+                                   and any(True for m in _seqIdRemap if m['chain_id'] == test_chain_id):
+                                    seqIdRemap.append(next(_m for _m in _seqIdRemap if _m['chain_id'] == test_chain_id))
+                                    duplex_w_offset = True
+                                else:
+                                    seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
                             else:
                                 _seqIdRemap.append({'chain_id': test_chain_id, 'seq_id_dict': seq_id_mapping})
 
                         if len(seqIdRemap) > 0:
                             if 'seq_id_remap' not in self.reasonsForReParsing:
-                                self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
+                                if duplex_w_offset and 'chain_id_remap' not in self.reasonsForReParsing:
+                                    chainIdMapping = {}
+                                    for m in seqIdRemap:
+                                        chain_id = m['chain_id']
+                                        for k, v in m['seq_id_dict'].items():
+                                            chainIdMapping[k] = {'chain_id': chain_id, 'seq_id': k}
+                                    self.reasonsForReParsing['chain_id_remap'] = chainIdMapping
+                                else:
+                                    self.reasonsForReParsing['seq_id_remap'] = seqIdRemap
 
                         if any(True for ps in self.polySeq if 'identical_chain_id' in ps):
                             polySeqRst, chainIdMapping =\
@@ -4900,7 +4919,8 @@ class BaseStackedMRParserListener():
         foundCompId = False
 
         if self.reasons is not None and 'segment_id_poly_type_stats' in self.reasons\
-           and 'segment_id' in _factor and _factor['segment_id'] in self.reasons['segment_id_poly_type_stats']:
+           and 'segment_id' in _factor and _factor['segment_id'] in self.reasons['segment_id_poly_type_stats']\
+           and self.hasNonPoly:  # 1ull
             stats = self.reasons['segment_id_poly_type_stats'][_factor['segment_id']]
             if isPolySeq and stats['polymer'] < stats['non-poly']:
                 return False
@@ -4909,9 +4929,8 @@ class BaseStackedMRParserListener():
                     return False
                 if stats['polymer'] >= stats['non-poly']\
                    and 'non_poly_remap' not in self.reasons\
-                   and (not self.hasNonPoly
-                        or not any(any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.polySeq)
-                                   for np in self.__nonPoly)):
+                   and not any(any(ps['auth_chain_id'] == np['auth_chain_id'] for ps in self.polySeq)
+                               for np in self.__nonPoly):
                     return False
 
         def update_label_seq_scheme(force=False):
@@ -4993,7 +5012,7 @@ class BaseStackedMRParserListener():
                                    and chainId in self.reasons['segment_id_mismatch'].values()\
                                    and 'segment_id_poly_type_stats' in self.reasons\
                                    and _factor['segment_id'] in self.reasons['segment_id_poly_type_stats']\
-                                   and stats['polymer'] <= stats['non-poly']:  # 2mtk
+                                   and self.hasNonPoly and stats['polymer'] <= stats['non-poly']:  # 2mtk
                                     _, __seqId = retrieveRemappedSeqId(self.reasons['np_seq_id_remap'], chainId, seqId)
                                     if __seqId is not None and __seqId != seqId\
                                        and list(self.reasons['segment_id_mismatch'].values()).count(chainId) > 1:
@@ -6863,6 +6882,9 @@ class BaseStackedMRParserListener():
             # 2la5
             if _score == __score and _chainId != __chainId and altChainId in self.reasonsForReParsing['segment_id_mismatch']:
                 del self.reasonsForReParsing['segment_id_mismatch'][altChainId]  # 2lzs
+            if self.__lenPolySeq == 2 and self.__polyPeptide and (self.__polyDeoxyribonucleotide or self.__polyRibonucleotide)\
+               and _score * 2 > __score:  # 1ull
+                self.reasonsForReParsing['segment_id_mismatch'][altChainId] = _chainId
 
     @functools.lru_cache(maxsize=2048)
     def getCoordAtomSiteOf(self, chainId: str, seqId: int, compId: Optional[str] = None, cifCheck: bool = True, asis: bool = True

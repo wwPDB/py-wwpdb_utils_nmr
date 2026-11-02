@@ -202,9 +202,9 @@ except ImportError:
     from nmr.pk.XwinNmrPKReader import XwinNmrPKReader
 
 
-SEL_MR_FILE_HEADER_PAT = re.compile(r'^# Restraints file \((\S+)\): (\S+)\s*')
-SEL_PK_FILE_HEADER_PAT = re.compile(r'^# Peak list file \((\S+)\): (\S+)\s*')
-SEL_CS_FILE_HEADER_PAT = re.compile(r'^# Chemical shifts file \((\S+)\): (\S+)\s*')
+SEL_MR_FILE_HEADER_PAT = re.compile(r'^# Restraints? file \((\S+)\): (\S+)\s*')
+SEL_PK_FILE_HEADER_PAT = re.compile(r'^# Peak lists? file \((\S+)\): (\S+)\s*')
+SEL_CS_FILE_HEADER_PAT = re.compile(r'^# Chemical shifts? file \((\S+)\): (\S+)\s*')
 
 PDB_FIRST_ATOM_PAT = re.compile(r'ATOM +1 .*')
 
@@ -2686,7 +2686,7 @@ class NmrDpMrSplitter:
 
             fileListId += 1
 
-            if file_type in ('nmr-star', 'nm-res-mr', 'nm-res-bar', 'nm-res-oth', 'nm-res-sax')\
+            if file_type is None or file_type in ('nmr-star', 'nm-res-mr', 'nm-res-bar', 'nm-res-oth', 'nm-res-sax')\
                or file_type.startswith('nm-pea'):
                 continue
 
@@ -2742,6 +2742,9 @@ class NmrDpMrSplitter:
             file_type_1 = ar_list[i]['file_type']
             file_type_2 = ar_list[j]['file_type']
 
+            if None in (file_type_1, file_type_2):
+                continue
+
             if file_type_1.startswith('nm-res') and file_type_2.startswith('nm-res'):
                 file_type = 'restraint'
             elif file_type_1.startswith('nm-pea') and file_type_2.startswith('nm-pea'):
@@ -2788,6 +2791,7 @@ class NmrDpMrSplitter:
             file_type = input_source_dic['file_type']
 
             fileListId += 1
+
             if file_type is None or file_type in ('nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
                 md5_list.append(None if file_type == 'nm-res-mr' else file_md5(file_path))
                 continue
@@ -3231,7 +3235,7 @@ class NmrDpMrSplitter:
 
             fileListId += 1
 
-            if ar['file_type'] == 'nm-aux-pdb':
+            if file_type is None or ar['file_type'] == 'nm-aux-pdb':
                 continue
 
             if file_type != 'nm-res-mr':
@@ -3658,6 +3662,21 @@ class NmrDpMrSplitter:
                         if not is_valid or not self.__reg.has_star_chem_shift:
                             _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
                             if _is_valid:
+                                if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
+                                    _mrPath = self.getNextPath(mrPath, '.cif2str')
+                                    if self.__reg.c2S.convert(mrPath, _mrPath):
+                                        mrPath = _mrPath
+                                    del self.__reg.report.input_sources[insert_index]
+                                    input_source = self.__reg.report.input_sources[0]
+                                    input_source.setItemValue('file_name', mrPath)
+                                    input_source.setItemValue('file_type', file_type)
+                                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                                    input_source.setItemValue('content_subtype', {'chem_shift': 1})
+                                    self.__reg.cs_file_path_list_len = 1
+                                    self.__reg.file_path_list_len -= 1
+                                    insert_index = 0
+                                    file_subtype = 'S'
+                                    is_valid = True
                                 has_cs_str = True
 
                         self.__reg.original_error_message.append(message)
@@ -3704,8 +3723,8 @@ class NmrDpMrSplitter:
                                 if not (self.__reg.has_legacy_sf_issue and _is_done and star_data_type == 'Entry'):
 
                                     if len(self.__reg.star_data_type) == self.__reg.file_path_list_len:
-                                        del self.__reg.star_data_type[-1]
-                                        del self.__reg.star_data[-1]
+                                        del self.__reg.star_data_type[-1 if file_subtype != 'S' else 0]
+                                        del self.__reg.star_data[-1 if file_subtype != 'S' else 0]
 
                                     self.__reg.star_data_type.append(star_data_type)
                                     self.__reg.star_data.append(star_data)
@@ -3718,8 +3737,9 @@ class NmrDpMrSplitter:
                                     input_source_dic = input_source.get()
                                     if 'content_subtype' in input_source_dic:
                                         content_subtype = input_source_dic['content_subtype']
-                                        if any(True for mr_content_subtype in self.__reg.mr_content_subtypes
-                                               if mr_content_subtype in content_subtype):
+                                        if content_subtype is not None\
+                                           and any(True for mr_content_subtype in self.__reg.mr_content_subtypes
+                                                   if mr_content_subtype in content_subtype):
                                             self.__reg.mr_has_valid_star_restraint = True
                                             mr_part_paths.append({'nmr-star': mrPath})
 
@@ -5413,7 +5433,7 @@ class NmrDpMrSplitter:
                 file_type = input_source_dic['file_type']
                 content_type = input_source_dic['content_type']
 
-                if content_type != 'nmr-restraints':
+                if file_type is None or content_type != 'nmr-restraints':
                     continue
 
                 content_subtype = input_source_dic['content_subtype']
@@ -7760,8 +7780,10 @@ class NmrDpMrSplitter:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cha', agreed_w_cns=agreed_w_cns)
 
-            if _is_valid and '-div_try' in file_path\
-               and 'assi' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (2f40)
+            _err_ = _err.lower()
+            if _is_valid and '-div_try' in file_path and '-corrected' not in file_path\
+               and ('assi' in _err_ or 'resi' in _err_)\
+               and '(' in _err and ')' in _err:  # improve error message (2f40, 1hx2)
                 _is_valid = False
                 _err = ''
                 _valid_types = {}
@@ -7974,8 +7996,11 @@ class NmrDpMrSplitter:
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cya')
 
-            if _is_valid and '-div_try' in file_path\
-               and 'assi' in _err.lower() and '(' in _err and ')' in _err:  # improve error message (1pg9)
+            _err_ = _err.lower()
+            if _is_valid and '-div_try' in file_path and '-corrected' not in file_path\
+               and ((('assi' in _err_ or 'resi' in _err_)
+                     and '(' in _err and ')' in _err)
+                    or ':' in _err):   # improve error message (1pg9, 1hx2, 1sy8)
                 _is_valid = False
                 _err = ''
                 _valid_types = {}
@@ -8277,9 +8302,10 @@ class NmrDpMrSplitter:
                                         _err += f"{description['input']}\n"
                                         _err += f"{description['marker']}\n"
 
-                        # improve error message (1pg9, 2f40)
+                        # improve error message (1pg9, 2f40, 1sy8)
                         if len(_err) > 0\
-                           and not (('XPLOR-NIH' in err or 'CNS' in err) and _mr_format_name in ('CYANA', 'CHARMM')):
+                           and not (('XPLOR-NIH' in err or 'CNS' in err or 'BIOSYM' in err)
+                                    and _mr_format_name in ('CYANA', 'CHARMM')):
                             err += f"\nEven assuming that the format is the {_mr_format_name!r}, "\
                                 "the following issues need to be fixed.\n" + _err[:-1]
                         elif file_type != 'nm-res-oth'\

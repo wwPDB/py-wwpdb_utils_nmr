@@ -8894,6 +8894,9 @@ class NmrDpUtility:
 
             file_name = input_source_dic['file_name']
 
+            if file_name is None:
+                continue
+
             original_file_name = file_name.replace('-corrected', '')
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:

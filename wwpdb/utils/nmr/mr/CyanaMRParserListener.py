@@ -1773,6 +1773,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
+                    if nucleotide and "O4'" in atomNames and self.ccU.updateChemCompDict(cifCompId)\
+                       and not any(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == "O4'"):
+                        bonded = self.ccU.getBondedAtoms(compId, "O5'", exclProton=True)
+                        if "C1'" in bonded and "C4'" in bonded:
+                            atomNames = copy.copy(atomNames)
+                            atomNames[atomNames.index("O4'")] = "O5'"  # A3A
+
                     prevCifAtomId = prevOffset = None
 
                     for col, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
@@ -2008,6 +2015,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                     seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                    if nucleotide and "O4'" in atomNames and self.ccU.updateChemCompDict(cifCompId)\
+                       and not any(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == "O4'"):
+                        bonded = self.ccU.getBondedAtoms(compId, "O5'", exclProton=True)
+                        if "C1'" in bonded and "C4'" in bonded:
+                            atomNames = copy.copy(atomNames)
+                            atomNames[atomNames.index("O4'")] = "O5'"  # A3A
 
                     if nucleotide:
                         pass
@@ -5019,6 +5033,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
+                    if nucleotide and "O4'" in atomNames and self.ccU.updateChemCompDict(cifCompId)\
+                       and not any(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == "O4'"):
+                        bonded = self.ccU.getBondedAtoms(compId, "O5'", exclProton=True)
+                        if "C1'" in bonded and "C4'" in bonded:
+                            atomNames = copy.copy(atomNames)
+                            atomNames[atomNames.index("O4'")] = "O5'"  # A3A
+
                     prevCifAtomId = prevOffset = None
 
                     for col, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
@@ -5254,6 +5275,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                     seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                    if nucleotide and "O4'" in atomNames and self.ccU.updateChemCompDict(cifCompId)\
+                       and not any(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == "O4'"):
+                        bonded = self.ccU.getBondedAtoms(compId, "O5'", exclProton=True)
+                        if "C1'" in bonded and "C4'" in bonded:
+                            atomNames = copy.copy(atomNames)
+                            atomNames[atomNames.index("O4'")] = "O5'"  # A3A
 
                     if nucleotide:
                         pass
@@ -5543,6 +5571,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
+                    if nucleotide and "O4'" in atomNames and self.ccU.updateChemCompDict(cifCompId)\
+                       and not any(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == "O4'"):
+                        bonded = self.ccU.getBondedAtoms(compId, "O5'", exclProton=True)
+                        if "C1'" in bonded and "C4'" in bonded:
+                            atomNames = copy.copy(atomNames)
+                            atomNames[atomNames.index("O4'")] = "O5'"  # A3A
+
                     prevCifAtomId = prevOffset = None
 
                     for col, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
@@ -5776,6 +5811,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                     seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                    if nucleotide and "O4'" in atomNames and self.ccU.updateChemCompDict(cifCompId)\
+                       and not any(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == "O4'"):
+                        bonded = self.ccU.getBondedAtoms(compId, "O5'", exclProton=True)
+                        if "C1'" in bonded and "C4'" in bonded:
+                            atomNames = copy.copy(atomNames)
+                            atomNames[atomNames.index("O4'")] = "O5'"  # A3A
 
                     if nucleotide:
                         pass
@@ -7591,6 +7633,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                         seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
 
+                    if nucleotide and "O4'" in atomNames and self.ccU.updateChemCompDict(cifCompId)\
+                       and not any(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == "O4'"):
+                        bonded = self.ccU.getBondedAtoms(compId, "O5'", exclProton=True)
+                        if "C1'" in bonded and "C4'" in bonded:
+                            atomNames = copy.copy(atomNames)
+                            atomNames[atomNames.index("O4'")] = "O5'"  # A3A
+
                     prevCifAtomId = prevOffset = None
 
                     for col, (atomId, offset) in enumerate(zip(atomNames, seqOffset)):
@@ -7826,6 +7875,13 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
                     atomNames = KNOWN_ANGLE_ATOM_NAMES[angleName]
                     seqOffset = KNOWN_ANGLE_SEQ_OFFSET[angleName]
+
+                    if nucleotide and "O4'" in atomNames and self.ccU.updateChemCompDict(cifCompId)\
+                       and not any(cca for cca in self.ccU.lastAtomDictList if cca['atom_id'] == "O4'"):
+                        bonded = self.ccU.getBondedAtoms(compId, "O5'", exclProton=True)
+                        if "C1'" in bonded and "C4'" in bonded:
+                            atomNames = copy.copy(atomNames)
+                            atomNames[atomNames.index("O4'")] = "O5'"  # A3A
 
                     if nucleotide:
                         pass

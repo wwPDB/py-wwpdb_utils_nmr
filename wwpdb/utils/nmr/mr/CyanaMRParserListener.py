@@ -4471,6 +4471,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
+            up_and_low = bool(ctx.NoeUpLo())
+
             upl = bool(ctx.NoeUpp()) if self.cur_subtype == 'dist'\
                 else bool(ctx.SSUpp()) if self.cur_subtype == 'ssbond'\
                 else bool(ctx.HBUpp())
@@ -4499,22 +4501,33 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.distRestraints -= 1
                 return
 
-            value = self.numberSelection[0]
-            weight = 1.0
-
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
-            if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                if upl and value > self.max_dist_value:
-                    self.max_dist_value = value
-                if not upl and value < self.min_dist_value:
-                    self.min_dist_value = value
+            weight = 1.0
 
-            if upl:
-                upper_limit = value
+            if up_and_low:
+                upper_limit = self.numberSelection[0]
+                lower_limit = self.numberSelection[1]
+
+                if self.max_dist_value < upper_limit <= DIST_RANGE_MAX:
+                    self.max_dist_value = upper_limit
+                if DIST_RANGE_MIN <= lower_limit < self.min_dist_value:
+                    self.min_dist_value = lower_limit
+
             else:
-                lower_limit = value
+                value = self.numberSelection[0]
+
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                    if upl and value > self.max_dist_value:
+                        self.max_dist_value = value
+                    if not upl and value < self.min_dist_value:
+                        self.min_dist_value = value
+
+                if upl:
+                    upper_limit = value
+                else:
+                    lower_limit = value
 
             self.retrieveLocalSeqScheme()
 
@@ -4633,7 +4646,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if self.createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
                 sf['loop'].data[-1] = resetMemberId(self.cur_subtype, sf['loop'].data[-1])
 
-            if None in (atomId3, atomId4) or len(self.numberSelection) != 2:
+            if None in (atomId3, atomId4) or len(self.numberSelection) not in (2, 4):
                 return
 
             self.atomSelectionSet.clear()
@@ -4642,19 +4655,28 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             target_value = lower_limit = upper_limit = None
 
-            value = self.numberSelection[1]
-            weight = 1.0
+            if up_and_low:
+                upper_limit = self.numberSelection[2]
+                lower_limit = self.numberSelection[3]
 
-            if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
-                if upl and value > self.max_dist_value:
-                    self.max_dist_value = value
-                if not upl and value < self.min_dist_value:
-                    self.min_dist_value = value
+                if self.max_dist_value < upper_limit <= DIST_RANGE_MAX:
+                    self.max_dist_value = upper_limit
+                if DIST_RANGE_MIN <= lower_limit < self.min_dist_value:
+                    self.min_dist_value = lower_limit
 
-            if upl:
-                upper_limit = value
             else:
-                lower_limit = value
+                value = self.numberSelection[1]
+
+                if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
+                    if upl and value > self.max_dist_value:
+                        self.max_dist_value = value
+                    if not upl and value < self.min_dist_value:
+                        self.min_dist_value = value
+
+                if upl:
+                    upper_limit = value
+                else:
+                    lower_limit = value
 
             chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])
             chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])
@@ -5430,8 +5452,6 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 else:
                     lower_limit = upper_limit = None
 
-            weight = 1.0
-
             if self.remediate and upper_limit < 0.0:
                 self.dihed_ub_always_positive = False
 
@@ -6151,8 +6171,6 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             target = self.numberSelection[2 if has_error else 1]
             error = self.numberSelection[3] if has_error else None
-
-            weight = 1.0
 
             target_value = target
             lower_limit = target - error if error is not None else None

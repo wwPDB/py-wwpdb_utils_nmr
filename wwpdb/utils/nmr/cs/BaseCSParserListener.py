@@ -911,6 +911,9 @@ class BaseCSParserListener():
                         chainAssign, _ =\
                             self.assignCoordPolymerSequenceWithChainId(a['chain_id'], a['seq_id'], a['comp_id'], a['atom_id'],
                                                                        index)
+                        if len(chainAssign) == 0:
+                            chainAssign =\
+                                self.assignCoordPolymerSequenceWithoutCompId(a['seq_id'], a['atom_id'], index)
 
                     elif hasChainId:
                         chainAssign =\

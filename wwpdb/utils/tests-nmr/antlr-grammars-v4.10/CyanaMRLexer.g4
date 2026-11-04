@@ -40,6 +40,7 @@ COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 /* DIANA restraint headers */
 NoeUpp:			'NOEUPP';
 NoeLow:			'NOELOW';
+NoeUpLo:		'NOEUPLO';
 HBUpp:			'HBUPP';
 HBLow:			'HBLOW';
 SSUpp:			'SSUPP';
@@ -104,8 +105,10 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'? | 'JNRL' | 'END') ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		(';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'? | 'JNRL' | 'END') ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ |
+			 'REMARK' 'S'? | 'COORDS' | 'QCONVR' | 'COUNT' | 'JNRL' | 'END') ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		(';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ |
+			 'REMARK' 'S'? | 'COORDS' | 'QCONVR' | 'COUNT' | 'JNRL' | 'END') ~[\r\n]* -> channel(HIDDEN);
 
 mode COMMENT_MODE;
 

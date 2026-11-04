@@ -5204,6 +5204,10 @@ class BasePKParserListener():
                             self.assignCoordPolymerSequenceWithChainId(a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['atom_id'],
                                                                        index)
 
+                        if len(chainAssign1) == 0:
+                            chainAssign1 =\
+                                self.assignCoordPolymerSequenceWithoutCompId(a1['seq_id'], a1['atom_id'], index)
+
                     elif hasChainId:
                         chainAssign1 =\
                             self.assignCoordPolymerSequenceWithChainIdWithoutCompId(a1['chain_id'], a1['seq_id'], a1['atom_id'],

@@ -101,6 +101,9 @@ def get_chem_shift_format_from_string(string: str
     if 'TYPEDEF SEQUENCE' in string or 'TYPEDEF ASS_TBL_' in string:
         return 'nm-shi-oli'
 
+    if 'SPIN_SYSTEM_ID' in string or 'HETEROGENEITY' in string or 'END_RES_DEF' in string:
+        return 'nm-shi-vie'
+
     return None
 
 

@@ -698,6 +698,9 @@ def getChemShiftFormatName(fileType: str) -> str:
     if fileType in ('nm-shi-st2', 'nm-csp-st2'):
         return 'NMR-STAR V2.1 chemical shift assignment'
 
+    if fileType in ('nm-shi-vie', 'nm-csp-vie'):
+        return 'NMRVIEW chemical shift assignment'
+
     return 'other chemical shift assignment'
 
 

@@ -17,7 +17,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.4"
+__version__ = "5.4.5"
 
 import copy
 import ctypes
@@ -888,7 +888,7 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'THETA': ['P', "C4'", 'P', "C4'"],  # i, i, i+1, i+1
                           "ETA'": ["C1'", 'P', "C1'", 'P'],  # i-1, i, i, i+1
                           "THETA'": ['P', "C1'", 'P', "C1'"],  # i, i, i+1, i+1
-                          'NU0': ["C4'", "O45'", "C1'", "C2'"],  # 1s74 A3A O5'
+                          'NU0': ["C4'", "O4'", "C1'", "C2'"],  # 1s74 A3A O5'
                           'NU1': ["O4'", "C1'", "C2'", "C3'"],
                           'NU2': ["C1'", "C2'", "C3'", "C4'"],
                           'NU3': ["C2'", "C3'", "C4'", "O4'"],
@@ -896,8 +896,8 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'TAU0': ["C4'", "O4'", "C1'", "C2'"],  # identical to NU0
                           'TAU1': ["O4'", "C1'", "C2'", "C3'"],  # identical to NU1
                           'TAU2': ["C1'", "C2'", "C3'", "C4'"],  # identical to NU2
-                          'TAU3': ["C2'", "C3'", "C4'", re.compile(r"O[45]'")],  # identical to NU3
-                          'TAU4': ["C3'", "C4'", re.compile(r"O[45]'"), "C1'"],  # identical to NU4
+                          'TAU3': ["C2'", "C3'", "C4'", "O4'"],  # identical to NU3
+                          'TAU4': ["C3'", "C4'", "O4'", "C1'"],  # identical to NU4
                           # phase angle of pseudorotation made up from five NU[0-4] dihedral angles
                           'PPA': ["C1'", "C2'", "C3'", "C4'", "O4'"]
                           }
@@ -9150,7 +9150,7 @@ DEFAULT_COORD_PROPERTIES = {'tautomer': {},
                             'tautomer_per_model': []
                             }
 
-ASSIGNMENT_SEPARATOR_PAT = re.compile(r'[^\w\'\"]+')
+ASSIGNMENT_SEPARATOR_PAT = re.compile(r'[^\w\'\"\*\%\#\+]+')
 ASSIGNMENT_RESID_PAT = re.compile(r'\d+')
 ASSIGNMENT_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 

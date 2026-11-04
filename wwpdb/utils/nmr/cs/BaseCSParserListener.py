@@ -911,6 +911,9 @@ class BaseCSParserListener():
                         chainAssign, _ =\
                             self.assignCoordPolymerSequenceWithChainId(a['chain_id'], a['seq_id'], a['comp_id'], a['atom_id'],
                                                                        index)
+                        if len(chainAssign) == 0:
+                            chainAssign =\
+                                self.assignCoordPolymerSequenceWithoutCompId(a['seq_id'], a['atom_id'], index)
 
                     elif hasChainId:
                         chainAssign =\
@@ -998,8 +1001,19 @@ class BaseCSParserListener():
         if numOfDim not in (1, 2, 3, 4) or string is None:
             return None
 
-        _str_ = ASSIGNMENT_SEPARATOR_PAT.sub(' ', string).split()
-        _str = ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()
+        last_char = string[-1]
+
+        if last_char in ('*', '#', '%', '+'):
+            _string = string[:-1]
+            _str_ = ASSIGNMENT_SEPARATOR_PAT.sub(' ', _string).split()
+            _str = ASSIGNMENT_SEPARATOR_PAT.sub(' ', _string.upper()).split()
+            _str_[-1] += last_char
+            _str_[-1] += last_char
+
+        else:
+            _str_ = ASSIGNMENT_SEPARATOR_PAT.sub(' ', string).split()
+            _str = ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()
+
         lenStr = len(_str)
 
         segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike, atomNameLike_ =\

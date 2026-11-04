@@ -636,5 +636,6 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-csp-pip`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|PIPP chemical shift perturbation file
 `nm-csp-ppm`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|PPM chemical shift perturbation file (NMRVIEW, CAMRA)
 `nm-csp-st2`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|NMR-STAR V2 chemical shift perturbation file (loop only)
+`nm-csp-vie`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|NMRVIEW chemical shift perturbation file
 `nm-csp-xea`|**internal use**|`nmr-chemical-shifts-perturbation` / `any`|XEASY chemical shift perturbation file same as `nm-aux-xea`
 

@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.4"
+__version__ = "5.4.5"
 
 from typing import Optional, Union
 
@@ -100,6 +100,9 @@ def get_chem_shift_format_from_string(string: str
 
     if 'TYPEDEF SEQUENCE' in string or 'TYPEDEF ASS_TBL_' in string:
         return 'nm-shi-oli'
+
+    if 'SPIN_SYSTEM_ID' in string or 'HETEROGENEITY' in string or 'END_RES_DEF' in string:
+        return 'nm-shi-vie'
 
     return None
 

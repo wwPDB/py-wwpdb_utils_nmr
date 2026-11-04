@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.4"
+__version__ = "5.4.5"
 
 import copy
 import os
@@ -39,6 +39,7 @@ try:
     from wwpdb.utils.nmr.cs.PippCSReader import PippCSReader
     from wwpdb.utils.nmr.cs.PpmCSReader import PpmCSReader
     from wwpdb.utils.nmr.cs.NmrStar2CSReader import NmrStar2CSReader
+    from wwpdb.utils.nmr.cs.NmrViewCSReader import NmrViewCSReader
     from wwpdb.utils.nmr.cs.XeasyCSReader import XeasyCSReader
     from wwpdb.utils.nmr.NmrDpRemediationBase import NmrDpRemediationBase
 except ImportError:
@@ -61,6 +62,7 @@ except ImportError:
     from nmr.cs.PippCSReader import PippCSReader
     from nmr.cs.PpmCSReader import PpmCSReader
     from nmr.cs.NmrStar2CSReader import NmrStar2CSReader
+    from nmr.cs.NmrViewCSReader import NmrViewCSReader
     from nmr.cs.XeasyCSReader import XeasyCSReader
     from nmr.NmrDpRemediationBase import NmrDpRemediationBase
 
@@ -76,6 +78,7 @@ _CS_READERS = {
     'pip': (PippCSReader, 'PIPP'),
     'ppm': (PpmCSReader, 'PPM'),
     'st2': (NmrStar2CSReader, 'NMR-STAR V2.1'),
+    'vie': (NmrViewCSReader, 'NMRVIEW'),
     'xea': (XeasyCSReader, 'XEASY'),
 }
 

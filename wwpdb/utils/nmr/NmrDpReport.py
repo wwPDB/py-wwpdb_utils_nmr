@@ -142,6 +142,7 @@
 # 29-Sep-2026  M. Yokochi - stream the report to its JSON file in writeFile() (DAOTHER-7829, 9785)
 # 21-Oct-2026  M. Yokochi - fix hasSequenceMismatchErrorInCsLoop() and add hasSequenceMismatchErrorsInMrLoop() (DAOTHER-11129)
 # 28-Oct-2026  M. Yokochi - add getUnmappedSeqKeyOfModelChainId() (DAOTHER-9785, 10987)
+# 04-Nov-2026  M. Yokochi - add 'nm-shi-vie' file type for NMRVIEW chemical shift file (DAOTHER-8905, 9785)
 ##
 """ Wrapper class for NMR data processing report.
     @author: Masashi Yokochi
@@ -150,7 +151,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.4"
+__version__ = "5.4.5"
 
 import copy
 import functools
@@ -2068,7 +2069,7 @@ class NmrDpReportInputSource:
                            'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top',
                            'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',
                            'nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi', 'nm-shi-oli',
-                           'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', 'nm-shi-xea',
+                           'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', 'nm-shi-vie', 'nm-shi-xea',
                            'nm-csp-ari', 'nm-csp-bar', 'nm-csp-gar', 'nm-csp-npi', 'nm-csp-oli',
                            'nm-csp-pip', 'nm-csp-ppm', 'nm-csp-st2', 'nm-csp-xea')
         self.content_types = ('model',

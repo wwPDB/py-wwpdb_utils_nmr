@@ -355,6 +355,7 @@
 # 21-Oct-2026  M. Yokochi - fix system clash whole handling case of missing _Spectral_dim.Atom_isotope_number tag (DAOTHER-11129)
 # 22-Oct-2026  M. Yokochi - enable in-place remediation in nmr-str-consistency-check workflow
 #                           when sequence mismatch errors are raised for cs and mr loops (DAOTHER-11129)
+# 04-Nov-2026  M. Yokochi - add 'nm-shi-vie' file type for NMRVIEW chemical shift file (DAOTHER-8905, 9785)
 ##
 """ Main class for NMR data processing.
     @author: Masashi Yokochi
@@ -363,7 +364,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.4"
+__version__ = "5.4.5"
 
 import collections
 import copy

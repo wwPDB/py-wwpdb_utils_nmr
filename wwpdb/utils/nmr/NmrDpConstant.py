@@ -9150,7 +9150,7 @@ DEFAULT_COORD_PROPERTIES = {'tautomer': {},
                             'tautomer_per_model': []
                             }
 
-ASSIGNMENT_SEPARATOR_PAT = re.compile(r'[^\w\'\*\%\#\+\"]+')
+ASSIGNMENT_SEPARATOR_PAT = re.compile(r'[^\w\'\"\*\%\#\+]+')
 ASSIGNMENT_RESID_PAT = re.compile(r'\d+')
 ASSIGNMENT_HALF_SPIN_NUCLEUS = ('H', 'Q', 'M', 'C', 'N', 'P', 'F')
 

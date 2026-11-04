@@ -66,16 +66,17 @@ SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 
 /* DIANA restraint headers */
-NoeUpp:			'NOEUPP';
-NoeLow:			'NOELOW';
-HBUpp:			'HBUPP';
-HBLow:			'HBLOW';
-SSUpp:			'SSUPP';
-SSLow:			'SSLOW';
-Jcoupl:			'JCOUPL';
-Angle:			'ANGLE';
-Stereo:			'STEREO';
-Shifts:			'SHIFTS'; // ignored later
+NoeUpp:			N O E U P P;
+NoeLow:			N O E L O W;
+NoeUpLo:		N O E U P L O;
+HBUpp:			H B U P P;
+HBLow:			H B L O W;
+SSUpp:			S S U P P;
+SSLow:			S S L O W;
+Jcoupl:			J C O U P L;
+Angle:			A N G L E;
+Stereo:			S T E R E O;
+Shifts:			S H I F T S; // ignored later
 
 /* extensions for torsion angle restraints */
 Type:			T Y P E;		// = Integer

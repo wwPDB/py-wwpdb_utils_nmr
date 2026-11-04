@@ -896,8 +896,8 @@ KNOWN_ANGLE_ATOM_NAMES = {'PHI': ['C', 'N', 'CA', 'C'],  # i-1, i, i, i
                           'TAU0': ["C4'", "O4'", "C1'", "C2'"],  # identical to NU0
                           'TAU1': ["O4'", "C1'", "C2'", "C3'"],  # identical to NU1
                           'TAU2': ["C1'", "C2'", "C3'", "C4'"],  # identical to NU2
-                          'TAU3': ["C2'", "C3'", "C4'", re.compile(r"O[45]'")],  # identical to NU3
-                          'TAU4': ["C3'", "C4'", re.compile(r"O[45]'"), "C1'"],  # identical to NU4
+                          'TAU3': ["C2'", "C3'", "C4'", "O4'"],  # identical to NU3
+                          'TAU4': ["C3'", "C4'", "O4'", "C1'"],  # identical to NU4
                           # phase angle of pseudorotation made up from five NU[0-4] dihedral angles
                           'PPA': ["C1'", "C2'", "C3'", "C4'", "O4'"]
                           }

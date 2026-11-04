@@ -174,9 +174,9 @@ diana_distance_restraints:
 	diana_distance_restraint+;
 
 diana_distance_restraint:
-	(NoeUpp | NoeLow)
+	(NoeUpp | NoeLow | NoeUpLo)
 	gen_simple_name gen_res_num
-	gen_simple_name gen_simple_name gen_res_num gen_simple_name number
+	gen_simple_name gen_simple_name gen_res_num gen_simple_name number number?
 	(gen_simple_name gen_simple_name gen_res_num gen_simple_name number)?
 	Simple_name? Integer?;
 

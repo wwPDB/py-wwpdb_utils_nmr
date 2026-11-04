@@ -40,6 +40,7 @@ COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 /* DIANA restraint headers */
 NoeUpp:			'NOEUPP';
 NoeLow:			'NOELOW';
+NoeUpLo:		'NOEUPLO';
 HBUpp:			'HBUPP';
 HBLow:			'HBLOW';
 SSUpp:			'SSUPP';

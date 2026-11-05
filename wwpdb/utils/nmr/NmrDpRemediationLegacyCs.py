@@ -159,17 +159,17 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
         if self._reg.combined_mode or (not self._reg.conversion_server and not self._reg.permit_missing_cs_file):
             return True
 
+        has_ac_path = AC_FILE_PATH_LIST_KEY in self._reg.inputParamDict
+
+        # NMR data remediation (Phase 3)
+        has_ar_path = self._reg.permit_missing_cs_file\
+            and AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict\
+            and any(True for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY] if ar['file_type'].startswith('nm-shi'))
+
+        if not has_ac_path and not has_ar_path:
+            return True
+
         try:
-
-            has_ac_path = AC_FILE_PATH_LIST_KEY in self._reg.inputParamDict
-
-            # NMR data remediation (Phase 3)
-            has_ar_path = self._reg.permit_missing_cs_file\
-                and AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict\
-                and any(True for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY] if ar['file_type'].startswith('nm-shi'))
-
-            if not has_ac_path and not has_ar_path:
-                return True
 
             input_source = self._reg.report.input_sources[0]
             input_source_dic = input_source.get()

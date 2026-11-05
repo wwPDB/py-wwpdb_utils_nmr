@@ -127,9 +127,6 @@ class NmrViewCSParserListener(ParseTreeListener, BaseCSParserListener):
         L = f'{self.__seq_id}:{self.__comp_id}:{str(ctx.Simple_name())}'
         value = float(str(ctx.Float()))
 
-        if value is None:
-            return
-
         self.atomSelectionSets.clear()
 
         dstFunc = self.validateCsValue(self.cur_line_num, value, None)
@@ -137,7 +134,7 @@ class NmrViewCSParserListener(ParseTreeListener, BaseCSParserListener):
         if dstFunc is None:
             return
 
-        assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num)
+        assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num, with_compid=self.__comp_id)
 
         if assignment is None:
             return

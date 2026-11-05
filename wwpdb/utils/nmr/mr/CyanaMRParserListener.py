@@ -6408,22 +6408,6 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
 
-    def enterDiana_chemical_shifts(self, ctx: CyanaMRParser.Diana_chemical_shiftsContext):  # pylint: disable=unused-argument
-        """ Enter a parse tree produced by CyanaMRParser#diana_chemical_shifts.
-        """
-
-    def exitDiana_chemical_shifts(self, ctx: CyanaMRParser.Diana_chemical_shiftsContext):  # pylint: disable=unused-argument
-        """ Exit a parse tree produced by CyanaMRParser#diana_chemical_shifts.
-        """
-
-    def enterDiana_chemical_shift(self, ctx: CyanaMRParser.Diana_chemical_shiftContext):  # pylint: disable=unused-argument
-        """ Enter a parse tree produced by CyanaMRParser#diana_chemical_shift.
-        """
-
-    def exitDiana_chemical_shift(self, ctx: CyanaMRParser.Diana_chemical_shiftContext):  # pylint: disable=unused-argument
-        """ Exit a parse tree produced by CyanaMRParser#diana_distance_restraint.
-        """
-
     def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext
                                          ):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by CyanaMRParser#distance_w_chain_restraints.

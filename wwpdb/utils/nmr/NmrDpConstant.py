@@ -982,7 +982,7 @@ LEGACY_PDB_RECORDS = ('HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
                       'CONECT',
                       'MASTER')
 
-LEGACY_PDB_RECORDS_WO_REMARK = [record for record in LEGACY_PDB_RECORDS if record != 'REMARK']
+LEGACY_PDB_RECORDS_WO_REMARK = [record for record in LEGACY_PDB_RECORDS if record not in ('REMARK', 'MASTER')]
 LEGACY_PDB_RECORDS_WO_REMARK = tuple(LEGACY_PDB_RECORDS_WO_REMARK)
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')

@@ -1261,6 +1261,11 @@ class BaseCSParserListener():
                                         break
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
+                        xplorAtomId = None
+                        if len(term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                           and term[index - 1] in PROTON_BEGIN_CODE:
+                            xplorAtomId = term[index - 1] + atomId
+
                         if index - 1 >= 0 and term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
                             if not resNameLike[idx]:
                                 if hint is not None and 'comp_id' in hint[0]:
@@ -1276,10 +1281,16 @@ class BaseCSParserListener():
                                         if details is None:
                                             atomNameLike[idx] = True
                                             atomNameSpan[idx] = (index, len(term))
-                                continue
+                                            if xplorAtomId is not None:
+                                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                       leave_unmatched=True)
+                                                if details is None:
+                                                    atomNameSpan[idx] = (index - 1, len(term))
+                                if with_compid is None:
+                                    continue
                             if resNameLike[idx] and compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
                                 pass
-                            else:
+                            elif with_compid is None:
                                 continue
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
                             if resNameLike[idx] and resNameSpan[idx][0] == index:
@@ -1308,6 +1319,11 @@ class BaseCSParserListener():
                                 if details is None:
                                     atomNameLike[idx] = useOneLetterCodeSet = True
                                     atomNameSpan[idx] = (index, len(term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            atomNameSpan[idx] = (index - 1, len(term))
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
@@ -1319,6 +1335,11 @@ class BaseCSParserListener():
                                 if details is None:
                                     atomNameLike[idx] = True
                                     atomNameSpan[idx] = (index, len(term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            atomNameSpan[idx] = (index - 1, len(term))
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
@@ -1337,7 +1358,12 @@ class BaseCSParserListener():
                             if details is None:
                                 atomNameLike[idx] = True
                                 atomNameSpan[idx] = (index, len(term))
-                                break
+                                if xplorAtomId is not None:
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                           leave_unmatched=True)
+                                    if details is None:
+                                        atomNameSpan[idx] = (index - 1, len(term))
+                                        break
                             if with_compid is not None and atomId.startswith(with_compid):
                                 continue
                             _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
@@ -1345,7 +1371,12 @@ class BaseCSParserListener():
                             if details is None:
                                 atomNameLike[idx] = True
                                 atomNameSpan[idx] = (index, len(term))
-                                break
+                                if xplorAtomId is not None:
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                           leave_unmatched=True)
+                                    if details is None:
+                                        atomNameSpan[idx] = (index - 1, len(term))
+                                        break
                         if atomNameLike[idx]:
                             break
 
@@ -2448,12 +2479,12 @@ class BaseCSParserListener():
                                                  ps['auth_comp_id' if 'auth_comp_id' in ps else 'comp_id'])
                                           if _seqId == seqId and _compId == compId)
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
-                    if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    if len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
                             self.chainNumberDict[refChainId] = chainId
                 else:
-                    _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
+                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)
                     if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                         chainAssign.add((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
@@ -2493,13 +2524,13 @@ class BaseCSParserListener():
                                                           in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                                           if _seqId == seqId and _compId == compId)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
-                                    if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    if len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
                                         if refChainId is not None and refChainId != chainId\
                                            and refChainId not in self.chainNumberDict:
                                             self.chainNumberDict[refChainId] = chainId
                                 else:
-                                    _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
+                                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)
                                     if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
                                         if refChainId is not None and refChainId != chainId\
@@ -2540,13 +2571,13 @@ class BaseCSParserListener():
                                                 ps['auth_comp_id' if 'auth_comp_id' in ps else 'comp_id'])
                                          if _seqId == seqId and _compId == compId)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
-                            if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
                                                  _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
                                     self.chainNumberDict[refChainId] = chainId
                         else:
-                            _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
+                            _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)
                             if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                                 chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
                                                  _seqId, cifCompId, True))
@@ -2586,7 +2617,7 @@ class BaseCSParserListener():
                                                 ps['auth_comp_id' if 'auth_comp_id' in ps else 'comp_id'])
                                          if _seqId == seqId and _compId == compId)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
-                            if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
                                                  seqId, cifCompId, True))
                                 if compId in (cifCompId, origCompId):
@@ -2595,7 +2626,7 @@ class BaseCSParserListener():
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
                                         self.chainNumberDict[refChainId] = chainId
                         else:
-                            _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
+                            _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)
                             if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                                 chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
                                                  seqId, cifCompId, True))
@@ -2823,12 +2854,12 @@ class BaseCSParserListener():
                                                  ps['auth_comp_id' if 'auth_comp_id' in ps else 'comp_id'])
                                           if _seqId == seqId and _compId == compId)
                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
-                    if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                    if len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                         chainAssign.add((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
                             self.chainNumberDict[refChainId] = chainId
                 else:
-                    _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
+                    _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)
                     if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                         chainAssign.add((chainId, seqId, cifCompId, True))
                         if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
@@ -2868,10 +2899,10 @@ class BaseCSParserListener():
                                                           in zip(ps['auth_seq_id'], ps['comp_id'], ps['auth_comp_id'])
                                                           if _seqId == seqId and _compId == compId)
                                 if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
-                                    if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                    if len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                                         chainAssign.add((chainId, seqId_, cifCompId, True))
                                     else:
-                                        _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
+                                        _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)
                                         if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                                             chainAssign.add((chainId, seqId_, cifCompId, True))
                             except IndexError:
@@ -2909,13 +2940,13 @@ class BaseCSParserListener():
                                                 ps['auth_comp_id' if 'auth_comp_id' in ps else 'comp_id'])
                                          if _seqId == seqId and _compId == compId)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
-                            if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
                                                  _seqId, cifCompId, True))
                                 if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
                                     self.chainNumberDict[refChainId] = chainId
                         else:
-                            _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
+                            _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)
                             if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                                 chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
                                                  _seqId, cifCompId, True))
@@ -2955,7 +2986,7 @@ class BaseCSParserListener():
                                                 ps['auth_comp_id' if 'auth_comp_id' in ps else 'comp_id'])
                                          if _seqId == seqId and _compId == compId)
                         if compId in (cifCompId, origCompId, 'MTS', 'ORI'):
-                            if len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                            if len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                                 chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
                                                  seqId, cifCompId, True))
                                 if compId in (cifCompId, origCompId):
@@ -2964,7 +2995,7 @@ class BaseCSParserListener():
                                     if refChainId is not None and refChainId != chainId and refChainId not in self.chainNumberDict:
                                         self.chainNumberDict[refChainId] = chainId
                         else:
-                            _atomId, _, details = self.nefT.get_valid_star_atom(cifCompId, atomId)
+                            _atomId, _, details = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)
                             if len(_atomId) > 0 and (details is None or _compId not in STD_MON_DICT):
                                 chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'],
                                                  seqId, cifCompId, True))
@@ -3132,7 +3163,7 @@ class BaseCSParserListener():
                            or seqId not in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
                             continue
                 updatePolySeqRst(self.polySeqCs, chainId, _seqId, cifCompId)
-                if atomId is None or len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                if atomId is None or len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                     chainAssign.add((chainId, seqId, cifCompId, True))
             elif 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                 auth_seq_id_list = list(filter(None, ps['auth_seq_id']))
@@ -3157,7 +3188,7 @@ class BaseCSParserListener():
                                 seqId_ = ps['auth_seq_id'][idx]
                                 cifCompId = ps['comp_id'][idx]
                                 updatePolySeqRst(self.polySeqCs, chainId, _seqId, cifCompId)
-                                if atomId is None or len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                                if atomId is None or len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                                     chainAssign.add((chainId, seqId_, cifCompId, True))
                             except IndexError:
                                 pass
@@ -3173,7 +3204,7 @@ class BaseCSParserListener():
                     if seqId in ps['seq_id']:
                         cifCompId = ps['comp_id'][ps['seq_id'].index(seqId)]
                         updatePolySeqRst(self.polySeqCs, chainId, _seqId, cifCompId)
-                        if atomId is None or len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        if atomId is None or len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], _seqId, cifCompId, True))
 
         if len(chainAssign) == 0 and (self.__preferAuthSeqCount - self.__preferLabelSeqCount < MAX_PREF_LABEL_SCHEME_COUNT
@@ -3188,7 +3219,7 @@ class BaseCSParserListener():
                     if seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
                         cifCompId = ps['comp_id'][ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(seqId)]
                         updatePolySeqRst(self.polySeqCs, chainId, seqId, cifCompId)
-                        if atomId is None or len(self.nefT.get_valid_star_atom(cifCompId, atomId)[0]) > 0:
+                        if atomId is None or len(self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]) > 0:
                             chainAssign.add((ps['auth_chain_id' if 'auth_chain_id' in ps else 'chain_id'], seqId, cifCompId, True))
                             self.__authSeqId = 'label_seq_id'
                             self.__setLocalSeqScheme()
@@ -3291,7 +3322,7 @@ class BaseCSParserListener():
                                 _atomId = __atomId__
                 elif coordAtomSite is not None:
                     _atomId = []
-            # _atomId = self.nefT.get_valid_star_atom(cifCompId, atomId)[0]
+            # _atomId = self.nefT.get_valid_star_atom_in_xplor(cifCompId, atomId)[0]
 
             if coordAtomSite is not None\
                and not any(True for _atomId_ in _atomId if _atomId_ in coordAtomSite['atom_id']):

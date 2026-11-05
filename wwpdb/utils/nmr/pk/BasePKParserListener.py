@@ -7072,6 +7072,11 @@ class BasePKParserListener():
 
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
+                        xplorAtomId = None
+                        if len(term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                           and term[index - 1] in PROTON_BEGIN_CODE:
+                            xplorAtomId = term[index - 1] + atomId
+
                         if index - 1 >= 0 and term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
                             if not resNameLike[idx]:
                                 if hint is not None and 'comp_id' in hint[0]:
@@ -7087,7 +7092,13 @@ class BasePKParserListener():
                                         if details is None:
                                             atomNameLike[idx] = True
                                             atomNameSpan[idx] = (index, len(term))
-                                continue
+                                            if xplorAtomId is not None:
+                                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                       leave_unmatched=True)
+                                                if details is None:
+                                                    atomNameSpan[idx] = (index - 1, len(term))
+                                if with_compid is None:
+                                    continue
                             if compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
                                 pass
                             elif len(compId) == 1 and hasOneLetterCodeSet:
@@ -7097,7 +7108,7 @@ class BasePKParserListener():
                                 if details is None:
                                     index -= 1
                                     atomId = _atomId
-                                else:
+                                elif with_compid is None:
                                     continue
                             elif compId in self.compIdSet:
                                 _atomId = term[index - 1:len(term)]
@@ -7105,9 +7116,9 @@ class BasePKParserListener():
                                 if details is None:
                                     index -= 1
                                     atomId = _atomId
-                                else:
+                                elif with_compid is None:
                                     continue
-                            else:
+                            elif with_compid is None:
                                 continue
 
                         if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
@@ -7151,6 +7162,11 @@ class BasePKParserListener():
                                                                               with_segid, with_compid, hint, dim_id_hint)
                                     atomNameLike[idx] = useOneLetterCodeSet = True
                                     atomNameSpan[idx] = (index, len(term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            atomNameSpan[idx] = (index - 1, len(term))
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
@@ -7198,6 +7214,11 @@ class BasePKParserListener():
                                 if details is None:
                                     atomNameLike[idx] = True
                                     atomNameSpan[idx] = (index, len(term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            atomNameSpan[idx] = (index - 1, len(term))
                                     if resNameSpan[idx][0] == atomNameSpan[idx][0]:
                                         resNameLike[idx] = False
                                     break
@@ -7265,7 +7286,12 @@ class BasePKParserListener():
                             if details is None:
                                 atomNameLike[idx] = True
                                 atomNameSpan[idx] = (index, len(term))
-                                break
+                                if xplorAtomId is not None:
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                           leave_unmatched=True)
+                                    if details is None:
+                                        atomNameSpan[idx] = (index - 1, len(term))
+                                        break
                             if with_compid is not None and atomId.startswith(with_compid):
                                 continue
                             _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
@@ -7273,7 +7299,12 @@ class BasePKParserListener():
                             if details is None:
                                 atomNameLike[idx] = True
                                 atomNameSpan[idx] = (index, len(term))
-                                break
+                                if xplorAtomId is not None:
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                           leave_unmatched=True)
+                                    if details is None:
+                                        atomNameSpan[idx] = (index - 1, len(term))
+                                        break
                         if atomNameLike[idx]:
                             break
 

@@ -3447,7 +3447,7 @@ class NmrDpMrSplitter:
                             has_mr_header = True
 
                         # skip legacy PDB
-                        if startsWithPdbRecord(line):
+                        if startsWithPdbRecord(line, ignoreRemark=True):
                             has_pdb_format = pdb_record = True
                             continue
                         if pdb_record:
@@ -3479,7 +3479,8 @@ class NmrDpMrSplitter:
 
                         # skip MR footer
                         if 'Submitted Coord H atom name' in line\
-                           or 'Entry H atom name' in line:
+                           or 'Entry H atom name' in line\
+                           or 'Start of MODEL' in line:
                             fofh.write(line)
                             footer = True
                             continue
@@ -3613,7 +3614,8 @@ class NmrDpMrSplitter:
 
                                 # skip MR footer
                                 if 'Submitted Coord H atom name' in line\
-                                   or 'Entry H atom name' in line:
+                                   or 'Entry H atom name' in line\
+                                   or 'Start of MODEL' in line:
                                     break
 
                                 ofh.write(line)
@@ -3818,7 +3820,8 @@ class NmrDpMrSplitter:
 
                                 # skip MR footer
                                 if 'Submitted Coord H atom name' in line\
-                                   or 'Entry H atom name' in line:
+                                   or 'Entry H atom name' in line\
+                                   or 'Start of MODEL' in line:
                                     break
 
                                 ofh.write(line)

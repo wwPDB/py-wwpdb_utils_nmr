@@ -2792,7 +2792,8 @@ class NmrDpMrSplitter:
 
             fileListId += 1
 
-            if file_type is None or file_type in ('nm-res-mr', 'nm-res-sax') or file_type.startswith('nm-pea'):
+            if file_type is None or file_type in ('nm-res-mr', 'nm-res-sax')\
+               or file_type.startswith('nm-pea') or file_type.startswith('nm-shi'):
                 md5_list.append(None if file_type == 'nm-res-mr' else file_md5(file_path))
                 continue
 

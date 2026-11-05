@@ -273,4 +273,4 @@ if __name__ == "__main__":
                        '3': {'entity_id': 3, 'auth_asym_id': 'C'}}
     reader = NmrViewCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/6gat/nmrview_cs.txt')
+    reader.parse('../../tests-nmr/mock-data-remediation/6gat/chemical_shifts.txt')

@@ -730,6 +730,10 @@ class BaseCSParserListener():
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
+                if self.__createSfDict:
+                    sf = self.getSf()
+                    sf['saveframe'].add_loop(sf['loop'])
+
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
 
@@ -998,7 +1002,7 @@ class BaseCSParserListener():
         """ Extract chemical shift assignment from a given string.
         """
 
-        if numOfDim not in (1, 2, 3, 4) or string is None:
+        if numOfDim not in (1, 2, 3, 4) or string is None or len(string) == 0:
             return None
 
         last_char = string[-1]

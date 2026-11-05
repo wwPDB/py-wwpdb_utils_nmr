@@ -854,7 +854,7 @@ def select_realistic_chi2_angle_constraint(listener: Any, atom1: dict, atom2: di
 
 
 def rdc_dmax(atom_type_1: str, atom_type_2: str, bond_distance: float, hz_unit: bool = True):
-    """ Return scale factor of residual coupling constant for a given nuclei vector.
+    """ Return scale factor of residual dipolar coupling for a given nuclei vector.
     """
 
     return - PERMEABILITY_0 * (PLANCK_CONSTANT if hz_unit else REDUCED_PLANCK_CONSTANT)\

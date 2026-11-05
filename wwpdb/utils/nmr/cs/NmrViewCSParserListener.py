@@ -138,7 +138,6 @@ class NmrViewCSParserListener(ParseTreeListener, BaseCSParserListener):
             return
 
         assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num)
-        print(f'{assignment=}')
 
         if assignment is None:
             return

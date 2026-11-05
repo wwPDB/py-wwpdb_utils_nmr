@@ -6800,7 +6800,7 @@ class BasePKParserListener():
         """ Extract peak assignment from a given string.
         """
 
-        if numOfDim not in (1, 2, 3, 4) or string is None:
+        if numOfDim not in (1, 2, 3, 4) or string is None or len(string) == 0:
             return None
 
         last_char = string[-1]

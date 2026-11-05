@@ -56,6 +56,7 @@ try:
                                                PARSABLE_MR_FILE_TYPES,
                                                ARCHIVAL_MR_FILE_TYPES,
                                                PARSABLE_PK_FILE_TYPES,
+                                               PARSABLE_CS_FILE_TYPES,
                                                CS_ERROR_MIN,
                                                CS_ERROR_MAX,
                                                CS_RANGE_MIN,
@@ -141,6 +142,7 @@ except ImportError:
                                    PARSABLE_MR_FILE_TYPES,
                                    ARCHIVAL_MR_FILE_TYPES,
                                    PARSABLE_PK_FILE_TYPES,
+                                   PARSABLE_CS_FILE_TYPES,
                                    CS_ERROR_MIN,
                                    CS_ERROR_MAX,
                                    CS_RANGE_MIN,
@@ -3213,7 +3215,7 @@ class NmrDpMrSplitter:
         fileListId = self.__reg.file_path_list_len
 
         dir_path = mr_file_name = '.'
-        split_file_list, peak_file_list = [], []
+        split_file_list, peak_file_list, chem_shift_file_list = [], [], []
 
         self.__reg.mr_atom_name_mapping = []
 
@@ -3224,6 +3226,9 @@ class NmrDpMrSplitter:
         settled_file_types = list(PARSABLE_MR_FILE_TYPES)
         settled_file_types.extend(list(PARSABLE_PK_FILE_TYPES))
         settled_file_types.append('nm-res-sax')
+
+        if self.__reg.permit_missing_cs_file:  # NMR data remediation (Phase 3)
+            settled_file_types.extend(list(PARSABLE_CS_FILE_TYPES))
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             src_file = ar['file_name']
@@ -4293,7 +4298,7 @@ class NmrDpMrSplitter:
 
                             continue
 
-                        settled_pk_file = False
+                        settled_pk_file = settled_cs_file = False
 
                         _ar = ar.copy()
 
@@ -4322,7 +4327,32 @@ class NmrDpMrSplitter:
 
                                 settled_pk_file = remediated = True
 
-                        if settled_pk_file:
+                        if self.__reg.permit_missing_cs_file:
+
+                            for settled_file_type in PARSABLE_CS_FILE_TYPES:
+
+                                sel_cs_file = self.testPathWithSuffix(dst_file, f'-selected-as-{settled_file_type[-7:]}', True)
+
+                                if os.path.exists(sel_cs_file):
+
+                                    ign_dst_file = self.testPathWithSuffix(sel_cs_file, '-ignored', True)
+
+                                    if os.path.exists(ign_dst_file):
+                                        continue
+
+                                    __ar = _ar.copy()
+
+                                    __ar['file_name'] = sel_cs_file
+                                    __ar['file_type'] = settled_file_type
+
+                                    if __ar in chem_shift_file_list:
+                                        continue
+
+                                    chem_shift_file_list.append(__ar)
+
+                                    settled_cs_file = remediated = True
+
+                        if settled_pk_file or settled_cs_file:
                             continue
 
                     _, _, valid_types, possible_types =\
@@ -4546,7 +4576,10 @@ class NmrDpMrSplitter:
                             _dst_file = os.path.join(dir_path, g[1])
                             original_file_path_list.append(_dst_file)
                             ofh = open(_dst_file, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
-                            _dst_file_w_sel = self.testPath(_dst_file + '-ignored', True)
+                            if self.__reg.permit_missing_cs_file:
+                                _dst_file_w_sel = self.testPath(_dst_file + f'-selected-as-{g[0][-7:]}', True)
+                            else:
+                                _dst_file_w_sel = self.testPath(_dst_file + '-ignored', True)
                             ofh_w_sel = open(_dst_file_w_sel, 'w', encoding='utf-8')  # pylint: disable=consider-using-with
                             distinct = True
 
@@ -4726,7 +4759,7 @@ class NmrDpMrSplitter:
 
                         continue
 
-                    settled_pk_file = False
+                    settled_pk_file = settled_cs_file = False
 
                     _ar = ar.copy()
 
@@ -4755,7 +4788,32 @@ class NmrDpMrSplitter:
 
                             settled_pk_file = remediated = True
 
-                    if settled_pk_file:
+                    if self.__reg.permit_missing_cs_file:
+
+                        for settled_file_type in PARSABLE_CS_FILE_TYPES:
+
+                            sel_cs_file = self.testPathWithSuffix(dst_file, f'-selected-as-{settled_file_type[-7:]}', True)
+
+                            if os.path.exists(sel_cs_file):
+
+                                ign_dst_file = self.testPathWithSuffix(sel_cs_file, '-ignored', True)
+
+                                if os.path.exists(ign_dst_file):
+                                    continue
+
+                                __ar = _ar.copy()
+
+                                __ar['file_name'] = sel_cs_file
+                                __ar['file_type'] = settled_file_type
+
+                                if __ar in chem_shift_file_list:
+                                    continue
+
+                                chem_shift_file_list.append(__ar)
+
+                                settled_cs_file = remediated = True
+
+                    if settled_pk_file or settled_cs_file:
                         continue
 
                     ign_ext_file = self.testPathWithSuffix(dst_file, '-ignored-as-res-oth', True)
@@ -5421,6 +5479,9 @@ class NmrDpMrSplitter:
         len_peak_file_list = len(peak_file_list)
         has_spectral_peak = len_peak_file_list > 0
 
+        len_chem_shift_file_list = len(chem_shift_file_list)
+        has_chem_shift = len_chem_shift_file_list > 0
+
         if len(split_file_list) > 0:
             self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY].extend(split_file_list)
 
@@ -5460,6 +5521,7 @@ class NmrDpMrSplitter:
                 has_restraint = 'dist_restraint' in content_subtype or 'dihed_restraint' in content_subtype\
                     or 'rdc_restraint' in content_subtype
                 has_spectral_peak = 'spectral_peak' in content_subtype or 'spectral_peak_alt' in content_subtype
+                has_chem_shift = 'chem_shift' in content_subtype
 
             if not has_restraint:
 
@@ -5508,17 +5570,64 @@ class NmrDpMrSplitter:
 
                 for _ar in peak_file_list:
 
+                    input_source = None
+                    for _input_source in self.__reg.report.input_sources:
+                        _input_source_dic = _input_source.get()
+                        if _input_source_dic['file_name'] is None or not os.path.exists(_input_source_dic['file_name']):
+                            continue
+                        if os.path.samefile(_ar['file_name'], _input_source_dic['file_name']):
+                            _input_source_dic['file_type'] = _ar['file_type']
+                            _input_source_dic['content_type'] = 'nmr-peaks'
+                            if 'original_file_name' in _ar:
+                                _input_source['original_file_name'] = os.path.basename(_ar['original_file_name'])
+                            continue
+
                     self.__reg.report.appendInputSource()
 
                     input_source = self.__reg.report.input_sources[-1]
 
-                    input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
+                    input_source.setItemValue('file_name', _ar['file_name'])
                     input_source.setItemValue('file_type', _ar['file_type'])
                     input_source.setItemValue('content_type', 'nmr-peaks')
                     if 'original_file_name' in _ar:
                         input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
 
             touch_file = os.path.join(dir_path, '.entry_with_pk')
+            if not os.path.exists(self.testPath(touch_file)):
+                with open(touch_file, 'w', encoding='utf-8') as ofh:
+                    ofh.write('')
+
+        if has_chem_shift:
+
+            if len_chem_shift_file_list > 0:
+
+                self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY].extend(chem_shift_file_list)
+
+                for _ar in chem_shift_file_list:
+
+                    input_source = None
+                    for _input_source in self.__reg.report.input_sources:
+                        _input_source_dic = _input_source.get()
+                        if _input_source_dic['file_name'] is None or not os.path.exists(_input_source_dic['file_name']):
+                            continue
+                        if os.path.samefile(_ar['file_name'], _input_source_dic['file_name']):
+                            _input_source_dic['file_type'] = _ar['file_type']
+                            _input_source_dic['content_type'] = 'nmr-chemical-shifts'
+                            if 'original_file_name' in _ar:
+                                _input_source['original_file_name'] = os.path.basename(_ar['original_file_name'])
+                            continue
+
+                    self.__reg.report.appendInputSource()
+
+                    input_source = self.__reg.report.input_sources[-1]
+
+                    input_source.setItemValue('file_name', _ar['file_name'])
+                    input_source.setItemValue('file_type', _ar['file_type'])
+                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                    if 'original_file_name' in _ar:
+                        input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
+
+            touch_file = os.path.join(dir_path, '.entry_with_atypical_cs')
             if not os.path.exists(self.testPath(touch_file)):
                 with open(touch_file, 'w', encoding='utf-8') as ofh:
                     ofh.write('')
@@ -6672,6 +6781,7 @@ class NmrDpMrSplitter:
 
         if prev_input is not None and COMMENT_PAT.match(prev_input)\
            and len_valid_types > 0 and valid_types[0] not in PARSABLE_PK_FILE_TYPES\
+           and valid_types[0] not in PARSABLE_CS_FILE_TYPES\
            and file_type != 'nm-res-cya' and 'nm-res-cya' not in valid_types:
             # CYANA MR grammar is lax to check comment
 

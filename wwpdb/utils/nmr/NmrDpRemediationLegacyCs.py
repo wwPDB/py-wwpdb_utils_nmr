@@ -21,6 +21,7 @@ import pynmrstar
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (AC_FILE_PATH_LIST_KEY,
+                                               AR_FILE_PATH_LIST_KEY,
                                                SF_CATEGORIES,
                                                EMPTY_VALUE,
                                                SEQ_MISMATCH_WARNING_PAT,
@@ -44,6 +45,7 @@ try:
     from wwpdb.utils.nmr.NmrDpRemediationBase import NmrDpRemediationBase
 except ImportError:
     from nmr.NmrDpConstant import (AC_FILE_PATH_LIST_KEY,
+                                   AR_FILE_PATH_LIST_KEY,
                                    SF_CATEGORIES,
                                    EMPTY_VALUE,
                                    SEQ_MISMATCH_WARNING_PAT,
@@ -154,12 +156,19 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
         """ Validate data content of legacy NMR chemical shift files and merge them if possible.
         """
 
-        if self._reg.combined_mode or not self._reg.conversion_server:
+        if self._reg.combined_mode or (not self._reg.conversion_server and not self._reg.permit_missing_cs_file):
             return True
 
         try:
 
-            if AC_FILE_PATH_LIST_KEY not in self._reg.inputParamDict:
+            has_ac_path = AC_FILE_PATH_LIST_KEY in self._reg.inputParamDict
+
+            # NMR data remediation (Phase 3)
+            has_ar_path = self._reg.permit_missing_cs_file\
+                and AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict\
+                and any(True for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY] if ar['file_type'].startswith('nm-shi'))
+
+            if not has_ac_path and not has_ar_path:
                 return True
 
             input_source = self._reg.report.input_sources[0]
@@ -167,7 +176,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
-            if not has_poly_seq:
+            if not has_poly_seq and not self._reg.permit_missing_cs_file:
                 return False
 
             nmr_poly_seq = input_source_dic['polymer_sequence']
@@ -427,15 +436,12 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
             fileListId = self._reg.file_path_list_len
 
-            for acs in self._reg.inputParamDict[AC_FILE_PATH_LIST_KEY]:
-                file_path = acs['file_name']
-
+            while fileListId < len(self._reg.report.input_sources):
                 input_source = self._reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
                 file_type = input_source_dic['file_type']
-
-                ignore_error = False if 'ignore_error' not in input_source_dic else input_source_dic['ignore_error']
+                file_path = input_source_dic['file_name']
 
                 fileListId += 1
 
@@ -445,9 +451,11 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                 if self._reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                     continue
 
+                ignore_error = False if 'ignore_error' not in input_source_dic else input_source_dic['ignore_error']
+
                 file_path = self.testPathWithSuffix(file_path, '-corrected')
 
-                file_name = input_source_dic['file_name']
+                file_name = os.path.basename(file_path)
 
                 original_file_name = None
                 if 'original_file_name' in input_source_dic:
@@ -535,7 +543,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
                             _sf.add_loop(sf['loop'])
 
-                        continue
+                            continue
 
                     master_entry.add_saveframe(sf['saveframe'])
 

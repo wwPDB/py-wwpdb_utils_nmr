@@ -177,6 +177,7 @@ class NmrViewCSParserListener(ParseTreeListener, BaseCSParserListener):
                           default_ambig_code=ambig_code)
 
             if has_assignments:
+
                 self.chemShifts += 1
 
                 self.atomSelectionSets[0][0] = atomSelectionSet2

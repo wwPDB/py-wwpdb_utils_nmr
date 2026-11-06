@@ -39,7 +39,8 @@ try:
     from wwpdb.utils.nmr.AlignUtil import getPrettyJson
     from wwpdb.utils.nmr.CifToNmrStar import (get_first_sf_tag,
                                               set_sf_tag)
-    from wwpdb.utils.nmr.mr.ParserListenerUtil import (incListIdCounter,
+    from wwpdb.utils.nmr.mr.ParserListenerUtil import (translateToStdResName,
+                                                       incListIdCounter,
                                                        retrieveOriginalFileName,
                                                        getPdbxNmrSoftwareName,
                                                        getSaveframe)
@@ -63,7 +64,8 @@ except ImportError:
     from nmr.AlignUtil import getPrettyJson
     from nmr.CifToNmrStar import (get_first_sf_tag,
                                   set_sf_tag)
-    from nmr.mr.ParserListenerUtil import (incListIdCounter,
+    from nmr.mr.ParserListenerUtil import (translateToStdResName,
+                                           incListIdCounter,
                                            retrieveOriginalFileName,
                                            getPdbxNmrSoftwareName,
                                            getSaveframe)
@@ -579,7 +581,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
 
             content_subtype = 'dihed_restraint'
 
-            auth_to_entity_type = self._reg.caC['auth_to_entity_type']
+            auth_to_entity_type = self._reg.caC['auth_to_entity_type'] if self._reg.caC is not None else None
 
             Dihedral_angle_tot_num = 0
             if content_subtype in self._reg.mr_sf_dict_holder:
@@ -628,12 +630,36 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                         if angle_name is None:
                             continue
 
-                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                        if auth_to_entity_type is not None:
 
-                        if seq_key in auth_to_entity_type:
-                            entity_type = auth_to_entity_type[seq_key]
+                            seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                            if 'peptide' in entity_type:
+                            if seq_key in auth_to_entity_type:
+                                entity_type = auth_to_entity_type[seq_key]
+
+                                if 'peptide' in entity_type:
+                                    Protein_dihedral_angle_tot_num += 1
+                                    _protein_angles += 1
+                                    if angle_name == 'PHI':
+                                        Protein_phi_angle_tot_num += 1
+                                        _protein_bb_angles += 1
+                                    elif angle_name == 'PSI':
+                                        Protein_psi_angle_tot_num += 1
+                                        _protein_bb_angles += 1
+                                    elif angle_name == 'CHI1':
+                                        Protein_chi_one_angle_tot_num += 1
+                                        _protein_oth_angles += 1
+                                    else:
+                                        Protein_other_angle_tot_num += 1
+                                        _protein_oth_angles += 1
+                                else:
+                                    _other_angles += 1
+
+                        else:
+
+                            comp_id = translateToStdResName(auth_comp_id, ccU=self._reg.ccU)
+
+                            if self._reg.csStat.peptideLike(comp_id):
                                 Protein_dihedral_angle_tot_num += 1
                                 _protein_angles += 1
                                 if angle_name == 'PHI':
@@ -683,12 +709,25 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                                     atom_id_1 = _row[atom_id_1_col]
                                     atom_id_4 = _row[atom_id_4_col]
 
-                                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                                    if auth_to_entity_type is not None:
 
-                                    if seq_key in auth_to_entity_type:
-                                        entity_type = auth_to_entity_type[seq_key]
+                                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                                        if 'peptide' in entity_type:
+                                        if seq_key in auth_to_entity_type:
+                                            entity_type = auth_to_entity_type[seq_key]
+
+                                            if 'peptide' in entity_type:
+                                                _protein_jcoups += 1
+                                                if 'H' in (atom_id_1, atom_id_4):
+                                                    _protein_bb_jcoups += 1
+                                                else:
+                                                    _protein_oth_jcoups += 1
+
+                                    else:
+
+                                        comp_id = translateToStdResName(auth_comp_id, ccU=self._reg.ccU)
+
+                                        if self._reg.csStat.peptideLike(comp_id):
                                             _protein_jcoups += 1
                                             if 'H' in (atom_id_1, atom_id_4):
                                                 _protein_bb_jcoups += 1
@@ -755,12 +794,40 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                         if angle_name is None:
                             continue
 
-                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                        if auth_to_entity_type is not None:
 
-                        if seq_key in auth_to_entity_type:
-                            entity_type = auth_to_entity_type[seq_key]
+                            seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                            if 'nucleotide' in entity_type:
+                            if seq_key in auth_to_entity_type:
+                                entity_type = auth_to_entity_type[seq_key]
+
+                                if 'nucleotide' in entity_type:
+                                    NA_dihedral_angle_tot_num += 1
+                                    _na_angles += 1
+                                    if angle_name == 'ALPHA':
+                                        NA_alpha_angle_tot_num += 1
+                                    elif angle_name == 'BETA':
+                                        NA_beta_angle_tot_num += 1
+                                    elif angle_name == 'GAMMA':
+                                        NA_gamma_angle_tot_num += 1
+                                    elif angle_name == 'DELTA':
+                                        NA_delta_angle_tot_num += 1
+                                    elif angle_name == 'EPSILON':
+                                        NA_epsilon_angle_tot_num += 1
+                                    elif angle_name == 'CHI':
+                                        NA_chi_angle_tot_num += 1
+                                    elif angle_name == 'PPA':
+                                        NA_amb_dihedral_angle_tot_num += 1
+                                    else:
+                                        NA_other_angle_tot_num += 1
+                                else:
+                                    _other_angles += 1
+
+                        else:
+
+                            comp_id = translateToStdResName(auth_comp_id, ccU=self._reg.ccU)
+
+                            if self._reg.csStat.getTypeOfCompId(comp_id)[1]:
                                 NA_dihedral_angle_tot_num += 1
                                 _na_angles += 1
                                 if angle_name == 'ALPHA':
@@ -810,12 +877,21 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                                         continue
                                     auth_comp_id = _row[auth_comp_id_col]
 
-                                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                                    if auth_to_entity_type is not None:
 
-                                    if seq_key in auth_to_entity_type:
-                                        entity_type = auth_to_entity_type[seq_key]
+                                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                                        if 'nucleotide' in entity_type:
+                                        if seq_key in auth_to_entity_type:
+                                            entity_type = auth_to_entity_type[seq_key]
+
+                                            if 'nucleotide' in entity_type:
+                                                _na_jcoups += 1
+
+                                    else:
+
+                                        comp_id = translateToStdResName(auth_comp_id, ccU=self._reg.ccU)
+
+                                        if self._reg.csStat.getTypeOfCompId(comp_id)[1]:
                                             _na_jcoups += 1
 
                             set_sf_tag(sf, 'Constraint_type', 'J-couplings' if _na_jcoups > 0 else 'unknown')
@@ -860,12 +936,23 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                         if angle_name is None:
                             continue
 
-                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                        if auth_to_entity_type is not None:
 
-                        if seq_key in auth_to_entity_type:
-                            entity_type = auth_to_entity_type[seq_key]
+                            seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                            if 'saccharide' in entity_type:
+                            if seq_key in auth_to_entity_type:
+                                entity_type = auth_to_entity_type[seq_key]
+
+                                if 'saccharide' in entity_type:
+                                    _br_angles += 1
+                                else:
+                                    _other_angles += 1
+
+                        else:
+
+                            comp_id = translateToStdResName(auth_comp_id, ccU=self._reg.ccU)
+
+                            if self._reg.csStat.getTypeOfCompId(comp_id)[2]:
                                 _br_angles += 1
                             else:
                                 _other_angles += 1
@@ -898,12 +985,21 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                                         continue
                                     auth_comp_id = _row[auth_comp_id_col]
 
-                                    seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                                    if auth_to_entity_type is not None:
 
-                                    if seq_key in auth_to_entity_type:
-                                        entity_type = auth_to_entity_type[seq_key]
+                                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                                        if 'saccharide' in entity_type:
+                                        if seq_key in auth_to_entity_type:
+                                            entity_type = auth_to_entity_type[seq_key]
+
+                                            if 'saccharide' in entity_type:
+                                                _br_jcoups += 1
+
+                                    else:
+
+                                        comp_id = translateToStdResName(auth_comp_id, ccU=self._reg.ccU)
+
+                                        if self._reg.csStat.getTypeOfCompId(comp_id)[2]:
                                             _br_jcoups += 1
 
                             set_sf_tag(sf, 'Constraint_type', 'J-couplings' if _br_jcoups > 0 else 'unknown')
@@ -1293,14 +1389,27 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                             continue
                         auth_comp_id = row[auth_comp_id_col]
 
-                        seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
+                        if auth_to_entity_type is not None:
 
-                        if seq_key in auth_to_entity_type:
-                            entity_type = auth_to_entity_type[seq_key]
+                            seq_key = (auth_asym_id, auth_seq_id, auth_comp_id)
 
-                            if 'peptide' in entity_type:
+                            if seq_key in auth_to_entity_type:
+                                entity_type = auth_to_entity_type[seq_key]
+
+                                if 'peptide' in entity_type:
+                                    Protein_other_tot_num += 1
+                                elif 'nucleotide' in entity_type:
+                                    NA_other_tot_num += 1
+
+                        else:
+
+                            comp_id = translateToStdResName(auth_comp_id, ccU=self._reg.ccU)
+
+                            peptide, nucleotide, _ = self._reg.csStat.getTypeOfCompId(comp_id)
+
+                            if peptide:
                                 Protein_other_tot_num += 1
-                            elif 'nucleotide' in entity_type:
+                            elif nucleotide:
                                 NA_other_tot_num += 1
 
                 if Protein_other_tot_num > 0:

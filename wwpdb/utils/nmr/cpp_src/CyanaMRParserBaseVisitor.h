@@ -155,14 +155,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual std::any visitDiana_chemical_shifts(CyanaMRParser::Diana_chemical_shiftsContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual std::any visitDiana_chemical_shift(CyanaMRParser::Diana_chemical_shiftContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual std::any visitDistance_w_chain_restraints(CyanaMRParser::Distance_w_chain_restraintsContext *ctx) override {
     return visitChildren(ctx);
   }

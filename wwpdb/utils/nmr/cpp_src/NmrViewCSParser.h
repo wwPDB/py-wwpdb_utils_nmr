@@ -167,7 +167,8 @@ public:
     Shift_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Simple_name();
-    antlr4::tree::TerminalNode *Float();
+    std::vector<antlr4::tree::TerminalNode *> Float();
+    antlr4::tree::TerminalNode* Float(size_t i);
     antlr4::tree::TerminalNode *Single_note();
     antlr4::tree::TerminalNode *Note_begin();
     antlr4::tree::TerminalNode *Note_end();

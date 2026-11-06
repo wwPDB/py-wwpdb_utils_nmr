@@ -76,7 +76,6 @@ SSLow:			S S L O W;
 Jcoupl:			J C O U P L;
 Angle:			A N G L E;
 Stereo:			S T E R E O;
-Shifts:			S H I F T S; // ignored later
 
 /* extensions for torsion angle restraints */
 Type:			T Y P E;		// = Integer
@@ -134,9 +133,9 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ |
-			 R E M A R K S? | C O O R D S | Q C O N V R | C O U N T | J N R L | E N D) ' '* [\r\n]+ -> channel(HIDDEN);
+			 R E M A R K S? | C O O R D S | Q C O N V R | C O U N T | J N R L | S H I F T S | M A S T E R | E N D) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		(';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ |
-			 R E M A R K S? | C O O R D S | Q C O N V R | C O U N T | J N R L | E N D) ~[\r\n]* -> channel(HIDDEN);
+			 R E M A R K S? | C O O R D S | Q C O N V R | C O U N T | J N R L | S H I F T S | M A S T E R | E N D) ~[\r\n]* -> channel(HIDDEN);
 
 mode COMMENT_MODE;
 

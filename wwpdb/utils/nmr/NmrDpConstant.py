@@ -17,7 +17,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.5"
+__version__ = "5.4.6"
 
 import copy
 import ctypes
@@ -691,9 +691,9 @@ PARSABLE_PK_FILE_TYPES = ('nm-aux-xea',
                           'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea',
                           'nm-pea-xwi')
 
-PARSABLE_CS_FILE_TYPES = ('nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi',
-                          'nm-shi-oli', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2',
-                          'nm-shi-vie', 'nm-shi-xea')
+PARSABLE_CS_FILE_TYPES = ('nm-shi-ari', 'nm-shi-bar', 'nm-shi-dia', 'nm-shi-gar',
+                          'nm-shi-npi', 'nm-shi-oli', 'nm-shi-pip', 'nm-shi-ppm',
+                          'nm-shi-st2', 'nm-shi-vie', 'nm-shi-xea')
 
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
                  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',

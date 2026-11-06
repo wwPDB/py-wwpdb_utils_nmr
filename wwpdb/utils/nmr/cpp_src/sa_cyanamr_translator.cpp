@@ -46,8 +46,6 @@ SA_CyanaMRTranslator::~SA_CyanaMRTranslator() {
     Py_XDECREF(Diana_coupling_constant_restraintsContext_cls);
     Py_XDECREF(Diana_coupling_constant_restraintContext_cls);
     Py_XDECREF(Diana_stereoassign_macroContext_cls);
-    Py_XDECREF(Diana_chemical_shiftsContext_cls);
-    Py_XDECREF(Diana_chemical_shiftContext_cls);
     Py_XDECREF(Distance_w_chain_restraintsContext_cls);
     Py_XDECREF(Distance_w_chain_restraintContext_cls);
     Py_XDECREF(Distance_w_chain2_restraintsContext_cls);
@@ -284,18 +282,6 @@ antlrcpp::Any SA_CyanaMRTranslator::visitDiana_coupling_constant_restraint(Cyana
 antlrcpp::Any SA_CyanaMRTranslator::visitDiana_stereoassign_macro(CyanaMRParser::Diana_stereoassign_macroContext *ctx){
     if(!Diana_stereoassign_macroContext_cls) Diana_stereoassign_macroContext_cls = PyObject_GetAttrString(translator->parser_cls, "Diana_stereoassign_macroContext");
     PyObject *py_ctx = translator->convert_ctx(this, ctx, Diana_stereoassign_macroContext_cls);
-    return py_ctx;
-}
-
-antlrcpp::Any SA_CyanaMRTranslator::visitDiana_chemical_shifts(CyanaMRParser::Diana_chemical_shiftsContext *ctx){
-    if(!Diana_chemical_shiftsContext_cls) Diana_chemical_shiftsContext_cls = PyObject_GetAttrString(translator->parser_cls, "Diana_chemical_shiftsContext");
-    PyObject *py_ctx = translator->convert_ctx(this, ctx, Diana_chemical_shiftsContext_cls);
-    return py_ctx;
-}
-
-antlrcpp::Any SA_CyanaMRTranslator::visitDiana_chemical_shift(CyanaMRParser::Diana_chemical_shiftContext *ctx){
-    if(!Diana_chemical_shiftContext_cls) Diana_chemical_shiftContext_cls = PyObject_GetAttrString(translator->parser_cls, "Diana_chemical_shiftContext");
-    PyObject *py_ctx = translator->convert_ctx(this, ctx, Diana_chemical_shiftContext_cls);
     return py_ctx;
 }
 

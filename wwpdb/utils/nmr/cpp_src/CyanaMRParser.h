@@ -15,20 +15,20 @@ public:
     Ambig_code = 1, Integer = 2, Float = 3, Float_DecimalComma = 4, Orientation_header = 5, 
     Tensor_header = 6, SMCLN_COMMENT = 7, COMMENT = 8, NoeUpp = 9, NoeLow = 10, 
     NoeUpLo = 11, HBUpp = 12, HBLow = 13, SSUpp = 14, SSLow = 15, Jcoupl = 16, 
-    Angle = 17, Stereo = 18, Shifts = 19, Type = 20, Equ_op = 21, Or = 22, 
-    Ssbond = 23, Ssbond_resids = 24, Hbond = 25, Link = 26, Atom_stereo = 27, 
-    Var = 28, Unset = 29, SetVar = 30, Print = 31, Residue = 32, Mapping = 33, 
-    Ambig = 34, Capital_integer = 35, Integer_capital = 36, Simple_name = 37, 
-    SPACE = 38, ENCLOSE_COMMENT = 39, SECTION_COMMENT = 40, LINE_COMMENT = 41, 
-    Any_name = 42, SPACE_CM = 43, RETURN_CM = 44, Atom1 = 45, Atom2 = 46, 
-    Residue1 = 47, Residue2 = 48, Equ_op_HB = 49, Atom1_equ = 50, Atom2_equ = 51, 
-    Residue1_equ = 52, Residue2_equ = 53, Concat_atom_1 = 54, Concat_atom_2 = 55, 
-    Concat_res_1 = 56, Concat_res_2 = 57, Integer_HB = 58, Simple_name_HB = 59, 
-    SPACE_HB = 60, RETURN_HB = 61, LINE_COMMENT_HB = 62, Double_quote_string = 63, 
-    SPACE_PR = 64, RETURN_PR = 65, LINE_COMMENT_PR = 66, Simple_name_VA = 67, 
-    SPACE_VA = 68, RETURN_VA = 69, LINE_COMMENT_VA = 70, Ambig_code_MP = 71, 
-    Integer_MP = 72, Simple_name_MP = 73, Equ_op_MP = 74, SPACE_MP = 75, 
-    RETURN_MP = 76, LINE_COMMENT_MP = 77
+    Angle = 17, Stereo = 18, Type = 19, Equ_op = 20, Or = 21, Ssbond = 22, 
+    Ssbond_resids = 23, Hbond = 24, Link = 25, Atom_stereo = 26, Var = 27, 
+    Unset = 28, SetVar = 29, Print = 30, Residue = 31, Mapping = 32, Ambig = 33, 
+    Capital_integer = 34, Integer_capital = 35, Simple_name = 36, SPACE = 37, 
+    ENCLOSE_COMMENT = 38, SECTION_COMMENT = 39, LINE_COMMENT = 40, Any_name = 41, 
+    SPACE_CM = 42, RETURN_CM = 43, Atom1 = 44, Atom2 = 45, Residue1 = 46, 
+    Residue2 = 47, Equ_op_HB = 48, Atom1_equ = 49, Atom2_equ = 50, Residue1_equ = 51, 
+    Residue2_equ = 52, Concat_atom_1 = 53, Concat_atom_2 = 54, Concat_res_1 = 55, 
+    Concat_res_2 = 56, Integer_HB = 57, Simple_name_HB = 58, SPACE_HB = 59, 
+    RETURN_HB = 60, LINE_COMMENT_HB = 61, Double_quote_string = 62, SPACE_PR = 63, 
+    RETURN_PR = 64, LINE_COMMENT_PR = 65, Simple_name_VA = 66, SPACE_VA = 67, 
+    RETURN_VA = 68, LINE_COMMENT_VA = 69, Ambig_code_MP = 70, Integer_MP = 71, 
+    Simple_name_MP = 72, Equ_op_MP = 73, SPACE_MP = 74, RETURN_MP = 75, 
+    LINE_COMMENT_MP = 76
   };
 
   enum {
@@ -46,17 +46,16 @@ public:
     RuleDiana_ssbond_restraint = 27, RuleDiana_hbond_restraints = 28, RuleDiana_hbond_restraint = 29, 
     RuleDiana_torsion_angle_restraints = 30, RuleDiana_torsion_angle_restraint = 31, 
     RuleDiana_coupling_constant_restraints = 32, RuleDiana_coupling_constant_restraint = 33, 
-    RuleDiana_stereoassign_macro = 34, RuleDiana_chemical_shifts = 35, RuleDiana_chemical_shift = 36, 
-    RuleDistance_w_chain_restraints = 37, RuleDistance_w_chain_restraint = 38, 
-    RuleDistance_w_chain2_restraints = 39, RuleDistance_w_chain2_restraint = 40, 
-    RuleDistance_w_chain3_restraints = 41, RuleDistance_w_chain3_restraint = 42, 
-    RuleTorsion_angle_w_chain_restraints = 43, RuleTorsion_angle_w_chain_restraint = 44, 
-    RuleCco_restraints = 45, RuleCco_restraint = 46, RuleSsbond_macro = 47, 
-    RuleHbond_macro = 48, RuleLink_statement = 49, RuleStereoassign_macro = 50, 
-    RuleDeclare_variable = 51, RuleSet_variable = 52, RuleUnset_variable = 53, 
-    RulePrint_macro = 54, RuleUnambig_atom_name_mapping = 55, RuleMapping_list = 56, 
-    RuleAmbig_atom_name_mapping = 57, RuleAmbig_list = 58, RuleNumber = 59, 
-    RuleGen_res_num = 60, RuleGen_simple_name = 61, RuleGen_atom_name = 62
+    RuleDiana_stereoassign_macro = 34, RuleDistance_w_chain_restraints = 35, 
+    RuleDistance_w_chain_restraint = 36, RuleDistance_w_chain2_restraints = 37, 
+    RuleDistance_w_chain2_restraint = 38, RuleDistance_w_chain3_restraints = 39, 
+    RuleDistance_w_chain3_restraint = 40, RuleTorsion_angle_w_chain_restraints = 41, 
+    RuleTorsion_angle_w_chain_restraint = 42, RuleCco_restraints = 43, RuleCco_restraint = 44, 
+    RuleSsbond_macro = 45, RuleHbond_macro = 46, RuleLink_statement = 47, 
+    RuleStereoassign_macro = 48, RuleDeclare_variable = 49, RuleSet_variable = 50, 
+    RuleUnset_variable = 51, RulePrint_macro = 52, RuleUnambig_atom_name_mapping = 53, 
+    RuleMapping_list = 54, RuleAmbig_atom_name_mapping = 55, RuleAmbig_list = 56, 
+    RuleNumber = 57, RuleGen_res_num = 58, RuleGen_simple_name = 59, RuleGen_atom_name = 60
   };
 
   explicit CyanaMRParser(antlr4::TokenStream *input);
@@ -111,8 +110,6 @@ public:
   class Diana_coupling_constant_restraintsContext;
   class Diana_coupling_constant_restraintContext;
   class Diana_stereoassign_macroContext;
-  class Diana_chemical_shiftsContext;
-  class Diana_chemical_shiftContext;
   class Distance_w_chain_restraintsContext;
   class Distance_w_chain_restraintContext;
   class Distance_w_chain2_restraintsContext;
@@ -175,8 +172,6 @@ public:
     Diana_coupling_constant_restraintsContext* diana_coupling_constant_restraints(size_t i);
     std::vector<Diana_stereoassign_macroContext *> diana_stereoassign_macro();
     Diana_stereoassign_macroContext* diana_stereoassign_macro(size_t i);
-    std::vector<Diana_chemical_shiftsContext *> diana_chemical_shifts();
-    Diana_chemical_shiftsContext* diana_chemical_shifts(size_t i);
     std::vector<Distance_w_chain_restraintsContext *> distance_w_chain_restraints();
     Distance_w_chain_restraintsContext* distance_w_chain_restraints(size_t i);
     std::vector<Distance_w_chain2_restraintsContext *> distance_w_chain2_restraints();
@@ -821,40 +816,6 @@ public:
   };
 
   Diana_stereoassign_macroContext* diana_stereoassign_macro();
-
-  class  Diana_chemical_shiftsContext : public antlr4::ParserRuleContext {
-  public:
-    Diana_chemical_shiftsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    std::vector<Diana_chemical_shiftContext *> diana_chemical_shift();
-    Diana_chemical_shiftContext* diana_chemical_shift(size_t i);
-
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  Diana_chemical_shiftsContext* diana_chemical_shifts();
-
-  class  Diana_chemical_shiftContext : public antlr4::ParserRuleContext {
-  public:
-    Diana_chemical_shiftContext(antlr4::ParserRuleContext *parent, size_t invokingState);
-    virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Shifts();
-    std::vector<Gen_simple_nameContext *> gen_simple_name();
-    Gen_simple_nameContext* gen_simple_name(size_t i);
-    Gen_res_numContext *gen_res_num();
-    std::vector<NumberContext *> number();
-    NumberContext* number(size_t i);
-    antlr4::tree::TerminalNode *Simple_name();
-    antlr4::tree::TerminalNode *Integer();
-
-
-    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
-  };
-
-  Diana_chemical_shiftContext* diana_chemical_shift();
 
   class  Distance_w_chain_restraintsContext : public antlr4::ParserRuleContext {
   public:

@@ -36,7 +36,6 @@ cyana_mr:
 	diana_torsion_angle_restraints |
 	diana_coupling_constant_restraints |
 	diana_stereoassign_macro |
-	diana_chemical_shifts |
 	distance_w_chain_restraints |
 	distance_w_chain2_restraints |
 	distance_w_chain3_restraints |
@@ -228,16 +227,6 @@ diana_coupling_constant_restraint:
 diana_stereoassign_macro:
 	Stereo gen_simple_name gen_res_num gen_simple_name+
 	Integer?;
-
-/* DUANA chemical shifts (undocumented) */
-diana_chemical_shifts:
-	diana_chemical_shift+;
-
-diana_chemical_shift:
-	Shifts
-	gen_simple_name gen_res_num gen_simple_name number
-	(gen_simple_name number)*
-	Simple_name? Integer?;
 
 /* CYANA (undocumented) - arbitrary order among chain_id, comp_id, and atom_id
 */

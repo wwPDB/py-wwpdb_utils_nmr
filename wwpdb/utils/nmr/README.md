@@ -588,7 +588,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-aux-cha`|`nm-aux-cha`|`nmr-restraints` / `any`|Topology file in CHARMM/CRD format
 `nm-res-cha`|`nm-res-cha`|`nmr-restraints` / `charmm`|Restraint file in CHARMM format
 `nm-res-cns`|`nm-res-cns`|`nmr-restraints` / `cns`|Restraint file in CNS format
-`nm-res-cya`|`nm-res-cya`|`nmr-restraints` / `cyana`|Restraint file in CYANA format
+`nm-res-cya`|`nm-res-cya`|`nmr-restraints` / `cyana`|Restraint file in CYANA/DIANA format
 `nm-res-dyn`|`nm-res-dyn`|`nmr-restraints` / `dynamo`|Restraint file in DYNAMO/PALES/TALOS format
 `nm-aux-gro`|`nm-aux-gro`|`nmr-restraints` / `any`|Topology file in GROMACS format
 `nm-res-gro`|`nm-res-gro`|`nmr-restraints` / `gromacs`|Restraint file in GROMACS format
@@ -621,6 +621,7 @@ NmrDpUtility|OneDep&nbsp;(DepUI)|OneDep (content type / format)|description
 `nm-shi-ari`|**internal use**|`nmr-chemical-shifts` / `any`|ARIA chemical shift file
 `nm-shi-bar`|**internal use**|`nmr-chemical-shifts` / `any`|Bare WSV/TSV/CSV chemical shift file (residue per line, atom per line, or SPARKY's resonance list)
 `nm-shi-gar`|**internal use**|`nmr-chemical-shifts` / `any`|GARRET chemical shift file (CAMRA)
+`nm-shi-dia`|**internal use**|`nmr-chemical-shifts` / `any`|DIANA chemical shift file
 `nm-shi-npi`|**internal use**|`nmr-chemical-shifts` / `any`|NMRPIPE chemical shift file
 `nm-shi-oli`|**internal use**|`nmr-chemical-shifts` / `any`|OLIVIA chemical shift file
 `nm-shi-pip`|**internal use**|`nmr-chemical-shifts` / `any`|PIPP chemical shift file

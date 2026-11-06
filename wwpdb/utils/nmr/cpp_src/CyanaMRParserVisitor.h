@@ -89,10 +89,6 @@ public:
 
     virtual std::any visitDiana_stereoassign_macro(CyanaMRParser::Diana_stereoassign_macroContext *context) = 0;
 
-    virtual std::any visitDiana_chemical_shifts(CyanaMRParser::Diana_chemical_shiftsContext *context) = 0;
-
-    virtual std::any visitDiana_chemical_shift(CyanaMRParser::Diana_chemical_shiftContext *context) = 0;
-
     virtual std::any visitDistance_w_chain_restraints(CyanaMRParser::Distance_w_chain_restraintsContext *context) = 0;
 
     virtual std::any visitDistance_w_chain_restraint(CyanaMRParser::Distance_w_chain_restraintContext *context) = 0;

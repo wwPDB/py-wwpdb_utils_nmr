@@ -680,6 +680,9 @@ def getChemShiftFormatName(fileType: str) -> str:
     if fileType in ('nm-shi-bar', 'nm-csp-bar'):
         return 'Bare CSV/TSV chemical shift assignment'
 
+    if fileType == 'nm-shi-dia':
+        return 'DIANA chemical shift assignment'
+
     if fileType in ('nm-shi-gar', 'nm-csp-gar'):
         return 'GARRET chemical shift assignment'
 

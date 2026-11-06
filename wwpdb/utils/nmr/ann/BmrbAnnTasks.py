@@ -4056,14 +4056,15 @@ class BmrbAnnTasks:
                             if sample_type in ('protein', 'peptide'):
                                 total_cys_in_assembly += entity['total_cys']
 
-                exptl_data_col = lp.tags.index('Experimental_data_reported')
+                if 'Experimental_data_reported' in lp.tags:
+                    exptl_data_col = lp.tags.index('Experimental_data_reported')
 
-                dat = lp.get_tag(['ID', 'Experimental_data_reported'])
+                    dat = lp.get_tag(['ID', 'Experimental_data_reported'])
 
-                for idx, row in enumerate(dat):
-                    if isinstance(row[0], str) and row[0] not in EMPTY_VALUE and row[0].isdigit() and row[1] != 'yes':
-                        if int(row[0]) in ent_asym_id_with_exptl_data:
-                            lp.data[idx][exptl_data_col] = 'yes'
+                    for idx, row in enumerate(dat):
+                        if isinstance(row[0], str) and row[0] not in EMPTY_VALUE and row[0].isdigit() and row[1] != 'yes':
+                            if int(row[0]) in ent_asym_id_with_exptl_data:
+                                lp.data[idx][exptl_data_col] = 'yes'
 
             except KeyError:
                 pass

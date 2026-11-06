@@ -36,6 +36,9 @@ class _NefTranslatorStub:
     def get_valid_star_atom(self, compId, atomId, **kwargs):  # pylint: disable=unused-argument
         return [atomId], None, None
 
+    def get_valid_star_atom_in_xplor(self, compId, atomId, **kwargs):  # pylint: disable=unused-argument
+        return [atomId], None, None
+
 
 def _chain(chainId):
     return {'chain_id': chainId, 'auth_chain_id': chainId, 'seq_id': list(range(1, 11)),

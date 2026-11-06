@@ -952,6 +952,9 @@ class BaseCSParserListener():
         """ Add assigned chemical shift.
         """
 
+        if len(self.atomSelectionSet) == 0:
+            return
+
         if self.__debug:
             if not has_assignments:
                 print(f"subtype={self.cur_subtype} id={self.chemShifts + 1} (index={index}) "

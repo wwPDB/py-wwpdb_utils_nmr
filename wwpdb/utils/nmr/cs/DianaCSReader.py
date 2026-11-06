@@ -1,0 +1,251 @@
+##
+# DianaCSReader.py
+#
+# Update:
+##
+""" A collection of classes for parsing DIANA CS files.
+"""
+__docformat__ = "restructuredtext en"
+__author__ = "Masashi Yokochi"
+__email__ = "yokochi@protein.osaka-u.ac.jp"
+__license__ = "Apache License 2.0"
+__version__ = "1.2.0"
+
+import os
+import sys
+from typing import IO, List, Optional, Tuple
+
+from antlr4 import ParseTreeWalker
+
+try:
+    from wwpdb.utils.nmr.NmrDpConstant import MAX_ERROR_REPORT
+    from wwpdb.utils.nmr.ChemCompUtil import ChemCompUtil
+    from wwpdb.utils.nmr.BmrbChemShiftStat import BmrbChemShiftStat
+    from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
+    from wwpdb.utils.nmr.AntlrParseUtil import parseAntlr
+    from wwpdb.utils.nmr.cs import sa_dianacs
+    from wwpdb.utils.nmr.mr.LexerErrorListener import LexerErrorListener
+    from wwpdb.utils.nmr.mr.ParserErrorListener import ParserErrorListener
+    from wwpdb.utils.nmr.cs.DianaCSLexer import DianaCSLexer
+    from wwpdb.utils.nmr.cs.DianaCSParser import DianaCSParser
+    from wwpdb.utils.nmr.cs.DianaCSParserListener import DianaCSParserListener
+except ImportError:
+    from nmr.NmrDpConstant import MAX_ERROR_REPORT
+    from nmr.ChemCompUtil import ChemCompUtil
+    from nmr.BmrbChemShiftStat import BmrbChemShiftStat
+    from nmr.nef.NefTranslator import NefTranslator
+    from nmr.AntlrParseUtil import parseAntlr
+    from nmr.cs import sa_dianacs
+    from nmr.mr.LexerErrorListener import LexerErrorListener
+    from nmr.mr.ParserErrorListener import ParserErrorListener
+    from nmr.cs.DianaCSLexer import DianaCSLexer
+    from nmr.cs.DianaCSParser import DianaCSParser
+    from nmr.cs.DianaCSParserListener import DianaCSParserListener
+
+
+class DianaCSReader:
+    """ Accessor methods for parsing DIANA CS files.
+    """
+    __slots__ = ('__class_name__',
+                 '__version__',
+                 '__verbose',
+                 '__log',
+                 '__debug',
+                 '__csp',
+                 '__csLoops',
+                 '__maxLexerErrorReport',
+                 '__maxParserErrorReport',
+                 '__polySeq',
+                 '__entityAssembly',
+                 '__ccU',
+                 '__caC',
+                 '__csStat',
+                 '__nefT',
+                 '__reasons')
+
+    def __init__(self, verbose: bool = True, log: IO = sys.stdout,
+                 polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
+                 ccU: Optional[ChemCompUtil] = None, csStat: Optional[BmrbChemShiftStat] = None,
+                 nefT: Optional[NefTranslator] = None,
+                 reasons: Optional[dict] = None) -> None:
+        self.__class_name__ = self.__class__.__name__
+        self.__version__ = __version__
+
+        self.__verbose = verbose
+        self.__log = log
+        self.__debug = False
+
+        self.__csp = False
+        self.__csLoops = None
+
+        self.__maxLexerErrorReport = MAX_ERROR_REPORT
+        self.__maxParserErrorReport = MAX_ERROR_REPORT
+
+        self.__polySeq = polySeq
+        # key=Entity_assembly_ID (str), value=dictionary of 'entity_id' (int) and 'auth_asym_id' (str)
+        self.__entityAssembly = entityAssembly
+
+        # CCD accessing utility
+        self.__ccU = ChemCompUtil(verbose, log) if ccU is None else ccU
+
+        # BMRB chemical shift statistics
+        self.__csStat = BmrbChemShiftStat(verbose, log, self.__ccU) if csStat is None else csStat
+
+        # NefTranslator
+        self.__nefT = NefTranslator(verbose, log, self.__ccU, self.__csStat) if nefT is None else nefT
+        if nefT is None:
+            self.__nefT.set_remediation_mode(True)
+
+        # reasons for re-parsing request from the previous trial
+        self.__reasons = reasons
+
+    def setDebugMode(self, debug: bool) -> None:
+        """ Set debug mode.
+        """
+
+        self.__debug = debug
+
+    def setCspMode(self, csp: bool) -> None:
+        """ Set chemical shift perturbation mode.
+        """
+
+        self.__csp = csp
+
+    def setCsloops(self, csLoops: Optional[List[dict]]) -> None:
+        """ Set reference assigned chemical shifts for chemical shift perturbation mode.
+        """
+
+        self.__csLoops = csLoops
+
+    def setLexerMaxErrorReport(self, maxErrReport: int) -> None:
+        """ Set the maximum number of lexer error messages to save.
+        """
+
+        self.__maxLexerErrorReport = maxErrReport
+
+    def setParserMaxErrorReport(self, maxErrReport: int) -> None:
+        """ Set the maximum number of parser error messages to save.
+        """
+
+        self.__maxParserErrorReport = maxErrReport
+
+    def parse(self, csFilePath: str, isFilePath: bool = True,
+              createSfDict: bool = False, originalFileName: Optional[str] = None, listIdCounter: Optional[dict] = None,
+              reservedListIds: Optional[dict] = None, entryId: Optional[str] = None
+              ) -> Tuple[Optional[DianaCSParserListener], Optional[ParserErrorListener], Optional[LexerErrorListener]]:
+        """ Parse DIANA CS file.
+            @return: DianaCSParserListener for success or None otherwise, ParserErrorListener, LexerErrorListener.
+        """
+
+        ifh = None
+
+        try:
+
+            if isFilePath:
+                csString = None
+
+                if not os.access(csFilePath, os.R_OK):
+                    if self.__verbose:
+                        self.__log.write(f"+{self.__class_name__}.parse() {csFilePath} is not accessible.\n")
+                    return None, None, None
+
+                ifh = open(csFilePath, 'r', encoding='utf-8', errors='ignore')  # pylint: disable=consider-using-with
+                csText = ifh.read()
+
+            else:
+                csFilePath, csString = None, csFilePath
+
+                if csString is None or len(csString) == 0:
+                    if self.__verbose:
+                        self.__log.write(f"+{self.__class_name__}.parse() Empty string.\n")
+                    return None, None, None
+
+                csText = csString
+
+            tree, parser_error_listener, lexer_error_listener =\
+                parseAntlr(DianaCSLexer, DianaCSParser, 'diana_cs', csText,
+                           filePath=csFilePath, saModule=sa_dianacs,
+                           maxLexerErrorReport=self.__maxLexerErrorReport,
+                           maxParserErrorReport=self.__maxParserErrorReport,
+                           ignoreCodicError=True)
+
+            messageList = lexer_error_listener.getMessageList()
+
+            if messageList is not None and self.__verbose:
+                for description in messageList:
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
+                    if 'input' in description:
+                        self.__log.write(f"{description['input']}\n")
+                        self.__log.write(f"{description['marker']}\n")
+
+            walker = ParseTreeWalker()
+            listener = DianaCSParserListener(self.__verbose, self.__log,
+                                             self.__polySeq, self.__entityAssembly,
+                                             self.__nefT,
+                                             self.__reasons)
+            listener.debug = self.__debug
+            listener.csp = self.__csp
+            listener.csLoops = self.__csLoops
+            listener.createSfDict = createSfDict
+            if createSfDict:
+                if originalFileName is not None:
+                    listener.originalFileName = originalFileName
+                if listIdCounter is not None:
+                    listener.listIdCounter = listIdCounter
+                if reservedListIds is not None:
+                    listener.reservedListIds = reservedListIds
+                if entryId is not None:
+                    listener.entryId = entryId
+            walker.walk(listener, tree)
+
+            messageList = parser_error_listener.getMessageList()
+
+            if messageList is not None and self.__verbose:
+                for description in messageList:
+                    self.__log.write(f"[Syntax error] line {description['line_number']}:{description['column_position']} "
+                                     f"{description['message']}\n")
+                    if 'input' in description:
+                        self.__log.write(f"{description['input']}\n")
+                        self.__log.write(f"{description['marker']}\n")
+
+            if self.__verbose and self.__debug:
+                if listener.warningMessage is not None and len(listener.warningMessage) > 0:
+                    self.__log.write(f"+{self.__class_name__}.parse() ++ Info  -\n" + '\n'.join(listener.warningMessage) + '\n')
+                if isFilePath:
+                    self.__log.write(f"+{self.__class_name__}.parse() ++ Info  - {listener.getContentSubtype()}\n")
+
+            return listener, parser_error_listener, lexer_error_listener
+
+        except IOError as e:
+            if self.__verbose:
+                self.__log.write(f"+{self.__class_name__}.parse() ++ Error  - {str(e)}\n")
+            return None, None, None
+        finally:
+            if isFilePath and ifh is not None:
+                ifh.close()
+
+
+if __name__ == "__main__":
+    nmr_poly_seq = [
+                {
+                  "chain_id": "1",
+                  "auth_chain_id": "A",
+                  "seq_id": [
+                      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                      21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                      41, 42, 43, 44, 45, 46
+                      ],
+                  "comp_id": [
+                      "GLY", "ALA", "ALA", "CYS", "LEU", "CYS", "LYS", "SER", "ASP", "GLY",
+                      "PRO", "ASN", "THR", "ARG", "GLY", "ASN", "SER", "MET", "SER", "GLY",
+                      "THR", "ILE", "TRP", "VAL", "PHE", "GLY", "CYS", "PRO", "SER", "GLY",
+                      "TRP", "ASN", "ASN", "CYS", "GLU", "GLY", "ARG", "ALA", "ILE", "ILE",
+                      "GLY", "TYR", "CYS", "CYS", "LYS", "GLN"
+                      ]
+                }
+              ]
+    entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': 'A'}}
+    reader = DianaCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1atx/1atx-trimmed.mr')

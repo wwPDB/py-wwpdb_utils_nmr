@@ -19,6 +19,7 @@ __license__ = "Apache License 2.0"
 __version__ = "5.4.5"
 
 import codecs
+import copy
 import itertools
 import os
 import re
@@ -2747,6 +2748,10 @@ class NmrDpMrSplitter:
             if None in (file_type_1, file_type_2):
                 continue
 
+            # allowed dual use case (1atx)
+            if self.__reg.permit_missing_cs_file and {file_type_1, file_type_2} == {'nm-res-cya', 'nm-shi-dia'}:
+                continue
+
             if file_type_1.startswith('nm-res') and file_type_2.startswith('nm-res'):
                 file_type = 'restraint'
             elif file_type_1.startswith('nm-pea') and file_type_2.startswith('nm-pea'):
@@ -3479,7 +3484,8 @@ class NmrDpMrSplitter:
 
                         # skip MR footer
                         if 'Submitted Coord H atom name' in line\
-                           or 'Entry H atom name' in line:
+                           or 'Entry H atom name' in line\
+                           or 'Start of MODEL' in line:
                             fofh.write(line)
                             footer = True
                             continue
@@ -3613,7 +3619,8 @@ class NmrDpMrSplitter:
 
                                 # skip MR footer
                                 if 'Submitted Coord H atom name' in line\
-                                   or 'Entry H atom name' in line:
+                                   or 'Entry H atom name' in line\
+                                   or 'Start of MODEL' in line:
                                     break
 
                                 ofh.write(line)
@@ -3818,7 +3825,8 @@ class NmrDpMrSplitter:
 
                                 # skip MR footer
                                 if 'Submitted Coord H atom name' in line\
-                                   or 'Entry H atom name' in line:
+                                   or 'Entry H atom name' in line\
+                                   or 'Start of MODEL' in line:
                                     break
 
                                 ofh.write(line)
@@ -5482,6 +5490,8 @@ class NmrDpMrSplitter:
         len_chem_shift_file_list = len(chem_shift_file_list)
         has_chem_shift = len_chem_shift_file_list > 0
 
+        dual_use_file_names = []
+
         if len(split_file_list) > 0:
             self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY].extend(split_file_list)
 
@@ -5491,11 +5501,32 @@ class NmrDpMrSplitter:
 
                 input_source = self.__reg.report.input_sources[-1]
 
-                input_source.setItemValue('file_name', os.path.basename(_ar['file_name']))
+                input_source.setItemValue('file_name', _ar['file_name'])
                 input_source.setItemValue('file_type', _ar['file_type'])
                 input_source.setItemValue('content_type', 'nmr-restraints')
                 if 'original_file_name' in _ar:
                     input_source.setItemValue('original_file_name', os.path.basename(_ar['original_file_name']))
+
+                # detect DIANA chemical shift file in CYANA MR (1atx)
+                if self.__reg.permit_missing_cs_file and _ar['file_type'] == 'nm-res-cya':
+                    shifts_count = 0
+                    with open(_ar['file_name'], 'r', encoding='utf-8', errors='ignore') as ifh:
+                        for line in ifh:
+                            if line.startswith('SHIFTS '):
+                                shifts_count += 1
+                                if shifts_count > MR_MAX_SPACER_LINES:
+                                    break
+
+                    if shifts_count > MR_MAX_SPACER_LINES:
+                        _ac = copy.copy(_ar)
+                        _ac['file_type'] = 'nm-shi-dia'
+
+                        if not any(True for ac in chem_shift_file_list if ac['file_name'] == _ac['file_name']):
+                            chem_shift_file_list.append(_ac)
+                            len_chem_shift_file_list += 1
+                            has_chem_shift = True
+
+                            dual_use_file_names.append(_ac['file_name'])
 
         else:
 
@@ -5610,11 +5641,12 @@ class NmrDpMrSplitter:
                         _input_source_dic = _input_source.get()
                         if _input_source_dic['file_name'] is None or not os.path.exists(_input_source_dic['file_name']):
                             continue
-                        if os.path.samefile(_ar['file_name'], _input_source_dic['file_name']):
+                        if os.path.samefile(_ar['file_name'], _input_source_dic['file_name'])\
+                           and _ar['file_name'] not in dual_use_file_names:
                             _input_source_dic['file_type'] = _ar['file_type']
                             _input_source_dic['content_type'] = 'nmr-chemical-shifts'
                             if 'original_file_name' in _ar:
-                                _input_source['original_file_name'] = os.path.basename(_ar['original_file_name'])
+                                _input_source_dic['original_file_name'] = os.path.basename(_ar['original_file_name'])
                             continue
 
                     self.__reg.report.appendInputSource()

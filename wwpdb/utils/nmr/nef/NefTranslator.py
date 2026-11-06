@@ -8220,15 +8220,15 @@ class NefTranslator:
                         if atom_id.endswith("''"):
                             nh2 = self.__ccU.getNonRepAminoProtons(comp_id)
                             if self.validate_comp_atom(comp_id, nh2[0]):
-                                atom_list, ambiguity_code, details = nh2[0], 1, None
+                                atom_list, ambiguity_code, details = [nh2[0]], 1, None
                                 return (atom_list, ambiguity_code, details)
                         elif self.validate_comp_atom(comp_id, nh2[0]):
-                            atom_list, ambiguity_code, details = nh2[0], 1, None
+                            atom_list, ambiguity_code, details = [nh2[0]], 1, None
                             return (atom_list, ambiguity_code, details)
                     elif atom_id == "HN'":
                         nh = self.__ccU.getImideProtons(comp_id)
                         if len(nh) == 1:
-                            atom_list, ambiguity_code, details = nh[0], 1, None
+                            atom_list, ambiguity_code, details = [nh[0]], 1, None
                             return (atom_list, ambiguity_code, details)
 
                 if atom_id == 'HY' and comp_id == 'ILE':  # 2l9i, AMBER

@@ -286,6 +286,26 @@
       ]
     },
     {
+      "module": "sa_dianacs_cpp_parser",
+      "subpackage": "cs",
+      "shim": "sa_dianacs",
+      "grammar": "DianaCS",
+      "lexer": "DianaCSLexer",
+      "parser": "DianaCSParser",
+      "entry_rule": "diana_cs",
+      "readers": [
+        "DianaCSReader"
+      ],
+      "sources": [
+        "DianaCSLexer.cpp",
+        "DianaCSParser.cpp",
+        "DianaCSParserBaseVisitor.cpp",
+        "DianaCSParserVisitor.cpp",
+        "sa_dianacs_translator.cpp",
+        "sa_dianacs_cpp_parser.cpp"
+      ]
+    },
+    {
       "module": "sa_dynamomr_cpp_parser",
       "subpackage": "mr",
       "shim": "sa_dynamomr",

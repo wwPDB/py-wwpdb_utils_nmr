@@ -2300,6 +2300,27 @@ class NmrDpUtility:
 
         is_done = True
 
+        # reconstruct polymer sequence from the coordinates in case of permit_missing_cs_file=True
+        if self.__reg.permit_missing_cs_file and len(self.__reg.star_data) > 0 and self.__reg.star_data_type[0] == 'Entry':
+            input_source = self.__reg.report.input_sources[0]
+            input_source_dic = input_source.get()
+            content_subtype = input_source_dic['content_subtype']
+
+            if content_subtype is None or 'poly_seq' not in content_subtype:
+
+                if not self.__reg.cifChecked:
+                    self.__parseCoordinate()
+
+                if self.__reg.cifChecked:
+                    self.__reg.dpR.updatePolymerSequence()
+                    self.__reg.dpR.updateEntitySaveframe()
+
+                if content_subtype is None:
+                    input_source.setItemValue('content_subtype', {'poly_seq': 1})
+                else:
+                    content_subtype['poly_seq'] = 1
+                    input_source.setItemValue('content_subtype', content_subtype)
+
         for fileListId in range(self.__reg.file_path_list_len):
 
             input_source = self.__reg.report.input_sources[fileListId]

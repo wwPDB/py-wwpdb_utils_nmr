@@ -976,9 +976,6 @@ class BaseCSParserListener():
                         ambig_code = self.csStat.getMaxAmbigCodeWoSetId(atom['comp_id'], atom['atom_id'])
                         if ambig_code == 0:
                             ambig_code = None
-                else:
-                    atom = None
-                    return
 
                 for atom in self.atomSelectionSet[0]:
                     sf['index_id'] += 1

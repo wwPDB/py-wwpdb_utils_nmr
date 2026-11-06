@@ -145,15 +145,14 @@ class DianaCSParserListener(ParseTreeListener, BaseCSParserListener):
                     self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, {}, f'{L} -> ',
                                   default_ambig_code=ambig_code)
 
-                    if not has_assignments:
-                        continue
+                    if has_assignments:
 
-                    self.chemShifts += 1
+                        self.chemShifts += 1
 
-                    self.atomSelectionSets[0][0] = atomSelectionSet2
+                        self.atomSelectionSets[0][0] = atomSelectionSet2
 
-                    self.addCsRow(self.cur_line_num, dstFunc2, has_assignments, has_multiple_assignments, {}, f'{L} -> ',
-                                  default_ambig_code=ambig_code)
+                        self.addCsRow(self.cur_line_num, dstFunc2, has_assignments, has_multiple_assignments, {}, f'{L} -> ',
+                                      default_ambig_code=ambig_code)
 
                 self.chemShifts += 1
 

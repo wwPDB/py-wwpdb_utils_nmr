@@ -92,7 +92,11 @@ def get_chem_shift_format_from_string(string: str
     if '<!DOCTYPE chemical_shift_list SYSTEM' in string or '<chemical_shift_list>' in string:
         return 'nm-shi-ari'
 
-    if 'VARS' in string and 'RESID ' in string and 'RESNAME ' in string and 'ATOMNAME ' in string and 'SHIFT' in string:
+    if 'SHIFTS' in string:
+        return 'nm-shi-dia'
+
+    if 'VARS' in string and 'RESID ' in string and 'RESNAME ' in string and 'ATOMNAME ' in string\
+       and ('SHIFT' in string and 'SHIFTS' not in string):
         return 'nm-shi-npi'
 
     if 'SHIFT_FL_FRMT' in string and 'RES_SIAD' in string:

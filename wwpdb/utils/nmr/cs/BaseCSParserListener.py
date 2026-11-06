@@ -969,7 +969,6 @@ class BaseCSParserListener():
 
             if sf is not None:
                 sf['id'] = index
-                sf['index_id'] += 1
                 ambig_code = default_ambig_code
                 if has_assignments and not has_multiple_assignments and default_ambig_code is None:
                     atom = self.atomSelectionSet[0][0]
@@ -981,19 +980,23 @@ class BaseCSParserListener():
                     atom = None
                     return
 
-                if len(auth_seq_id_map) > 0 and atom['seq_id'] in auth_seq_id_map:
-                    atom['auth_seq_id'] = auth_seq_id_map[atom['seq_id']]
+                for atom in self.atomSelectionSet[0]:
+                    sf['index_id'] += 1
 
-                if self.__csp:
-                    val, val_err = self.__getCsValue(atom)
-                    row = getCspRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
-                                    dstFunc, self.entityAssembly,
-                                    atom, val, val_err)
-                else:
-                    row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
-                                   dstFunc, self.entityAssembly,
-                                   atom, ambig_code=ambig_code, details=details)
-                sf['loop'].add_data(row)
+                    if len(auth_seq_id_map) > 0 and atom['seq_id'] in auth_seq_id_map:
+                        atom['auth_seq_id'] = auth_seq_id_map[atom['seq_id']]
+
+                    if self.__csp:
+                        val, val_err = self.__getCsValue(atom)
+                        row = getCspRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
+                                        dstFunc, self.entityAssembly,
+                                        atom, val, val_err)
+                    else:
+                        row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
+                                       dstFunc, self.entityAssembly,
+                                       atom, ambig_code=ambig_code, details=details)
+
+                    sf['loop'].add_data(row)
 
     def extractChemShiftAssignment(self, numOfDim: int, string: str, src_index: int,
                                    with_segid: Optional[str] = None, with_compid: Optional[str] = None,
@@ -1171,7 +1174,8 @@ class BaseCSParserListener():
                 elif resIdSpan[idx][1] + 1 == len(term):
                     term = _str[idx] = term[0:resIdSpan[idx][1]]
 
-            for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in term else ASSIGNMENT_HALF_SPIN_NUCLEUS:
+            for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in term or 'CH' in term\
+                    else ASSIGNMENT_HALF_SPIN_NUCLEUS:
                 if len(elem) == 1 and ligAtomId is None and _ligAtomId is None:
                     if elem in term:
 
@@ -1262,6 +1266,7 @@ class BaseCSParserListener():
                         index = term.rindex(elem)
                         atomId = term[index:len(term)]
                         xplorAtomId = None
+
                         if len(term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
                            and term[index - 1] in PROTON_BEGIN_CODE:
                             xplorAtomId = term[index - 1] + atomId
@@ -1382,11 +1387,17 @@ class BaseCSParserListener():
 
             if atomNameLike[idx]:
                 _term = term[0:atomNameSpan[idx][0]]
-                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in _term else ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in _term or 'CH' in _term\
+                        else ASSIGNMENT_HALF_SPIN_NUCLEUS:
                     if len(elem) == 1 and ligAtomId is None and _ligAtomId is None:
                         if elem in _term:
                             index = _term.rindex(elem)
                             atomId = _term[index:len(_term)]
+                            xplorAtomId = None
+                            if len(_term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                               and _term[index - 1] in PROTON_BEGIN_CODE:
+                                xplorAtomId = _term[index - 1] + atomId
+
                             if index - 1 >= 0 and _term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
                                 if resNameLike[idx] and compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
                                     pass
@@ -1410,6 +1421,11 @@ class BaseCSParserListener():
                                     if details is None:
                                         _atomNameLike[idx] = useOneLetterCodeSet = True
                                         _atomNameSpan[idx] = (index, len(_term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                _atomNameSpan[idx] = (index - 1, len(_term))
                                         if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
@@ -1421,6 +1437,11 @@ class BaseCSParserListener():
                                     if details is None:
                                         _atomNameLike[idx] = True
                                         _atomNameSpan[idx] = (index, len(_term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                _atomNameSpan[idx] = (index - 1, len(_term))
                                         if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
@@ -1429,7 +1450,12 @@ class BaseCSParserListener():
                                 if details is None:
                                     _atomNameLike[idx] = True
                                     _atomNameSpan[idx] = (index, len(_term))
-                                    break
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            _atomNameSpan[idx] = (index - 1, len(_term))
+                                            break
                                 if with_compid is not None and atomId.startswith(with_compid):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
@@ -1437,17 +1463,28 @@ class BaseCSParserListener():
                                 if details is None:
                                     _atomNameLike[idx] = True
                                     _atomNameSpan[idx] = (index, len(_term))
-                                    break
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            _atomNameSpan[idx] = (index - 1, len(_term))
+                                            break
                             if _atomNameLike[idx]:
                                 break
 
             if numOfDim >= 3 and _atomNameLike[idx]:
                 __term = term[0:_atomNameSpan[idx][0]]
-                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in __term else ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in __term or 'CH' in __term\
+                        else ASSIGNMENT_HALF_SPIN_NUCLEUS:
                     if len(elem) == 1 and ligAtomId is None and _ligAtomId is None:
                         if elem in __term:
                             index = __term.rindex(elem)
                             atomId = __term[index:len(__term)]
+                            xplorAtomId = None
+                            if len(__term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                               and __term[index - 1] in PROTON_BEGIN_CODE:
+                                xplorAtomId = __term[index - 1] + atomId
+
                             if index - 1 >= 0 and __term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
                                 if resNameLike[idx] and compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
                                     pass
@@ -1471,6 +1508,11 @@ class BaseCSParserListener():
                                     if details is None:
                                         __atomNameLike[idx] = useOneLetterCodeSet = True
                                         __atomNameSpan[idx] = (index, len(__term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                __atomNameSpan[idx] = (index - 1, len(__term))
                                         if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
@@ -1481,6 +1523,11 @@ class BaseCSParserListener():
                                     if details is None:
                                         __atomNameLike[idx] = True
                                         __atomNameSpan[idx] = (index, len(__term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                __atomNameSpan[idx] = (index - 1, len(__term))
                                         if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
@@ -1489,7 +1536,12 @@ class BaseCSParserListener():
                                 if details is None:
                                     __atomNameLike[idx] = True
                                     __atomNameSpan[idx] = (index, len(__term))
-                                    break
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            __atomNameSpan[idx] = (index - 1, len(__term))
+                                            break
                                 if with_compid is not None and atomId.startswith(with_compid):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
@@ -1497,17 +1549,28 @@ class BaseCSParserListener():
                                 if details is None:
                                     __atomNameLike[idx] = True
                                     __atomNameSpan[idx] = (index, len(__term))
-                                    break
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            __atomNameSpan[idx] = (index - 1, len(__term))
+                                            break
                             if __atomNameLike[idx]:
                                 break
 
             if numOfDim >= 4 and __atomNameLike[idx]:
                 ___term = term[0:__atomNameSpan[idx][0]]
-                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in ___term else ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in ___term or 'CH' in ___term\
+                        else ASSIGNMENT_HALF_SPIN_NUCLEUS:
                     if len(elem) == 1 and ligAtomId is None and _ligAtomId is None:
                         if elem in ___term:
                             index = ___term.rindex(elem)
                             atomId = ___term[index:len(___term)]
+                            xplorAtomId = None
+                            if len(___term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                               and ___term[index - 1] in PROTON_BEGIN_CODE:
+                                xplorAtomId = ___term[index - 1] + atomId
+
                             if index - 1 >= 0 and ___term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
                                 if resNameLike[idx] and compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
                                     pass
@@ -1531,6 +1594,11 @@ class BaseCSParserListener():
                                     if details is None:
                                         ___atomNameLike[idx] = useOneLetterCodeSet = True
                                         ___atomNameSpan[idx] = (index, len(___term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                ___atomNameSpan[idx] = (index - 1, len(___term))
                                         if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
@@ -1541,6 +1609,11 @@ class BaseCSParserListener():
                                     if details is None:
                                         ___atomNameLike[idx] = True
                                         ___atomNameSpan[idx] = (index, len(___term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                ___atomNameSpan[idx] = (index - 1, len(___term))
                                         if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
                                             resNameLike[idx] = False
                                         break
@@ -1549,7 +1622,12 @@ class BaseCSParserListener():
                                 if details is None:
                                     ___atomNameLike[idx] = True
                                     ___atomNameSpan[idx] = (index, len(___term))
-                                    break
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            ___atomNameSpan[idx] = (index - 1, len(___term))
+                                            break
                                 if with_compid is not None and atomId.startswith(with_compid):
                                     continue
                                 _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
@@ -1557,7 +1635,12 @@ class BaseCSParserListener():
                                 if details is None:
                                     ___atomNameLike[idx] = True
                                     ___atomNameSpan[idx] = (index, len(___term))
-                                    break
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            ___atomNameSpan[idx] = (index - 1, len(___term))
+                                            break
                             if ___atomNameLike[idx]:
                                 break
 

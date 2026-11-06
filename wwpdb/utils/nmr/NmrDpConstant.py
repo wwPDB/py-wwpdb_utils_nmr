@@ -691,9 +691,9 @@ PARSABLE_PK_FILE_TYPES = ('nm-aux-xea',
                           'nm-pea-top', 'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea',
                           'nm-pea-xwi')
 
-PARSABLE_CS_FILE_TYPES = ('nm-shi-ari', 'nm-shi-bar', 'nm-shi-gar', 'nm-shi-npi',
-                          'nm-shi-oli', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2',
-                          'nm-shi-vie', 'nm-shi-xea')
+PARSABLE_CS_FILE_TYPES = ('nm-shi-ari', 'nm-shi-bar', 'nm-shi-dia', 'nm-shi-gar',
+                          'nm-shi-npi', 'nm-shi-oli', 'nm-shi-pip', 'nm-shi-ppm',
+                          'nm-shi-st2', 'nm-shi-vie', 'nm-shi-xea')
 
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
                  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -982,7 +982,7 @@ LEGACY_PDB_RECORDS = ('HEADER', 'OBSLTE', 'TITLE ', 'SPLIT ', 'CAVEAT', 'COMPND'
                       'CONECT',
                       'MASTER')
 
-LEGACY_PDB_RECORDS_WO_REMARK = [record for record in LEGACY_PDB_RECORDS if record not in ('REMARK', 'MASTER')]
+LEGACY_PDB_RECORDS_WO_REMARK = [record for record in LEGACY_PDB_RECORDS if record != 'REMARK']
 LEGACY_PDB_RECORDS_WO_REMARK = tuple(LEGACY_PDB_RECORDS_WO_REMARK)
 
 CYANA_MR_FILE_EXTS = (None, 'upl', 'lol', 'aco', 'rdc', 'pcs', 'upv', 'lov', 'cco')

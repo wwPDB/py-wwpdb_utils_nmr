@@ -34,6 +34,7 @@ try:
     from wwpdb.utils.nmr.mr.ParserListenerUtil import contentSubtypeOf
     from wwpdb.utils.nmr.cs.AriaCSReader import AriaCSReader
     from wwpdb.utils.nmr.cs.BareCSReader import BareCSReader
+    from wwpdb.utils.nmr.cs.DianaCSReader import DianaCSReader
     from wwpdb.utils.nmr.cs.GarretCSReader import GarretCSReader
     from wwpdb.utils.nmr.cs.NmrPipeCSReader import NmrPipeCSReader
     from wwpdb.utils.nmr.cs.OliviaCSReader import OliviaCSReader
@@ -58,6 +59,7 @@ except ImportError:
     from nmr.mr.ParserListenerUtil import contentSubtypeOf
     from nmr.cs.AriaCSReader import AriaCSReader
     from nmr.cs.BareCSReader import BareCSReader
+    from nmr.cs.DianaCSReader import DianaCSReader
     from nmr.cs.GarretCSReader import GarretCSReader
     from nmr.cs.NmrPipeCSReader import NmrPipeCSReader
     from nmr.cs.OliviaCSReader import OliviaCSReader
@@ -74,6 +76,7 @@ except ImportError:
 _CS_READERS = {
     'ari': (AriaCSReader, 'ARIA'),
     'bar': (BareCSReader, 'Bare WSV/TSV/CSV or Sparky resonance list'),
+    'dia': (DianaCSReader, 'DIANA'),
     'gar': (GarretCSReader, 'GARRET'),
     'npi': (NmrPipeCSReader, 'NMRPIPE'),
     'oli': (OliviaCSReader, 'OLIVIA'),
@@ -167,7 +170,8 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
             and any(True for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY] if ar['file_type'].startswith('nm-shi'))
 
         if not has_ac_path and not has_ar_path:
-            return True
+            if self._reg.permit_missing_cs_file:
+                return True
 
         try:
 

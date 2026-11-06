@@ -12,6 +12,7 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.2.0"
 
+import copy
 import sys
 from typing import IO, List, Optional
 
@@ -125,14 +126,27 @@ class NmrViewCSParserListener(ParseTreeListener, BaseCSParserListener):
         """
 
         L = f'{self.__seq_id}:{self.__comp_id}:{str(ctx.Simple_name())}'
-        value = float(str(ctx.Float()))
+
+        values = [float(str(ctx.Float(0)))]
+        if ctx.Float(1):
+            values.append(float(str(ctx.Float(1))))
 
         self.atomSelectionSets.clear()
 
-        dstFunc = self.validateCsValue(self.cur_line_num, value, None)
+        dstFunc = self.validateCsValue(self.cur_line_num, values[0], None)
 
         if dstFunc is None:
             return
+
+        len_vals = len(values)
+
+        dstFunc2 = None
+
+        if len_vals > 1:
+            dstFunc2 = self.validateCsValue(self.cur_line_num, values[1], None)
+
+            if dstFunc2 is None:
+                return
 
         assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num, with_compid=self.__comp_id)
 
@@ -141,6 +155,33 @@ class NmrViewCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         has_assignments, has_multiple_assignments = self.checkAssignment(self.cur_line_num, assignment)
 
-        self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, {}, f'{L} -> ')
+        len_atom_sel = len(self.atomSelectionSets[0][0]) if has_assignments else 0
+
+        if dstFunc2 is None or not has_assignments and len_atom_sel == 1:
+            self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, {}, f'{L} -> ')
+
+        else:
+
+            ambig_code = self.csStat.getMaxAmbigCodeWoSetId(self.__comp_id, self.atomSelectionSets[0][0][0]['atom_id'])\
+                if has_assignments else None
+
+            atomSelectionSet1 = atomSelectionSet2 = None
+
+            if len_atom_sel > 0:
+                atomSelectionSet1 = copy.copy(self.atomSelectionSets[0][0][0:len_atom_sel // 2])
+                atomSelectionSet2 = copy.copy(self.atomSelectionSets[0][0][len_atom_sel // 2:])
+
+                self.atomSelectionSets[0][0] = atomSelectionSet1
+
+            self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, {}, f'{L} -> ',
+                          default_ambig_code=ambig_code)
+
+            if has_assignments:
+                self.chemShifts += 1
+
+                self.atomSelectionSets[0][0] = atomSelectionSet2
+
+                self.addCsRow(self.cur_line_num, dstFunc2, has_assignments, has_multiple_assignments, {}, f'{L} -> ',
+                              default_ambig_code=ambig_code)
 
         self.chemShifts += 1

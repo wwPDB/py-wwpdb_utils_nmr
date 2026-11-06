@@ -49,4 +49,4 @@ heterogeneity_def:
 	Heterogeneity Integer;
 
 shift_list:
-	Simple_name Float (Single_note | Note_begin Note_middle* Note_end)?;
+	Simple_name Float Float? (Single_note | Note_begin Note_middle* Note_end)?;

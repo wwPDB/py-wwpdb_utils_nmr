@@ -294,21 +294,19 @@ class BmrbAnnTasks:
                 signed_by = get_first_sf_tag(ent_sf, 'Signed_by')
                 signature = get_first_sf_tag(ent_sf, 'Signature')
 
-                if signed_by in EMPTY_VALUE or signature in EMPTY_VALUE:
+                try:
 
-                    try:
+                    from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel
 
-                        from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel
+                    serializer = URLSafeSerializer(self.__secret_key, self.__service_host)
 
-                        serializer = URLSafeSerializer(self.__secret_key, self.__service_host)
+                    signature = serializer.dumps({'converion_id': self.__reg.entry_id, 'dep_sys_name': self.__dep_sys_name})
 
-                        signature = serializer.dumps({'converion_id': self.__reg.entry_id, 'dep_sys_name': self.__dep_sys_name})
+                    set_sf_tag(ent_sf, 'Signed_by', self.__service_host)
+                    set_sf_tag(ent_sf, 'Signature', signature)
 
-                        set_sf_tag(ent_sf, 'Signed_by', self.__service_host)
-                        set_sf_tag(ent_sf, 'Signature', signature)
-
-                    except ImportError:
-                        pass
+                except ImportError:
+                    pass
 
         # generate/update deposited_data_files saveframe in standalone NMR data conversion service (DAOTHER-9785)
         if self.__reg.conversion_server and self.__reg.op in ('nmr-cs-mr-merge', 'nmr-str-replace-cs',

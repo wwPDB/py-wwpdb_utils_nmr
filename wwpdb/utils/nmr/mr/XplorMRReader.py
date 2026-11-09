@@ -287,7 +287,7 @@ if __name__ == "__main__":
 
     reader = XplorMRReader(True)
     reader.setDebugMode(True)
-    reader.parse('../../tests-nmr/mock-data-remediation/1aoy/1aoy-corrected.mr',
+    reader.parse('../../tests-nmr/mock-data-remediation/1aoy/1aoy-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/1aoy/1aoy.cif')
 
     reader = XplorMRReader(False)

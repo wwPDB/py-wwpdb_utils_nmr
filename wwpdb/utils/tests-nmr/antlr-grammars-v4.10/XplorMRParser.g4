@@ -773,8 +773,8 @@ factor:
 	Point L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
-	Residue (Integers | Integer (Colon Integer)? | Symbol_name) |
-	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
+	Residue (Integers | Integer (Colon Integer)? | Symbol_name | Double_quote_string) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name | Double_quote_string) |
 	factor Saround number_f |
 	SegIdentifier Equ_op? (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name | Integer) |
 	Store1 | Store2 | Store3 | Store4 | Store5 | Store6 | Store7 | Store8 | Store9 |

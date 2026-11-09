@@ -4993,6 +4993,11 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                       f"The symbol {symbol_name!r} is not defined.")
 
+                elif ctx.Double_quote_string(0):
+                    val = str(ctx.Double_quote_string(0)).strip()
+                    if val.isdigit():
+                        self.factor['seq_id'] = [int(val)]
+
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
                         __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2\
@@ -5052,6 +5057,9 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     else:
                         self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                       f"The symbol {symbol_name!r} is not defined.")
+
+                elif ctx.Double_quote_string(0):
+                    self.factor['comp_id'] = [str(ctx.Double_quote_string(0)).strip().upper()]
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:

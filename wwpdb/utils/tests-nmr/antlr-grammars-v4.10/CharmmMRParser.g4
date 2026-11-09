@@ -342,8 +342,8 @@ factor:
 	User |
 	Previous |
 	Recall Integer |
-	(ByNumber | Residue) (Integers | Integer (Colon Integer)? | Symbol_name) |
-	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
+	(ByNumber | Residue) (Integers | Integer (Colon Integer)? | Symbol_name | Double_quote_string) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name | Double_quote_string) |
 	SegIdentifier (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name | Integer) |
 	(ISeg | IRes | IGroup) Integer Colon Integer;
 

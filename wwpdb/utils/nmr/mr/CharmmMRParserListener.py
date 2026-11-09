@@ -2572,6 +2572,11 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                       f"The symbol {symbol_name!r} is not defined.")
 
+                elif ctx.Double_quote_string(0):
+                    val = str(ctx.Double_quote_string(0)).strip()
+                    if val.isdigit():
+                        self.factor['seq_id'] = [int(val)]
+
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0:
                         _factor = copy.copy(self.factor)
@@ -2616,6 +2621,9 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     else:
                         self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                       f"The symbol {symbol_name!r} is not defined.")
+
+                elif ctx.Double_quote_string(0):
+                    self.factor['comp_id'] = [str(ctx.Double_quote_string(0)).strip().upper()]
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0:

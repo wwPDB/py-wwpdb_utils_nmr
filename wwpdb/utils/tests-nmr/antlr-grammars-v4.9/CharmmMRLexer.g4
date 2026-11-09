@@ -395,7 +395,7 @@ mode VECTOR_EXPR_MODE;
 
 Equ_op_VE:		'=';
 
-Integer_VE:		Integer;
+Integer_VE:		('+' | '-')? DECIMAL;
 Real_VE:		Real;
 Simple_name_VE:		SIMPLE_NAME;
 

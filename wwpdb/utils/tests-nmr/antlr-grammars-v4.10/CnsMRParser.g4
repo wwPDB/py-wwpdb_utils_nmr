@@ -152,6 +152,7 @@ noe_annotation:
 */
 dihedral_statement:
 	vector_statement |
+	evaluate_statement |
 	dihedral_assign |
 	dihedral_assign_loop |
 	Cv Equ_op? Integer |
@@ -169,6 +170,7 @@ dihedral_assign:
 */
 plane_statement:
 	vector_statement |
+	evaluate_statement |
 	plane_group |
 	plane_group_loop |
 	Initialize |
@@ -186,6 +188,7 @@ group_statement:
 */
 harmonic_statement:
 	vector_statement |
+	evaluate_statement |
 	Exponent Equ_op? Integer |
 	Normal Equ_op? L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op? selection Comma? (Head Equ_op? selection)?) R_paren;
 
@@ -421,8 +424,8 @@ factor:
 	Point L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
-	Residue (Integers | Integer (Colon Integer)? | Symbol_name) |
-	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
+	Residue (Integers | Integer (Colon Integer)? | Symbol_name | Double_quote_string) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name | Double_quote_string) |
 	factor Saround number_f |
 	SegIdentifier Equ_op? (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name | Integer) |
 	Sfbox number_f number_f number_f number_f number_f number_f |
@@ -518,7 +521,7 @@ evaluate_statement:
 	Evaluate_Lp Symbol_name_VE Equ_op_VE evaluate_operation R_paren_VE;
 
 evaluate_operation:
-	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) evaluate_operation)?;
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE)? evaluate_operation)?;
 
 /* CNS: Patch molecular topology database - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

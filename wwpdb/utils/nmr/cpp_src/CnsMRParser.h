@@ -602,6 +602,7 @@ public:
     Dihedral_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Vector_statementContext *vector_statement();
+    Evaluate_statementContext *evaluate_statement();
     Dihedral_assignContext *dihedral_assign();
     Dihedral_assign_loopContext *dihedral_assign_loop();
     antlr4::tree::TerminalNode *Cv();
@@ -644,6 +645,7 @@ public:
     Plane_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Vector_statementContext *vector_statement();
+    Evaluate_statementContext *evaluate_statement();
     Plane_groupContext *plane_group();
     Plane_group_loopContext *plane_group_loop();
     antlr4::tree::TerminalNode *Initialize();
@@ -694,6 +696,7 @@ public:
     Harmonic_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Vector_statementContext *vector_statement();
+    Evaluate_statementContext *evaluate_statement();
     antlr4::tree::TerminalNode *Exponent();
     antlr4::tree::TerminalNode *Integer();
     std::vector<antlr4::tree::TerminalNode *> Equ_op();

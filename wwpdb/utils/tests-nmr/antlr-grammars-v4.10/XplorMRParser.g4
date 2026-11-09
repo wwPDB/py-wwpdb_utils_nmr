@@ -873,7 +873,7 @@ evaluate_statement:
 	Evaluate_Lp Symbol_name_VE Equ_op_VE evaluate_operation R_paren_VE;
 
 evaluate_operation:
-	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) evaluate_operation)?;
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE)? evaluate_operation)?;
 
 /* XPLOR-NIH: Patching the Molecular Structure - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node86.html

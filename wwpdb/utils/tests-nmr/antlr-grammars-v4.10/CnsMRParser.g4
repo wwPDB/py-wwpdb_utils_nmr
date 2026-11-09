@@ -521,7 +521,7 @@ evaluate_statement:
 	Evaluate_Lp Symbol_name_VE Equ_op_VE evaluate_operation R_paren_VE;
 
 evaluate_operation:
-	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) evaluate_operation)?;
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE)? evaluate_operation)?;
 
 /* CNS: Patch molecular topology database - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html

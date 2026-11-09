@@ -8443,6 +8443,11 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     val = str(ctx.Double_quote_string(0)).strip()
                     if val.isdigit():
                         self.factor['seq_id'] = [int(val)]
+                    else:
+                        self.factor['atom'] = [None]
+                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
+                                      "The 'residue' clause has no effect "
+                                      f"because {val:!r} is not integer.")
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
@@ -9078,7 +9083,6 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         if ctx.Symbol_name_VE():
             self.cur_symbol_name = str(ctx.Symbol_name_VE())
-            print(self.cur_symbol_name)
 
         self.cur_vflc_op_code = ''
         self.stackVflc = []
@@ -9089,17 +9093,17 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
         len_stack_vflc = len(self.stackVflc)
 
+        s = self.stackVflc[0]
+
         if len_stack_vflc == 1:
-            self.evaluate[self.cur_symbol_name] = self.stackVflc[0]
+            self.evaluate[self.cur_symbol_name] = s
 
         elif len_stack_vflc == 2:
-            self.evaluate[self.cur_symbol_name] = self.stackVflc[0]
+            n = self.stackVflc[1]
 
-            if self.cur_vflc_op_code in ('+', '-', '*', '/', '^'):
-                s = self.stackVflc[0]
-                n = self.stackVflc[1]
+            if self.cur_vflc_op_code in ('', '+', '-', '*', '/', '^'):
                 if isinstance(s, list) and not isinstance(n, list):
-                    if self.cur_vflc_op_code == '+':
+                    if self.cur_vflc_op_code in ('', '+'):
                         self.evaluate[self.cur_symbol_name] = [_s + n for _s in s]
                     elif self.cur_vflc_op_code == '-':
                         self.evaluate[self.cur_symbol_name] = [_s - n for _s in s]
@@ -9110,7 +9114,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     elif self.cur_vflc_op_code == '^':
                         self.evaluate[self.cur_symbol_name] = [_s ** n for _s in s]
                 elif not isinstance(s, list) and isinstance(n, list):
-                    if self.cur_vflc_op_code == '+':
+                    if self.cur_vflc_op_code == ('', '+'):
                         self.evaluate[self.cur_symbol_name] = [s + _n for _n in n]
                     elif self.cur_vflc_op_code == '-':
                         self.evaluate[self.cur_symbol_name] = [s - _n for _n in n]
@@ -9121,7 +9125,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     elif self.cur_vflc_op_code == '^':
                         self.evaluate[self.cur_symbol_name] = [s ** _n for _n in n]
                 elif isinstance(s, list) and isinstance(n, list):
-                    if self.cur_vflc_op_code == '+':
+                    if self.cur_vflc_op_code == ('', '+'):
                         self.evaluate[self.cur_symbol_name] = [_s + _n for _s, _n in zip(s, n)]
                     elif self.cur_vflc_op_code == '-':
                         self.evaluate[self.cur_symbol_name] = [_s - _n for _s, _n in zip(s, n)]
@@ -9132,7 +9136,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     elif self.cur_vflc_op_code == '^':
                         self.evaluate[self.cur_symbol_name] = [_s ** _n for _s, _n in zip(s, n)]
                 else:
-                    if self.cur_vflc_op_code == '+':
+                    if self.cur_vflc_op_code == ('', '+'):
                         self.evaluate[self.cur_symbol_name] = s + n
                     elif self.cur_vflc_op_code == '-':
                         self.evaluate[self.cur_symbol_name] = s - n
@@ -9142,6 +9146,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.evaluate[self.cur_symbol_name] = s / n
                     elif self.cur_vflc_op_code == '^':
                         self.evaluate[self.cur_symbol_name] = s ** n
+
+            else:
+                self.evaluate[self.cur_symbol_name] = s
 
         self.stackVflc.clear()
 

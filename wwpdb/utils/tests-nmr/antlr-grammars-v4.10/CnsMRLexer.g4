@@ -505,7 +505,7 @@ Div_op_VE:		'/';
 Exp_op_VE:		('^' | '*' '*');
 Comma_VE:		',';
 
-Integer_VE:		Integer;
+Integer_VE:		('+' | '-')? DECIMAL;
 Real_VE:		Real;
 
 Atom_properties_VE:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'CHEM' 'I'? 'C'? 'A'? 'L'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'NAME' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RESI' 'D'? 'U'? 'E'? | 'RESN' 'A'? 'M'? 'E'? | 'RMSD' | 'SEGI' 'D'? 'E'? 'N'? 'T'? 'I'? 'F'? 'I'? 'E'? 'R'? | 'STORE1' | 'STORE2' | 'STORE3' | 'STORE4' | 'STORE5' | 'STORE6' | 'STORE7' | 'STORE8' | 'STORE9' | 'PSEU' 'D'? 'O'? | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'?);
@@ -568,7 +568,7 @@ L_paren_CF:		'(';
 R_paren_CF:		')' -> popMode;
 In_CF:			'IN';
 
-Integer_CF:		Integer;
+Integer_CF:		('+' | '-')? DECIMAL;
 Real_CF:		Real;
 Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;

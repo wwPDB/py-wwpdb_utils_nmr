@@ -3062,7 +3062,12 @@ class NmrDpMrSplitter:
                     is_valid, message = self.__reg.nefT.validate_file(file_path, file_subtype)
 
                     if not is_valid:
-                        _is_valid, message = self.__reg.nefT.validate_file(file_path, 'S')
+
+                        _file_path = self.getNextPath(file_path, '.cif2str')
+                        if not self.__reg.c2S.convert(file_path, _file_path):
+                            _file_path = file_path
+
+                        _is_valid, message = self.__reg.nefT.validate_file(_file_path, 'S')
                         if _is_valid:
                             cs_str = True
                     else:
@@ -3079,6 +3084,7 @@ class NmrDpMrSplitter:
                     is_valid, message = self.__reg.nefT.validate_file(_file_path, file_subtype)
 
                     if not is_valid:
+
                         _is_valid, message = self.__reg.nefT.validate_file(_file_path, 'S')
                         if _is_valid:
                             cs_str = True
@@ -3673,24 +3679,35 @@ class NmrDpMrSplitter:
                         is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
                         if not is_valid or not self.__reg.has_star_chem_shift:
+
                             _mrPath = self.getNextPath(mrPath, '.cif2str')
                             if self.__reg.c2S.convert(mrPath, _mrPath):
                                 mrPath = _mrPath
-                            _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
-                            if _is_valid:
-                                if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
-                                    del self.__reg.report.input_sources[insert_index]
-                                    input_source = self.__reg.report.input_sources[0]
-                                    input_source.setItemValue('file_name', mrPath)
-                                    input_source.setItemValue('file_type', file_type)
-                                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
-                                    input_source.setItemValue('content_subtype', {'chem_shift': 1})
-                                    self.__reg.cs_file_path_list_len = 1
-                                    self.__reg.file_path_list_len -= 1
-                                    insert_index = 0
-                                    file_subtype = 'S'
-                                    is_valid = True
-                                has_cs_str = True
+
+                            is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
+
+                            if is_valid:
+                                _mrPath = None  # to prevent to remove the file later
+
+                            if not is_valid:
+                                _is_valid, _message = self.__reg.nefT.validate_file(mrPath, 'S')
+
+                                if _is_valid:
+                                    _mrPath = None  # to prevent to remove th file later
+
+                                    if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
+                                        del self.__reg.report.input_sources[insert_index]
+                                        input_source = self.__reg.report.input_sources[0]
+                                        input_source.setItemValue('file_name', mrPath)
+                                        input_source.setItemValue('file_type', file_type)
+                                        input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                                        input_source.setItemValue('content_subtype', {'chem_shift': 1})
+                                        self.__reg.cs_file_path_list_len = 1
+                                        self.__reg.file_path_list_len -= 1
+                                        insert_index = 0
+                                        file_subtype = 'S'
+                                        is_valid = True
+                                    has_cs_str = True
 
                         self.__reg.original_error_message.append(message)
 
@@ -3880,24 +3897,35 @@ class NmrDpMrSplitter:
                         is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
                         if not is_valid or not self.__reg.has_star_chem_shift:
+
                             _mrPath = self.getNextPath(mrPath, '.cif2str')
                             if self.__reg.c2S.convert(mrPath, _mrPath):
                                 mrPath = _mrPath
-                            _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
-                            if _is_valid:
-                                if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
-                                    del self.__reg.report.input_sources[insert_index]
-                                    input_source = self.__reg.report.input_sources[0]
-                                    input_source.setItemValue('file_name', mrPath)
-                                    input_source.setItemValue('file_type', file_type)
-                                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
-                                    input_source.setItemValue('content_subtype', {'chem_shift': 1})
-                                    self.__reg.cs_file_path_list_len = 1
-                                    self.__reg.file_path_list_len -= 1
-                                    insert_index = 0
-                                    file_subtype = 'S'
-                                    is_valid = True
-                                has_cs_str = True
+
+                            is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
+
+                            if is_valid:
+                                _mrPath = None  # to prevent to remove the file later
+
+                            if not is_valid:
+                                _is_valid, _message = self.__reg.nefT.validate_file(mrPath, 'S')
+
+                                if _is_valid:
+                                    _mrPath = None  # to prevent to remove th file later
+
+                                    if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
+                                        del self.__reg.report.input_sources[insert_index]
+                                        input_source = self.__reg.report.input_sources[0]
+                                        input_source.setItemValue('file_name', mrPath)
+                                        input_source.setItemValue('file_type', file_type)
+                                        input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                                        input_source.setItemValue('content_subtype', {'chem_shift': 1})
+                                        self.__reg.cs_file_path_list_len = 1
+                                        self.__reg.file_path_list_len -= 1
+                                        insert_index = 0
+                                        file_subtype = 'S'
+                                        is_valid = True
+                                    has_cs_str = True
 
                         self.__reg.original_error_message.append(message)
 

@@ -291,9 +291,6 @@ class BmrbAnnTasks:
             # write signature for BMRB's data provenance check in standalone NMR data conversion service (DAOTHER-9785)
             if self.__reg.conversion_server and None not in (self.__secret_key, self.__service_host, self.__reg.entry_id):
 
-                signed_by = get_first_sf_tag(ent_sf, 'Signed_by')
-                signature = get_first_sf_tag(ent_sf, 'Signature')
-
                 try:
 
                     from itsdangerous import URLSafeSerializer  # pylint: disable=import-outside-toplevel

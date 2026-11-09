@@ -3458,7 +3458,7 @@ class NmrDpMrSplitter:
                             has_mr_header = True
 
                         # skip legacy PDB
-                        if startsWithPdbRecord(line):
+                        if startsWithPdbRecord(line, True):
                             has_pdb_format = pdb_record = True
                             continue
                         if pdb_record:

@@ -64,7 +64,7 @@ Db_name:		'DB_NAME';
 Tab_name:		'TAB_NAME';
 Tab_id:			'TAB_ID';
 
-Integer_DA:		('+' | '-')? DECIMAL;
+Integer_DA:		Integer;
 
 Simple_name_DA:		SIMPLE_NAME;
 

@@ -5621,7 +5621,12 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         """ Exit a parse tree produced by CnsMRParser#evaluate_statement.
         """
 
-        if len(self.stackVflc) == 2:
+        len_stack_vflc = len(self.stackVflc)
+
+        if len_stack_vflc == 1:
+            self.evaluate[self.cur_symbol_name] = self.stackVflc[0]
+
+        elif len_stack_vflc == 2:
             self.evaluate[self.cur_symbol_name] = self.stackVflc[0]
 
             if self.cur_vflc_op_code in ('+', '-', '*', '/', '^'):

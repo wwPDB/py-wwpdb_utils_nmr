@@ -77,9 +77,9 @@ Dim_count_DA:		'DIMCOUNT';
 Ppm_DA:			'PPM';
 Hz_DA:			'HZ';
 
-Integer_DA:		('+' | '-')? DECIMAL;
-Float_DA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);
-Real_DA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
+Integer_DA:		Integer;
+Float_DA:		Float;
+Real_DA:		Real;
 
 Simple_name_DA:		SIMPLE_NAME;
 
@@ -154,9 +154,9 @@ Assign:			'Assign';
 Assign1:		'Assign1';
 Assign2:		'Assign2';
 
-Integer_VA:		('+' | '-')? DECIMAL;
-Float_VA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);
-Real_VA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
+Integer_VA:		Integer;
+Float_VA:		Float;
+Real_VA:		Real;
 
 Simple_name_VA:		SIMPLE_NAME;
 
@@ -201,9 +201,9 @@ Number_sign:		'#';
 Percent_sign:		'%';
 Caret:			'^';
 
-Integer_PR:		('+' | '-')? DECIMAL;
-Float_PR:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);
-Real_PR:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
+Integer_PR:		Integer;
+Float_PR:		Float;
+Real_PR:		Real;
 
 Assignments_PR:		'<' SIMPLE_NAME+ '>';
 

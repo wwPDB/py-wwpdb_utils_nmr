@@ -135,7 +135,7 @@ Concat_atom_2:		'ATOM2=' SIMPLE_NAME;
 Concat_res_1:		'RESIDUE1=' ('+' | '-')? DECIMAL;
 Concat_res_2:		'RESIDUE2=' ('+' | '-')? DECIMAL;
 
-Integer_HB:		('+' | '-')? DECIMAL;
+Integer_HB:		Integer;
 Simple_name_HB:		SIMPLE_NAME;
 
 SPACE_HB:		[ \t]+ -> skip;
@@ -167,7 +167,7 @@ LINE_COMMENT_VA:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+
 mode MAP_MODE;
 
 Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
-Integer_MP:		('+' | '-')? DECIMAL;
+Integer_MP:		Integer;
 Simple_name_MP:		SIMPLE_NAME;
 
 Equ_op_MP:		'=';

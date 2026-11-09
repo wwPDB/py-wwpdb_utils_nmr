@@ -207,6 +207,7 @@ noe_annotation:
 */
 dihedral_statement:
 	vector_statement |
+	evaluate_statement |
 	dihedral_assign |
 	dihedral_assign_loop |
 	Nassign Equ_op? Integer |
@@ -307,6 +308,7 @@ anis_assign:
 */
 planar_statement:
 	vector_statement |
+	evaluate_statement |
 	planar_group |
 	planar_group_loop |
 	Initialize |
@@ -324,6 +326,7 @@ group_statement:
 */
 harmonic_statement:
 	vector_statement |
+	evaluate_statement |
 	Exponent Equ_op? Integer |
 	Normal Equ_op? L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op? selection Comma? (Head Equ_op? selection)?) R_paren;
 

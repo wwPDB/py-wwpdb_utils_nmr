@@ -4994,14 +4994,14 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                       f"The symbol {symbol_name!r} is not defined.")
 
                 elif ctx.Double_quote_string(0):
-                    val = str(ctx.Double_quote_string(0)).strip()
+                    val = str(ctx.Double_quote_string(0)).strip('"').strip()
                     if val.isdigit():
                         self.factor['seq_id'] = [int(val)]
                     else:
                         self.factor['atom'] = [None]
                         self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                       "The 'residue' clause has no effect "
-                                      f"because {val:!r} is not integer.")
+                                      f"because {val!r} is not integer.")
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
@@ -5064,7 +5064,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                       f"The symbol {symbol_name!r} is not defined.")
 
                 elif ctx.Double_quote_string(0):
-                    self.factor['comp_id'] = [str(ctx.Double_quote_string(0)).strip().upper()]
+                    self.factor['comp_id'] = [str(ctx.Double_quote_string(0)).strip('"').strip().upper()]
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
@@ -5627,6 +5627,9 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         """
 
         len_stack_vflc = len(self.stackVflc)
+
+        if len_stack_vflc == 0:
+            return
 
         s = self.stackVflc[0]
 

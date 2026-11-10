@@ -409,6 +409,8 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                     return f'H7{atomId[-1]}'
                 if atomId in ('H5', 'H5%', 'H5*', 'H5#'):
                     return 'H7'
+                if atomId.startswith('H5M'):  # 1dgo
+                    return re.sub('H5M', 'H7', atomId, 1)
             elif refCompId in ('DT', 'T') and (atomId.startswith('C5') or atomId == 'CM'):  # 7dju, 7pdu
                 return 'C7'
             elif refCompId in ('DT', 'T') and atomId == 'CH3':
@@ -1087,6 +1089,8 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                     return f'H7{atomId[-1]}'
                 if atomId in ('H5', 'H5%', 'H5*', 'H5#'):
                     return 'H7'
+                if atomId.startswith('H5M'):  # 1dgo
+                    return re.sub('H5M', 'H7', atomId, 1)
             elif refCompId in ('DT', 'T') and (atomId.startswith('C5') or atomId == 'CM'):  # 7dju, 7pdu
                 return 'C7'
             elif refCompId in ('DT', 'T') and atomId == 'CH3':

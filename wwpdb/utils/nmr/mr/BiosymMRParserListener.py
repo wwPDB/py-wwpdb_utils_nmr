@@ -464,8 +464,19 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             atomSel = atomSelection.upper().split(':')
 
             chainId = int(atomSel[0])
-            residue = atomSel[1].split('_')
-            compId = residue[0]
+
+            if '_' in atomSel[1]:
+                residue = atomSel[1].split('_')
+                compId = residue[0]
+
+            else:
+                residue = []
+                for idx, c in enumerate(atomSel[1]):
+                    if c.isdigit():
+                        residue.append(atomSel[1][:idx])
+                        residue.append(atomSel[1][idx:])
+                        break
+                compId = residue[0]
 
             if compId.endswith("5'") or compId.endswith("3'") and (self.polyDeoxyribonucleotide or self.polyRibonucleotide):
                 compId = compId[:-2]
@@ -495,7 +506,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             return chainId, seqId, compId, atomId
 
-        except ValueError:
+        except (ValueError, IndexError):
             return None, None, None, None
 
     def enterDihedral_angle_restraints(self, ctx: BiosymMRParser.Dihedral_angle_restraintsContext

@@ -40,7 +40,7 @@ import os
 import re
 import sys
 from operator import itemgetter
-from typing import Any, IO, List, Optional, Set, Tuple
+from typing import Any, IO, List, Optional, Set, Tuple, Union
 
 import numpy
 
@@ -7112,7 +7112,7 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
 
 
 def getRow(mrSubtype: str, id: int, indexId: int,  # pylint: disable=redefined-builtin
-           combinationId: Optional[int], memberId: Optional[int], code: Optional[str],
+           combinationId: Optional[Union[int, str]], memberId: Optional[int], code: Optional[str],
            listId: int, entryId: str, dstFunc: dict,
            authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict],
            authToInsCode: Optional[dict], offsetHolder: dict,

@@ -47,6 +47,8 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 Ordinal:		DECIMAL '.';
 
+Or:			'+';
+
 /* Insight II distance restraint */
 Restraint:		'restraint' -> pushMode(INSIGHT_II_MODE);
 

@@ -40,7 +40,7 @@ import os
 import re
 import sys
 from operator import itemgetter
-from typing import Any, IO, List, Optional, Set, Tuple
+from typing import Any, IO, List, Optional, Set, Tuple, Union
 
 import numpy
 
@@ -409,6 +409,8 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                     return f'H7{atomId[-1]}'
                 if atomId in ('H5', 'H5%', 'H5*', 'H5#'):
                     return 'H7'
+                if atomId.startswith('H5M'):  # 1dgo
+                    return re.sub('H5M', 'H7', atomId, 1)
             elif refCompId in ('DT', 'T') and (atomId.startswith('C5') or atomId == 'CM'):  # 7dju, 7pdu
                 return 'C7'
             elif refCompId in ('DT', 'T') and atomId == 'CH3':
@@ -1087,6 +1089,8 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                     return f'H7{atomId[-1]}'
                 if atomId in ('H5', 'H5%', 'H5*', 'H5#'):
                     return 'H7'
+                if atomId.startswith('H5M'):  # 1dgo
+                    return re.sub('H5M', 'H7', atomId, 1)
             elif refCompId in ('DT', 'T') and (atomId.startswith('C5') or atomId == 'CM'):  # 7dju, 7pdu
                 return 'C7'
             elif refCompId in ('DT', 'T') and atomId == 'CH3':
@@ -7108,7 +7112,7 @@ def getInsCode(authToInsCode: Optional[dict], offsetHolder: dict, atom: List[dic
 
 
 def getRow(mrSubtype: str, id: int, indexId: int,  # pylint: disable=redefined-builtin
-           combinationId: Optional[int], memberId: Optional[int], code: Optional[str],
+           combinationId: Optional[Union[int, str]], memberId: Optional[int], code: Optional[str],
            listId: int, entryId: str, dstFunc: dict,
            authToStarSeq: Optional[dict], authToOrigSeq: Optional[dict],
            authToInsCode: Optional[dict], offsetHolder: dict,

@@ -3261,7 +3261,8 @@ class NmrDpMrSplitter:
                     with open(src_file, 'r', encoding='utf-8', errors='ignore') as ifh:
                         for line in ifh:
                             if 'Submitted Coord H atom name' in line\
-                               or 'Entry H atom name' in line:
+                               or 'Entry H atom name' in line\
+                               or 'Start of MODEL' in line:
                                 input_source.setItemValue('file_type', 'nm-res-mr')
                                 return self.extractPublicMrFileIntoLegacyMr()
 

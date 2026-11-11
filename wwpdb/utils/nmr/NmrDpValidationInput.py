@@ -216,7 +216,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                 input_source = self._reg.report.input_sources[csListId]
                 input_source_dic = input_source.get()
 
-                file_name = input_source_dic['file_name']
+                file_name = os.path.basename(input_source_dic['file_name'])
                 file_type = input_source_dic['file_type']
 
                 if CS_FILE_PATH_LIST_KEY in self._reg.outputParamDict:
@@ -453,7 +453,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     input_source = self._reg.report.input_sources[file_path_list_len]
                     input_source_dic = input_source.get()
 
-                    file_name = input_source_dic['file_name']
+                    file_name = os.path.basename(input_source_dic['file_name'])
                     file_type = input_source_dic['file_type']
 
                     if MR_FILE_PATH_LIST_KEY in self._reg.outputParamDict:
@@ -749,7 +749,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
             input_source = self._reg.report.input_sources[0]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name'])
             file_type = input_source_dic['file_type']
 
             if is_valid:
@@ -975,7 +975,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
 
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
         content_type = input_source_dic['content_type']
 

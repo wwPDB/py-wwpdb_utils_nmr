@@ -805,7 +805,7 @@ class NmrDpRemediationPk(NmrDpRemediationBase):
             input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             fileListId += 1
@@ -816,7 +816,7 @@ class NmrDpRemediationPk(NmrDpRemediationBase):
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
 
             file_path = ar['file_name']
 

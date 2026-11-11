@@ -1984,10 +1984,10 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                 sf_info['number_of_mapped_to_model'] = 0
                                 sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
 
+                        err_ordinals, warn_ordinals = set(), set()
+
                         if content_subtype != 'chem_shift' or vrpt_cs is None:
                             errors = self._reg.report.error.getInheritableDictBySf(sf_framecode)
-
-                            err_ordinals = set()
 
                             if errors is None:
                                 sf_info['number_of_unparsed_with_error'] = 0
@@ -2013,7 +2013,6 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                         else:
 
-                            warn_ordinals = set()
                             for k, v in warnings.items():
                                 is_err = 'restraint' in content_subtype and k in self._reg.report.warning.mr_err_items
                                 for item in v:

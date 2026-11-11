@@ -557,36 +557,38 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
             has_cs = False
 
-            input_source = self._reg.report.input_sources[0]
-            input_source_dic = input_source.get()
+            if len(self._reg.star_data) > 0:
 
-            file_type = input_source_dic['file_type']
-            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
+                input_source = self._reg.report.input_sources[0]
+                input_source_dic = input_source.get()
 
-            content_subtype = 'chem_shift'
+                file_type = input_source_dic['file_type']
+                file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
-            sf_category = SF_CATEGORIES[file_type][content_subtype]
-            lp_category = LP_CATEGORIES[file_type][content_subtype]
+                content_subtype = 'chem_shift'
 
-            if isinstance(self._reg.star_data[0], pynmrstar.Entry):
+                sf_category = SF_CATEGORIES[file_type][content_subtype]
+                lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-                for sf in self._reg.star_data[0].get_saveframes_by_category(sf_category):
+                if isinstance(self._reg.star_data[0], pynmrstar.Entry):
+
+                    for sf in self._reg.star_data[0].get_saveframes_by_category(sf_category):
+                        try:
+                            lp = sf.get_loop(lp_category)
+                            has_cs = len(lp) > 0
+                            break
+                        except KeyError:
+                            continue
+
+                elif isinstance(self._reg.star_data[0], pynmrstar.Saveframe):
                     try:
-                        lp = sf.get_loop(lp_category)
+                        lp = self._reg.star_data[0].get_loop(lp_category)
                         has_cs = len(lp) > 0
-                        break
                     except KeyError:
-                        continue
+                        pass
 
-            elif isinstance(self._reg.star_data[0], pynmrstar.Saveframe):
-                try:
-                    lp = self._reg.star_data[0].get_loop(lp_category)
-                    has_cs = len(lp) > 0
-                except KeyError:
-                    pass
-
-            else:
-                has_cs = self._reg.star_data[0].category == lp_category and len(self._reg.star_data[0]) > 0
+                else:
+                    has_cs = self._reg.star_data[0].category == lp_category and len(self._reg.star_data[0]) > 0
 
             if not has_cs:
                 err = f"The mandatory loop {lp_category!r} is missing. Deposition of assigned chemical shifts is mandatory. "\

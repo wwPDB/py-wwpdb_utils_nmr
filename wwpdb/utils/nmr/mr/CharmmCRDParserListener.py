@@ -72,15 +72,19 @@ class CharmmCRDParserListener(ParseTreeListener, BaseTopologyParserListener):
         """ Exit a parse tree produced by CharmmCRDParser#charmm_crd.
         """
 
-        if not self.hasPolySeqModel:
+        if not self.hasPolySeqModel and not self.hasCoord:
             return
 
         if len(self.atoms) == 0:
             return
 
         # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
-        chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1
-        chainId = indexToLetter(chainIndex)
+        if self.hasPolySeqModel:
+            chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1
+            chainId = indexToLetter(chainIndex)
+        else:
+            chainIndex = 0
+            chainId = 'A'
 
         terminus = [atom['auth_atom_id'].endswith('T') for atom in self.atoms]
 

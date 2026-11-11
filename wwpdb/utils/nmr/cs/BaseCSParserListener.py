@@ -995,6 +995,7 @@ class BaseCSParserListener():
                         row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
                                        dstFunc, self.entityAssembly,
                                        atom, ambig_code=ambig_code, details=details)
+                        print(row)
 
                     sf['loop'].add_data(row)
 

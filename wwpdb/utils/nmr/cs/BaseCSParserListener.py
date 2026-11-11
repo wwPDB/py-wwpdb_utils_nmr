@@ -734,6 +734,10 @@ class BaseCSParserListener():
                     sf = self.getSf()
                     sf['saveframe'].add_loop(sf['loop'])
 
+            elif not self.hasPolySeq and self.__createSfDict:
+                sf = self.getSf()
+                sf['saveframe'].add_loop(sf['loop'])
+
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
 
@@ -995,7 +999,6 @@ class BaseCSParserListener():
                         row = getCsRow(self.cur_subtype, sf['index_id'], sf['list_id'], self.__entryId,
                                        dstFunc, self.entityAssembly,
                                        atom, ambig_code=ambig_code, details=details)
-                        print(row)
 
                     sf['loop'].add_data(row)
 
@@ -1044,18 +1047,19 @@ class BaseCSParserListener():
             oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1]
             extMonDict3 = {compId: getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1}
 
-        for np in self.polySeq:
-            if len(np['seq_id']) != 1:
-                continue
-            if np['comp_id'][0][0].isalpha() and np['comp_id'][0][0] not in oneLetterCodeSet:
-                oneLetterCodeSet.append(np['comp_id'][0][0])
-                extMonDict3[np['comp_id'][0]] = np['comp_id'][0][0]
-            if 'auth_comp_id' in np and np['auth_comp_id'][0][0].isalpha() and np['auth_comp_id'][0][0] not in oneLetterCodeSet:
-                oneLetterCodeSet.append(np['auth_comp_id'][0][0])
-                extMonDict3[np['comp_id'][0]] = np['auth_comp_id'][0][0]
-            if 'alt_comp_id' in np and np['alt_comp_id'][0][0].isalpha() and np['alt_comp_id'][0][0] not in oneLetterCodeSet:
-                oneLetterCodeSet.append(np['alt_comp_id'][0][0])
-                extMonDict3[np['comp_id'][0]] = np['alt_comp_id'][0][0]
+        if self.hasPolySeq:
+            for np in self.polySeq:
+                if len(np['seq_id']) != 1:
+                    continue
+                if np['comp_id'][0][0].isalpha() and np['comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['comp_id'][0][0]
+                if 'auth_comp_id' in np and np['auth_comp_id'][0][0].isalpha() and np['auth_comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['auth_comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['auth_comp_id'][0][0]
+                if 'alt_comp_id' in np and np['alt_comp_id'][0][0].isalpha() and np['alt_comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['alt_comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['alt_comp_id'][0][0]
 
         hasOneLetterCodeSet = len(oneLetterCodeSet) > 0
         useOneLetterCodeSet = forceOneLetterCodeSet =\
@@ -2239,10 +2243,14 @@ class BaseCSParserListener():
                     ass['auth_chain_id'] = _segId
                 if segId is not None:
                     ass['chain_id'] = segId
+                elif not self.hasPolySeq:
+                    ass['chain_id'] = 'A'
                 if resId is not None:
                     ass['seq_id'] = resId
                 if resName is not None:
                     ass['comp_id'] = resName
+                elif with_compid is not None:
+                    ass['comp_id'] = with_compid
                 ret.append(ass)
             dimId += 1
             return False
@@ -2415,6 +2423,9 @@ class BaseCSParserListener():
         """ A wrapper function for ParserListenerUtil.translateToStdResName().
         """
 
+        if not self.hasPolySeq:
+            return translateToStdResName(compId, ccU=self.ccU)
+
         _compId = compId
         refCompId = None
         for ps in self.polySeq:
@@ -2489,6 +2500,10 @@ class BaseCSParserListener():
                 _seqId = fixedSeqId
 
         updatePolySeqRst(self.polySeqCs, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
+
+        if not self.hasPolySeq:
+            chainAssign.add((refChainId, seqId, compId, True))
+            return chainAssign, asis
 
         types = self.csStat.getTypeOfCompId(compId)
         if all(not t for t in types) or compId in ('MTS', 'ORI'):
@@ -2864,6 +2879,10 @@ class BaseCSParserListener():
                 _seqId = fixedSeqId
 
         updatePolySeqRst(self.polySeqCs, str(refChainId), _seqId, compId, _compId)
+
+        if not self.hasPolySeq:
+            chainAssign.add((refChainId, seqId, compId, True))
+            return chainAssign, asis
 
         types = self.csStat.getTypeOfCompId(compId)
         if all(not t for t in types) or compId in ('MTS', 'ORI'):
@@ -3760,6 +3779,10 @@ class BaseCSParserListener():
             return None
 
         seqKey = (chainId, seqId)
+
+        if not self.hasPolySeq:
+            return seqKey, None
+
         if cifCheck:
             preferAuthSeq = __preferAuthSeq if asis else not __preferAuthSeq
             if preferAuthSeq:

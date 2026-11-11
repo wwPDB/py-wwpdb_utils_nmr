@@ -12,12 +12,13 @@
 class  NmrStar2CSLexer : public antlr4::Lexer {
 public:
   enum {
-    Loop = 1, Stop = 2, Residue_seq_code = 3, Residue_label = 4, Atom_shift_assign_ID = 5, 
-    Residue_author_seq_code = 6, Atom_name = 7, Atom_type = 8, Chem_shift_value = 9, 
-    Chem_shift_value_error = 10, Chem_shift_ambiguity_code = 11, Integer = 12, 
-    Float = 13, SHARP_COMMENT = 14, EXCLM_COMMENT = 15, SMCLN_COMMENT = 16, 
-    Simple_name = 17, Double_quote_string = 18, Single_quote_string = 19, 
-    SPACE = 20, RETURN = 21, SECTION_COMMENT = 22, LINE_COMMENT = 23
+    Data_block = 1, Saveframe_block = 2, Saveframe_category = 3, Save = 4, 
+    Loop = 5, Stop = 6, Residue_seq_code = 7, Residue_label = 8, Atom_shift_assign_ID = 9, 
+    Residue_author_seq_code = 10, Atom_name = 11, Atom_type = 12, Chem_shift_value = 13, 
+    Chem_shift_value_error = 14, Chem_shift_ambiguity_code = 15, Integer = 16, 
+    Float = 17, SHARP_COMMENT = 18, EXCLM_COMMENT = 19, SMCLN_COMMENT = 20, 
+    Simple_name = 21, Double_quote_string = 22, Single_quote_string = 23, 
+    SPACE = 24, RETURN = 25, SECTION_COMMENT = 26, LINE_COMMENT = 27
   };
 
   explicit NmrStar2CSLexer(antlr4::CharStream *input);

@@ -227,6 +227,10 @@ class NmrStar2CSReader:
 
 
 if __name__ == "__main__":
+    reader = NmrStar2CSReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-C_8000228/1_legacy-demo.bmrb')
+
     nmr_poly_seq = [{'chain_id': '1',
                      'seq_id': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
                      'comp_id': ['MET', 'ASP', 'ARG', 'VAL', 'LEU', 'SER', 'ARG', 'ALA', 'ASP', 'LYS', 'GLU', 'ARG']

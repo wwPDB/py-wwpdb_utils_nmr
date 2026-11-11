@@ -16,6 +16,12 @@ limitations under the License.
 
 lexer grammar NmrStar2CSLexer;
 
+Data_block:		'data_' ~[\r\n]+;
+
+Saveframe_block:	'save_' ~[\r\n]+;
+Saveframe_category:	'_Saveframe_category';
+Save:			'save_';
+
 Loop:			'loop_';
 Stop:			'stop_';
 
@@ -28,7 +34,7 @@ Atom_name:		'_Atom_name';
 Atom_type:		'_Atom_type';
 Chem_shift_value:	'_Chem_shift_value';
 Chem_shift_value_error:	'_Chem_shift_value_error';
-Chem_shift_ambiguity_code:	'_Chem_shift_ambiguity_code';
+Chem_shift_ambiguity_code:	'_Chem_shift_ambiguity_' ('code' | 'type');
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);

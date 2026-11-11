@@ -244,7 +244,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                         {'entity_id': item['entity_id'],
                          'auth_asym_id': item[_auth_asym_id].split(',')[0]}
 
-            if nmr_poly_seq is None:
+            if nmr_poly_seq is None and AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict:
 
                 def deal_aux_warn_message(file_name, listener, dry_run=False):
 

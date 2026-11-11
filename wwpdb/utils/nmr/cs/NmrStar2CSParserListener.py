@@ -204,8 +204,8 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
             if 'sequence_code' not in self.__tag_order or 'atom_name' not in self.__tag_order or 'value' not in self.__tag_order:
                 return
 
-            if not self.hasPolySeq:
-                return
+            # if not self.hasPolySeq:
+            #     return
 
             if 'index' in self.__tag_order:
                 index = self.anySelection[self.__tag_order.index('index')]

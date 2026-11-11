@@ -14,6 +14,7 @@ __license__ = "Apache License 2.0"
 __version__ = "5.4.6"
 
 import copy
+import os
 from typing import List, Optional, Tuple, Union
 
 import pynmrstar
@@ -82,7 +83,7 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
             input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             polymer_sequence = input_source_dic['polymer_sequence']
@@ -392,7 +393,7 @@ class NmrDpValidationCoordChk(NmrDpValidationBase):
             input_source = self._reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             polymer_sequence = input_source_dic['polymer_sequence']

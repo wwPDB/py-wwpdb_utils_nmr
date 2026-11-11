@@ -2683,7 +2683,7 @@ class NmrDpMrSplitter:
 
             input_source_dic = self.__reg.report.input_sources[fileListId].get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
@@ -2794,7 +2794,7 @@ class NmrDpMrSplitter:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             fileListId += 1
@@ -2807,7 +2807,7 @@ class NmrDpMrSplitter:
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
@@ -2889,7 +2889,7 @@ class NmrDpMrSplitter:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             fileListId += 1
@@ -2904,7 +2904,7 @@ class NmrDpMrSplitter:
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
@@ -3247,7 +3247,7 @@ class NmrDpMrSplitter:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             fileListId += 1
@@ -3271,7 +3271,7 @@ class NmrDpMrSplitter:
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
@@ -5566,7 +5566,7 @@ class NmrDpMrSplitter:
                 input_source = self.__reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
-                file_name = input_source_dic['file_name']
+                file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
                 file_type = input_source_dic['file_type']
                 content_type = input_source_dic['content_type']
 

@@ -120,10 +120,12 @@ Slash_quote_string:	'/' ~["\r\n]* '/';
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
+fragment H_NAME:	[ABCDEGHMNOPQRZ*%#+'"0-9];
+fragment NON_H_NAME:	~[ABCDEGHMNOPQRZ*%#+'"0-9 \t\r\n];
 
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
-COMMENT:		'#' (~'H' | 'H' ('EL' | 'AI' | 'NI')) '#'* -> channel(HIDDEN);
+COMMENT:		'#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) '#'* -> channel(HIDDEN);
 
 Simple_name:		SIMPLE_NAME;
 Simple_names:		(WILDCARD SIMPLE_NAME? | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
@@ -159,7 +161,7 @@ Equ_op:			'=';
 
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' (~'H' | 'H' ('EL' | 'AI' | 'NI')) | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
+SECTION_COMMENT:	('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
 
 mode STRUCT_MODE;

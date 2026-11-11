@@ -464,7 +464,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                 original_file_name = None
                 if 'original_file_name' in input_source_dic:
                     if input_source_dic['original_file_name'] is not None:
-                        original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                        original_file_name = input_source_dic['original_file_name']
                 if original_file_name in EMPTY_VALUE:
                     original_file_name = file_name
 
@@ -561,7 +561,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
             input_source_dic = input_source.get()
 
             file_type = input_source_dic['file_type']
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
             content_subtype = 'chem_shift'
 
@@ -895,12 +895,12 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
             file_path = self.testPathWithSuffix(file_path, '-corrected')
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
             if original_file_name in EMPTY_VALUE:
                 original_file_name = file_name
 

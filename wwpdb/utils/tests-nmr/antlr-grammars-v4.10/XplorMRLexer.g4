@@ -663,8 +663,10 @@ Double_quote_string:	'"' ~["\r\n]* '"';
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
+fragment H_NAME:	[ABCDEGHMNOPQRZ*%#+'"0-9];
+fragment NON_H_NAME:	~[ABCDEGHMNOPQRZ*%#+'"0-9 \t\r\n];
 
-SHARP_COMMENT:		'#'+ (~'H' | 'H' ('EL' | 'AI' | 'NI')) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+SHARP_COMMENT:		'#'+ (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
@@ -701,8 +703,8 @@ Symbol_name:		SYMBOL_NAME;
 
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' (~'H' | 'H' ('EL' | 'AI' | 'NI')) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' (~'H' | 'H' ('EL' | 'AI' | 'NI')) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
 SET_VARIABLE:		Set ([\r\n]*)? ~[\r\n]* ([\r\n]*)? End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag

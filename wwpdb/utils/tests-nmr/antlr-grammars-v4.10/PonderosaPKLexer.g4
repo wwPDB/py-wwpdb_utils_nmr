@@ -54,7 +54,7 @@ LINE_COMMENT:		(('#' (' ' | ALPHA_NUM)) | COMMENT_START_CHAR | COMMENT_START_CHA
 
 mode NT_MODE;
 
-Integer_NT:		('+' | '-')? DECIMAL;
+Integer_NT:		Integer;
 
 Simple_name_NT:		SIMPLE_NAME;
 
@@ -63,7 +63,7 @@ RETURN_NT:		[\r\n]+ -> popMode;
 
 mode AO_MODE;
 
-Integer_AO:		('+' | '-')? DECIMAL;
+Integer_AO:		Integer;
 
 Simple_name_AO:		SIMPLE_NAME;
 

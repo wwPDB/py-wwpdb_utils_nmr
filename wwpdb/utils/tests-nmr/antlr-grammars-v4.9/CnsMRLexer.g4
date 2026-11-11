@@ -426,13 +426,13 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 
-SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+SHARP_COMMENT:		'#'+ (~[Hh] | H (E L | A I | N I)) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
 Simple_name:		SIMPLE_NAME;
-Simple_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+ (SIMPLE_NAME | WILDCARD)*) POST_WC_CHAR*;
-Integers:		(WILDCARD | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
+Simple_names:		(WILDCARD SIMPLE_NAME? | WILDCARD* SIMPLE_NAME WILDCARD+ (SIMPLE_NAME | WILDCARD)*) POST_WC_CHAR*;
+Integers:		(WILDCARD Integer? | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
 
 /* Wildcard - Syntax
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
@@ -463,8 +463,8 @@ Symbol_name:		SYMBOL_NAME;
 
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | R E M A R K S?) ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | R E M A R K S?) ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' (~[Hh] | H (E L | A I | N I)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | R E M A R K S?) ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		('#' (~[Hh] | H (E L | A I | N I)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | R E M A R K S?) ~[\r\n]* -> channel(HIDDEN);
 SET_VARIABLE:		Set ([\r\n]*)? ~[\r\n]* ([\r\n]*)? End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag
@@ -532,8 +532,8 @@ Div_op_VE:		'/';
 Exp_op_VE:		('^' | '*' '*');
 Comma_VE:		',';
 
-Integer_VE:		DECIMAL;
-Real_VE:		(DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
+Integer_VE:		('+' | '-')? DECIMAL;
+Real_VE:		Real;
 
 Atom_properties_VE:	(B | B C O M P? | C H A R G? E? | C H E M I? C? A? L? | D X | D Y | D Z | F B E T A? | H A R M O? N? I? C? S? | M A S S | N A M E | Q | Q C O M P? | R E F X | R E F Y | R E F Z | R E S I D? U? E? | R E S N A? M? E? | R M S D | S E G I D? E? N? T? I? F? I? E? R? | S T O R E '1' | S T O R E '2' | S T O R E '3' | S T O R E '4' | S T O R E '5' | S T O R E '6' | S T O R E '7' | S T O R E '8' | S T O R E '9' | P S E U D? O? | V X | V Y | V Z | X | X C O M P? | Y | Y C O M P? | Z | Z C O M P?);
 
@@ -595,8 +595,8 @@ L_paren_CF:		'(';
 R_paren_CF:		')' -> popMode;
 In_CF:			I N;
 
-Integer_CF:		'-'? DECIMAL;
-Real_CF:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
+Integer_CF:		('+' | '-')? DECIMAL;
+Real_CF:		Real;
 Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;
 

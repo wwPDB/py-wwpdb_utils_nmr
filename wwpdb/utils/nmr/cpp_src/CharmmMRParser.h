@@ -1048,10 +1048,10 @@ public:
     antlr4::tree::TerminalNode *Recall();
     antlr4::tree::TerminalNode *ByNumber();
     antlr4::tree::TerminalNode *Residue();
-    antlr4::tree::TerminalNode *Resname();
-    antlr4::tree::TerminalNode *SegIdentifier();
     std::vector<antlr4::tree::TerminalNode *> Double_quote_string();
     antlr4::tree::TerminalNode* Double_quote_string(size_t i);
+    antlr4::tree::TerminalNode *Resname();
+    antlr4::tree::TerminalNode *SegIdentifier();
     antlr4::tree::TerminalNode *ISeg();
     antlr4::tree::TerminalNode *IRes();
     antlr4::tree::TerminalNode *IGroup();

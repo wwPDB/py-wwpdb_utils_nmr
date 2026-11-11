@@ -198,13 +198,15 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if dstFunc is None:
                 return
 
+            hasOr = bool(ctx.Or(0))
+
             memberId = '.'
             if self.createSfDict:
                 sf = self.getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                      self.csStat, self.originalFileName),
                                 potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc))
                 sf['id'] += 1
-                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 or hasOr else '.'
 
                 if memberLogicCode == 'OR':
                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
@@ -241,7 +243,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             _atom1, _atom2 = atom1, atom2
                     sf['index_id'] += 1
                     row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                 '.', memberId, memberLogicCode,
+                                 1 if hasOr else '.', memberId, memberLogicCode,
                                  sf['list_id'], self.entryId, dstFunc,
                                  self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
                                  atom1, atom2, asis1=asis1, asis2=asis2)
@@ -262,6 +264,82 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         upperLimit = float(dstFunc['upper_limit'])
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
+
+            if hasOr:
+                comb_idx = 0
+
+                while bool(ctx.Or(comb_idx)):
+
+                    self.atomSelectionSet.clear()
+
+                    comb_idx += 1
+
+                    chainId1, seqId1, compId1, atomId1 =\
+                        self.__splitAtomSelectionExpr(str(ctx.Atom_selection(comb_idx * 2)))
+                    chainId2, seqId2, compId2, atomId2 =\
+                        self.__splitAtomSelectionExpr(str(ctx.Atom_selection(comb_idx * 2 + 1)))
+
+                    if None in (atomId1, atomId2):
+                        continue
+
+                    chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                     get_rep_atom_id(atomId1))
+                    chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                     get_rep_atom_id(atomId2))
+
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
+                        continue
+
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        continue
+
+                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                          self.atomSelectionSet[1]):
+                        atoms = [atom1, atom2]
+                        if isIdenticalRestraint(atoms, self.nefT):
+                            continue
+                        if self.createSfDict and isinstance(memberId, int):
+                            star_atom1 =\
+                                getStarAtom(self.authToStarSeq, self.authToOrigSeq, self.offsetHolder, copy.copy(atom1))
+                            star_atom2 =\
+                                getStarAtom(self.authToStarSeq, self.authToOrigSeq, self.offsetHolder, copy.copy(atom2))
+                            if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.nefT):
+                                continue
+                        if self.debug:
+                            print(f"subtype={self.cur_subtype} id={self.distRestraints} "
+                                  f"atom{comb_idx * 2 + 1}={atom1} atom{(comb_idx + 1) * 2}={atom2} {dstFunc}")
+                        if self.createSfDict and sf is not None:
+                            if isinstance(memberId, int):
+                                if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.csStat)\
+                                   or isAmbigAtomSelection([_atom2, atom2], self.csStat):
+                                    memberId += 1
+                                    _atom1, _atom2 = atom1, atom2
+                            sf['index_id'] += 1
+                            row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                         comb_idx + 1, memberId, memberLogicCode,
+                                         sf['list_id'], self.entryId, dstFunc,
+                                         self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                         atom1, atom2, asis1=asis1, asis2=asis2)
+                            sf['loop'].add_data(row)
+
+                            if sf['constraint_subsubtype'] == 'ambi':
+                                continue
+
+                            if self.cur_constraint_type is not None and self.cur_constraint_type.startswith('ambiguous'):
+                                sf['constraint_subsubtype'] = 'ambi'
+
+                            if memberLogicCode == 'OR'\
+                               and (isAmbigAtomSelection(self.atomSelectionSet[0], self.csStat)
+                                    or isAmbigAtomSelection(self.atomSelectionSet[1], self.csStat)):
+                                sf['constraint_subsubtype'] = 'ambi'
+
+                            if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                                upperLimit = float(dstFunc['upper_limit'])
+                                if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                    sf['constraint_subsubtype'] = 'ambi'
 
             if self.createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
                 sf['loop'].data[-1] = resetMemberId(self.cur_subtype, sf['loop'].data[-1])
@@ -361,13 +439,15 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if dstFunc is None:
                 return
 
+            hasOr = bool(ctx.Or(0))
+
             memberId = '.'
             if self.createSfDict:
                 sf = self.getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
                                                                      self.csStat, self.originalFileName),
                                 potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc))
                 sf['id'] += 1
-                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 else '.'
+                memberLogicCode = 'OR' if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1 or hasOr else '.'
 
                 if memberLogicCode == 'OR':
                     if len(self.atomSelectionSet[0]) * len(self.atomSelectionSet[1]) > 1\
@@ -404,7 +484,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                             _atom1, _atom2 = atom1, atom2
                     sf['index_id'] += 1
                     row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                 '.', memberId, memberLogicCode,
+                                 1 if hasOr else '.', memberId, memberLogicCode,
                                  sf['list_id'], self.entryId, dstFunc,
                                  self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
                                  atom1, atom2, asis1=asis1, asis2=asis2)
@@ -425,6 +505,85 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         upperLimit = float(dstFunc['upper_limit'])
                         if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
                             sf['constraint_subsubtype'] = 'ambi'
+
+            if hasOr:
+                comb_idx = 0
+
+                while bool(ctx.Or(comb_idx)):
+
+                    self.atomSelectionSet.clear()
+
+                    comb_idx += 1
+
+                    chainId1, seqId1, compId1, atomId1 =\
+                        self.__splitAtomSelectionExpr(str(ctx.Atom_selection(comb_idx * 2)))
+                    chainId2, seqId2, compId2, atomId2 =\
+                        self.__splitAtomSelectionExpr(str(ctx.Atom_selection(comb_idx * 2 + 1)))
+
+                    if None in (atomId1, atomId2):
+                        continue
+
+                    chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1,
+                                                                                     get_rep_atom_id(atomId1))
+                    chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2,
+                                                                                     get_rep_atom_id(atomId2))
+
+                    if 0 in (len(chainAssign1), len(chainAssign2)):
+                        continue
+
+                    self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+                    self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+                    if len(self.atomSelectionSet) < 2:
+                        continue
+
+                    for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                          self.atomSelectionSet[1]):
+                        atoms = [atom1, atom2]
+                        if isIdenticalRestraint(atoms, self.nefT):
+                            continue
+                        if self.createSfDict and isinstance(memberId, int):
+                            star_atom1 =\
+                                getStarAtom(self.authToStarSeq, self.authToOrigSeq, self.offsetHolder, copy.copy(atom1))
+                            star_atom2 =\
+                                getStarAtom(self.authToStarSeq, self.authToOrigSeq, self.offsetHolder, copy.copy(atom2))
+                            if None in (star_atom1, star_atom2) or isIdenticalRestraint([star_atom1, star_atom2], self.nefT):
+                                continue
+                        if self.debug:
+                            print(f"subtype={self.cur_subtype} id={self.distRestraints} "
+                                  f"atom{comb_idx * 2 + 1}={atom1} atom{(comb_idx + 1) * 2}={atom2} {dstFunc}")
+                        if self.createSfDict and sf is not None:
+                            if isinstance(memberId, int):
+                                if _atom1 is None or isAmbigAtomSelection([_atom1, atom1], self.csStat)\
+                                   or isAmbigAtomSelection([_atom2, atom2], self.csStat):
+                                    memberId += 1
+                                    _atom1, _atom2 = atom1, atom2
+                            sf['index_id'] += 1
+                            row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                         comb_idx + 1, memberId, memberLogicCode,
+                                         sf['list_id'], self.entryId, dstFunc,
+                                         self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                         atom1, atom2, asis1=asis1, asis2=asis2)
+                            sf['loop'].add_data(row)
+
+                            if sf['constraint_subsubtype'] == 'ambi':
+                                continue
+
+                            if self.cur_constraint_type is not None and self.cur_constraint_type.startswith('ambiguous'):
+                                sf['constraint_subsubtype'] = 'ambi'
+
+                            if memberLogicCode == 'OR'\
+                               and (isAmbigAtomSelection(self.atomSelectionSet[0], self.csStat)
+                                    or isAmbigAtomSelection(self.atomSelectionSet[1], self.csStat)):
+                                sf['constraint_subsubtype'] = 'ambi'
+
+                            if 'upper_limit' in dstFunc and dstFunc['upper_limit'] is not None:
+                                upperLimit = float(dstFunc['upper_limit'])
+                                if upperLimit <= DIST_AMBIG_LOW or upperLimit >= DIST_AMBIG_UP:
+                                    sf['constraint_subsubtype'] = 'ambi'
+
+            if self.createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
+                sf['loop'].data[-1] = resetMemberId(self.cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()
@@ -464,8 +623,19 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             atomSel = atomSelection.upper().split(':')
 
             chainId = int(atomSel[0])
-            residue = atomSel[1].split('_')
-            compId = residue[0]
+
+            if '_' in atomSel[1]:
+                residue = atomSel[1].split('_')
+                compId = residue[0]
+
+            else:
+                residue = []
+                for idx, c in enumerate(atomSel[1]):
+                    if c.isdigit():
+                        residue.append(atomSel[1][:idx])
+                        residue.append(atomSel[1][idx:])
+                        break
+                compId = residue[0]
 
             if compId.endswith("5'") or compId.endswith("3'") and (self.polyDeoxyribonucleotide or self.polyRibonucleotide):
                 compId = compId[:-2]
@@ -495,7 +665,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             return chainId, seqId, compId, atomId
 
-        except ValueError:
+        except (ValueError, IndexError):
             return None, None, None, None
 
     def enterDihedral_angle_restraints(self, ctx: BiosymMRParser.Dihedral_angle_restraintsContext

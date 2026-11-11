@@ -280,6 +280,36 @@ class XplorMRReader:
 
 
 if __name__ == "__main__":
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1zec/1zec-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/1zec/1zec.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2k5t/2k5t-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/2k5t/2k5t.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2m54/2m54-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2m54/2m54.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2f1q/2f1q-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2f1q/2f1q.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2v93/2v93-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2v93/2v93.cif')
+
+    reader = XplorMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1aoy/1aoy-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/1aoy/1aoy.cif')
+
     reader = XplorMRReader(False)
     reader.setDebugMode(False)
     reader_listener, _, _ =\

@@ -341,11 +341,11 @@ fragment DECIMAL:	DEC_DIGIT+;
 
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
-COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
+COMMENT:		('#' (~[Hh] | H (E L | A I | N I)) '#'* | '!'+) -> mode(COMMENT_MODE);
 
 Simple_name:		SIMPLE_NAME;
-Simple_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
-Integers:		(WILDCARD | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
+Simple_names:		(WILDCARD SIMPLE_NAME? | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
+Integers:		(WILDCARD Integer? | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
 //Class_name:		SIMPLE_NAME;
 //Class_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
 //Segment_name:		SIMPLE_NAME;
@@ -387,15 +387,15 @@ Symbol_name:		SYMBOL_NAME;
 SPACE:			[ \t\r\n]+ -> skip;
 CONTINUE:		'-'+ SPACE -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | R E M A R K S?) ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | R E M A R K S?) ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' (~[Hh] | H (E L | A I | N I)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | R E M A R K S?) ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		('#' (~[Hh] | H (E L | A I | N I)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | R E M A R K S?) ~[\r\n]* -> channel(HIDDEN);
 //SET_VARIABLE:		Set ([\r\n]*)? ~[\r\n]* ([\r\n]*)? End -> channel(HIDDEN);
 
 mode VECTOR_EXPR_MODE;
 
 Equ_op_VE:		'=';
 
-Integer_VE:		Integer;
+Integer_VE:		('+' | '-')? DECIMAL;
 Real_VE:		Real;
 Simple_name_VE:		SIMPLE_NAME;
 

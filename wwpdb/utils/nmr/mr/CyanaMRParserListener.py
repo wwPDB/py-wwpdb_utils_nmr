@@ -6329,6 +6329,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
+            if len(self.genSimpleNameSelection) == 0:
+                return
+
             self.fchiralRestraints += 1
 
             seqId, _ = self.genResNumSelection[0]

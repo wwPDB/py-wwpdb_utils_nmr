@@ -964,6 +964,13 @@ XPLOR_ORIGIN_AXIS_COLS = (0, 1, 2, 3)
 
 XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'NAQ', 'NS1', 'ON', 'OS', 'OS1', 'OAH', 'SLC', 'GD')
 
+# Never add common atom names such as 'O1' or 'O2'. The XPLOR-NIH/CNS listeners compare only the first two letters of
+# an atom name against this tuple, and real atoms (O1P/O2P, O2', pyrimidine O2, lipid O1/O2) would then be taken for
+# nitroxide spin labels. Adding 'O2' (2v93) made the 6pts remediation select whole residues: 4x the restraint rows and
+# 3612 s instead of 72 s of CPU for nmr-cs-mr-merge. Use a pre-existing name such as 'ON' in corrected restraints.
+assert not any(name[:2] in ('O1', 'O2') for name in XPLOR_NITROXIDE_NAMES), (
+    'XPLOR_NITROXIDE_NAMES must not contain common atom names such as O1 or O2')
+
 NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 'THR', 'HIS',
                                'ILE', 'LEU', 'MET', 'R1A', '3X9')
 

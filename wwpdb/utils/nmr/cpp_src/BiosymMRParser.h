@@ -14,10 +14,10 @@ public:
   enum {
     Integer = 1, Float = 2, Float_DecimalComma = 3, Real = 4, SHARP_COMMENT = 5, 
     EXCLM_COMMENT = 6, SMCLN_COMMENT = 7, Chiral_code = 8, Atom_selection = 9, 
-    Ordinal = 10, Restraint = 11, SPACE = 12, ENCLOSE_COMMENT = 13, SECTION_COMMENT = 14, 
-    LINE_COMMENT = 15, Double_quote_string = 16, Create = 17, Function = 18, 
-    Target = 19, Distance = 20, Quadratic = 21, Flat_bottomed = 22, Relative = 23, 
-    SPACE_II = 24, RETURN_II = 25
+    Ordinal = 10, Or = 11, Restraint = 12, SPACE = 13, ENCLOSE_COMMENT = 14, 
+    SECTION_COMMENT = 15, LINE_COMMENT = 16, Double_quote_string = 17, Create = 18, 
+    Function = 19, Target = 20, Distance = 21, Quadratic = 22, Flat_bottomed = 23, 
+    Relative = 24, SPACE_II = 25, RETURN_II = 26
   };
 
   enum {
@@ -131,6 +131,8 @@ public:
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
     antlr4::tree::TerminalNode *Ordinal();
+    std::vector<antlr4::tree::TerminalNode *> Or();
+    antlr4::tree::TerminalNode* Or(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -162,6 +164,8 @@ public:
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
     antlr4::tree::TerminalNode *Ordinal();
+    std::vector<antlr4::tree::TerminalNode *> Or();
+    antlr4::tree::TerminalNode* Or(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -193,6 +197,8 @@ public:
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
     antlr4::tree::TerminalNode *Ordinal();
+    std::vector<antlr4::tree::TerminalNode *> Or();
+    antlr4::tree::TerminalNode* Or(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

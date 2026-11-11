@@ -445,6 +445,13 @@ class BaseTopologyParserListener():
                             if 'atom_type' in atomNum:
                                 del atomNum['atom_type']
 
+            if not self.hasPolySeqModel:
+                _polySeqPrmTop = copy.copy(self.polySeqPrmTop)
+                for ps_top in _polySeqPrmTop:
+                    if len(ps_top['seq_id']) == 0:
+                        self.polySeqPrmTop.remove(ps_top)
+                return
+
             polySeqModel = copy.copy(self.polySeqModel)
             if self.__hasBranchedModel:
                 polySeqModel.extend(self.__branchedModel)

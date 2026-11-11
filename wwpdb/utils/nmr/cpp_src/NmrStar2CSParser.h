@@ -12,12 +12,13 @@
 class  NmrStar2CSParser : public antlr4::Parser {
 public:
   enum {
-    Loop = 1, Stop = 2, Residue_seq_code = 3, Residue_label = 4, Atom_shift_assign_ID = 5, 
-    Residue_author_seq_code = 6, Atom_name = 7, Atom_type = 8, Chem_shift_value = 9, 
-    Chem_shift_value_error = 10, Chem_shift_ambiguity_code = 11, Integer = 12, 
-    Float = 13, SHARP_COMMENT = 14, EXCLM_COMMENT = 15, SMCLN_COMMENT = 16, 
-    Simple_name = 17, Double_quote_string = 18, Single_quote_string = 19, 
-    SPACE = 20, RETURN = 21, SECTION_COMMENT = 22, LINE_COMMENT = 23
+    Data_block = 1, Saveframe_block = 2, Saveframe_category = 3, Save = 4, 
+    Loop = 5, Stop = 6, Residue_seq_code = 7, Residue_label = 8, Atom_shift_assign_ID = 9, 
+    Residue_author_seq_code = 10, Atom_name = 11, Atom_type = 12, Chem_shift_value = 13, 
+    Chem_shift_value_error = 14, Chem_shift_ambiguity_code = 15, Integer = 16, 
+    Float = 17, SHARP_COMMENT = 18, EXCLM_COMMENT = 19, SMCLN_COMMENT = 20, 
+    Simple_name = 21, Double_quote_string = 22, Single_quote_string = 23, 
+    SPACE = 24, RETURN = 25, SECTION_COMMENT = 26, LINE_COMMENT = 27
   };
 
   enum {
@@ -56,6 +57,7 @@ public:
     Nmrstar2_csContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EOF();
+    antlr4::tree::TerminalNode *Data_block();
     std::vector<antlr4::tree::TerminalNode *> RETURN();
     antlr4::tree::TerminalNode* RETURN(size_t i);
     std::vector<Seq_loopContext *> seq_loop();
@@ -75,13 +77,17 @@ public:
     Seq_loopContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Loop();
+    antlr4::tree::TerminalNode *Stop();
+    antlr4::tree::TerminalNode *Saveframe_block();
     std::vector<antlr4::tree::TerminalNode *> RETURN();
     antlr4::tree::TerminalNode* RETURN(size_t i);
-    antlr4::tree::TerminalNode *Stop();
+    antlr4::tree::TerminalNode *Saveframe_category();
+    antlr4::tree::TerminalNode *Simple_name();
     std::vector<Seq_tagsContext *> seq_tags();
     Seq_tagsContext* seq_tags(size_t i);
     std::vector<Seq_dataContext *> seq_data();
     Seq_dataContext* seq_data(size_t i);
+    antlr4::tree::TerminalNode *Save();
     antlr4::tree::TerminalNode *EOF();
 
 
@@ -126,13 +132,17 @@ public:
     Cs_loopContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Loop();
+    antlr4::tree::TerminalNode *Stop();
+    antlr4::tree::TerminalNode *Saveframe_block();
     std::vector<antlr4::tree::TerminalNode *> RETURN();
     antlr4::tree::TerminalNode* RETURN(size_t i);
-    antlr4::tree::TerminalNode *Stop();
+    antlr4::tree::TerminalNode *Saveframe_category();
+    antlr4::tree::TerminalNode *Simple_name();
     std::vector<Cs_tagsContext *> cs_tags();
     Cs_tagsContext* cs_tags(size_t i);
     std::vector<Cs_dataContext *> cs_data();
     Cs_dataContext* cs_data(size_t i);
+    antlr4::tree::TerminalNode *Save();
     antlr4::tree::TerminalNode *EOF();
 
 

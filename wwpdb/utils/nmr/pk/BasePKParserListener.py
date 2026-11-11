@@ -8195,6 +8195,8 @@ class BasePKParserListener():
                     ass['seq_id'] = resId
                 if resName is not None:
                     ass['comp_id'] = resName
+                elif with_compid is not None:
+                    ass['comp_id'] = with_compid
                 ret.append(ass)
             dimId += 1
             return False

@@ -214,7 +214,7 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         """ Exit a parse tree produced by AmberPTParser#amber_pt.
         """
 
-        if not self.hasPolySeqModel:
+        if not self.hasPolySeqModel and not self.hasCoord:
             return
 
         if None in (self.__residueLabel, self.__residuePointer, self.__atomName, self.__amberAtomType):
@@ -228,8 +228,12 @@ class AmberPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         residuePointer2.append(self.__residuePointer[-1] + 1000)
 
         # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
-        chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1
-        chainId = indexToLetter(chainIndex)
+        if self.hasPolySeqModel:
+            chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1
+            chainId = indexToLetter(chainIndex)
+        else:
+            chainIndex = 0
+            chainId = 'A'
 
         terminus = [atomName.endswith('T') for atomName in self.__atomName]
 

@@ -6709,6 +6709,7 @@ def getSaveframe(mrSubtype: str, sf_framecode: str,
         elif tag_item_name == 'Entry_ID' and entryId is not None:
             sf.add_tag(tag_item_name, entryId)
         elif tag_item_name == 'Data_file_name' and fileName is not None:
+            fileName = os.path.basename(fileName)
             if fileName.endswith('-corrected'):
                 sf.add_tag(tag_item_name, re.sub(r'-corrected$', '', fileName))
             elif '-ignored-as' in fileName:

@@ -1779,7 +1779,7 @@ class NmrDpUtility:
 
                         cs = _cs
 
-                    input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(cs)))
+                    input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', cs))
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-chemical-shifts')
                     input_source.setItemValue('ignore_error', False)
@@ -1824,7 +1824,7 @@ class NmrDpUtility:
 
                         cs['file_name'] = _cs
 
-                    input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(cs['file_name'])))
+                    input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', cs['file_name']))
                     input_source.setItemValue('file_type', file_type)
                     input_source.setItemValue('content_type', 'nmr-chemical-shifts')
                     if 'original_file_name' in cs:
@@ -1858,7 +1858,7 @@ class NmrDpUtility:
 
                             mr = _mr
 
-                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(mr)))
+                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', mr))
                         input_source.setItemValue('file_type', file_type)
                         input_source.setItemValue('content_type', 'nmr-restraints')
                         input_source.setItemValue('ignore_error', False)
@@ -1877,7 +1877,7 @@ class NmrDpUtility:
 
                             mr['file_name'] = _mr
 
-                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', os.path.basename(mr['file_name'])))
+                        input_source.setItemValue('file_name', re.sub(r'\.cif2str$', '', mr['file_name']))
                         input_source.setItemValue('file_type', file_type)
                         input_source.setItemValue('content_type', 'nmr-restraints')
                         if 'original_file_name' in mr:
@@ -2043,7 +2043,7 @@ class NmrDpUtility:
                                 convert_codec(arPath, _arPath, codec, 'utf-8')
                                 arPath = _arPath
 
-                    input_source.setItemValue('file_name', os.path.basename(arPath))
+                    input_source.setItemValue('file_name', arPath)
                     input_source.setItemValue('file_type', ar['file_type'])
                     input_source.setItemValue('content_type',
                                               'nmr-restraints' if not ar['file_type'].startswith('nm-pea') else 'nmr-peaks')
@@ -2065,7 +2065,7 @@ class NmrDpUtility:
 
                     acsPath = acs['file_name']
 
-                    input_source.setItemValue('file_name', os.path.basename(acsPath))
+                    input_source.setItemValue('file_name', acsPath)
                     input_source.setItemValue('file_type', acs['file_type'])
                     input_source.setItemValue('content_type', 'nmr-chemical-shifts')
                     if 'original_file_name' in acs:
@@ -2092,7 +2092,7 @@ class NmrDpUtility:
             file_type = 'nef' if 'nef' in self.__reg.op and 'str2nef' not in self.__reg.op else 'nmr-star'
             content_type = CONTENT_TYPE[file_type]
 
-            input_source.setItemValue('file_name', os.path.basename(srcPath))
+            input_source.setItemValue('file_name', srcPath)
             input_source.setItemValue('file_type', file_type)
             input_source.setItemValue('content_type', content_type)
             if srcName is not None:
@@ -2326,7 +2326,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -2555,7 +2555,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -2850,7 +2850,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
@@ -3870,7 +3870,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             content_subtype = 'poly_seq'
@@ -4948,7 +4948,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
@@ -5011,7 +5011,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -5058,7 +5058,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -5117,7 +5117,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_type'] == 'nmr-restraints' or input_source_dic['content_subtype'] is None:
@@ -5171,7 +5171,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -5232,7 +5232,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[fileListId]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star':
@@ -5281,7 +5281,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -5335,7 +5335,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if file_type not in ITEM_NAMES_IN_CS_LOOP:
@@ -5859,7 +5859,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -6211,7 +6211,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[fileListId]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star':
@@ -6558,7 +6558,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -6743,7 +6743,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -7049,7 +7049,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             # DAOTHER-9405
@@ -7396,7 +7396,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -7927,7 +7927,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if file_type == 'nef' or input_source_dic['content_subtype'] is None:
@@ -8485,7 +8485,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -8534,7 +8534,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -8789,7 +8789,7 @@ class NmrDpUtility:
             if file_type != 'nmr-star':
                 return True
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
             if input_source_dic['content_subtype'] is None:
                 return True
@@ -8812,7 +8812,7 @@ class NmrDpUtility:
                         original_file_name = file_name.replace('-corrected', '')
                         if 'original_file_name' in input_source_dic:
                             if input_source_dic['original_file_name'] is not None:
-                                original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                                original_file_name = input_source_dic['original_file_name']
 
                     if self.__reg.dpV.validateStrMr(fileListId, file_type, original_file_name, content_subtype,
                                                     sf, sf_framecode, lp_category):
@@ -8875,7 +8875,7 @@ class NmrDpUtility:
             if file_type != 'nmr-star':
                 return True
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
             if input_source_dic['content_subtype'] is None:
                 return True
@@ -8915,7 +8915,7 @@ class NmrDpUtility:
             if file_type != 'nmr-star':
                 continue
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
             if file_name is None:
                 continue
@@ -8923,7 +8923,7 @@ class NmrDpUtility:
             original_file_name = file_name.replace('-corrected', '')
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
 
             if input_source_dic['content_subtype'] is None:
                 continue
@@ -9098,7 +9098,7 @@ class NmrDpUtility:
             if file_type != 'nmr-star':
                 continue
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
             if input_source_dic['content_subtype'] is None:
                 continue
@@ -9153,7 +9153,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -9234,7 +9234,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         content_subtype = 'spectral_peak'
@@ -9410,7 +9410,7 @@ class NmrDpUtility:
 
             input_source = self.__reg.report.input_sources[-1]
 
-            input_source.setItemValue('file_name', os.path.basename(self.__reg.cifPath))
+            input_source.setItemValue('file_name', self.__reg.cifPath)
             input_source.setItemValue('file_type', file_type)
             input_source.setItemValue('content_type', content_type)
             input_source.setItemValue('ignore_error', False)
@@ -13136,7 +13136,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if input_source_dic['content_subtype'] is None:
@@ -13337,7 +13337,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             if input_source_dic['content_subtype'] is None:
@@ -13408,7 +13408,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
         warnings = self.__reg.report.warning.getValueList('skipped_saveframe_category', file_name)
 
@@ -13476,7 +13476,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
         warnings = self.__reg.report.warning.getValueList('skipped_loop_category', file_name)
 
@@ -13557,7 +13557,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if self.__reg.retain_original:
@@ -14680,7 +14680,7 @@ class NmrDpUtility:
                 input_source = self.__reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
-                file_name = input_source_dic['file_name']
+                file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
                 file_type = input_source_dic['file_type']
 
                 if input_source_dic['content_subtype'] is None:
@@ -14806,7 +14806,7 @@ class NmrDpUtility:
                 input_source = self.__reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
-                file_name = input_source_dic['file_name']
+                file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
                 file_type = input_source_dic['file_type']
 
                 if input_source_dic['content_subtype'] is None:
@@ -14832,9 +14832,9 @@ class NmrDpUtility:
 
                         # DAOTHER-9520: fill data_file_name by default
                         if has_data_file_name:
-                            original_file_name = input_source_dic['file_name']
+                            original_file_name = file_name
                             if 'original_file_name' in input_source_dic and input_source_dic['original_file_name'] is not None:
-                                original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                                original_file_name = input_source_dic['original_file_name']
 
                             if 'Data_file_name' in tagNames:
                                 data_file_name = get_first_sf_tag(sf, 'Data_file_name').strip()
@@ -14891,7 +14891,7 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             content_subtype = 'dihed_restraint'
@@ -15036,7 +15036,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         warnings = self.__reg.report.warning.getValueList('disordered_index', file_name)
@@ -15136,7 +15136,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
         warnings = self.__reg.report.warning.getValueList('missing_data', file_name)
 
@@ -15255,7 +15255,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
         warnings = self.__reg.report.warning.getValueList('unusual_data', file_name)
 
@@ -15371,7 +15371,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
         warnings = self.__reg.report.warning.getValueList('enum_mismatch', file_name)
 
@@ -15390,7 +15390,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
         warnings = self.__reg.report.warning.getValueList('enum_mismatch_ignorable', file_name)
 
@@ -15786,7 +15786,7 @@ class NmrDpUtility:
         input_source = self.__reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if file_type == 'nef':
@@ -16916,8 +16916,9 @@ class NmrDpUtility:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
-            file_name = input_source_dic['file_name']
+
             cs_files.append(f'{file_name!r}')
 
             if file_type != 'nmr-star':

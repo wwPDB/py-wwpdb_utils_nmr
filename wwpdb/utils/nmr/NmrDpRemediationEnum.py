@@ -14,6 +14,7 @@ __license__ = "Apache License 2.0"
 __version__ = "5.4.6"
 
 import collections
+import os
 import re
 from typing import List
 
@@ -75,7 +76,7 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if warnings is None:
@@ -735,7 +736,7 @@ class NmrDpRemediationEnum(NmrDpRemediationBase):
         input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         item_names = ITEM_NAMES_IN_DIHED_LOOP[file_type]

@@ -157,6 +157,7 @@ __version__ = "5.4.6"
 import copy
 import functools
 import json
+import os
 import re
 import sys
 from operator import itemgetter
@@ -1717,12 +1718,18 @@ class NmrDpReport:
 
         self.__immutable = False
 
-    def get(self) -> dict:
+    def get(self, file_path_to_name: bool = False) -> dict:
         """ Return NMR data processing report.
         """
 
-        if not self.__immutable:
-            self.__report['information']['input_sources'] = [input_source.get() for input_source in self.input_sources]
+        if self.__immutable:
+            if file_path_to_name:
+                for input_source in self.__report['information']['input_sources']:
+                    if 'file_name' in input_source and input_source['file_name'] is not None:
+                        input_source['file_name'] = os.path.basename(input_source['file_name'])
+        else:
+            self.__report['information']['input_sources'] = [input_source.get(file_path_to_name)
+                                                             for input_source in self.input_sources]
             self.__report['information']['sequence_alignments'] = self.sequence_alignment.get()
             self.__report['information']['chain_assignments'] = self.chain_assignment.get()
             if self.output_statistics is not None:
@@ -1779,7 +1786,7 @@ class NmrDpReport:
             return False
 
         with open(out_path, 'w', encoding='utf-8') as file:
-            writePrettyJson(self.get(), file)
+            writePrettyJson(self.get(True), file)
 
         return True
 
@@ -2145,9 +2152,13 @@ class NmrDpReportInputSource:
             raise KeyError(f"+{self.__class_name__}.setItemValue() "
                            f"++ Error  - Unknown item type {item}")
 
-    def get(self) -> dict:
+    def get(self, file_path_to_name: bool = False) -> dict:
         """ Retrieve contents.
         """
+
+        if file_path_to_name:
+            if 'file_name' in self.__contents and self.__contents['file_name'] is not None:
+                self.__contents['file_name'] = os.path.basename(self.__contents['file_name'])
 
         return self.__contents
 

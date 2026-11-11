@@ -17,6 +17,7 @@ import collections
 import copy
 import functools
 import itertools
+import os
 import re
 from operator import itemgetter
 from typing import Union
@@ -195,7 +196,7 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
         input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
         has_poly_seq_in_lp = has_key_value(input_source_dic, 'polymer_sequence_in_loop')
 

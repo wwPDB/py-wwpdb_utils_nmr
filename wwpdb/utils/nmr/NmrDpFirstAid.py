@@ -814,7 +814,7 @@ class NmrDpFirstAid:
         input_source = self.__reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if file_type != 'nef' or file_list_id >= len(self.__reg.star_data) or self.__reg.star_data[file_list_id] is None:
@@ -1173,7 +1173,7 @@ class NmrDpFirstAid:
         input_source = self.__reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if file_type != 'nmr-star' or file_list_id >= len(self.__reg.star_data) or self.__reg.star_data[file_list_id] is None:

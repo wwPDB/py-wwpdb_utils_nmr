@@ -18,6 +18,7 @@ __version__ = "5.4.6"
 import collections
 import copy
 import itertools
+import os
 from typing import Callable, List, Optional, Set
 
 try:
@@ -108,7 +109,7 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         content_subtype = 'dist_restraint'
@@ -836,7 +837,7 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         item_names = ITEM_NAMES_IN_DIST_LOOP[file_type]
@@ -2803,7 +2804,7 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         content_subtype = 'spectral_peak'
@@ -3125,7 +3126,7 @@ class NmrDpValidationMrStats(NmrDpValidationBase):
         input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         if file_type == 'nef':

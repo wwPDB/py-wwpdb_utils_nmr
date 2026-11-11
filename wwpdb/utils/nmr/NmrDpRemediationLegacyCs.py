@@ -779,7 +779,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
             sf_category = SF_CATEGORIES[file_type][content_subtype]
             lp_category = LP_CATEGORIES[file_type][content_subtype]
 
-            if len(self._reg.star_data) > 0:
+            if len(self._reg.report.input_sources) > 0:
 
                 input_source = self._reg.report.input_sources[0]
                 input_source_dic = input_source.get()
@@ -789,25 +789,30 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
                 content_subtype = 'chem_shift'
 
-                if isinstance(self._reg.star_data[0], pynmrstar.Entry):
+                if len(self._reg.star_data) > 0:
 
-                    for sf in self._reg.star_data[0].get_saveframes_by_category(sf_category):
+                    if isinstance(self._reg.star_data[0], pynmrstar.Entry):
+
+                        for sf in self._reg.star_data[0].get_saveframes_by_category(sf_category):
+                            try:
+                                lp = sf.get_loop(lp_category)
+                                has_cs = len(lp) > 0
+                                break
+                            except KeyError:
+                                continue
+
+                    elif isinstance(self._reg.star_data[0], pynmrstar.Saveframe):
                         try:
-                            lp = sf.get_loop(lp_category)
+                            lp = self._reg.star_data[0].get_loop(lp_category)
                             has_cs = len(lp) > 0
-                            break
                         except KeyError:
-                            continue
+                            pass
 
-                elif isinstance(self._reg.star_data[0], pynmrstar.Saveframe):
-                    try:
-                        lp = self._reg.star_data[0].get_loop(lp_category)
-                        has_cs = len(lp) > 0
-                    except KeyError:
-                        pass
+                    else:
+                        has_cs = self._reg.star_data[0].category == lp_category and len(self._reg.star_data[0]) > 0
 
-                else:
-                    has_cs = self._reg.star_data[0].category == lp_category and len(self._reg.star_data[0]) > 0
+            else:
+                file_name = None
 
             if not has_cs:
                 err = f"The mandatory loop {lp_category!r} is missing. Deposition of assigned chemical shifts is mandatory. "\

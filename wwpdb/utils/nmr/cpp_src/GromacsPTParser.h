@@ -197,8 +197,8 @@ public:
     antlr4::tree::TerminalNode* Integer(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name();
     antlr4::tree::TerminalNode* Simple_name(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> Real();
-    antlr4::tree::TerminalNode* Real(size_t i);
+    std::vector<NumberContext *> number();
+    NumberContext* number(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -259,11 +259,14 @@ public:
   public:
     AtomtypesContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Simple_name();
+    std::vector<antlr4::tree::TerminalNode *> Simple_name();
+    antlr4::tree::TerminalNode* Simple_name(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer();
     antlr4::tree::TerminalNode* Integer(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Real();
     antlr4::tree::TerminalNode* Real(size_t i);
+    std::vector<NumberContext *> number();
+    NumberContext* number(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

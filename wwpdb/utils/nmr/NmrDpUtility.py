@@ -15955,11 +15955,6 @@ class NmrDpUtility:
             return True
 
         if len(self.__reg.star_data) == 0 or self.__reg.star_data[0] is None:
-            # prevent OSError in standalone NMR data conversion service (DAOTHER-9785)
-            if self.__reg.conversion_server and self.__reg.permit_missing_cs_file and self.__reg.op == 'nmr-cs-mr-merge':
-                master_entry = pynmrstar.Entry.from_scratch('dummy')
-                master_entry.write_to_file(self.__reg.dstPath, show_comments=(self.__reg.bmrb_only and self.__reg.internal_mode),
-                                           skip_empty_loops=True, skip_empty_tags=False)
             return False
 
         master_entry = self.__reg.c2S.normalize(self.__reg.star_data[0])

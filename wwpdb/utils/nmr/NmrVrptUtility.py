@@ -5454,9 +5454,6 @@ class NmrVrptUtility:
             unmapped_error = len(self.__chemShiftUnmapped[list_id])
             unmapped_warning = len(self.__chemShiftUnmodeled[list_id])
             mapped = parsed - unmapped_error - unmapped_warning
-            # nmapped_error should be zero when model file is not available (DAOTHER-9785)
-            if self.__cifHashCode is None and mapped == 0:
-                mapped, unmapped_error = unmapped_error, 0
             shift_summary_table[list_id] = {'block_id': self.__chemShiftMeta[idx][0],
                                             'block_name': self.__chemShiftMeta[idx][1],
                                             'list_id': self.__chemShiftMeta[idx][2],

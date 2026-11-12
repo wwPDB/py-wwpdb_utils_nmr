@@ -1341,8 +1341,13 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                 tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
 
                                 if set(tags) & set(lp.tags) != set(tags):
-                                    sf_info['number_of_mapped_to_model'] = 0
-                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                                    if self._reg.cifChecked:
+                                        sf_info['number_of_mapped_to_model'] = 0
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                                    else:
+                                        # unmapped_error should be zero when model file is not available (DAOTHER-9785)
+                                        sf_info['number_of_mapped_to_model'] = sf_info['number_of_parsed']
+                                        sf_info['number_of_unmapped_to_model'] = 0
 
                                 else:
 
@@ -1357,9 +1362,14 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                         if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
                                             mapped_ids.add(row[0])
 
-                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                    sf_info['number_of_unmapped_to_model'] =\
-                                        sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+                                    if self._reg.cifChecked:
+                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                        sf_info['number_of_unmapped_to_model'] =\
+                                            sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+                                    else:
+                                        # unmapped_error should be zero when model file is not available (DAOTHER-9785)
+                                        sf_info['number_of_mapped_to_model'] = sf_info['number_of_parsed']
+                                        sf_info['number_of_unmapped_to_model'] = 0
 
                             if vrpt_cs is not None:
                                 if 'completeness_items' in vrpt_cs\

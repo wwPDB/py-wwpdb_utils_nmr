@@ -1824,7 +1824,7 @@ class NmrDpReport:
             for c in value_list:
 
                 if 'file_name' in c and c['file_name'] is not None:
-                    c['file_name'] = os.path.basename(file_name)
+                    c['file_name'] = os.path.basename(c['file_name'])
 
                 self.error.appendDescription(item, c)
 
@@ -1877,7 +1877,7 @@ class NmrDpReport:
             for c in value_list:
 
                 if 'file_name' in c and c['file_name'] is not None:
-                    c['file_name'] = os.path.basename(file_name)
+                    c['file_name'] = os.path.basename(c['file_name'])
 
                 self.warning.appendDescription(item, c)
 
@@ -1907,7 +1907,7 @@ class NmrDpReport:
             for c in value_list:
 
                 if 'file_name' in c and c['file_name'] is not None:
-                    c['file_name'] = os.path.basename(file_name)
+                    c['file_name'] = os.path.basename(c['file_name'])
 
                 self.warning.appendDescription(item, c)
 

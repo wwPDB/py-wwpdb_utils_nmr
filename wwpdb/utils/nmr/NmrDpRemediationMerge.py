@@ -2320,7 +2320,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
 
                         fileListId += 1
 
-                        if file_type == 'nm-res-mr':
+                        if file_type in ('nm-res-mr', 'nm-aux-pdb'):
                             continue
 
                         mr_file_names.append(os.path.basename(input_source_dic['file_name']))

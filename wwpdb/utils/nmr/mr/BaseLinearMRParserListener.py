@@ -79,7 +79,10 @@ try:
                                                PCS_ERROR_MAX,
                                                CYANA_MR_FILE_EXTS,
                                                HEME_LIKE_RES_NAMES,
-                                               INSTRUCTION_FOR_FULL_SEQUENCE)
+                                               INSTRUCTION_FOR_FULL_SEQUENCE,
+                                               ASSIGNMENT_SEPARATOR_PAT,
+                                               ASSIGNMENT_RESID_PAT,
+                                               ASSIGNMENT_HALF_SPIN_NUCLEUS)
     from wwpdb.utils.nmr.AlignUtil import (updatePolySeqRst,
                                            revertPolySeqRst,
                                            updatePolySeqRstAmbig,
@@ -99,7 +102,8 @@ try:
                                            splitPolySeqRstForNonPoly,
                                            retrieveRemappedNonPoly,
                                            splitPolySeqRstForBranched,
-                                           retrieveOriginalSeqIdFromMRMap)
+                                           retrieveOriginalSeqIdFromMRMap,
+                                           getOneLetterCode)
     from wwpdb.utils.nmr.NmrVrptUtility import (select_realistic_bond_constraint,
                                                 select_realistic_chi2_angle_constraint)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
@@ -112,6 +116,7 @@ try:
                                                        translateToStdAtomNameWithRef,
                                                        translateToStdAtomName,
                                                        translateToLigandName,
+                                                       backTranslateFromStdResName,
                                                        isCyclicPolymer,
                                                        isStructConn,
                                                        guessCompIdFromAtomId,
@@ -172,7 +177,10 @@ except ImportError:
                                    PCS_ERROR_MAX,
                                    CYANA_MR_FILE_EXTS,
                                    HEME_LIKE_RES_NAMES,
-                                   INSTRUCTION_FOR_FULL_SEQUENCE)
+                                   INSTRUCTION_FOR_FULL_SEQUENCE,
+                                   ASSIGNMENT_SEPARATOR_PAT,
+                                   ASSIGNMENT_RESID_PAT,
+                                   ASSIGNMENT_HALF_SPIN_NUCLEUS)
     from nmr.AlignUtil import (updatePolySeqRst,
                                revertPolySeqRst,
                                updatePolySeqRstAmbig,
@@ -192,7 +200,8 @@ except ImportError:
                                splitPolySeqRstForNonPoly,
                                retrieveRemappedNonPoly,
                                splitPolySeqRstForBranched,
-                               retrieveOriginalSeqIdFromMRMap)
+                               retrieveOriginalSeqIdFromMRMap,
+                               getOneLetterCode)
     from nmr.NmrVrptUtility import (select_realistic_bond_constraint,
                                     select_realistic_chi2_angle_constraint)
     from nmr.nef.NefTranslator import NefTranslator
@@ -205,6 +214,7 @@ except ImportError:
                                            translateToStdAtomNameWithRef,
                                            translateToStdAtomName,
                                            translateToLigandName,
+                                           backTranslateFromStdResName,
                                            isCyclicPolymer,
                                            isStructConn,
                                            guessCompIdFromAtomId,
@@ -269,6 +279,11 @@ class BaseLinearMRParserListener():
                  'polyPeptide',
                  'polyDeoxyribonucleotide',
                  'polyRibonucleotide',
+                 'authAsymIdSet',
+                 'compIdSet',
+                 'altCompIdSet',
+                 'isFirstResidueAla',
+                 'cyanaCompIdSet',
                  '__uniqAtomIdToSeqKey',
                  'csStat',
                  'nefT',
@@ -308,6 +323,7 @@ class BaseLinearMRParserListener():
     software_name = ''
 
     __debug = False
+    __verbose_debug = False
     __remediate = False
 
     __createSfDict = False
@@ -323,6 +339,8 @@ class BaseLinearMRParserListener():
     symmetric = 'no'
 
     __shiftNonPosSeq = None
+    __defaultSegId = None
+    __defaultSegId__ = None
 
     __preferAuthSeq = True
     __extendAuthSeq = False
@@ -568,8 +586,52 @@ class BaseLinearMRParserListener():
                     elif poly_type == 'polyribonucleotide':
                         self.polyRibonucleotide = True
 
+            self.authAsymIdSet = set(ps['auth_chain_id'] for ps in self.polySeq)
+
+            self.compIdSet = set()
+            self.altCompIdSet = set()
+
+            def is_data(array: list) -> bool:
+                return not any(True for d in array if d in EMPTY_VALUE)
+
+            for ps in self.polySeq:
+                self.compIdSet.update(set(filter(is_data, ps['comp_id'])))
+                if 'auth_comp_id' in ps and ps['comp_id'] != ps['auth_comp_id']:
+                    self.altCompIdSet.update(set(filter(is_data, ps['auth_comp_id'])))
+                if 'alt_comp_id' in ps and ps['comp_id'] != ps['alt_comp_id']:
+                    self.altCompIdSet.update(set(filter(is_data, ps['alt_comp_id'])))
+
+            if self.hasNonPolySeq:
+                for np in self.__nonPolySeq:
+                    self.compIdSet.update(set(filter(is_data, np['comp_id'])))
+                    if 'auth_comp_id' in np and np['comp_id'] != np['auth_comp_id']:
+                        self.altCompIdSet.update(set(filter(is_data, np['auth_comp_id'])))
+                    if 'alt_comp_id' in np and np['comp_id'] != np['alt_comp_id']:
+                        self.altCompIdSet.update(set(filter(is_data, np['alt_comp_id'])))
+                self.authAsymIdSet.update(set(np['auth_chain_id'] for np in self.__nonPolySeq))
+
+            for entity in self.__entityAssembly:
+                if 'entity_poly_type' in entity:
+                    poly_type = entity['entity_poly_type']
+                    if poly_type.startswith('polypeptide'):
+                        self.polyPeptide = True
+                    elif poly_type == 'polydeoxyribonucleotide':
+                        self.polyDeoxyribonucleotide = True
+                    elif poly_type == 'polyribonucleotide':
+                        self.polyRibonucleotide = True
+            if 'ALA' in self.compIdSet:
+                self.isFirstResidueAla = any(ps['comp_id'][0] == 'ALA' for ps in self.polySeq)
+
         else:
             self.gapInAuthSeq = False
+
+            self.authAsymIdSet = set()
+            self.compIdSet = self.altCompIdSet = set(STD_MON_DICT.keys())
+            self.isFirstResidueAla = False
+
+        self.cyanaCompIdSet = set()
+        for compId in self.compIdSet:
+            self.cyanaCompIdSet |= backTranslateFromStdResName(compId)
 
         self.__uniqAtomIdToSeqKey = {}
         if self.hasNonPoly:
@@ -5189,6 +5251,1489 @@ class BaseLinearMRParserListener():
                     if seqKey in self.__coordAtomSite:
                         return seqKey, self.__coordAtomSite[seqKey]
         return seqKey, None
+
+    def extractAtomAssignment(self, numOfDim: int, string: str,
+                              with_segid: Optional[str] = None, with_compid: Optional[str] = None,
+                              hint: Optional[List[dict]] = None, dim_id_hint: Optional[int] = None
+                              ) -> Optional[List[dict]]:
+        """ Extract atom assignment from a given string.
+        """
+
+        if numOfDim not in (1, 2, 3, 4) or string is None or len(string) == 0:
+            return None
+
+        last_char = string[-1]
+
+        if last_char in ('*', '#', '%', '+'):
+            _string = string[:-1]
+            _str_ = ASSIGNMENT_SEPARATOR_PAT.sub(' ', _string).split()
+            _str = ASSIGNMENT_SEPARATOR_PAT.sub(' ', _string.upper()).split()
+            _str_[-1] += last_char
+            _str_[-1] += last_char
+
+        else:
+            _str_ = ASSIGNMENT_SEPARATOR_PAT.sub(' ', string).split()
+            _str = ASSIGNMENT_SEPARATOR_PAT.sub(' ', string.upper()).split()
+
+        lenStr = len(_str)
+
+        segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike =\
+            [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, \
+            [False] * lenStr, [False] * lenStr, [False] * lenStr
+
+        segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan =\
+            [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, \
+            [None] * lenStr, [None] * lenStr, [None] * lenStr
+
+        if not self.hasCoord:
+            if self.compIdSet is None:
+                self.compIdSet = self.altCompIdSet = set(STD_MON_DICT.keys())
+
+        oneLetterCodeSet = []
+        extMonDict3 = {}
+        if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+            oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 3]
+            extMonDict3 = {compId: getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 3}
+        elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+            oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 2]
+            extMonDict3 = {compId: getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 2}
+        elif not self.polyPeptide and not self.polyDeoxyribonucleotide and self.polyRibonucleotide:
+            oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1]
+            extMonDict3 = {compId: getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1}
+
+        if self.hasNonPolySeq:
+            for np in self.__nonPoly:
+                if np['comp_id'][0][0].isalpha() and np['comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['comp_id'][0][0]
+                if np['auth_comp_id'][0][0].isalpha() and np['auth_comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['auth_comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['auth_comp_id'][0][0]
+                if np['alt_comp_id'][0][0].isalpha() and np['alt_comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['alt_comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['alt_comp_id'][0][0]
+
+        hasOneLetterCodeSet = len(oneLetterCodeSet) > 0
+        useOneLetterCodeSet = forceOneLetterCodeSet = \
+            self.polyRibonucleotide and not self.polyPeptide and not self.polyDeoxyribonucleotide
+        ligCompId = ligAtomId = None
+        _ligSeqId = _ligCompId = _ligAtomId = None
+
+        for idx, term in enumerate(_str):
+            for segId in self.authAsymIdSet:
+                if term.startswith(segId) and (with_segid is None or term.startswith(with_segid)):
+                    segIdLike[idx] = True
+                    segIdSpan[idx] = (0, len(segId))
+                    break
+
+            resIdTest = ASSIGNMENT_RESID_PAT.search(term)
+            if resIdTest:
+                if term[0] == 'D' and len(term) == 3 and term[-1] in ('5', '3')\
+                   and translateToStdResName(term, ccU=self.ccU) in self.compIdSet:
+                    pass
+                else:
+                    resIdLike[idx] = True
+                    resIdSpan[idx] = resIdTest.span()
+
+            minIndex = len(term)
+
+            for compId in self.compIdSet:
+                if compId in term:
+                    resNameLike[idx] = True
+                    index = term.index(compId)
+                    if index < minIndex:
+                        resNameSpan[idx] = (index, index + len(compId))
+                        minIndex = index
+
+            if not resNameLike[idx]:
+                for compId in self.altCompIdSet:
+                    if compId in term:
+                        resNameLike[idx] = True
+                        index = term.index(compId)
+                        if index < minIndex:
+                            resNameSpan[idx] = (index, index + len(compId))
+                            minIndex = index
+
+            if not resNameLike[idx] and self.cyanaCompIdSet is not None:
+                for compId in self.cyanaCompIdSet:
+                    if compId in term:
+                        resNameLike[idx] = True
+                        index = term.index(compId)
+                        if index < minIndex:
+                            resNameSpan[idx] = (index, index + len(compId))
+                            minIndex = index
+
+            if hasOneLetterCodeSet and not useOneLetterCodeSet and resNameLike[idx]\
+               and len(term[resNameSpan[idx][0]:resNameSpan[idx][1]]) > 1:
+                hasOneLetterCodeSet = False
+
+            if with_compid is not None and len(with_compid) > 1:
+                hasOneLetterCodeSet = False
+
+            if not resNameLike[idx] and hasOneLetterCodeSet:
+                if not any(compId in term for compId in STD_MON_DICT if len(compId) == 3):
+                    for compId in oneLetterCodeSet:
+                        if compId in term:
+                            resNameLike[idx] = True
+                            index = term.index(compId)
+                            if index < minIndex:
+                                resNameSpan[idx] = (index, index + len(compId))
+                                minIndex = index
+                elif resIdLike[idx] and self.hasPolySeq:
+                    _compId = next(compId for compId in STD_MON_DICT if len(compId) == 3 and compId in term)
+                    resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                    for ps in self.polySeq:
+                        _, _, compId = self.getRealChainSeqId(ps, resId, None)
+                        if len(compId) == 3 and compId in STD_MON_DICT and _compId[0:2] == compId[0:2]:
+                            resNameLike[idx] = True
+                            index = term.index(_compId)
+                            resNameSpan[idx] = (index, index + len(compId))
+                            term = _str[idx] = term.replace(_compId, compId)
+                            break
+
+            if resNameLike[idx]:
+                compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                if compId in self.compIdSet and compId not in STD_MON_DICT:
+                    ligCompId = compId
+
+                if len(compId) == 1:
+                    _ligCompId = next((k for k, v in extMonDict3.items() if v == compId and k not in STD_MON_DICT), None)
+
+                    if resIdLike[idx] and self.hasPolySeq:
+                        resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                        for ps in self.polySeq:
+                            _, _, _compId = self.getRealChainSeqId(ps, resId, None)
+                            if _compId is not None and _compId not in STD_MON_DICT:
+                                resNameLike[idx] = False
+                                break
+                    if resNameLike[idx]:
+                        index = resNameSpan[idx][1]
+                        if index < len(term):
+                            if term[index].isdigit() or term[index] in ASSIGNMENT_HALF_SPIN_NUCLEUS\
+                               or term[index] in PSE_PRO_BEGIN_CODE:
+                                pass
+                            else:
+                                resNameLike[idx] = False
+
+            if ligCompId is not None and ligCompId != term:
+                _, _, details = self.nefT.get_valid_star_atom_in_xplor(ligCompId, term, leave_unmatched=True)
+                if details is None or term[0] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                    atomNameLike[idx] = True
+                    atomNameSpan[idx] = (0, len(term) + 1)
+                    ligAtomId = term
+
+            if _ligCompId is not None and resNameLike[idx] and len(term[resNameSpan[idx][1]:]) > 0:
+                _, _, details = self.nefT.get_valid_star_atom_in_xplor(_ligCompId, term[resNameSpan[idx][1]:], leave_unmatched=True)
+                if details is None or term[resNameSpan[idx][1]] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                    atomNameLike[idx] = True
+                    atomNameSpan[idx] = (resNameSpan[idx][1], len(term) + 1)
+                    _ligAtomId = term[resNameSpan[idx][1]:len(term) + 1]
+                    for np in self.__nonPoly:
+                        if np['comp_id'][0] == _ligCompId:
+                            _ligSeqId = np['auth_seq_id'][0]
+
+            if resIdLike[idx] and resIdSpan[idx][1] + 1 <= len(term)\
+               and _str_[idx][resIdSpan[idx][1]].islower() and _str[idx][resIdSpan[idx][1]].isupper():
+                if resIdSpan[idx][1] + 1 < len(term)\
+                   and any(_str_[idx][resIdSpan[idx][1] + 1].startswith(elem) for elem in ASSIGNMENT_HALF_SPIN_NUCLEUS):
+                    term = _str[idx] = term[0:resIdSpan[idx][1]] + term[resIdSpan[idx][1] + 1:]
+                elif resIdSpan[idx][1] + 1 == len(term):
+                    term = _str[idx] = term[0:resIdSpan[idx][1]]
+
+            for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in term or 'CH' in term\
+                    else ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                if len(elem) == 1 and ligAtomId is None and _ligAtomId is None:
+                    if elem in term:
+
+                        # handle ambiguous assigned peak '(14Trp/11Trp)Hh2'
+                        # seen in 6r28/bmr34380/work/data/D_1292101294_nmr-peaks-upload_P1.dat.V1
+                        if idx > 0 and not resNameLike[idx] and any(resIdLike[_idx] and resNameLike[_idx] and not atomNameLike[_idx]
+                                                                    for _idx in range(idx)):
+                            _index = term.index(elem)
+                            _atomId = term[_index:len(term)]
+                            for _idx in range(idx):
+                                if resIdLike[_idx] and resNameLike[_idx] and not atomNameLike[_idx]:
+                                    _compId = _str[_idx][resNameSpan[_idx][0]:resNameSpan[_idx][1]]
+                                    if len(_compId) == 1 and hasOneLetterCodeSet:
+                                        _compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == _compId)
+                                        _, _, details =\
+                                            self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
+                                        if details is None:
+                                            atomNameLike[idx] = useOneLetterCodeSet = True
+                                            atomNameSpan[idx] = (_index, len(term))
+                                            break
+                                    if (with_compid is not None and _atomId.startswith(with_compid)) or _atomId.startswith('MET'):
+                                        continue
+                                    _atomId = translateToStdAtomName(_atomId, _compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        atomNameLike[idx] = True
+                                        atomNameSpan[idx] = (_index, len(term))
+                                        break
+                            if atomNameLike[idx]:
+                                break
+
+                        # prevent to split HH2 -> res_name:'HIS', atom_name:'H2'
+                        if resNameLike[idx] and resNameSpan[idx][1] - resNameSpan[idx][0] == 1\
+                           and resNameSpan[idx][1] == term.rindex(elem)\
+                           and term[resNameSpan[idx][0]] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                            _index = term.index(elem)
+                            _atomId = term[_index:len(term)]
+                            for compId in self.compIdSet:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = True
+                                    atomNameSpan[idx] = (_index, len(term))
+                                    resNameLike[idx] = False
+                                    break
+                            if atomNameLike[idx]:
+                                break
+
+                        # resolve concatenation of residue number and XPLOR-NIH atom nomenclature of proton,
+                        # D1391HB -> res_id:139, res_name:'ASP', atom_name:'1HB'
+                        # seen in 8e1d/bmr31038/work/data/D_1000267621_nmr-peaks-upload_P6.dat.V1
+                        if self.hasPolySeq and resIdLike[idx] and resNameLike[idx]\
+                           and resIdSpan[idx][1] == term.rindex(elem) and elem == 'H'\
+                           and term[resIdSpan[idx][1] - 1] in ('1', '2', '3') and resIdSpan[idx][1] - resIdSpan[idx][0] > 3:
+                            _resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                            _compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            if len(_compId) == 1 and hasOneLetterCodeSet:
+                                _compId = next((k for k, v in extMonDict3.items() if k in self.compIdSet and v == _compId), _compId)
+                            valid = False
+                            for ps in self.polySeq:
+                                _, _, _compId_ = self.getRealChainSeqId(ps, _resId, None)
+                                if _compId is not None and _compId == _compId_:
+                                    valid = True
+                                    break
+                            if not valid:
+                                _resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1] - 1])
+                                for ps in self.polySeq:
+                                    _, _, _compId_ = self.getRealChainSeqId(ps, _resId, None)
+                                    if _compId is not None and _compId == _compId_:
+                                        valid = True
+                                        break
+                                if valid:
+                                    _index = term.rindex(elem)
+                                    _atomId = term[_index:len(term)] + term[resIdSpan[idx][1] - 1]
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        atomNameLike[idx] = True
+                                        atomNameSpan[idx] = (_index - 1, len(term))
+                                        resIdSpan[idx] = (resIdSpan[idx][0], resIdSpan[idx][1] - 1)
+                                        break
+
+                        index = term.rindex(elem)
+                        atomId = term[index:len(term)]
+                        xplorAtomId = None
+                        if len(term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                           and term[index - 1] in PROTON_BEGIN_CODE:
+                            xplorAtomId = term[index - 1] + atomId
+
+                        if index - 1 >= 0 and term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                            if not resNameLike[idx]:
+                                if hint is not None and 'comp_id' in hint[0]:
+                                    compId = hint[0]['comp_id']
+                                    _index = term.index(elem)
+                                    _atomId = term[_index:len(term)]
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        atomNameLike[idx] = True
+                                        atomNameSpan[idx] = (_index, len(term))
+                                    else:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                        if details is None:
+                                            atomNameLike[idx] = True
+                                            atomNameSpan[idx] = (index, len(term))
+                                            if xplorAtomId is not None:
+                                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                       leave_unmatched=True)
+                                                if details is None:
+                                                    atomNameSpan[idx] = (index - 1, len(term))
+                                if with_compid is None:
+                                    continue
+                            if compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                                pass
+                            elif len(compId) == 1 and hasOneLetterCodeSet:
+                                compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                                _atomId = term[index - 1:len(term)]
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    index -= 1
+                                    atomId = _atomId
+                                elif with_compid is None:
+                                    continue
+                            elif compId in self.compIdSet:
+                                _atomId = term[index - 1:len(term)]
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    index -= 1
+                                    atomId = _atomId
+                                elif with_compid is None:
+                                    continue
+                            elif with_compid is None:
+                                continue
+
+                        if atomId[0] in ('Q', 'M') and index + 1 < len(term) and term[index + 1].isdigit():
+                            if resNameLike[idx] and resNameSpan[idx][0] == index:
+                                continue
+                            if self.csStat.peptideLike(compId):
+                                ligand = False
+                                if resIdLike[idx] and self.reasons is not None:
+                                    resId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                                    if 'non_poly_remap' in self.reasons\
+                                       and compId in self.reasons['non_poly_remap']\
+                                       and resId in self.reasons['non_poly_remap'][compId]:
+                                        ligand = True
+                                if not ligand:
+                                    continue
+                        if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
+                           and ((index + 3 < len(term) and term[index + 3].isdigit()
+                                 or (index + 4 < len(term) and term[index + 4].isdigit()))):
+                            continue
+                        if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
+                            continue
+                        if resNameLike[idx]:
+                            compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            if len(compId) == 1 and hasOneLetterCodeSet and not forceOneLetterCodeSet:
+                                compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                                if with_compid is not None and (atomId.startswith(with_compid)
+                                                                or (atomId in with_compid and index < resNameSpan[idx][1])):
+                                    continue
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = True
+                                    atomNameSpan[idx] = (index, len(term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            atomNameSpan[idx] = (index - 1, len(term))
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    break
+                            # 'THR' should not be split 'T' and 'HR' (bmr26379)
+                            if compId.endswith(atomId) and len(compId) > 2 and compId != atomId:
+                                atomNameLike[idx] = False
+                                break
+                            # need to check the next token in case of 'MET' (bmr26379)
+                            if compId == atomId == 'MET' and idx < len(_str) - 1:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _str[idx + 1], leave_unmatched=True)
+                                if details is None:
+                                    atomNameLike[idx] = False
+                                    break
+
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                atomNameLike[idx] = True
+                                atomNameSpan[idx] = (index, len(term))
+                                if xplorAtomId is not None:
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                           leave_unmatched=True)
+                                    if details is None:
+                                        atomNameSpan[idx] = (index - 1, len(term))
+                                        break
+                            if with_compid is not None and atomId.startswith(with_compid):
+                                continue
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                atomNameLike[idx] = True
+                                atomNameSpan[idx] = (index, len(term))
+                                if xplorAtomId is not None:
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                           leave_unmatched=True)
+                                    if details is None:
+                                        atomNameSpan[idx] = (index - 1, len(term))
+                                        break
+                        if atomNameLike[idx]:
+                            break
+
+            if atomNameLike[idx]:
+                _term = term[0:atomNameSpan[idx][0]]
+                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in _term or 'CH' in _term\
+                        else ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                    if len(elem) == 1 and ligAtomId is None and _ligAtomId is None:
+                        if elem in _term:
+                            index = _term.rindex(elem)
+                            atomId = _term[index:len(_term)]
+                            xplorAtomId = None
+                            if len(_term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                               and _term[index - 1] in PROTON_BEGIN_CODE:
+                                xplorAtomId = _term[index - 1] + atomId
+
+                            if index - 1 >= 0 and _term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                                if resNameLike[idx] and compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                                    pass
+                                else:
+                                    continue
+                            if atomId[0] in ('Q', 'M') and index + 1 < len(_term) and _term[index + 1].isdigit():
+                                continue
+                            if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
+                               and ((index + 3 < len(_term) and _term[index + 3].isdigit()
+                                     or (index + 4 < len(_term) and _term[index + 4].isdigit()))):
+                                continue
+                            if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
+                                continue
+                            if len(_term) == atomNameSpan[idx][0]:
+                                continue
+                            if resNameLike[idx]:
+                                compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                if len(compId) == 1 and hasOneLetterCodeSet:
+                                    compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameLike[idx] = useOneLetterCodeSet = True
+                                        _atomNameSpan[idx] = (index, len(_term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                _atomNameSpan[idx] = (index - 1, len(_term))
+                                        if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
+                                    if with_compid is not None and (atomId.startswith(with_compid)
+                                                                    or (atomId in with_compid and index < resNameSpan[idx][1])):
+                                        continue
+                                    _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameLike[idx] = True
+                                        _atomNameSpan[idx] = (index, len(_term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                _atomNameSpan[idx] = (index - 1, len(_term))
+                                        if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
+                            for compId in self.compIdSet:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = True
+                                    _atomNameSpan[idx] = (index, len(_term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            _atomNameSpan[idx] = (index - 1, len(_term))
+                                            break
+                                if with_compid is not None and atomId.startswith(with_compid):
+                                    continue
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = True
+                                    _atomNameSpan[idx] = (index, len(_term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            _atomNameSpan[idx] = (index - 1, len(_term))
+                                            break
+                            if _atomNameLike[idx]:
+                                break
+
+            if numOfDim >= 3 and _atomNameLike[idx]:
+                __term = term[0:_atomNameSpan[idx][0]]
+                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in __term or 'CH' in __term\
+                        else ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                    if len(elem) == 1 and ligAtomId is None and _ligAtomId is None:
+                        if elem in __term:
+                            index = __term.rindex(elem)
+                            atomId = __term[index:len(__term)]
+                            xplorAtomId = None
+                            if len(__term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                               and __term[index - 1] in PROTON_BEGIN_CODE:
+                                xplorAtomId = __term[index - 1] + atomId
+
+                            if index - 1 >= 0 and __term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                                if resNameLike[idx] and compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                                    pass
+                                else:
+                                    continue
+                            if atomId[0] in ('Q', 'M') and index + 1 < len(__term) and __term[index + 1].isdigit():
+                                continue
+                            if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
+                               and ((index + 3 < len(__term) and __term[index + 3].isdigit()
+                                     or (index + 4 < len(__term) and __term[index + 4].isdigit()))):
+                                continue
+                            if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
+                                continue
+                            if len(__term) == _atomNameSpan[idx][0]:
+                                continue
+                            if resNameLike[idx]:
+                                compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                if len(compId) == 1 and hasOneLetterCodeSet:
+                                    compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        __atomNameLike[idx] = useOneLetterCodeSet = True
+                                        __atomNameSpan[idx] = (index, len(__term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                __atomNameSpan[idx] = (index - 1, len(__term))
+                                        if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
+                                    if with_compid is not None and atomId.startswith(with_compid):
+                                        continue
+                                    _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        __atomNameLike[idx] = True
+                                        __atomNameSpan[idx] = (index, len(__term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                __atomNameSpan[idx] = (index - 1, len(__term))
+                                        if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
+                            for compId in self.compIdSet:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = True
+                                    __atomNameSpan[idx] = (index, len(__term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            __atomNameSpan[idx] = (index - 1, len(__term))
+                                            break
+                                if with_compid is not None and atomId.startswith(with_compid):
+                                    continue
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = True
+                                    __atomNameSpan[idx] = (index, len(__term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            __atomNameSpan[idx] = (index - 1, len(__term))
+                                            break
+                            if __atomNameLike[idx]:
+                                break
+
+            if numOfDim >= 4 and __atomNameLike[idx]:
+                ___term = term[0:__atomNameSpan[idx][0]]
+                for elem in reversed(ASSIGNMENT_HALF_SPIN_NUCLEUS) if 'NH' in ___term or 'CH' in ___term\
+                        else ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                    if len(elem) == 1 and ligAtomId is None and _ligAtomId is None:
+                        if elem in ___term:
+                            index = ___term.rindex(elem)
+                            atomId = ___term[index:len(___term)]
+                            xplorAtomId = None
+                            if len(___term) == len(atomId) + 1 and atomId[0] in PSE_PRO_BEGIN_CODE\
+                               and ___term[index - 1] in PROTON_BEGIN_CODE:
+                                xplorAtomId = ___term[index - 1] + atomId
+
+                            if index - 1 >= 0 and ___term[index - 1] in ASSIGNMENT_HALF_SPIN_NUCLEUS:
+                                if resNameLike[idx] and compId[-1] in ASSIGNMENT_HALF_SPIN_NUCLEUS and index == resNameSpan[idx][1]:
+                                    pass
+                                else:
+                                    continue
+                            if atomId[0] in ('Q', 'M') and index + 1 < len(___term) and ___term[index + 1].isdigit():
+                                continue
+                            if ((with_compid is not None and atomId.startswith(with_compid)) or atomId.startswith('MET'))\
+                               and ((index + 3 < len(___term) and ___term[index + 3].isdigit()
+                                     or (index + 4 < len(___term) and ___term[index + 4].isdigit()))):
+                                continue
+                            if resNameLike[idx] and len(compId) > 1 and compId[-1] == elem and index + 1 == resNameSpan[idx][1]:
+                                continue
+                            if len(___term) == __atomNameSpan[idx][0]:
+                                continue
+                            if resNameLike[idx]:
+                                compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                                if len(compId) == 1 and hasOneLetterCodeSet:
+                                    compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                    if details is None:
+                                        ___atomNameLike[idx] = useOneLetterCodeSet = True
+                                        ___atomNameSpan[idx] = (index, len(___term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                ___atomNameSpan[idx] = (index - 1, len(___term))
+                                        if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
+                                    if with_compid is not None and atomId.startswith(with_compid):
+                                        continue
+                                    _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        ___atomNameLike[idx] = True
+                                        ___atomNameSpan[idx] = (index, len(___term))
+                                        if xplorAtomId is not None:
+                                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                                   leave_unmatched=True)
+                                            if details is None:
+                                                ___atomNameSpan[idx] = (index - 1, len(___term))
+                                        if resNameSpan[idx][0] == ___atomNameSpan[idx][0]:
+                                            resNameLike[idx] = False
+                                        break
+                            for compId in self.compIdSet:
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = True
+                                    ___atomNameSpan[idx] = (index, len(___term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            ___atomNameSpan[idx] = (index - 1, len(___term))
+                                            break
+                                if with_compid is not None and atomId.startswith(with_compid):
+                                    continue
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = True
+                                    ___atomNameSpan[idx] = (index, len(___term))
+                                    if xplorAtomId is not None:
+                                        _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, xplorAtomId,
+                                                                                               leave_unmatched=True)
+                                        if details is None:
+                                            ___atomNameSpan[idx] = (index - 1, len(___term))
+                                            break
+                            if ___atomNameLike[idx]:
+                                break
+
+            if _atomNameLike[idx] and atomNameLike[idx]:
+                concat = False
+                if _atomNameSpan[idx][1] == atomNameSpan[idx][0]:
+                    atomId = term[_atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        resId = term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else '.'
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
+                                concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = False
+                                    atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
+                            if details is not None and numOfDim == 1:
+                                _atomNameLike[idx] = False
+                                for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
+                                    _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
+                                    if len(_atomId) == 0:
+                                        break
+                                    if _atomId[0] == resId[0]:
+                                        continue
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                        concat = True
+                                        break
+                                    __atomId = translateToStdAtomName(_atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, __atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                        concat = True
+                                        break
+                        else:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    _atomNameLike[idx] = False
+                                    atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                    concat = True
+                            if details is not None and numOfDim == 1:
+                                _atomNameLike[idx] = False
+                                for shift in range(_atomNameSpan[idx][0], atomNameSpan[idx][1]):
+                                    _atomId = term[_atomNameSpan[idx][0] + shift:atomNameSpan[idx][1]]
+                                    if len(_atomId) == 0:
+                                        break
+                                    if _atomId[0] == resId[0]:
+                                        continue
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                        concat = True
+                                        break
+                                    __atomId = translateToStdAtomName(_atomId, compId, ccU=self.ccU)
+                                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, __atomId, leave_unmatched=True)
+                                    if details is None:
+                                        _atomNameSpan[idx] = (_atomNameSpan[idx][0] + shift, len(_atomId))
+                                        atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                        concat = True
+                                        break
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (_atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+
+            if __atomNameLike[idx] and _atomNameLike[idx] and atomNameLike[idx]:
+                concat = False
+                if __atomNameSpan[idx][1] == _atomNameSpan[idx][0] and _atomNameSpan[idx][1] == atomNameSpan[idx][0]:
+                    atomId = term[__atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
+                                concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = _atomNameLike[idx] = False
+                                    atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
+
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (__atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+
+            if ___atomNameLike[idx] and __atomNameLike[idx] and _atomNameLike[idx] and atomNameLike[idx]:
+                concat = False
+                if ___atomNameSpan[idx][1] == __atomNameSpan[idx][0] and __atomNameSpan[idx][1] == _atomNameSpan[idx][0]\
+                   and _atomNameSpan[idx][1] == atomNameSpan[idx][0]:
+                    atomId = term[___atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
+                                concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
+                                    atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = _atomNameLike[idx] = False
+                                atomNameSpan[idx] = (___atomNameSpan[idx][0], atomNameSpan[idx][1])
+                                break
+
+            if __atomNameLike[idx] and _atomNameLike[idx]:
+                concat = False
+                if __atomNameSpan[idx][1] == _atomNameSpan[idx][0]:
+                    atomId = term[__atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
+                                concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    __atomNameLike[idx] = False
+                                    _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (__atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                break
+
+            if ___atomNameLike[idx] and __atomNameLike[idx] and _atomNameLike[idx]:
+                concat = False
+                if ___atomNameSpan[idx][1] == __atomNameSpan[idx][0] and __atomNameSpan[idx][1] == _atomNameSpan[idx][0]:
+                    atomId = term[___atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
+                                concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = __atomNameLike[idx] = False
+                                    _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == _atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = __atomNameLike[idx] = False
+                                _atomNameSpan[idx] = (___atomNameSpan[idx][0], _atomNameSpan[idx][1])
+                                break
+
+            if ___atomNameLike[idx] and __atomNameLike[idx]:
+                concat = False
+                if ___atomNameSpan[idx][1] == __atomNameSpan[idx][0]:
+                    atomId = term[___atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
+                    if resNameLike[idx]:
+                        compId = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                        if len(compId) == 1 and hasOneLetterCodeSet:
+                            compId = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == compId)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = False
+                                __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
+                                    resNameLike[idx] = False
+                                concat = True
+                            else:
+                                _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                                _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                                if details is None:
+                                    ___atomNameLike[idx] = False
+                                    __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                    if resNameSpan[idx][0] == __atomNameSpan[idx][0]:
+                                        resNameLike[idx] = False
+                                    concat = True
+                    if not concat:
+                        for compId in self.compIdSet:
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = False
+                                __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                break
+                            _atomId = translateToStdAtomName(atomId, compId, ccU=self.ccU)
+                            _, _, details = self.nefT.get_valid_star_atom_in_xplor(compId, _atomId, leave_unmatched=True)
+                            if details is None:
+                                ___atomNameLike[idx] = False
+                                __atomNameSpan[idx] = (___atomNameSpan[idx][0], __atomNameSpan[idx][1])
+                                break
+
+            if idx == 0 and atomNameLike[0] and not _atomNameLike[0] and self.hasNonPoly:
+                if not segIdLike[0] and not resIdLike[0] and not resNameLike[0]:
+                    ligands = 0
+                    for np in self.__nonPoly:
+                        if 'alt_comp_id' in np and _str[0][0] == np['alt_comp_id'][0][0]:
+                            ligands += 1
+                    if ligands == 1:
+                        for np in self.__nonPoly:
+                            if 'alt_comp_id' in np and _str[0][0] == np['alt_comp_id'][0][0]:
+                                _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} "\
+                                    f"{np['comp_id'][0]}{string[atomNameSpan[0][1]:]}"
+                                return self.extractAtomAssignment(numOfDim, _string,
+                                                                  with_segid, with_compid, hint, dim_id_hint)
+
+                if _str[0][0] == 'X' and term[atomNameSpan[idx][0]] != 'X' and len(self.__nonPoly) == 1:
+                    np = self.__nonPoly[0]
+                    _string = f"{np['auth_chain_id']} {np['auth_seq_id'][0]} {np['comp_id'][0]}{string[atomNameSpan[0][0]:]}"
+                    return self.extractAtomAssignment(numOfDim, _string, with_segid, with_compid, hint, dim_id_hint)
+
+            if self.__verbose_debug:
+                print(f'{idx} {term!r} segid:{segIdLike[idx]} {term[segIdSpan[idx][0]:segIdSpan[idx][1]] if segIdLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
+                      f'resid:{resIdLike[idx]} {term[resIdSpan[idx][0]:resIdSpan[idx][1]] if resIdLike[idx] else ""}, '
+                      f'resname:{resNameLike[idx]} {term[resNameSpan[idx][0]:resNameSpan[idx][1]] if resNameLike[idx] else ""}, '
+                      f'atomname:{atomNameLike[idx]} {term[atomNameSpan[idx][0]:atomNameSpan[idx][1]] if atomNameLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
+                      f'_atomname:{_atomNameLike[idx]} {term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]] if _atomNameLike[idx] else ""},  '  # noqa: E501, pylint: disable=line-too-long
+                      f'__atomname:{__atomNameLike[idx]} {term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]] if __atomNameLike[idx] else ""}, '  # noqa: E501, pylint: disable=line-too-long
+                      f'___atomname:{___atomNameLike[idx]} {term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]] if ___atomNameLike[idx] else ""}')  # noqa: E501, pylint: disable=line-too-long
+
+        atomNameCount = 0
+        for idx in range(lenStr):
+            if atomNameLike[idx]:
+                atomNameCount += 1
+            if _atomNameLike[idx]:
+                atomNameCount += 1
+            if __atomNameLike[idx]:
+                atomNameCount += 1
+            if ___atomNameLike[idx]:
+                atomNameCount += 1
+
+        if atomNameCount < numOfDim:
+            return None
+
+        if atomNameCount > numOfDim > 1:
+            atomNameCount = 0
+            ignoreBefore = False
+            for idx in range(lenStr - 1, 0, -1):
+                if ignoreBefore:
+                    atomNameLike[idx] = _atomNameLike[idx] = __atomNameLike[idx] = ___atomNameLike[idx] = False
+                else:
+                    if atomNameLike[idx]:
+                        atomNameCount += 1
+                    if _atomNameLike[idx]:
+                        atomNameCount += 1
+                    if __atomNameLike[idx]:
+                        atomNameCount += 1
+                    if ___atomNameLike[idx]:
+                        atomNameCount += 1
+                    if atomNameCount >= numOfDim:
+                        ignoreBefore = True
+
+        hasResName = hasResId = False
+        for idx in range(lenStr):
+            if ___atomNameLike[idx]:
+                if resNameLike[idx]:
+                    if not hasResName and resNameSpan[idx][0] < ___atomNameSpan[idx][0]\
+                       and resNameSpan[idx][1] >= ___atomNameSpan[idx][1]:
+                        ___atomNameLike[idx] = False
+                    elif resNameSpan[idx][1] > ___atomNameSpan[idx][0]:
+                        term = _str[idx]
+                        if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] ==\
+                           term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]\
+                           and any(True for _idx in range(idx + 1, lenStr)
+                                   if __atomNameLike[_idx] or _atomNameLike[_idx] or atomNameLike[_idx]):
+                            ___atomNameLike[idx] = False
+                        else:
+                            resNameLike[idx] = False
+                if resIdLike[idx]:
+                    if resIdSpan[idx][1] > ___atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > ___atomNameSpan[idx][0]:
+                        segIdLike[idx] = False
+
+            elif __atomNameLike[idx]:
+                if resNameLike[idx]:
+                    if not hasResName and resNameSpan[idx][0] < __atomNameSpan[idx][0]\
+                       and resNameSpan[idx][1] >= __atomNameSpan[idx][1]:
+                        __atomNameLike[idx] = False
+                    elif resNameSpan[idx][1] > __atomNameSpan[idx][0]:
+                        term = _str[idx]
+                        if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]\
+                           and any(True for _idx in range(idx + 1, lenStr) if _atomNameLike[_idx] or atomNameLike[_idx]):
+                            __atomNameLike[idx] = False
+                        else:
+                            resNameLike[idx] = False
+                if resIdLike[idx]:
+                    if resIdSpan[idx][1] > __atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > __atomNameSpan[idx][0]:
+                        segIdLike[idx] = False
+
+            elif _atomNameLike[idx]:
+                if resNameLike[idx]:
+                    if not hasResName and resNameSpan[idx][0] < _atomNameSpan[idx][0]\
+                       and resNameSpan[idx][1] >= _atomNameSpan[idx][1]:
+                        _atomNameLike[idx] = False
+                    elif resNameSpan[idx][1] > _atomNameSpan[idx][0]:
+                        term = _str[idx]
+                        if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]\
+                           and any(True for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                            _atomNameLike[idx] = False
+                        else:
+                            resNameLike[idx] = False
+                if resIdLike[idx]:
+                    if resIdSpan[idx][1] > _atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > _atomNameSpan[idx][0]:
+                        segIdLike[idx] = False
+
+            elif atomNameLike[idx]:
+                if resNameLike[idx]:
+                    if not hasResName and resNameSpan[idx][0] < atomNameSpan[idx][0]\
+                       and resNameSpan[idx][1] >= atomNameSpan[idx][1]:
+                        atomNameLike[idx] = False
+                    elif resNameSpan[idx][1] > atomNameSpan[idx][0]:
+                        term = _str[idx]
+                        if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                           and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]\
+                           and any(True for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                            atomNameLike[idx] = False
+                        else:
+                            if forceOneLetterCodeSet and resIdLike[idx] and len(atomNameLike) > idx + 1 and atomNameLike[idx + 1]:
+                                atomNameLike[idx] = False
+                            else:
+                                resNameLike[idx] = False
+                if resIdLike[idx]:
+                    if resIdSpan[idx][1] > atomNameSpan[idx][0]:
+                        if forceOneLetterCodeSet and resNameLike[idx]:
+                            pass
+                        else:
+                            resIdLike[idx] = False
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > atomNameSpan[idx][0]:
+                        segIdLike[idx] = False
+
+            if resNameLike[idx]:
+                hasResName = True
+                if segIdLike[idx]:
+                    if segIdSpan[idx][1] > resNameSpan[idx][0]:
+                        if numOfDim > 1 or not any(resNameLike[_idx] for _idx in range(idx + 1, lenStr))\
+                           or (resIdLike[idx] and segIdSpan[idx][1] == resIdSpan[idx][0]):
+                            _resName = _str[idx][resNameSpan[idx][0]:resNameSpan[idx][1]]
+                            _resId = next((int(_str[_idx][resIdSpan[_idx][0]:resIdSpan[_idx][1]]) for _idx in range(idx + 1, lenStr)
+                                           if resIdLike[_idx]), None)
+                            _atomName = next((_str[_idx][atomNameSpan[_idx][0]:atomNameSpan[_idx][1]]
+                                              for _idx in range(idx + 1, lenStr)
+                                              if atomNameLike[_idx]), None)
+                            checked = True
+                            if _resId is not None and _atomName is not None and len(_resName) == 1 and len(self.polySeq) > 1:
+                                for ps in self.polySeq:
+                                    _, _, _compId_ = self.getRealChainSeqId(ps, _resId, None)
+                                    if _resName == ps['auth_chain_id'] and _compId_ in STD_MON_DICT\
+                                            and _resName != STD_MON_DICT[_compId_]:
+                                        checked = False
+                                        break
+                            if checked:
+                                segIdLike[idx] = False
+                            else:
+                                resNameLike[idx] = False
+                        else:
+                            if not hasResId and resNameSpan[idx][1] - resNameSpan[idx][0] == 3\
+                               and term[resNameSpan[idx][0]:resNameSpan[idx][1]] == term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]\
+                               and any(True for _idx in range(idx + 1, lenStr) if atomNameLike[_idx]):
+                                atomNameLike[idx] = False
+                            else:
+                                resNameLike[idx] = False
+
+            if resIdLike[idx]:
+                hasResId = True
+                if atomNameLike[idx]:
+                    if resIdSpan[idx][1] > atomNameSpan[idx][0]:
+                        resIdLike[idx] = False
+
+            if self.__verbose_debug:
+                print(f' -> {idx} segid:{segIdLike[idx]}, resid:{resIdLike[idx]}, resname:{resNameLike[idx]}, '
+                      f'atomname:{atomNameLike[idx]}, _atomname:{_atomNameLike[idx]}, '
+                      f'__atomname:{__atomNameLike[idx]}, ___atomname:{___atomNameLike[idx]}')
+
+        resIdCount = 0
+        for idx in range(lenStr):
+            if resIdLike[idx]:
+                resIdCount += 1
+
+        _resId = [h['seq_id'] for h in hint] if hint is not None else None
+        if resIdCount == 0:
+            if _resId is None and _ligAtomId is None:
+                return None
+
+        _resNameDict = [{h['auth_seq_id']: h['comp_id']} for h in hint] if hint is not None else None
+
+        resIdLater = resIdCount == numOfDim
+        if resIdLater:
+            atomNameCount = 0
+            for idx in range(lenStr):
+                if atomNameLike[idx]:
+                    atomNameCount += 1
+            resIdLater = atomNameCount == numOfDim
+            if resIdLater:
+                anyResId = False
+                for idx in range(lenStr):
+                    if resIdLike[idx]:
+                        anyResId = True
+                    if atomNameLike[idx]:
+                        if anyResId:
+                            resIdLater = False
+                        break
+
+        if self.__verbose_debug:
+            print(f'num_of_dim: {numOfDim}, resid_count: {resIdCount}, resid_later:{resIdLater}')
+
+        def is_valid_chain_assign(chain_assign, res_name):
+            return len(chain_assign) > 0 and ((res_name in extMonDict3 and any(True for a in chain_assign if a[2] == res_name))
+                                              or res_name not in extMonDict3)
+
+        ret = []
+
+        segId = _segId = resId = resName = atomName = _segId_ = _resId_ = authResId = None
+        dimId = 1
+
+        def append_atom_assignment() -> bool:
+            """ Assign the current atom (atomName) to the coordinates and append it to ret.
+                @return: whether the atom is skipped as an ignorable diagonal assignment
+            """
+            nonlocal _, atomName, details, dimId, resName, segId
+
+            if self.hasCoord:
+                if segId is None and resName is None:
+                    chainAssign =\
+                        self.assignCoordPolymerSequenceWithChainIdWithoutCompId(self.__defaultSegId, resId, atomName)
+                    if len(chainAssign) > 0:
+                        if self.__defaultSegId is None:
+                            ca_idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                        else:
+                            ca_idx = next((chainAssign.index(a) for a in chainAssign
+                                           if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                            if ca_idx == -1:
+                                ca_idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                        if ca_idx != -1:
+                            # if self.__defaultSegId is None:
+                            self.__defaultSegId = chainAssign[ca_idx][0]
+                        else:
+                            ca_idx = 0
+                        segId, _, resName, _ = chainAssign[ca_idx]
+                    else:
+                        chainAssign = self.assignCoordPolymerSequenceWithoutCompId(resId, atomName)
+                        if len(chainAssign) > 0:
+                            if self.__defaultSegId is None:
+                                ca_idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                            else:
+                                ca_idx = next((chainAssign.index(a) for a in chainAssign
+                                               if a[0] == self.__defaultSegId and a[1] == resId), -1)
+                                if ca_idx == -1:
+                                    ca_idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), -1)
+                            if ca_idx != -1:
+                                # if self.__defaultSegId is None:
+                                # self.__defaultSegId = chainAssign[ca_idx][0]
+                                pass
+                            else:
+                                ca_idx = 0
+                            segId, _, resName, _ = chainAssign[ca_idx]
+                elif segId is None:
+                    chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId,
+                                                                                resId, resName, atomName)
+                    is_valid = is_valid_chain_assign(chainAssign, resName)
+                    if not is_valid:
+                        if self.__defaultSegId != self.__defaultSegId__:
+                            __preferAuthSeq = self.__preferAuthSeq
+                            self.__preferAuthSeq = not __preferAuthSeq
+                            chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId__,
+                                                                                        resId, resName, atomName)
+                            is_valid = is_valid_chain_assign(chainAssign, resName)
+                            self.__preferAuthSeq = __preferAuthSeq
+                    if is_valid:
+                        ca_idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                        if ca_idx != -1:
+                            # if self.__defaultSegId is None:
+                            self.__defaultSegId = chainAssign[ca_idx][0]
+                        else:
+                            ca_idx = 0
+                        segId = chainAssign[ca_idx][0]
+                    else:
+                        chainAssign, _ = self.assignCoordPolymerSequence(resId, resName, atomName)
+                        if is_valid_chain_assign(chainAssign, resName):
+                            ca_idx = next((chainAssign.index(a) for a in chainAssign if a[2] == resName), -1)
+                            if ca_idx != -1:
+                                # if self.__defaultSegId is None:
+                                self.__defaultSegId = chainAssign[ca_idx][0]
+                            else:
+                                ca_idx = 0
+                            segId = chainAssign[ca_idx][0]
+                elif resName is None:
+                    chainAssign = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(segId, resId, atomName)
+                    if len(chainAssign) > 0:
+                        ca_idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), 0)
+                        resName = chainAssign[ca_idx][2]
+                _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
+                if details is not None:
+                    atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
+                            'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
+            else:
+                ass = {'dim': dimId, 'atom_id': atomName}
+                if _segId is not None:
+                    ass['auth_chain_id'] = _segId
+                if segId is not None:
+                    ass['chain_id'] = segId
+                if resId is not None:
+                    ass['seq_id'] = resId
+                if resName is not None:
+                    ass['comp_id'] = resName
+                    if with_compid is not None:
+                        _resName = translateToStdResName(with_compid, ccU=self.ccU)
+                        if resName != _resName and not self.hasPolySeq:
+                            ass['comp_id'] = _resName
+                            ass['atom_id'] = translateToStdAtomName(atomName, _resName, ccU=self.ccU)
+                elif with_compid is not None:
+                    ass['comp_id'] = translateToStdResName(with_compid, ccU=self.ccU)
+                    ass['atom_id'] = translateToStdAtomName(atomName, ass['comp_id'], ccU=self.ccU)
+                ret.append(ass)
+            dimId += 1
+            return False
+
+        for idx, term in enumerate(_str):
+            if segIdLike[idx]:
+                segId = _segId = term[segIdSpan[idx][0]:segIdSpan[idx][1]]
+                if _segId.isdigit():
+                    _segId = None
+                if _segId_ is not None and segId != _segId_:
+                    resId = resName = None
+                _segId_ = segId
+            if resIdLike[idx]:
+                resId = authResId = int(term[resIdSpan[idx][0]:resIdSpan[idx][1]])
+                if _resId_ is not None and resId != _resId_:
+                    resName = None
+                _resId_ = resId
+            if resNameLike[idx]:
+                resName = term[resNameSpan[idx][0]:resNameSpan[idx][1]]
+                if len(resName) == 1 and hasOneLetterCodeSet:
+                    resName = next(k for k, v in extMonDict3.items() if k in self.compIdSet and v == resName)
+            elif _resNameDict is not None and resName is None and len(ret) < len(_resNameDict)\
+                    and _resId is not None and len(ret) < len(_resId) and _resId[len(ret)] in _resNameDict[len(ret)]\
+                    and (authResId is None or authResId == _resId[len(ret)]):
+                resName = _resNameDict[len(ret)][_resId[len(ret)]]
+            if ___atomNameLike[idx]:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
+                if resId is None:
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
+                atomName = term[___atomNameSpan[idx][0]:___atomNameSpan[idx][1]]
+                if append_atom_assignment():
+                    continue
+            if __atomNameLike[idx]:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
+                if resId is None:
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
+                atomName = term[__atomNameSpan[idx][0]:__atomNameSpan[idx][1]]
+                if append_atom_assignment():
+                    continue
+            if _atomNameLike[idx]:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
+                if resId is None:
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
+                atomName = term[_atomNameSpan[idx][0]:_atomNameSpan[idx][1]]
+                if append_atom_assignment():
+                    continue
+            if atomNameLike[idx]:
+                if resIdLater:
+                    for _idx, _term in enumerate(_str):
+                        if _idx > idx and resIdLike[_idx]:
+                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
+                            segId = resName = None
+                            break
+                if resId is None and _ligAtomId is None:
+                    if _resId is None or len(ret) >= len(_resId):
+                        return None
+                    resId = _resId[len(ret)]
+                if _ligAtomId is not None:
+                    resId = _ligSeqId
+                atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
+                if append_atom_assignment():
+                    continue
+
+        return ret if len(ret) > 0 else None
+
+    def extractCommonAtom(self, atom_sel: List[dict]) -> dict:
+        """ Return standardized pseudoatom name from given atom selections.
+        """
+
+        if len(atom_sel) == 0:
+            return {}
+
+        if len(atom_sel) == 1:
+            return atom_sel[0]
+
+        strings = [a['atom_id'] for a in atom_sel]
+
+        min_str = min(strings, key=len)
+        max_str = max(strings, key=len)
+
+        len_min_str = len(min_str)
+        len_max_str = len(max_str)
+        longest_substr = ''
+
+        for i in range(len_min_str):
+            for j in range(i + 1, len_min_str + 1):
+                substr = min_str[i:j]
+                if all(substr in s for s in strings):
+                    if len(substr) > len(longest_substr):
+                        longest_substr = substr
+
+        if len(longest_substr) == 0:
+            return atom_sel[0]
+
+        self.pA.clear()
+        self.pA.setReferenceSequence(list(longest_substr), 'REFNAME')
+        self.pA.addTestSequence(list(max_str), 'NAME')
+        self.pA.doAlign()
+
+        myAlign = self.pA.getAlignment('NAME')
+
+        length = len(myAlign)
+
+        if length == 0:
+            return atom_sel[0]
+
+        common_name = []
+
+        for i in range(length):
+            myPr = myAlign[i]
+            myPr0 = str(myPr[0])
+            myPr1 = str(myPr[1])
+            if myPr0 == myPr1:
+                if myPr0 not in EMPTY_VALUE:
+                    common_name.append(myPr0)
+            elif myPr0 in EMPTY_VALUE:
+                if myPr1 not in EMPTY_VALUE:
+                    common_name.append(('#' if myPr1.isdigit() else '%') if len_min_str == len_max_str else '*')
+
+        if len(common_name) == 0:
+            return atom_sel[0]
+
+        common_name = ''.join(common_name)
+
+        while '##' in common_name:
+            common_name = common_name.replace('##', '*')
+
+        while '%%' in common_name:
+            common_name = common_name.replace('%%', '*')
+
+        while '*%' in common_name:
+            common_name = common_name.replace('*%', '*')
+
+        while '%*' in common_name:
+            common_name = common_name.replace('%*', '*')
+
+        while '**' in common_name:
+            common_name = common_name.replace('**', '*')
+
+        ambig_code = 1
+        if any(atom1['chain_id'] != atom2['chain_id'] for atom1, atom2 in itertools.combinations(atom_sel, 2)):
+            ambig_code = 6
+        elif any(atom1['seq_id'] != atom2['seq_id'] for atom1, atom2 in itertools.combinations(atom_sel, 2)):
+            ambig_code = 5
+        else:
+            comp_id = atom_sel[0]['comp_id']
+            for atom1, atom2 in itertools.combinations(atom_sel, 2):
+                atom_id1 = atom1['atom_id']
+                atom_id2 = atom2['atom_id']
+                ambig_code1 = self.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id1)
+                ambig_code2 = self.csStat.getMaxAmbigCodeWoSetId(comp_id, atom_id2)
+                if ambig_code1 != ambig_code2:
+                    ambig_code = 4
+                    break
+                if ambig_code1 == 1:
+                    if atom_id2 in self.csStat.getProtonsInSameGroup(comp_id, atom_id1, excl_self=True):
+                        continue
+                    ambig_code = 4
+                    break
+                if ambig_code1 == 2\
+                   and atom_id2 in self.csStat.getProtonsInSameGroup(comp_id, atom_id1, excl_self=True):
+                    continue
+                if ambig_code1 in (2, 3):
+                    _atom_id2 = self.csStat.getGeminalAtom(comp_id, atom_id1)
+                    if _atom_id2 is None:
+                        ambig_code = 4
+                        break
+                    if _atom_id2 == atom_id2\
+                       or (ambig_code1 == 2 and atom_id2 in self.csStat.getProtonsInSameGroup(comp_id, _atom_id2, excl_self=True)):
+                        continue
+                    ambig_code = 4
+                    break
+
+        if len(common_name) == 2 and common_name.endswith('*'):  # avoid 'H*' for amide proton
+            if self.csStat.getTypeOfCompId(atom_sel[0]['comp_id'])[0]:
+                return atom_sel[0]
+
+        _atom_sel = copy.copy(atom_sel[0])
+        if 'auth_atom_id' in _atom_sel:
+            _atom_sel['orig_atom_id'] = _atom_sel['auth_atom_id']
+        _atom_sel['auth_atom_id'] = common_name
+        if ambig_code != 1:
+            _atom_sel['ambig_code'] = ambig_code
+
+        return _atom_sel
 
     def validateAngleRange(self, weight: float, target_value: Optional[float],
                            lower_limit: Optional[float], upper_limit: Optional[float]

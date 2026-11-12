@@ -1030,13 +1030,13 @@ class BaseCSParserListener():
 
         lenStr = len(_str)
 
-        segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike, atomNameLike_ =\
+        segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike =\
             [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, \
-            [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr
+            [False] * lenStr, [False] * lenStr, [False] * lenStr
 
-        segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan, siblingAtomName =\
+        segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan =\
             [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, \
-            [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr
+            [None] * lenStr, [None] * lenStr, [None] * lenStr
 
         oneLetterCodeSet = []
         extMonDict3 = {}
@@ -1201,24 +1201,16 @@ class BaseCSParserListener():
                                         _, _, details =\
                                             self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
                                         if details is None:
-                                            atomNameLike[idx] = atomNameLike_[_idx] = useOneLetterCodeSet = True
+                                            atomNameLike[idx] = useOneLetterCodeSet = True
                                             atomNameSpan[idx] = (_index, len(term))
-                                            if siblingAtomName[_idx] is None:
-                                                siblingAtomName[_idx] = []
-                                            if _atomId not in siblingAtomName[_idx]:
-                                                siblingAtomName[_idx].append(_atomId)
                                             break
                                     if (with_compid is not None and _atomId.startswith(with_compid)) or _atomId.startswith('MET'):
                                         continue
                                     _atomId = translateToStdAtomName(_atomId, _compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
                                     if details is None:
-                                        atomNameLike[idx] = atomNameLike_[_idx] = True
+                                        atomNameLike[idx] = True
                                         atomNameSpan[idx] = (_index, len(term))
-                                        if siblingAtomName[_idx] is None:
-                                            siblingAtomName[_idx] = []
-                                        if _atomId not in siblingAtomName[_idx]:
-                                            siblingAtomName[_idx].append(_atomId)
                                         break
                             if atomNameLike[idx]:
                                 break
@@ -2196,8 +2188,8 @@ class BaseCSParserListener():
                                 ca_idx = 0
                             segId, _, resName, _ = chainAssign[ca_idx]
                 elif segId is None:
-                    chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
-                                                                     resId, resName, atomName, src_index)
+                    chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId,
+                                                                                resId, resName, atomName, src_index)
                     is_valid = is_valid_chain_assign(chainAssign, resName)
                     if not is_valid:
                         if self.__defaultSegId != self.__defaultSegId__:
@@ -2352,20 +2344,6 @@ class BaseCSParserListener():
                 atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
                 if append_atom_assignment():
                     continue
-            elif atomNameLike_[idx] and siblingAtomName[idx] is not None:
-                if resIdLater:
-                    for _idx, _term in enumerate(_str):
-                        if _idx > idx and resIdLike[_idx]:
-                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
-                            segId = resName = None
-                            break
-                if resId is None:
-                    if _resId is None or len(ret) >= len(_resId):
-                        return None
-                    resId = _resId[len(ret)]
-                for atomName in siblingAtomName[idx]:
-                    if append_atom_assignment():
-                        continue
 
         return ret if len(ret) > 0 else None
 

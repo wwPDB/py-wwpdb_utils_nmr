@@ -19,7 +19,7 @@ parser grammar BareMRParser;
 options { tokenVocab=BareMRLexer; }
 
 bare_mr:
-	RETURN?
+	(RETURN? Data_block RETURN | RETURN)?
 	(
 	mr_row_format |
 	RETURN

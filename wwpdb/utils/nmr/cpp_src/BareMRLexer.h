@@ -12,10 +12,10 @@
 class  BareMRLexer : public antlr4::Lexer {
 public:
   enum {
-    Integer = 1, Float = 2, SHARP_COMMENT = 3, EXCLM_COMMENT = 4, Number_of_name = 5, 
-    Simple_name = 6, Double_quote_string = 7, Double_quote_integer = 8, 
-    Double_quote_float = 9, SPACE = 10, RETURN = 11, SECTION_COMMENT = 12, 
-    LINE_COMMENT = 13
+    Data_block = 1, Integer = 2, Float = 3, SHARP_COMMENT = 4, EXCLM_COMMENT = 5, 
+    Number_of_name = 6, Simple_name = 7, Double_quote_string = 8, Double_quote_integer = 9, 
+    Double_quote_float = 10, SPACE = 11, RETURN = 12, SECTION_COMMENT = 13, 
+    LINE_COMMENT = 14
   };
 
   explicit BareMRLexer(antlr4::CharStream *input);

@@ -45,7 +45,7 @@ residue_list:
 	Res_type Simple_name RETURN
 	(Prev_type Type_pred+ RETURN)?
 	Spin_system_ID Integer RETURN
-	Heterogeneity Integer RETURN
+	(Heterogeneity Integer RETURN)?
 	shift_list+
 	End_res_def (RETURN | EOF);
 

@@ -22,7 +22,7 @@ R_brkt:			']';
 /* GROMACS 2022.1 Referece Manual - Topology
  See also https://manual.gromacs.org/documentation/current/reference-manual/topologies/topology-file-formats.html
 */
-Default:		'default';			// nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ
+Default:		'default' 's'?;			// nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ
 Moleculetype:		'moleculetype';			// name nrexcl
 Atomtypes:		'atomtypes';			// name at.num mass charge ptype V W
 Pairtypes:		'pairtypes';			// i j func cs6 cs12

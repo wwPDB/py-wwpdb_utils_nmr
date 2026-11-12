@@ -1267,7 +1267,7 @@ class NmrDpValidationInput(NmrDpValidationBase):
                 if self._reg.verbose:
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
 
-            else:
+            elif not self._reg.conversion_server:
 
                 err = "The restraint file includes assigned chemical shifts. "\
                     f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
@@ -1333,7 +1333,8 @@ class NmrDpValidationInput(NmrDpValidationBase):
                     self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Error  - {err}\n")
 
         if (lp_counts['dist_restraint'] > 0 or lp_counts['dihed_restraint'] or lp_counts['rdc_restraint'])\
-           and content_type == 'nmr-chemical-shifts' and not self._reg.bmrb_only and not self._reg.internal_mode:
+           and content_type == 'nmr-chemical-shifts' and not self._reg.bmrb_only and not self._reg.internal_mode\
+           and not self._reg.conversion_server:
 
             err = "The assigned chemical shift file includes restraints. "\
                 f"Please re-upload the {file_type.upper()} file as an NMR unified data file."
@@ -1365,7 +1366,8 @@ class NmrDpValidationInput(NmrDpValidationBase):
                 self._reg.log.write(f"+{self.__class_name__}.detectContentSubType() ++ Warning  - {warn}\n")
 
         if has_spectral_peak and content_type == 'nmr-chemical-shifts'\
-           and not self._reg.bmrb_only and not self._reg.internal_mode:
+           and not self._reg.bmrb_only and not self._reg.internal_mode\
+           and not self._reg.conversion_server:
 
             err = "The assigned chemical shift file includes spectral peak lists. "\
                 f"Please re-upload the {file_type.upper()} file as an NMR unified data file."

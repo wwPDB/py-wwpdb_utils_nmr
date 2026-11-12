@@ -195,4 +195,3 @@ gen_res_num:
 /* residue name or atom name */
 gen_simple_name:
 	Simple_name | Integer_capital | Capital_integer;
-

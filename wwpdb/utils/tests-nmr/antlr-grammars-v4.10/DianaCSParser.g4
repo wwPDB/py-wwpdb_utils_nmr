@@ -39,4 +39,3 @@ chemical_shift:
 
 atom_chemical_shift:
 	Simple_name Float Float?;
-

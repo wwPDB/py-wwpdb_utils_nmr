@@ -583,4 +583,3 @@ plane_group_loop:
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
 	(evaluate_statement | plane_group | plane_restraint)*
 	End Loop Simple_name_LL;
-

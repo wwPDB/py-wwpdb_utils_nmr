@@ -344,4 +344,3 @@ tree_chain_classification_statement:
 
 format_function:
 	FORMAT (Fortran_format_A | Fortran_format_I | Fortran_format_E);
-

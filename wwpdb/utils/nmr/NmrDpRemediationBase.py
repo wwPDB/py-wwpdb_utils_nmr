@@ -99,14 +99,12 @@ def get_chem_shift_format_from_string(string: str
        and ('SHIFT' in string and 'SHIFTS' not in string):
         return 'nm-shi-npi'
 
-    if 'SHIFT_FL_FRMT' in string and 'RES_SIAD' in string:
+    if ('SHIFT_FL_FRMT' in string and 'RES_SIAD' in string)\
+       or 'SPIN_SYSTEM_ID' in string or 'HETEROGENEITY' in string or 'END_RES_DEF' in string:
         return 'nm-shi-pip'
 
     if 'TYPEDEF SEQUENCE' in string or 'TYPEDEF ASS_TBL_' in string:
         return 'nm-shi-oli'
-
-    if 'SPIN_SYSTEM_ID' in string or 'HETEROGENEITY' in string or 'END_RES_DEF' in string:
-        return 'nm-shi-vie'
 
     return None
 

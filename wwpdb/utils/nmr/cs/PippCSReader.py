@@ -227,6 +227,54 @@ class PippCSReader:
 
 
 if __name__ == "__main__":
+    nmr_poly_seq = [
+                {
+                  "chain_id": "1",
+                  "auth_chain_id": "A",
+                  "seq_id": [
+                    101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113
+                  ],
+                  "comp_id": [
+                    "DC", "DA", "DG", "DT", "DG", "DA", "DT", "DA", "DG", "DA", "DG", "DA", "DC"
+                  ]
+                },
+                {
+                  "chain_id": "2",
+                  "auth_chain_id": "B",
+                  "seq_id": [
+                    114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126
+                  ],
+                  "comp_id": [
+                    "DG", "DT", "DC", "DT", "DC", "DT", "DA", "DT", "DC", "DA", "DC", "DT", "DG"
+                  ]
+                },
+                {
+                  "chain_id": "3",
+                  "auth_chain_id": "C",
+                  "seq_id": [
+                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+                    21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+                    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+                    61, 62, 63, 64, 65, 66
+                  ],
+                  "comp_id": [
+                    "MET", "LYS", "ASN", "GLY", "GLU", "GLN", "ASN", "GLY", "PRO", "THR",
+                    "THR", "CYS", "THR", "ASN", "CYS", "PHE", "THR", "GLN", "THR", "THR",
+                    "PRO", "VAL", "TRP", "ARG", "ARG", "ASN", "PRO", "GLU", "GLY", "GLN",
+                    "PRO", "LEU", "CYS", "ASN", "ALA", "CYS", "GLY", "LEU", "PHE", "LEU",
+                    "LYS", "LEU", "HIS", "GLY", "VAL", "VAL", "ARG", "PRO", "LEU", "SER",
+                    "LEU", "LYS", "THR", "ASP", "VAL", "ILE", "LYS", "LYS", "ARG", "ASN",
+                    "ARG", "ASN", "SER", "ALA", "ASN", "SER"
+                  ]
+                }
+              ]
+    entity_assembly = {'1': {'entity_id': 1, 'auth_asym_id': 'A'},
+                       '2': {'entity_id': 2, 'auth_asym_id': 'B'},
+                       '3': {'entity_id': 3, 'auth_asym_id': 'C'}}
+    reader = PippCSReader(True, polySeq=nmr_poly_seq, entityAssembly=entity_assembly)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/6gat/chemical_shifts.txt')
+
     nmr_poly_seq = [{'chain_id': '1',
                      'seq_id': [1, 2, 3, 4, 5, 6, 7, 8, 9],
                      'comp_id': ['ALA', 'SER', 'ILE', '.', '.', '.', '.', 'HIS', 'LEU']

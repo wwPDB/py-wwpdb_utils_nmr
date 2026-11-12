@@ -108,4 +108,3 @@ assign: Integer | (Simple_name Integer?);
 
 comment:
 	COMMENT Any_name* (RETURN_CM | EOF);
-

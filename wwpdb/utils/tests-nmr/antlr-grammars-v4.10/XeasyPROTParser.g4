@@ -29,4 +29,3 @@ prot:
 	
 residue:
 	Integer | Simple_name;
-

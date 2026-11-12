@@ -240,4 +240,3 @@ fragment SPACE_SSM:	[ \t\r\n];
 fragment CONTINUE_SSM:	SPACE_SSM* (O R | '|' | ',') SPACE_SSM*;
 
 IGNORE_SPACE_SSM:	SPACE_SSM -> skip;
-

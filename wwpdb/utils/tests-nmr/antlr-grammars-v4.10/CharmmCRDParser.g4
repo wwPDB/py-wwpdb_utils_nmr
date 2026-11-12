@@ -34,4 +34,3 @@ coordinates:
 
 atom_coordinate:
 	Integer Integer Simple_name Simple_name Float Float Float Simple_name Integer Float;
-

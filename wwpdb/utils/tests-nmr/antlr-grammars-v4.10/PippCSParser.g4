@@ -27,8 +27,8 @@ pipp_cs:
 	EOF;
 
 pipp_format:
-	Shift_fl_frmt Res_siad RETURN
-	First_res_in_seq Integer RETURN
+	(Shift_fl_frmt Res_siad RETURN)?
+	(First_res_in_seq Integer RETURN)?
 	ext_peak_pick_tbl?
 	residue_list+;
 
@@ -43,14 +43,14 @@ ext_peak_pick_tbl_row:
 residue_list:
 	(Res_ID | Res_ID_) Integer RETURN
 	Res_type Simple_name RETURN
+	(Prev_type Type_pred+ RETURN)?
 	Spin_system_ID Integer RETURN
 	Heterogeneity Integer RETURN
 	shift_list+
 	End_res_def (RETURN | EOF);
 
 shift_list:
-	Simple_name number L_paren Simple_name+ R_paren RETURN;
+	Simple_name number number? (Single_note | Note_begin Note_middle* Note_end)? RETURN;
 
 /* number expression in chemical shift */
-number: Float | Integer | Simple_name;
-
+number: Float | Integer;

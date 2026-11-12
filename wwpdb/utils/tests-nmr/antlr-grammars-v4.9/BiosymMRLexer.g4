@@ -105,4 +105,3 @@ Relative:		'relative';
 SPACE_II:		[ \t]+ -> skip;
 
 RETURN_II:		[\r\n]+ -> popMode;
-

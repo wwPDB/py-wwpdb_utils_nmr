@@ -121,4 +121,3 @@ Any_name:		~[ \t\r\n]+;
 
 SPACE_CM:		[ \t]+ -> skip;
 RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
-

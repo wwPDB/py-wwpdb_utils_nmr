@@ -87,4 +87,3 @@ peak_stat:
 	With_short_range Short_range_ex Colon Integer
 	With_medium_range Medium_range_ex Colon Integer
 	With_long_range Long_range_ex Colon Integer;
-

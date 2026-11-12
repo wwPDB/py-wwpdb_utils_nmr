@@ -138,4 +138,3 @@ decl_function:
 
 decl_target:
 	Restraint Target Double_quote_string (Double_quote_string | Relative) Double_quote_string RETURN_II;
-

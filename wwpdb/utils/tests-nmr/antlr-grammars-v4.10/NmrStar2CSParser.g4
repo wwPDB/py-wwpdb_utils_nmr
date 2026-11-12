@@ -73,4 +73,3 @@ cs_data:
 
 /* any data expression in chemical shift list */
 any:	Float | Integer | Simple_name | Double_quote_string | Single_quote_string;
-

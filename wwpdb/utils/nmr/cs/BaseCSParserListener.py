@@ -221,6 +221,9 @@ class BaseCSParserListener():
     # collection of any selection
     anySelection = []
 
+    # collection of number selection
+    numberSelection = []
+
     warningMessage = None
 
     # original source MR file name
@@ -1004,7 +1007,7 @@ class BaseCSParserListener():
 
     def extractChemShiftAssignment(self, numOfDim: int, string: str, src_index: int,
                                    with_segid: Optional[str] = None, with_compid: Optional[str] = None,
-                                   hint: Optional[List[dict]] = None
+                                   with_atomid: Optional[str] = None, hint: Optional[List[dict]] = None
                                    ) -> Optional[List[dict]]:
         """ Extract chemical shift assignment from a given string.
         """
@@ -2232,12 +2235,21 @@ class BaseCSParserListener():
                     if len(chainAssign) > 0:
                         ca_idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), 0)
                         resName = chainAssign[ca_idx][2]
-                _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
-                if details is not None:
+                if with_atomid is None or not with_atomid.startswith(atomName):
                     atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
+                    if details is not None:
+                        atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                else:
+                    atomName = with_atomid
                 ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                             'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
             else:
+                if resName is not None:
+                    if with_atomid is None or not with_atomid.startswith(atomName):
+                        atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                    else:
+                        atomName = with_atomid
                 ass = {'dim': dimId, 'atom_id': atomName}
                 if _segId is not None:
                     ass['auth_chain_id'] = _segId
@@ -2249,8 +2261,14 @@ class BaseCSParserListener():
                     ass['seq_id'] = resId
                 if resName is not None:
                     ass['comp_id'] = resName
+                    if with_compid is not None:
+                        _resName = translateToStdResName(with_compid, ccU=self.ccU)
+                        if resName != _resName and not self.hasPolySeq:
+                            ass['comp_id'] = _resName
+                            ass['atom_id'] = translateToStdAtomName(atomName, _resName, ccU=self.ccU)
                 elif with_compid is not None:
-                    ass['comp_id'] = with_compid
+                    ass['comp_id'] = translateToStdResName(with_compid, ccU=self.ccU)
+                    ass['atom_id'] = translateToStdAtomName(atomName, ass['comp_id'], ccU=self.ccU)
                 ret.append(ass)
             dimId += 1
             return False

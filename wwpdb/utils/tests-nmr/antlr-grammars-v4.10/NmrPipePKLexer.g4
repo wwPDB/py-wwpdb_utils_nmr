@@ -209,4 +209,3 @@ Assignments_PR:		'<' SIMPLE_NAME+ '>';
 
 SPACE_PR:		[ \t]+ -> skip;
 RETURN_PR:		[\r\n]+ -> popMode;
-

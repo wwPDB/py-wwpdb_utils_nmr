@@ -234,7 +234,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                     continue
                                 self.__col_order[idx] = 'residue_name'
 
-            if self.__col_order.count('sequence_code') != 2 or self.__col_order.count('atom_name') != 2\
+            if self.__col_order.count('sequence_code') not in (0, 2) or self.__col_order.count('atom_name') != 2\
                or ('target_value' not in self.__col_order and 'upper_limit' not in self.__col_order):
                 return
 
@@ -342,22 +342,49 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
                               f"The weight value '{weight}' should be a positive value.")
 
-            if len(chainIds) not in (0, 2) or len(seqIds) != 2 or len(compIds) not in (0, 2)\
+            if len(chainIds) not in (0, 2) or len(seqIds) not in (0, 2) or len(compIds) not in (0, 2)\
                or len(atomIds) != 2 or (target_value is None and upper_limit is None):
                 self.distRestraints -= 1
                 return
 
             chainId1 = chainId2 = seqId1 = seqId2 = compId1 = compId2 = atomId1 = atomId2 = None
 
+            if len(seqIds) == 0:
+                assignment1 = self.extractAtomAssignment(1, atomIds[0],
+                                                         with_segid=(None if len(chainIds) == 0 else chainIds[0]),
+                                                         with_compid=(None if len(compIds) == 0 else compIds[0]))
+
+                if assignment1 is None:
+                    self.distRestraints -= 1
+                    return
+
+                assignment2 = self.extractAtomAssignment(1, atomIds[1],
+                                                         with_segid=(None if len(chainIds) == 0 else chainIds[1]),
+                                                         with_compid=(None if len(compIds) == 0 else compIds[1]))
+
+                if assignment2 is None:
+                    self.distRestraints -= 1
+                    return
+
+                a1 = self.extractCommonAtom(assignment1)
+                chainId1, seqId1, compId1, atomId1 =\
+                    a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['auth_atom_id' if 'auth_atom_id' in a1 else 'atom_id']
+
+                a2 = self.extractCommonAtom(assignment2)
+                chainId2, seqId2, compId2, atomId2 =\
+                    a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['auth_atom_id' if 'auth_atom_id' in a2 else 'atom_id']
+
             if len(chainIds) > 0:
                 chainId1, chainId2 = chainIds[0], chainIds[1]
 
-            seqId1, seqId2 = seqIds[0], seqIds[1]
+            if len(seqIds) > 0:
+                seqId1, seqId2 = seqIds[0], seqIds[1]
 
             if len(compIds) > 0:
                 compId1, compId2 = compIds[0], compIds[1]
 
-            atomId1, atomId2 = atomIds[0], atomIds[1]
+            if len(seqIds) > 0:
+                atomId1, atomId2 = atomIds[0], atomIds[1]
 
             if upper_limit is None and lower_limit is None and value_uncertainty is not None:
                 upper_limit = target_value + value_uncertainty

@@ -2305,7 +2305,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                     if file_type != 'nmr-star':
                         continue
 
-                    mr_file_names.append(input_source_dic['file_name'])
+                    mr_file_names.append(os.path.basename(input_source_dic['file_name']))
 
                 if AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict:
 
@@ -2323,7 +2323,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                         if file_type == 'nm-res-mr':
                             continue
 
-                        mr_file_names.append(input_source_dic['file_name'])
+                        mr_file_names.append(os.path.basename(input_source_dic['file_name']))
 
                 if len(mr_file_names) > 0:
 

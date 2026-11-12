@@ -179,6 +179,12 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
         if not has_ac_path and not has_ar_path:
             if self._reg.permit_missing_cs_file:
+                # prevent OSError in standalone NMR data conversion service (DAOTHER-9785)
+                if len(self._reg.star_data) == 0 or self._reg.star_data[0] is None\
+                   and self._reg.conversion_server and self._reg.op == 'nmr-cs-mr-merge':
+                    master_entry = pynmrstar.Entry.from_scratch('dummy')
+                    master_entry.write_to_file(self._reg.dstPath)
+
                 return True
 
         try:
@@ -815,6 +821,12 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                 file_name = None
 
             if not has_cs:
+
+                # prevent OSError in standalone NMR data conversion service (DAOTHER-9785)
+                if self._reg.permit_missing_cs_file and self._reg.conversion_server and self._reg.op == 'nmr-cs-mr-merge':
+                    master_entry = pynmrstar.Entry.from_scratch('dummy')
+                    master_entry.write_to_file(self._reg.dstPath)
+
                 err = f"The mandatory loop {lp_category!r} is missing. Deposition of assigned chemical shifts is mandatory. "\
                     "Please re-upload the NMR-STAR file."
 

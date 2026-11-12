@@ -2078,7 +2078,7 @@ class NmrDpReportInputSource:
                            'nm-shi-ari', 'nm-shi-bar', 'nm-shi-dia', 'nm-shi-gar', 'nm-shi-npi',
                            'nm-shi-oli', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', 'nm-shi-xea',
                            'nm-csp-ari', 'nm-csp-bar', 'nm-csp-gar', 'nm-csp-npi', 'nm-csp-oli',
-                           'nm-csp-pip', 'nm-csp-ppm', 'nm-csp-st2', 'nm-csp-vie', 'nm-csp-xea')
+                           'nm-csp-pip', 'nm-csp-ppm', 'nm-csp-st2', 'nm-csp-xea')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')

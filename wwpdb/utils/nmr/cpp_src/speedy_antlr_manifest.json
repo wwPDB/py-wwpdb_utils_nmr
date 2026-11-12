@@ -466,26 +466,6 @@
       ]
     },
     {
-      "module": "sa_nmrviewcs_cpp_parser",
-      "subpackage": "cs",
-      "shim": "sa_nmrviewcs",
-      "grammar": "NmrViewCS",
-      "lexer": "NmrViewCSLexer",
-      "parser": "NmrViewCSParser",
-      "entry_rule": "nmrview_cs",
-      "readers": [
-        "NmrViewCSReader"
-      ],
-      "sources": [
-        "NmrViewCSLexer.cpp",
-        "NmrViewCSParser.cpp",
-        "NmrViewCSParserBaseVisitor.cpp",
-        "NmrViewCSParserVisitor.cpp",
-        "sa_nmrviewcs_translator.cpp",
-        "sa_nmrviewcs_cpp_parser.cpp"
-      ]
-    },
-    {
       "module": "sa_nmrviewnpk_cpp_parser",
       "subpackage": "pk",
       "shim": "sa_nmrviewnpk",

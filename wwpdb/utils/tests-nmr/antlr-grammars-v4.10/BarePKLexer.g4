@@ -77,4 +77,3 @@ Comment:		'Comment' | 'Note';
 
 SPACE_FO:		[ \t]+ -> skip;
 RETURN_FO:		[\r\n]+ -> popMode;
-

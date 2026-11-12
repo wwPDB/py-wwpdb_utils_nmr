@@ -12,6 +12,7 @@ __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
 __version__ = "1.2.0"
 
+import copy
 import sys
 from typing import IO, List, Optional
 
@@ -34,7 +35,6 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
 
     __seq_id = None
     __comp_id = None
-    __number = None
 
     def __init__(self, verbose: bool = True, log: IO = sys.stdout,
                  polySeq: List[dict] = None, entityAssembly: Optional[dict] = None,
@@ -67,7 +67,8 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
 
         self.cur_subtype = 'csp' if self.csp else 'chem_shift'
 
-        self.predictSequenceNumberOffsetByFirstResidue(None, int(str(ctx.Integer())), None)
+        if ctx.Integer():
+            self.predictSequenceNumberOffsetByFirstResidue(None, int(str(ctx.Integer())), None)
 
     def exitPipp_format(self, ctx: PippCSParser.Pipp_formatContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by PippCSParser#pipp_format.
@@ -104,66 +105,117 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by PippCSParser#shift_list.
         """
 
+        self.cur_line_num += 1
+
     def exitShift_list(self, ctx: PippCSParser.Shift_listContext):
         """ Exit a parse tree produced by PippCSParser#shift_list.
         """
 
-        index = self.chemShifts + 1
+        try:
 
-        value = self.__number
+            if len(self.numberSelection) == 0:
+                return
 
-        if value is None:
-            return
+            dstFunc = self.validateCsValue(self.cur_line_num, self.numberSelection[0], None)
 
-        self.atomSelectionSets.clear()
+            if dstFunc is None:
+                return
 
-        dstFunc = self.validateCsValue(index, value, None)
+            dstFunc2 = None
 
-        if dstFunc is None:
-            return
+            if len(self.numberSelection) > 1:
+                dstFunc2 = self.validateCsValue(self.cur_line_num, self.numberSelection[1], None)
 
-        auth_seq_id_map = {}
+                if dstFunc2 is None:
+                    return
 
-        seq_id = self.__seq_id
-        if None in self.offset:
-            seq_id += self.offset[None]
-            auth_seq_id_map[seq_id] = self.__seq_id
+            auth_seq_id_map = {}
 
-        atom_ids = str(ctx.Simple_name(0)).split('|')
+            seq_id = self.__seq_id
+            if None in self.offset:
+                seq_id += self.offset[None]
+                auth_seq_id_map[seq_id] = self.__seq_id
 
-        max_ambig_code = None
+            atom_ids = str(ctx.Simple_name()).split('|')
+            len_atom_ids = len(atom_ids)
 
-        if len(atom_ids) > 1:
-            max_ambig_code = 0
+            if len_atom_ids == 1:
 
-            for atom_id in atom_ids:
+                L = f'{seq_id}:{self.__comp_id}:{atom_ids[0]}'
 
-                L = f'{seq_id}:{self.__comp_id}:{atom_id}'
-
-                assignment = self.extractChemShiftAssignment(1, L, index, with_compid=self.__comp_id)
+                assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num,
+                                                             with_compid=self.__comp_id, with_atomid=atom_ids[0])
 
                 if assignment is None:
-                    continue
+                    return
 
-                _atom = assignment[0]  # pylint: disable=unsubscriptable-object
-                ambig_code = self.csStat.getMaxAmbigCodeWoSetId(_atom['comp_id'], _atom['atom_id'])
-                max_ambig_code = max(max_ambig_code, ambig_code)
-                if max_ambig_code < 2:
-                    max_ambig_code = 4
+                has_assignments, has_multiple_assignments = self.checkAssignment(self.cur_line_num, assignment)
 
-        L = f'{seq_id}:{self.__comp_id}:{atom_ids[0]}'
+                len_atom_sel = len(self.atomSelectionSets[0][0]) if has_assignments else 0
 
-        assignment = self.extractChemShiftAssignment(1, L, index, with_compid=self.__comp_id)
+                if dstFunc2 is None or not has_assignments and len_atom_sel == 1:
+                    self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                  f'{L} -> ')
 
-        if assignment is None:
-            return
+                else:
 
-        has_assignments, has_multiple_assignments = self.checkAssignment(index, assignment)
+                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(self.__comp_id, self.atomSelectionSets[0][0][0]['atom_id'])\
+                        if has_assignments else None
 
-        self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
-                      f'{L} -> ', None, max_ambig_code)
+                    atomSelectionSet1 = atomSelectionSet2 = None
 
-        self.chemShifts += 1
+                    if len_atom_sel > 0:
+                        atomSelectionSet1 = copy.copy(self.atomSelectionSets[0][0][0:len_atom_sel // 2])
+                        atomSelectionSet2 = copy.copy(self.atomSelectionSets[0][0][len_atom_sel // 2:])
+
+                        self.atomSelectionSets[0][0] = atomSelectionSet1
+
+                    self.addCsRow(self.cur_line_num, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                  f'{L} -> ', default_ambig_code=ambig_code)
+
+                    if has_assignments:
+
+                        self.chemShifts += 1
+
+                        self.atomSelectionSets[0][0] = atomSelectionSet2
+
+                        self.addCsRow(self.cur_line_num, dstFunc2, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                      f'{L} -> ', default_ambig_code=ambig_code)
+
+                self.chemShifts += 1
+
+            else:
+
+                for idx, atom_id in enumerate(atom_ids):
+
+                    L = f'{seq_id}:{self.__comp_id}:{atom_id}'
+
+                    assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num,
+                                                                 with_compid=self.__comp_id, with_atomid=atom_id)
+
+                    if assignment is None:
+                        return
+
+                    has_assignments, has_multiple_assignments = self.checkAssignment(self.cur_line_num, assignment)
+
+                    if dstFunc2 is None:
+                        _dstFunc = dstFunc
+                    else:
+                        _dstFunc = dstFunc if idx < len_atom_ids // 2 else dstFunc2
+
+                    ambig_code = self.csStat.getMaxAmbigCodeWoSetId(self.__comp_id, self.atomSelectionSets[0][0][0]['atom_id'])\
+                        if has_assignments else None
+
+                    self.addCsRow(self.cur_line_num, _dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
+                                  f'{L} -> ', None, ambig_code)
+
+                    self.chemShifts += 1
+
+                    self.atomSelectionSets.clear()
+
+        finally:
+            self.atomSelectionSets.clear()
+            self.numberSelection.clear()
 
     def enterNumber(self, ctx: PippCSParser.NumberContext):
         """ Enter a parse tree produced by PippCSParser#number.
@@ -172,16 +224,13 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
         try:
 
             if ctx.Float():
-                self.__number = float(str(ctx.Float()))
+                self.numberSelection.append(float(str(ctx.Float())))
 
             elif ctx.Integer():
-                self.__number = float(str(ctx.Integer()))
-
-            else:
-                self.__number = None
+                self.numberSelection.append(float(str(ctx.Integer())))
 
         except ValueError:
-            self.__number = None
+            pass
 
     def exitNumber(self, ctx: PippCSParser.NumberContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by PippCSParser#number.

@@ -13,15 +13,16 @@ class  PippCSLexer : public antlr4::Lexer {
 public:
   enum {
     Shift_fl_frmt = 1, Res_siad = 2, First_res_in_seq = 3, Exp_peak_pick_tbl = 4, 
-    Res_ID = 5, Res_type = 6, Spin_system_ID = 7, Heterogeneity = 8, End_res_def = 9, 
-    L_paren = 10, R_paren = 11, Integer = 12, Float = 13, SHARP_COMMENT = 14, 
-    EXCLM_COMMENT = 15, Simple_name = 16, SPACE = 17, RETURN = 18, SECTION_COMMENT = 19, 
-    LINE_COMMENT = 20, Res_ID_ = 21, Label = 22, Exp_par_fl = 23, Peak_pick_fl = 24, 
-    Cross_ref = 25, Simple_name_ET = 26, SPACE_ET = 27, RETURN_ET = 28
+    Res_ID = 5, Res_type = 6, Prev_type = 7, Spin_system_ID = 8, Heterogeneity = 9, 
+    End_res_def = 10, Type_pred = 11, Single_note = 12, Note_begin = 13, 
+    Integer = 14, Float = 15, SHARP_COMMENT = 16, EXCLM_COMMENT = 17, Simple_name = 18, 
+    SPACE = 19, RETURN = 20, SECTION_COMMENT = 21, LINE_COMMENT = 22, Res_ID_ = 23, 
+    Label = 24, Exp_par_fl = 25, Peak_pick_fl = 26, Cross_ref = 27, Simple_name_ET = 28, 
+    SPACE_ET = 29, RETURN_ET = 30, Note_middle = 31, Note_end = 32, SPACE_MN = 33
   };
 
   enum {
-    EXT_TBL_MODE = 1
+    EXT_TBL_MODE = 1, MULTIPLE_NOTE_MODE = 2
   };
 
   explicit PippCSLexer(antlr4::CharStream *input);

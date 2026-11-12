@@ -339,4 +339,3 @@ gen_simple_name:
 /* atom id extenstion with ambig code */
 gen_atom_name:
 	Simple_name | Capital_integer | Integer_capital | Ambig_code;
-

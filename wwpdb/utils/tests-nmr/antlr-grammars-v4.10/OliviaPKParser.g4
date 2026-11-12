@@ -273,4 +273,3 @@ integer:
 number:	Integer | Float | Real;
 
 memo:	Double_quote_string | Single_quote_string | Simple_name;
-

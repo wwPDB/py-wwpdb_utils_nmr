@@ -53,4 +53,3 @@ peak_4d:
 	Float Float Float Float
 	Float Float Float Float
 	Float Float? Annotation* (RETURN | EOF);
-

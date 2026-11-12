@@ -117,7 +117,8 @@ class DianaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                 L = f'{seq_id}:{comp_id}:{atom_id}'
 
-                assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num, with_compid=comp_id)
+                assignment = self.extractChemShiftAssignment(1, L, self.cur_line_num,
+                                                             with_compid=comp_id, with_atomid=atom_id)
 
                 if assignment is None:
                     continue

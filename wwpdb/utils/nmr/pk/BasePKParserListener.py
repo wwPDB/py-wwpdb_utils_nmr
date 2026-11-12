@@ -8195,8 +8195,14 @@ class BasePKParserListener():
                     ass['seq_id'] = resId
                 if resName is not None:
                     ass['comp_id'] = resName
+                    if with_compid is not None:
+                        _resName = translateToStdResName(with_compid, ccU=self.ccU)
+                        if resName != _resName and not self.hasPolySeq:
+                            ass['comp_id'] = _resName
+                            ass['atom_id'] = translateToStdAtomName(atomName, _resName, ccU=self.ccU)
                 elif with_compid is not None:
-                    ass['comp_id'] = with_compid
+                    ass['comp_id'] = translateToStdResName(with_compid, ccU=self.ccU)
+                    ass['atom_id'] = translateToStdAtomName(atomName, ass['comp_id'], ccU=self.ccU)
                 ret.append(ass)
             dimId += 1
             return False

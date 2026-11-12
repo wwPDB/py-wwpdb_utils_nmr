@@ -172,4 +172,3 @@ label_statement:
 
 label_position:
 	Integer_LA | Float_LA;
-

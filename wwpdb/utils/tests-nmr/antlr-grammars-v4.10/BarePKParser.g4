@@ -141,4 +141,3 @@ position: Float | Integer | Ambig_float;
 
 /* number expression in peak list */
 number:	Float | Real | Integer;
-

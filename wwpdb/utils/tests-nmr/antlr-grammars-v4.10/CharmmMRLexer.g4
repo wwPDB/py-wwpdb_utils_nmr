@@ -391,4 +391,3 @@ Attr_properties:	('X' | 'Y' | 'Z' | 'WMAI' 'N'? | 'XCOM' 'P'? | 'YCOM' 'P'? | 'Z
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op | Aeq_op) -> popMode;
 
 SPACE_AP:		[ \t\r\n]+ -> skip;
-

@@ -248,4 +248,3 @@ ambig_atom_name_mapping:
 
 ambig_list:
 	Ambig (Simple_name_MP | Ambig_code_MP) Equ_op_MP (Simple_name_MP Integer_MP)+ RETURN_MP;
-

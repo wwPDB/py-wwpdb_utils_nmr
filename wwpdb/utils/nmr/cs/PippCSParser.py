@@ -10,35 +10,43 @@ else:
 
 def serializedATN():
     return [
-        4,1,28,92,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,33,112,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,1,0,3,0,16,8,0,1,0,1,0,5,0,20,8,0,10,0,12,0,23,9,0,1,0,1,0,1,1,
-        1,1,1,1,1,1,1,1,1,1,1,1,3,1,34,8,1,1,1,4,1,37,8,1,11,1,12,1,38,1,
-        2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,4,2,49,8,2,11,2,12,2,50,1,3,1,3,1,
-        3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,
-        4,4,4,72,8,4,11,4,12,4,73,1,4,1,4,1,4,1,5,1,5,1,5,1,5,4,5,83,8,5,
-        11,5,12,5,84,1,5,1,5,1,5,1,6,1,6,1,6,0,0,7,0,2,4,6,8,10,12,0,3,2,
-        0,5,5,21,21,1,1,18,18,2,0,12,13,16,16,92,0,15,1,0,0,0,2,26,1,0,0,
-        0,4,40,1,0,0,0,6,52,1,0,0,0,8,58,1,0,0,0,10,78,1,0,0,0,12,89,1,0,
-        0,0,14,16,5,18,0,0,15,14,1,0,0,0,15,16,1,0,0,0,16,21,1,0,0,0,17,
-        20,3,2,1,0,18,20,5,18,0,0,19,17,1,0,0,0,19,18,1,0,0,0,20,23,1,0,
-        0,0,21,19,1,0,0,0,21,22,1,0,0,0,22,24,1,0,0,0,23,21,1,0,0,0,24,25,
-        5,0,0,1,25,1,1,0,0,0,26,27,5,1,0,0,27,28,5,2,0,0,28,29,5,18,0,0,
-        29,30,5,3,0,0,30,31,5,12,0,0,31,33,5,18,0,0,32,34,3,4,2,0,33,32,
-        1,0,0,0,33,34,1,0,0,0,34,36,1,0,0,0,35,37,3,8,4,0,36,35,1,0,0,0,
-        37,38,1,0,0,0,38,36,1,0,0,0,38,39,1,0,0,0,39,3,1,0,0,0,40,41,5,4,
-        0,0,41,42,5,28,0,0,42,43,5,22,0,0,43,44,5,23,0,0,44,45,5,24,0,0,
-        45,46,5,25,0,0,46,48,5,28,0,0,47,49,3,6,3,0,48,47,1,0,0,0,49,50,
-        1,0,0,0,50,48,1,0,0,0,50,51,1,0,0,0,51,5,1,0,0,0,52,53,5,26,0,0,
-        53,54,5,26,0,0,54,55,5,26,0,0,55,56,5,26,0,0,56,57,5,28,0,0,57,7,
-        1,0,0,0,58,59,7,0,0,0,59,60,5,12,0,0,60,61,5,18,0,0,61,62,5,6,0,
-        0,62,63,5,16,0,0,63,64,5,18,0,0,64,65,5,7,0,0,65,66,5,12,0,0,66,
-        67,5,18,0,0,67,68,5,8,0,0,68,69,5,12,0,0,69,71,5,18,0,0,70,72,3,
-        10,5,0,71,70,1,0,0,0,72,73,1,0,0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,
-        75,1,0,0,0,75,76,5,9,0,0,76,77,7,1,0,0,77,9,1,0,0,0,78,79,5,16,0,
-        0,79,80,3,12,6,0,80,82,5,10,0,0,81,83,5,16,0,0,82,81,1,0,0,0,83,
-        84,1,0,0,0,84,82,1,0,0,0,84,85,1,0,0,0,85,86,1,0,0,0,86,87,5,11,
-        0,0,87,88,5,18,0,0,88,11,1,0,0,0,89,90,7,2,0,0,90,13,1,0,0,0,8,15,
-        19,21,33,38,50,73,84
+        1,1,1,1,3,1,30,8,1,1,1,1,1,1,1,3,1,35,8,1,1,1,3,1,38,8,1,1,1,4,1,
+        41,8,1,11,1,12,1,42,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,4,2,53,8,2,11,
+        2,12,2,54,1,3,1,3,1,3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,
+        4,4,4,71,8,4,11,4,12,4,72,1,4,3,4,76,8,4,1,4,1,4,1,4,1,4,1,4,1,4,
+        1,4,4,4,85,8,4,11,4,12,4,86,1,4,1,4,1,4,1,5,1,5,1,5,3,5,95,8,5,1,
+        5,1,5,1,5,5,5,100,8,5,10,5,12,5,103,9,5,1,5,3,5,106,8,5,1,5,1,5,
+        1,6,1,6,1,6,0,0,7,0,2,4,6,8,10,12,0,3,2,0,5,5,23,23,1,1,20,20,1,
+        0,14,15,119,0,15,1,0,0,0,2,29,1,0,0,0,4,44,1,0,0,0,6,56,1,0,0,0,
+        8,62,1,0,0,0,10,91,1,0,0,0,12,109,1,0,0,0,14,16,5,20,0,0,15,14,1,
+        0,0,0,15,16,1,0,0,0,16,21,1,0,0,0,17,20,3,2,1,0,18,20,5,20,0,0,19,
+        17,1,0,0,0,19,18,1,0,0,0,20,23,1,0,0,0,21,19,1,0,0,0,21,22,1,0,0,
+        0,22,24,1,0,0,0,23,21,1,0,0,0,24,25,5,0,0,1,25,1,1,0,0,0,26,27,5,
+        1,0,0,27,28,5,2,0,0,28,30,5,20,0,0,29,26,1,0,0,0,29,30,1,0,0,0,30,
+        34,1,0,0,0,31,32,5,3,0,0,32,33,5,14,0,0,33,35,5,20,0,0,34,31,1,0,
+        0,0,34,35,1,0,0,0,35,37,1,0,0,0,36,38,3,4,2,0,37,36,1,0,0,0,37,38,
+        1,0,0,0,38,40,1,0,0,0,39,41,3,8,4,0,40,39,1,0,0,0,41,42,1,0,0,0,
+        42,40,1,0,0,0,42,43,1,0,0,0,43,3,1,0,0,0,44,45,5,4,0,0,45,46,5,30,
+        0,0,46,47,5,24,0,0,47,48,5,25,0,0,48,49,5,26,0,0,49,50,5,27,0,0,
+        50,52,5,30,0,0,51,53,3,6,3,0,52,51,1,0,0,0,53,54,1,0,0,0,54,52,1,
+        0,0,0,54,55,1,0,0,0,55,5,1,0,0,0,56,57,5,28,0,0,57,58,5,28,0,0,58,
+        59,5,28,0,0,59,60,5,28,0,0,60,61,5,30,0,0,61,7,1,0,0,0,62,63,7,0,
+        0,0,63,64,5,14,0,0,64,65,5,20,0,0,65,66,5,6,0,0,66,67,5,18,0,0,67,
+        75,5,20,0,0,68,70,5,7,0,0,69,71,5,11,0,0,70,69,1,0,0,0,71,72,1,0,
+        0,0,72,70,1,0,0,0,72,73,1,0,0,0,73,74,1,0,0,0,74,76,5,20,0,0,75,
+        68,1,0,0,0,75,76,1,0,0,0,76,77,1,0,0,0,77,78,5,8,0,0,78,79,5,14,
+        0,0,79,80,5,20,0,0,80,81,5,9,0,0,81,82,5,14,0,0,82,84,5,20,0,0,83,
+        85,3,10,5,0,84,83,1,0,0,0,85,86,1,0,0,0,86,84,1,0,0,0,86,87,1,0,
+        0,0,87,88,1,0,0,0,88,89,5,10,0,0,89,90,7,1,0,0,90,9,1,0,0,0,91,92,
+        5,18,0,0,92,94,3,12,6,0,93,95,3,12,6,0,94,93,1,0,0,0,94,95,1,0,0,
+        0,95,105,1,0,0,0,96,106,5,12,0,0,97,101,5,13,0,0,98,100,5,31,0,0,
+        99,98,1,0,0,0,100,103,1,0,0,0,101,99,1,0,0,0,101,102,1,0,0,0,102,
+        104,1,0,0,0,103,101,1,0,0,0,104,106,5,32,0,0,105,96,1,0,0,0,105,
+        97,1,0,0,0,105,106,1,0,0,0,106,107,1,0,0,0,107,108,5,20,0,0,108,
+        11,1,0,0,0,109,110,7,2,0,0,110,13,1,0,0,0,14,15,19,21,29,34,37,42,
+        54,72,75,86,94,101,105
     ]
 
 class PippCSParser ( Parser ):
@@ -52,21 +60,23 @@ class PippCSParser ( Parser ):
     sharedContextCache = PredictionContextCache()
 
     literalNames = [ "<INVALID>", "'SHIFT_FL_FRMT'", "'RES_SIAD'", "'FIRST_RES_IN_SEQ'", 
-                     "'EXP_PEAK_PICK_TBL'", "<INVALID>", "'RES_TYPE'", "'SPIN_SYSTEM_ID'", 
-                     "'HETEROGENEITY'", "'END_RES_DEF'", "'('", "')'", "<INVALID>", 
+                     "'EXP_PEAK_PICK_TBL'", "<INVALID>", "'RES_TYPE'", "'PREV_TYPE'", 
+                     "'SPIN_SYSTEM_ID'", "'HETEROGENEITY'", "'END_RES_DEF'", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "'Label'", "'Exp Par Fl'", "'Peak-Pick Fl'", 
                      "'#-Cross-Ref'" ]
 
     symbolicNames = [ "<INVALID>", "Shift_fl_frmt", "Res_siad", "First_res_in_seq", 
-                      "Exp_peak_pick_tbl", "Res_ID", "Res_type", "Spin_system_ID", 
-                      "Heterogeneity", "End_res_def", "L_paren", "R_paren", 
-                      "Integer", "Float", "SHARP_COMMENT", "EXCLM_COMMENT", 
-                      "Simple_name", "SPACE", "RETURN", "SECTION_COMMENT", 
-                      "LINE_COMMENT", "Res_ID_", "Label", "Exp_par_fl", 
-                      "Peak_pick_fl", "Cross_ref", "Simple_name_ET", "SPACE_ET", 
-                      "RETURN_ET" ]
+                      "Exp_peak_pick_tbl", "Res_ID", "Res_type", "Prev_type", 
+                      "Spin_system_ID", "Heterogeneity", "End_res_def", 
+                      "Type_pred", "Single_note", "Note_begin", "Integer", 
+                      "Float", "SHARP_COMMENT", "EXCLM_COMMENT", "Simple_name", 
+                      "SPACE", "RETURN", "SECTION_COMMENT", "LINE_COMMENT", 
+                      "Res_ID_", "Label", "Exp_par_fl", "Peak_pick_fl", 
+                      "Cross_ref", "Simple_name_ET", "SPACE_ET", "RETURN_ET", 
+                      "Note_middle", "Note_end", "SPACE_MN" ]
 
     RULE_pipp_cs = 0
     RULE_pipp_format = 1
@@ -86,28 +96,33 @@ class PippCSParser ( Parser ):
     Exp_peak_pick_tbl=4
     Res_ID=5
     Res_type=6
-    Spin_system_ID=7
-    Heterogeneity=8
-    End_res_def=9
-    L_paren=10
-    R_paren=11
-    Integer=12
-    Float=13
-    SHARP_COMMENT=14
-    EXCLM_COMMENT=15
-    Simple_name=16
-    SPACE=17
-    RETURN=18
-    SECTION_COMMENT=19
-    LINE_COMMENT=20
-    Res_ID_=21
-    Label=22
-    Exp_par_fl=23
-    Peak_pick_fl=24
-    Cross_ref=25
-    Simple_name_ET=26
-    SPACE_ET=27
-    RETURN_ET=28
+    Prev_type=7
+    Spin_system_ID=8
+    Heterogeneity=9
+    End_res_def=10
+    Type_pred=11
+    Single_note=12
+    Note_begin=13
+    Integer=14
+    Float=15
+    SHARP_COMMENT=16
+    EXCLM_COMMENT=17
+    Simple_name=18
+    SPACE=19
+    RETURN=20
+    SECTION_COMMENT=21
+    LINE_COMMENT=22
+    Res_ID_=23
+    Label=24
+    Exp_par_fl=25
+    Peak_pick_fl=26
+    Cross_ref=27
+    Simple_name_ET=28
+    SPACE_ET=29
+    RETURN_ET=30
+    Note_middle=31
+    Note_end=32
+    SPACE_MN=33
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -173,15 +188,15 @@ class PippCSParser ( Parser ):
             self.state = 21
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==1 or _la==18:
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 9437242) != 0):
                 self.state = 19
                 self._errHandler.sync(self)
                 token = self._input.LA(1)
-                if token in [1]:
+                if token in [1, 3, 4, 5, 23]:
                     self.state = 17
                     self.pipp_format()
                     pass
-                elif token in [18]:
+                elif token in [20]:
                     self.state = 18
                     self.match(PippCSParser.RETURN)
                     pass
@@ -260,37 +275,51 @@ class PippCSParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 26
-            self.match(PippCSParser.Shift_fl_frmt)
-            self.state = 27
-            self.match(PippCSParser.Res_siad)
-            self.state = 28
-            self.match(PippCSParser.RETURN)
             self.state = 29
-            self.match(PippCSParser.First_res_in_seq)
-            self.state = 30
-            self.match(PippCSParser.Integer)
-            self.state = 31
-            self.match(PippCSParser.RETURN)
-            self.state = 33
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==1:
+                self.state = 26
+                self.match(PippCSParser.Shift_fl_frmt)
+                self.state = 27
+                self.match(PippCSParser.Res_siad)
+                self.state = 28
+                self.match(PippCSParser.RETURN)
+
+
+            self.state = 34
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==3:
+                self.state = 31
+                self.match(PippCSParser.First_res_in_seq)
+                self.state = 32
+                self.match(PippCSParser.Integer)
+                self.state = 33
+                self.match(PippCSParser.RETURN)
+
+
+            self.state = 37
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==4:
-                self.state = 32
+                self.state = 36
                 self.ext_peak_pick_tbl()
 
 
-            self.state = 36 
+            self.state = 40 
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while True:
-                self.state = 35
-                self.residue_list()
-                self.state = 38 
+            _alt = 1
+            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                if _alt == 1:
+                    self.state = 39
+                    self.residue_list()
+
+                else:
+                    raise NoViableAltException(self)
+                self.state = 42 
                 self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if not (_la==5 or _la==21):
-                    break
+                _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -357,30 +386,30 @@ class PippCSParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 40
-            self.match(PippCSParser.Exp_peak_pick_tbl)
-            self.state = 41
-            self.match(PippCSParser.RETURN_ET)
-            self.state = 42
-            self.match(PippCSParser.Label)
-            self.state = 43
-            self.match(PippCSParser.Exp_par_fl)
             self.state = 44
-            self.match(PippCSParser.Peak_pick_fl)
+            self.match(PippCSParser.Exp_peak_pick_tbl)
             self.state = 45
-            self.match(PippCSParser.Cross_ref)
-            self.state = 46
             self.match(PippCSParser.RETURN_ET)
-            self.state = 48 
+            self.state = 46
+            self.match(PippCSParser.Label)
+            self.state = 47
+            self.match(PippCSParser.Exp_par_fl)
+            self.state = 48
+            self.match(PippCSParser.Peak_pick_fl)
+            self.state = 49
+            self.match(PippCSParser.Cross_ref)
+            self.state = 50
+            self.match(PippCSParser.RETURN_ET)
+            self.state = 52 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 47
+                self.state = 51
                 self.ext_peak_pick_tbl_row()
-                self.state = 50 
+                self.state = 54 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==26):
+                if not (_la==28):
                     break
 
         except RecognitionException as re:
@@ -428,15 +457,15 @@ class PippCSParser ( Parser ):
         self.enterRule(localctx, 6, self.RULE_ext_peak_pick_tbl_row)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 52
-            self.match(PippCSParser.Simple_name_ET)
-            self.state = 53
-            self.match(PippCSParser.Simple_name_ET)
-            self.state = 54
-            self.match(PippCSParser.Simple_name_ET)
-            self.state = 55
-            self.match(PippCSParser.Simple_name_ET)
             self.state = 56
+            self.match(PippCSParser.Simple_name_ET)
+            self.state = 57
+            self.match(PippCSParser.Simple_name_ET)
+            self.state = 58
+            self.match(PippCSParser.Simple_name_ET)
+            self.state = 59
+            self.match(PippCSParser.Simple_name_ET)
+            self.state = 60
             self.match(PippCSParser.RETURN_ET)
         except RecognitionException as re:
             localctx.exception = re
@@ -490,12 +519,21 @@ class PippCSParser ( Parser ):
         def EOF(self):
             return self.getToken(PippCSParser.EOF, 0)
 
+        def Prev_type(self):
+            return self.getToken(PippCSParser.Prev_type, 0)
+
         def shift_list(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(PippCSParser.Shift_listContext)
             else:
                 return self.getTypedRuleContext(PippCSParser.Shift_listContext,i)
 
+
+        def Type_pred(self, i:int=None):
+            if i is None:
+                return self.getTokens(PippCSParser.Type_pred)
+            else:
+                return self.getToken(PippCSParser.Type_pred, i)
 
         def getRuleIndex(self):
             return PippCSParser.RULE_residue_list
@@ -518,52 +556,74 @@ class PippCSParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 58
+            self.state = 62
             _la = self._input.LA(1)
-            if not(_la==5 or _la==21):
+            if not(_la==5 or _la==23):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
-            self.state = 59
-            self.match(PippCSParser.Integer)
-            self.state = 60
-            self.match(PippCSParser.RETURN)
-            self.state = 61
-            self.match(PippCSParser.Res_type)
-            self.state = 62
-            self.match(PippCSParser.Simple_name)
             self.state = 63
-            self.match(PippCSParser.RETURN)
+            self.match(PippCSParser.Integer)
             self.state = 64
-            self.match(PippCSParser.Spin_system_ID)
+            self.match(PippCSParser.RETURN)
             self.state = 65
-            self.match(PippCSParser.Integer)
+            self.match(PippCSParser.Res_type)
             self.state = 66
-            self.match(PippCSParser.RETURN)
+            self.match(PippCSParser.Simple_name)
             self.state = 67
-            self.match(PippCSParser.Heterogeneity)
-            self.state = 68
-            self.match(PippCSParser.Integer)
-            self.state = 69
             self.match(PippCSParser.RETURN)
-            self.state = 71 
+            self.state = 75
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==7:
+                self.state = 68
+                self.match(PippCSParser.Prev_type)
+                self.state = 70 
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                while True:
+                    self.state = 69
+                    self.match(PippCSParser.Type_pred)
+                    self.state = 72 
+                    self._errHandler.sync(self)
+                    _la = self._input.LA(1)
+                    if not (_la==11):
+                        break
+
+                self.state = 74
+                self.match(PippCSParser.RETURN)
+
+
+            self.state = 77
+            self.match(PippCSParser.Spin_system_ID)
+            self.state = 78
+            self.match(PippCSParser.Integer)
+            self.state = 79
+            self.match(PippCSParser.RETURN)
+            self.state = 80
+            self.match(PippCSParser.Heterogeneity)
+            self.state = 81
+            self.match(PippCSParser.Integer)
+            self.state = 82
+            self.match(PippCSParser.RETURN)
+            self.state = 84 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 70
+                self.state = 83
                 self.shift_list()
-                self.state = 73 
+                self.state = 86 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==16):
+                if not (_la==18):
                     break
 
-            self.state = 75
+            self.state = 88
             self.match(PippCSParser.End_res_def)
-            self.state = 76
+            self.state = 89
             _la = self._input.LA(1)
-            if not(_la==-1 or _la==18):
+            if not(_la==-1 or _la==20):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -584,24 +644,33 @@ class PippCSParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def Simple_name(self, i:int=None):
+        def Simple_name(self):
+            return self.getToken(PippCSParser.Simple_name, 0)
+
+        def number(self, i:int=None):
             if i is None:
-                return self.getTokens(PippCSParser.Simple_name)
+                return self.getTypedRuleContexts(PippCSParser.NumberContext)
             else:
-                return self.getToken(PippCSParser.Simple_name, i)
+                return self.getTypedRuleContext(PippCSParser.NumberContext,i)
 
-        def number(self):
-            return self.getTypedRuleContext(PippCSParser.NumberContext,0)
-
-
-        def L_paren(self):
-            return self.getToken(PippCSParser.L_paren, 0)
-
-        def R_paren(self):
-            return self.getToken(PippCSParser.R_paren, 0)
 
         def RETURN(self):
             return self.getToken(PippCSParser.RETURN, 0)
+
+        def Single_note(self):
+            return self.getToken(PippCSParser.Single_note, 0)
+
+        def Note_begin(self):
+            return self.getToken(PippCSParser.Note_begin, 0)
+
+        def Note_end(self):
+            return self.getToken(PippCSParser.Note_end, 0)
+
+        def Note_middle(self, i:int=None):
+            if i is None:
+                return self.getTokens(PippCSParser.Note_middle)
+            else:
+                return self.getToken(PippCSParser.Note_middle, i)
 
         def getRuleIndex(self):
             return PippCSParser.RULE_shift_list
@@ -624,27 +693,46 @@ class PippCSParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 78
+            self.state = 91
             self.match(PippCSParser.Simple_name)
-            self.state = 79
+            self.state = 92
             self.number()
-            self.state = 80
-            self.match(PippCSParser.L_paren)
-            self.state = 82 
+            self.state = 94
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while True:
-                self.state = 81
-                self.match(PippCSParser.Simple_name)
-                self.state = 84 
+            if _la==14 or _la==15:
+                self.state = 93
+                self.number()
+
+
+            self.state = 105
+            self._errHandler.sync(self)
+            token = self._input.LA(1)
+            if token in [12]:
+                self.state = 96
+                self.match(PippCSParser.Single_note)
+                pass
+            elif token in [13]:
+                self.state = 97
+                self.match(PippCSParser.Note_begin)
+                self.state = 101
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==16):
-                    break
+                while _la==31:
+                    self.state = 98
+                    self.match(PippCSParser.Note_middle)
+                    self.state = 103
+                    self._errHandler.sync(self)
+                    _la = self._input.LA(1)
 
-            self.state = 86
-            self.match(PippCSParser.R_paren)
-            self.state = 87
+                self.state = 104
+                self.match(PippCSParser.Note_end)
+                pass
+            elif token in [20]:
+                pass
+            else:
+                pass
+            self.state = 107
             self.match(PippCSParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
@@ -668,9 +756,6 @@ class PippCSParser ( Parser ):
         def Integer(self):
             return self.getToken(PippCSParser.Integer, 0)
 
-        def Simple_name(self):
-            return self.getToken(PippCSParser.Simple_name, 0)
-
         def getRuleIndex(self):
             return PippCSParser.RULE_number
 
@@ -692,9 +777,9 @@ class PippCSParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 89
+            self.state = 109
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 77824) != 0)):
+            if not(_la==14 or _la==15):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)

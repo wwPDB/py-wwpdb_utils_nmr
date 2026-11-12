@@ -91,4 +91,3 @@ Any_name:		~[{} \t\r\n]+;
 
 SPACE_CM:		[ \t]+ -> skip;
 R_brace:		'}'+ -> popMode;
-

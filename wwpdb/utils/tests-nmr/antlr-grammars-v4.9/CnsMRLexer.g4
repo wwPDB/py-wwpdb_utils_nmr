@@ -610,4 +610,3 @@ mode LOOP_LABEL_MODE; // loop label
 Simple_name_LL:		SIMPLE_NAME -> mode(DEFAULT_MODE);
 
 SPACE_LL:		[ \t\r\n]+ -> skip;
-

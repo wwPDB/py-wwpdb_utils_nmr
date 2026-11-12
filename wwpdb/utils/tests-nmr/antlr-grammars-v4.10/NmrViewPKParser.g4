@@ -141,4 +141,3 @@ number:	Real | Float | Integer | Simple_name;
 
 /* enclose data */
 enclose_data:	L_brace Any_name* R_brace;
-

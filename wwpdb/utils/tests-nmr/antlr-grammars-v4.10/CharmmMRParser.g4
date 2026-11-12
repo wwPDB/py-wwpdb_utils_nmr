@@ -360,4 +360,3 @@ number_s:
 
 set_statement:
 	Set Simple_name_VE Equ_op_VE? (Real_VE | Integer_VE | Simple_name_VE) RETURN_VE;
-

@@ -69,4 +69,3 @@ Simple_name_AO:		SIMPLE_NAME;
 
 SPACE_AO:		[ \t]+ -> skip;
 RETURN_AO:		[\r\n]+ -> popMode;
-

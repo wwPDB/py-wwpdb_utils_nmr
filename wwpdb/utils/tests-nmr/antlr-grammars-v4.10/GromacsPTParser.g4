@@ -267,4 +267,3 @@ position_restraint:
 	Integer Integer number number number		// ai funct=1 kx ky kz
 							// ai funct=2 g r k
 	Simple_name?;
-

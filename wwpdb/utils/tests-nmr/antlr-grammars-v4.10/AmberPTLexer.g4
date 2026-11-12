@@ -181,4 +181,3 @@ Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
 
 SPACE_EA:		[ \t\r\n]+ -> skip;
 FLAG_EA:		'%FLAG' -> mode(DEFAULT_MODE);
-

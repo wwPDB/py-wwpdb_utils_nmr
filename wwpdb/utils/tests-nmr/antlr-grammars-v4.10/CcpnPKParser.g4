@@ -151,4 +151,3 @@ number:	Float | Real | Integer | Simple_name;
 
 /* note expression in peak list */
 note:	Float | Real | Integer | Simple_name | Any_name;
-

@@ -136,12 +136,12 @@ public:
     antlr4::tree::TerminalNode *Res_type();
     antlr4::tree::TerminalNode *Simple_name();
     antlr4::tree::TerminalNode *Spin_system_ID();
-    antlr4::tree::TerminalNode *Heterogeneity();
     antlr4::tree::TerminalNode *End_res_def();
     antlr4::tree::TerminalNode *Res_ID();
     antlr4::tree::TerminalNode *Res_ID_();
     antlr4::tree::TerminalNode *EOF();
     antlr4::tree::TerminalNode *Prev_type();
+    antlr4::tree::TerminalNode *Heterogeneity();
     std::vector<Shift_listContext *> shift_list();
     Shift_listContext* shift_list(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Type_pred();

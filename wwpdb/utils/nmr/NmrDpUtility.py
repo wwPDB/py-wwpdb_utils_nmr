@@ -17019,7 +17019,7 @@ class NmrDpUtility:
                     sf.add_tag('Sf_framecode', f'assigned_chemical_shift_{list_id}')
                     sf.add_tag('Entry_ID', self.__reg.entry_id)
                     sf.add_tag('ID', list_id)
-                    sf.add_tag('Data_file_name', input_source_dic['file_name'])
+                    sf.add_tag('Data_file_name', os.path.basename(input_source_dic['file_name']))
                     sf.add_loop(lp)
 
                     added_sf_framecode.append(sf.name)

@@ -21,6 +21,7 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
@@ -33,6 +34,7 @@ except ImportError:
     from nmr.NmrDpConstant import (STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
@@ -144,7 +146,7 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
             chainId = indexToLetter(chainIndex)
         else:
             chainIndex = 0
-            chainId = 'A'
+            chainId = REPRESENTATIVE_ASYM_ID
 
         terminus = [atom['auth_atom_id'].endswith('T') for atom in self.atoms]
 

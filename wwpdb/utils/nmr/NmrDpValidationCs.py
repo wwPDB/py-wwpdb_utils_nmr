@@ -2304,8 +2304,8 @@ class NmrDpValidationCs(NmrDpValidationBase):
             try:
 
                 _neighbor = self._reg.cR.getDictListWithFilter('atom_site',
-                                                               [{'name': 'auth_asym_id', 'type': 'str',
-                                                                 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+                                                               [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                                 'default': REPRESENTATIVE_ASYM_ID},
                                                                 {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                                                                 {'name': 'label_comp_id', 'type': 'starts-with-alnum',
                                                                  'alt_name': 'comp_id'},
@@ -2376,7 +2376,8 @@ class NmrDpValidationCs(NmrDpValidationBase):
                                                          {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                          {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                          ],
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'value': p['chain_id']},
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'value': p['chain_id'],
+                                                          'default': REPRESENTATIVE_ASYM_ID},
                                                          {'name': 'auth_seq_id', 'type': 'int', 'value': p['seq_id']},
                                                          {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
                                                          {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},

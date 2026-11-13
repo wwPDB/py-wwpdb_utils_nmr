@@ -3021,7 +3021,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                 authAtomId = 'auth_atom_id'
             altAuthAtomId = 'pdbx_auth_atom_name' if 'pdbx_auth_atom_name' in tags else None
 
-            dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+            dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id',
+                          'default': REPRESENTATIVE_ASYM_ID},
                          {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
                          {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
                          {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
@@ -3302,7 +3303,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
         if cR.hasItem('atom_site', 'pdbx_auth_asym_id'):
             coord = cR.getDictListWithFilter('atom_site', [{'name': 'auth_asym_id', 'type': 'str',
                                                             'default': REPRESENTATIVE_ASYM_ID},
-                                                           {'name': 'pdbx_auth_asym_id', 'type': 'str'}])
+                                                           {'name': 'pdbx_auth_asym_id', 'type': 'str',
+                                                            'default': REPRESENTATIVE_ASYM_ID}])
             auth_asym_id_set, pdbx_auth_asym_id_set = set(), set()
             for c in coord:
                 auth_asym_id_set.add(c['auth_asym_id'])
@@ -3320,7 +3322,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
         if None in (coordAtomSite, labelToAuthSeq, authToLabelSeq, chemCompAtom, authAtomNameToId, authAtomNameToIdExt):
             changed = True
 
-            dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id'},
+            dataItems = [{'name': authAsymId, 'type': 'str', 'alt_name': 'chain_id',
+                          'default': REPRESENTATIVE_ASYM_ID},
                          {'name': 'label_asym_id', 'type': 'str', 'alt_name': 'alt_chain_id'},
                          {'name': authSeqId, 'type': 'int', 'alt_name': 'seq_id'},
                          {'name': 'label_seq_id', 'type': 'str', 'alt_name': 'alt_seq_id'},
@@ -3344,6 +3347,7 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
             if polySeq is not None and len(polySeq) > LEN_LARGE_ASYM_ID:
                 filterItems.append({'name': authAsymId, 'type': 'enum', 'enum': LARGE_ASYM_ID,
+                                    'default': REPRESENTATIVE_ASYM_ID,
                                     'fetch_first_match': True})  # to process large assembly avoiding forced timeout
 
             coord = cR.getDictListWithFilter('atom_site', dataItems, filterItems)
@@ -3549,7 +3553,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
                             filterItems = [{'name': modelNumName, 'type': 'int',
                                             'value': representativeModelId},
-                                           {'name': authAsymId, 'type': 'str', 'value': chainId},
+                                           {'name': authAsymId, 'type': 'str', 'value': chainId,
+                                            'default': REPRESENTATIVE_ASYM_ID},
                                            {'name': authSeqId, 'type': 'int', 'value': seqId},
                                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                                            ]
@@ -3717,7 +3722,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
             if k in authToLabelSeq:
                 continue
 
-            dataItems = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+            dataItems = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                          'default': REPRESENTATIVE_ASYM_ID},
                          {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                          {'name': 'label_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                          {'name': 'label_atom_id', 'type': 'str', 'alt_name': 'atom_id'},
@@ -3731,7 +3737,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
 
             filterItems = [{'name': modelNumName, 'type': 'int',
                             'value': representativeModelId},
-                           {'name': authAsymId, 'type': 'str', 'value': k[0]},
+                           {'name': authAsymId, 'type': 'str', 'value': k[0],
+                            'default': REPRESENTATIVE_ASYM_ID},
                            {'name': authSeqId, 'type': 'int', 'value': k[1]},
                            {'name': 'label_alt_id', 'type': 'enum', 'enum': (representativeAltId,)}
                            ]
@@ -4268,7 +4275,8 @@ def coordAssemblyChecker(verbose: bool = True, log: IO = sys.stdout,
                         has_ins_code = cR.hasItem('pdbx_branch_scheme', 'pdb_ins_code')
 
                         dataItems = [{'name': 'asym_id', 'type': 'str', 'alt_name': 'label_asym_id'},
-                                     {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_asym_id'},
+                                     {'name': 'pdb_asym_id', 'type': 'str', 'alt_name': 'auth_asym_id',
+                                      'default': REPRESENTATIVE_ASYM_ID},
                                      {'name': 'num', 'type': 'int', 'alt_name': 'seq_id'},
                                      {'name': 'pdb_seq_num', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                      {'name': 'auth_seq_num', 'type': 'int', 'alt_name': 'alt_seq_id'},
@@ -5998,10 +6006,12 @@ def isCyclicPolymer(cR, polySeq: List[dict], authAsymId: str,
                                                          [{'name': 'dist', 'type': 'float'}
                                                           ],
                                                          [{'name': 'PDB_model_num', 'type': 'int', 'value': representativeModelId},
-                                                          {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId},
+                                                          {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId,
+                                                           'default': REPRESENTATIVE_ASYM_ID},
                                                           {'name': 'auth_seq_id_1', 'type': 'int', 'value': begAuthSeqId},
                                                           {'name': 'auth_atom_id_1', 'type': 'str', 'value': 'N'},
-                                                          {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId},
+                                                          {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId,
+                                                           'default': REPRESENTATIVE_ASYM_ID},
                                                           {'name': 'auth_seq_id_2', 'type': 'int', 'value': endAuthSeqId},
                                                           {'name': 'auth_atom_id_2', 'type': 'str', 'value': 'C'}
                                                           ])
@@ -6043,26 +6053,30 @@ def getStructConnPtnr(cR, authAsymId: str, authSeqId: int, authCompId: str = Non
 
     try:
 
-        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId},
+        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId,
+                        'default': REPRESENTATIVE_ASYM_ID},
                        {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId}
                        ]
         if authCompId is not None:
             filterItems.append({'name': 'ptnr1_auth_comp_id', 'type': 'str', 'value': authCompId})
 
         struct_conn = cR.getDictListWithFilter('struct_conn',
-                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                 'default': REPRESENTATIVE_ASYM_ID},
                                                 {'name': 'ptnr2_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                 {'name': 'ptnr2_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}],
                                                filterItems)
 
-        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId},
+        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId,
+                        'default': REPRESENTATIVE_ASYM_ID},
                        {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId}
                        ]
         if authCompId is not None:
             filterItems.append({'name': 'ptnr2_auth_comp_id', 'type': 'str', 'value': authCompId})
 
         struct_conn.extend(cR.getDictListWithFilter('struct_conn',
-                                                    [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                                    [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                      'default': REPRESENTATIVE_ASYM_ID},
                                                      {'name': 'ptnr1_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                      {'name': 'ptnr1_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'}],
                                                     filterItems))
@@ -6087,20 +6101,24 @@ def getWatsonCrickPtnr(cR, authAsymId: str
 
     try:
 
-        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId},
+        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId,
+                        'default': REPRESENTATIVE_ASYM_ID},
                        {'name': 'details', 'type': 'str', 'value': 'WATSON-CRICK'}
                        ]
 
         struct_conn = cR.getDictListWithFilter('struct_conn',
-                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'}
+                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                 'default': REPRESENTATIVE_ASYM_ID}
                                                 ],
                                                filterItems)
 
-        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId},
+        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId,
+                        'default': REPRESENTATIVE_ASYM_ID},
                        {'name': 'details', 'type': 'str', 'value': 'WATSON-CRICK'}
                        ]
         struct_conn.extend(cR.getDictListWithFilter('struct_conn',
-                                                    [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'}
+                                                    [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                      'default': REPRESENTATIVE_ASYM_ID}
                                                      ],
                                                     filterItems))
 
@@ -6124,13 +6142,15 @@ def getStructConnPtnrAtom(cR, authAsymId: str, authSeqId: int, authAtomId: str
 
     try:
 
-        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId},
+        filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId,
+                        'default': REPRESENTATIVE_ASYM_ID},
                        {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId},
                        {'name': 'ptnr1_label_atom_id', 'type': 'str', 'value': authAtomId}
                        ]
 
         struct_conn = cR.getDictListWithFilter('struct_conn',
-                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                               [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                 'default': REPRESENTATIVE_ASYM_ID},
                                                 {'name': 'ptnr2_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                 {'name': 'ptnr2_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                 {'name': 'ptnr2_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}],
@@ -6139,13 +6159,15 @@ def getStructConnPtnrAtom(cR, authAsymId: str, authSeqId: int, authAtomId: str
         if len(struct_conn) == 1:
             return struct_conn[0]
 
-        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId},
+        filterItems = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId,
+                        'default': REPRESENTATIVE_ASYM_ID},
                        {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId},
                        {'name': 'ptnr2_label_atom_id', 'type': 'str', 'value': authAtomId}
                        ]
 
         struct_conn = cR.getDictListWithFilter('struct_conn',
-                                               [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+                                               [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                                                 'default': REPRESENTATIVE_ASYM_ID},
                                                 {'name': 'ptnr1_auth_seq_id', 'type': 'str', 'alt_name': 'seq_id'},
                                                 {'name': 'ptnr1_auth_comp_id', 'type': 'str', 'alt_name': 'comp_id'},
                                                 {'name': 'ptnr1_label_atom_id', 'type': 'str', 'alt_name': 'atom_id'}],
@@ -6174,8 +6196,10 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
     try:
 
         if cR.hasCategory('struct_conn'):
-            filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId1},
-                           {'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId2},
+            filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId1,
+                            'default': REPRESENTATIVE_ASYM_ID},
+                           {'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId2,
+                            'default': REPRESENTATIVE_ASYM_ID},
                            {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId1},
                            {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId2},
                            {'name': 'ptnr1_auth_atom_id', 'type': 'int', 'value': authAtomId1},
@@ -6187,8 +6211,10 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
                                                    filterItems)
 
             if len(struct_conn) == 0:
-                filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId2},
-                               {'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId1},
+                filterItems = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': authAsymId2,
+                                'default': REPRESENTATIVE_ASYM_ID},
+                               {'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': authAsymId1,
+                                'default': REPRESENTATIVE_ASYM_ID},
                                {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': authSeqId2},
                                {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': authSeqId1},
                                {'name': 'ptnr1_auth_atom_id', 'type': 'int', 'value': authAtomId2},
@@ -6215,10 +6241,12 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
                                                           ],
                                                          [{'name': 'PDB_model_num', 'type': 'int',
                                                            'value': representativeModelId},
-                                                          {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId1},
+                                                          {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId1,
+                                                           'default': REPRESENTATIVE_ASYM_ID},
                                                           {'name': 'auth_seq_id_1', 'type': 'int', 'value': authSeqId1},
                                                           {'name': 'auth_atom_id_1', 'type': 'str', 'value': authAtomId1},
-                                                          {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId2},
+                                                          {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId2,
+                                                           'default': REPRESENTATIVE_ASYM_ID},
                                                           {'name': 'auth_seq_id_2', 'type': 'int', 'value': authSeqId2},
                                                           {'name': 'auth_atom_id_2', 'type': 'str', 'value': authAtomId2}
                                                           ])
@@ -6229,10 +6257,12 @@ def isStructConn(cR, authAsymId1: str, authSeqId1: int, authAtomId1: str,
                                                               ],
                                                              [{'name': 'PDB_model_num', 'type': 'int',
                                                                'value': representativeModelId},
-                                                              {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId2},
+                                                              {'name': 'auth_asym_id_1', 'type': 'str', 'value': authAsymId2,
+                                                               'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'auth_seq_id_1', 'type': 'int', 'value': authSeqId2},
                                                               {'name': 'auth_atom_id_1', 'type': 'str', 'value': authAtomId2},
-                                                              {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId1},
+                                                              {'name': 'auth_asym_id_2', 'type': 'str', 'value': authAsymId1,
+                                                               'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'auth_seq_id_2', 'type': 'int', 'value': authSeqId1},
                                                               {'name': 'auth_atom_id_2', 'type': 'str', 'value': authAtomId1}
                                                               ])
@@ -6283,7 +6313,8 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
         atom_site_1 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
                                                [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id',
-                                                 'type': 'str', 'value': asymId1},
+                                                 'type': 'str', 'value': asymId1,
+                                                 'default': REPRESENTATIVE_ASYM_ID},
                                                 {'name': 'label_seq_id' if labelScheme else 'auth_seq_id',
                                                  'type': 'int', 'value': seqId1},
                                                 {'name': 'label_atom_id' if labelScheme else 'auth_atom_id',
@@ -6294,7 +6325,8 @@ def getCoordBondLength(cR, asymId1: str, seqId1: int, atomId1: str,
         atom_site_2 = cR.getDictListWithFilter('atom_site',
                                                dataItems,
                                                [{'name': 'label_asym_id' if labelScheme else 'auth_asym_id',
-                                                 'type': 'str', 'value': asymId2},
+                                                 'type': 'str', 'value': asymId2,
+                                                 'default': REPRESENTATIVE_ASYM_ID},
                                                 {'name': 'label_seq_id' if labelScheme else 'auth_seq_id',
                                                  'type': 'int', 'value': seqId2},
                                                 {'name': 'label_atom_id' if labelScheme else 'auth_atom_id',

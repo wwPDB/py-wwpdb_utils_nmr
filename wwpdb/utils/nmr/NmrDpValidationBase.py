@@ -31,7 +31,8 @@ try:
                                                THRESHOLD_FOR_CIRCULAR_SHIFT,
                                                PLANE_LIKE_LOWER_LIMIT,
                                                PLANE_LIKE_UPPER_LIMIT,
-                                               DEFAULT_DATUM_COUNTER)
+                                               DEFAULT_DATUM_COUNTER,
+                                               REPRESENTATIVE_ASYM_ID)
     from wwpdb.utils.nmr.NmrDpRegistry import (NmrDpRegistry,
                                                get_next_path,
                                                test_path_with_suffix)
@@ -51,7 +52,8 @@ except ImportError:
                                    THRESHOLD_FOR_CIRCULAR_SHIFT,
                                    PLANE_LIKE_LOWER_LIMIT,
                                    PLANE_LIKE_UPPER_LIMIT,
-                                   DEFAULT_DATUM_COUNTER)
+                                   DEFAULT_DATUM_COUNTER,
+                                   REPRESENTATIVE_ASYM_ID)
     from nmr.NmrDpRegistry import (NmrDpRegistry,
                                    get_next_path,
                                    test_path_with_suffix)
@@ -445,7 +447,8 @@ class NmrDpValidationBase:
             atom_site_1 = self._reg.cR.getDictListWithFilter('atom_site',
                                                              data_items,
                                                              [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id',
-                                                               'type': 'str', 'value': cif_chain_id_1},
+                                                               'type': 'str', 'value': cif_chain_id_1,
+                                                               'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'label_seq_id' if label_scheme else 'auth_seq_id',
                                                                'type': 'int', 'value': cif_seq_id_1},
                                                               {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',
@@ -457,7 +460,8 @@ class NmrDpValidationBase:
             atom_site_2 = self._reg.cR.getDictListWithFilter('atom_site',
                                                              data_items,
                                                              [{'name': 'label_asym_id' if label_scheme else 'auth_asym_id',
-                                                               'type': 'str', 'value': cif_chain_id_2},
+                                                               'type': 'str', 'value': cif_chain_id_2,
+                                                               'default': REPRESENTATIVE_ASYM_ID},
                                                               {'name': 'label_seq_id' if label_scheme else 'auth_seq_id',
                                                                'type': 'int', 'value': cif_seq_id_2},
                                                               {'name': 'label_atom_id' if label_scheme else 'auth_atom_id',

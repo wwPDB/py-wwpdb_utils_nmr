@@ -11,8 +11,9 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
+import os
 from typing import List, Optional, Union
 
 import pynmrstar
@@ -468,7 +469,7 @@ class NmrDpValidationCsStats(NmrDpValidationBase):
         input_source = self._reg.report.input_sources[file_list_id]
         input_source_dic = input_source.get()
 
-        file_name = input_source_dic['file_name']
+        file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
         file_type = input_source_dic['file_type']
 
         item_names = ITEM_NAMES_IN_CS_LOOP[file_type]

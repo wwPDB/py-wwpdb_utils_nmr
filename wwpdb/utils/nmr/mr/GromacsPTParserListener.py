@@ -21,6 +21,7 @@ try:
     from wwpdb.utils.nmr.NmrDpConstant import (STD_MON_DICT,
                                                PROTON_BEGIN_CODE,
                                                REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
@@ -33,6 +34,7 @@ except ImportError:
     from nmr.NmrDpConstant import (STD_MON_DICT,
                                    PROTON_BEGIN_CODE,
                                    REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
@@ -132,15 +134,19 @@ class GromacsPTParserListener(ParseTreeListener, BaseTopologyParserListener):
         """ Exit a parse tree produced by GromacsPTParser#gromacs_pt.
         """
 
-        if not self.hasPolySeqModel:
+        if not self.hasPolySeqModel and not self.hasCoord:
             return
 
         if len(self.atoms) == 0:
             return
 
         # set tentative chain_id from label_asym_id, which will be assigned to coordinate auth_asym_id
-        chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1
-        chainId = indexToLetter(chainIndex)
+        if self.hasPolySeqModel:
+            chainIndex = letterToDigit(self.polySeqModel[0]['chain_id']) - 1
+            chainId = indexToLetter(chainIndex)
+        else:
+            chainIndex = 0
+            chainId = REPRESENTATIVE_ASYM_ID
 
         terminus = [atom['auth_atom_id'].endswith('T') for atom in self.atoms]
 

@@ -233,4 +233,3 @@ pipp_row_peak_4d:
 
 /* number expression in peak list */
 number:	Integer | Float | Real | Any_name;
-

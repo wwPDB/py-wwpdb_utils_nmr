@@ -57,47 +57,56 @@ void pippcsparserParserInitialize() {
     },
     std::vector<std::string>{
       "", "'SHIFT_FL_FRMT'", "'RES_SIAD'", "'FIRST_RES_IN_SEQ'", "'EXP_PEAK_PICK_TBL'", 
-      "", "'RES_TYPE'", "'SPIN_SYSTEM_ID'", "'HETEROGENEITY'", "'END_RES_DEF'", 
-      "'('", "')'", "", "", "", "", "", "", "", "", "", "", "'Label'", "'Exp Par Fl'", 
-      "'Peak-Pick Fl'", "'#-Cross-Ref'"
+      "", "'RES_TYPE'", "'PREV_TYPE'", "'SPIN_SYSTEM_ID'", "'HETEROGENEITY'", 
+      "'END_RES_DEF'", "", "", "", "", "", "", "", "", "", "", "", "", "", 
+      "'Label'", "'Exp Par Fl'", "'Peak-Pick Fl'", "'#-Cross-Ref'"
     },
     std::vector<std::string>{
       "", "Shift_fl_frmt", "Res_siad", "First_res_in_seq", "Exp_peak_pick_tbl", 
-      "Res_ID", "Res_type", "Spin_system_ID", "Heterogeneity", "End_res_def", 
-      "L_paren", "R_paren", "Integer", "Float", "SHARP_COMMENT", "EXCLM_COMMENT", 
-      "Simple_name", "SPACE", "RETURN", "SECTION_COMMENT", "LINE_COMMENT", 
-      "Res_ID_", "Label", "Exp_par_fl", "Peak_pick_fl", "Cross_ref", "Simple_name_ET", 
-      "SPACE_ET", "RETURN_ET"
+      "Res_ID", "Res_type", "Prev_type", "Spin_system_ID", "Heterogeneity", 
+      "End_res_def", "Type_pred", "Single_note", "Note_begin", "Integer", 
+      "Float", "SHARP_COMMENT", "EXCLM_COMMENT", "Simple_name", "SPACE", 
+      "RETURN", "SECTION_COMMENT", "LINE_COMMENT", "Res_ID_", "Label", "Exp_par_fl", 
+      "Peak_pick_fl", "Cross_ref", "Simple_name_ET", "SPACE_ET", "RETURN_ET", 
+      "Note_middle", "Note_end", "SPACE_MN"
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,28,92,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,1,0,
-  	3,0,16,8,0,1,0,1,0,5,0,20,8,0,10,0,12,0,23,9,0,1,0,1,0,1,1,1,1,1,1,1,
-  	1,1,1,1,1,1,1,3,1,34,8,1,1,1,4,1,37,8,1,11,1,12,1,38,1,2,1,2,1,2,1,2,
-  	1,2,1,2,1,2,1,2,4,2,49,8,2,11,2,12,2,50,1,3,1,3,1,3,1,3,1,3,1,3,1,4,1,
-  	4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,4,4,72,8,4,11,4,12,4,73,
-  	1,4,1,4,1,4,1,5,1,5,1,5,1,5,4,5,83,8,5,11,5,12,5,84,1,5,1,5,1,5,1,6,1,
-  	6,1,6,0,0,7,0,2,4,6,8,10,12,0,3,2,0,5,5,21,21,1,1,18,18,2,0,12,13,16,
-  	16,92,0,15,1,0,0,0,2,26,1,0,0,0,4,40,1,0,0,0,6,52,1,0,0,0,8,58,1,0,0,
-  	0,10,78,1,0,0,0,12,89,1,0,0,0,14,16,5,18,0,0,15,14,1,0,0,0,15,16,1,0,
-  	0,0,16,21,1,0,0,0,17,20,3,2,1,0,18,20,5,18,0,0,19,17,1,0,0,0,19,18,1,
-  	0,0,0,20,23,1,0,0,0,21,19,1,0,0,0,21,22,1,0,0,0,22,24,1,0,0,0,23,21,1,
-  	0,0,0,24,25,5,0,0,1,25,1,1,0,0,0,26,27,5,1,0,0,27,28,5,2,0,0,28,29,5,
-  	18,0,0,29,30,5,3,0,0,30,31,5,12,0,0,31,33,5,18,0,0,32,34,3,4,2,0,33,32,
-  	1,0,0,0,33,34,1,0,0,0,34,36,1,0,0,0,35,37,3,8,4,0,36,35,1,0,0,0,37,38,
-  	1,0,0,0,38,36,1,0,0,0,38,39,1,0,0,0,39,3,1,0,0,0,40,41,5,4,0,0,41,42,
-  	5,28,0,0,42,43,5,22,0,0,43,44,5,23,0,0,44,45,5,24,0,0,45,46,5,25,0,0,
-  	46,48,5,28,0,0,47,49,3,6,3,0,48,47,1,0,0,0,49,50,1,0,0,0,50,48,1,0,0,
-  	0,50,51,1,0,0,0,51,5,1,0,0,0,52,53,5,26,0,0,53,54,5,26,0,0,54,55,5,26,
-  	0,0,55,56,5,26,0,0,56,57,5,28,0,0,57,7,1,0,0,0,58,59,7,0,0,0,59,60,5,
-  	12,0,0,60,61,5,18,0,0,61,62,5,6,0,0,62,63,5,16,0,0,63,64,5,18,0,0,64,
-  	65,5,7,0,0,65,66,5,12,0,0,66,67,5,18,0,0,67,68,5,8,0,0,68,69,5,12,0,0,
-  	69,71,5,18,0,0,70,72,3,10,5,0,71,70,1,0,0,0,72,73,1,0,0,0,73,71,1,0,0,
-  	0,73,74,1,0,0,0,74,75,1,0,0,0,75,76,5,9,0,0,76,77,7,1,0,0,77,9,1,0,0,
-  	0,78,79,5,16,0,0,79,80,3,12,6,0,80,82,5,10,0,0,81,83,5,16,0,0,82,81,1,
-  	0,0,0,83,84,1,0,0,0,84,82,1,0,0,0,84,85,1,0,0,0,85,86,1,0,0,0,86,87,5,
-  	11,0,0,87,88,5,18,0,0,88,11,1,0,0,0,89,90,7,2,0,0,90,13,1,0,0,0,8,15,
-  	19,21,33,38,50,73,84
+  	4,1,33,114,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,1,
+  	0,3,0,16,8,0,1,0,1,0,5,0,20,8,0,10,0,12,0,23,9,0,1,0,1,0,1,1,1,1,1,1,
+  	3,1,30,8,1,1,1,1,1,1,1,3,1,35,8,1,1,1,3,1,38,8,1,1,1,4,1,41,8,1,11,1,
+  	12,1,42,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,4,2,53,8,2,11,2,12,2,54,1,3,1,
+  	3,1,3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,4,4,71,8,4,11,4,12,
+  	4,72,1,4,3,4,76,8,4,1,4,1,4,1,4,1,4,1,4,1,4,3,4,84,8,4,1,4,4,4,87,8,4,
+  	11,4,12,4,88,1,4,1,4,1,4,1,5,1,5,1,5,3,5,97,8,5,1,5,1,5,1,5,5,5,102,8,
+  	5,10,5,12,5,105,9,5,1,5,3,5,108,8,5,1,5,1,5,1,6,1,6,1,6,0,0,7,0,2,4,6,
+  	8,10,12,0,3,2,0,5,5,23,23,1,1,20,20,1,0,14,15,122,0,15,1,0,0,0,2,29,1,
+  	0,0,0,4,44,1,0,0,0,6,56,1,0,0,0,8,62,1,0,0,0,10,93,1,0,0,0,12,111,1,0,
+  	0,0,14,16,5,20,0,0,15,14,1,0,0,0,15,16,1,0,0,0,16,21,1,0,0,0,17,20,3,
+  	2,1,0,18,20,5,20,0,0,19,17,1,0,0,0,19,18,1,0,0,0,20,23,1,0,0,0,21,19,
+  	1,0,0,0,21,22,1,0,0,0,22,24,1,0,0,0,23,21,1,0,0,0,24,25,5,0,0,1,25,1,
+  	1,0,0,0,26,27,5,1,0,0,27,28,5,2,0,0,28,30,5,20,0,0,29,26,1,0,0,0,29,30,
+  	1,0,0,0,30,34,1,0,0,0,31,32,5,3,0,0,32,33,5,14,0,0,33,35,5,20,0,0,34,
+  	31,1,0,0,0,34,35,1,0,0,0,35,37,1,0,0,0,36,38,3,4,2,0,37,36,1,0,0,0,37,
+  	38,1,0,0,0,38,40,1,0,0,0,39,41,3,8,4,0,40,39,1,0,0,0,41,42,1,0,0,0,42,
+  	40,1,0,0,0,42,43,1,0,0,0,43,3,1,0,0,0,44,45,5,4,0,0,45,46,5,30,0,0,46,
+  	47,5,24,0,0,47,48,5,25,0,0,48,49,5,26,0,0,49,50,5,27,0,0,50,52,5,30,0,
+  	0,51,53,3,6,3,0,52,51,1,0,0,0,53,54,1,0,0,0,54,52,1,0,0,0,54,55,1,0,0,
+  	0,55,5,1,0,0,0,56,57,5,28,0,0,57,58,5,28,0,0,58,59,5,28,0,0,59,60,5,28,
+  	0,0,60,61,5,30,0,0,61,7,1,0,0,0,62,63,7,0,0,0,63,64,5,14,0,0,64,65,5,
+  	20,0,0,65,66,5,6,0,0,66,67,5,18,0,0,67,75,5,20,0,0,68,70,5,7,0,0,69,71,
+  	5,11,0,0,70,69,1,0,0,0,71,72,1,0,0,0,72,70,1,0,0,0,72,73,1,0,0,0,73,74,
+  	1,0,0,0,74,76,5,20,0,0,75,68,1,0,0,0,75,76,1,0,0,0,76,77,1,0,0,0,77,78,
+  	5,8,0,0,78,79,5,14,0,0,79,83,5,20,0,0,80,81,5,9,0,0,81,82,5,14,0,0,82,
+  	84,5,20,0,0,83,80,1,0,0,0,83,84,1,0,0,0,84,86,1,0,0,0,85,87,3,10,5,0,
+  	86,85,1,0,0,0,87,88,1,0,0,0,88,86,1,0,0,0,88,89,1,0,0,0,89,90,1,0,0,0,
+  	90,91,5,10,0,0,91,92,7,1,0,0,92,9,1,0,0,0,93,94,5,18,0,0,94,96,3,12,6,
+  	0,95,97,3,12,6,0,96,95,1,0,0,0,96,97,1,0,0,0,97,107,1,0,0,0,98,108,5,
+  	12,0,0,99,103,5,13,0,0,100,102,5,31,0,0,101,100,1,0,0,0,102,105,1,0,0,
+  	0,103,101,1,0,0,0,103,104,1,0,0,0,104,106,1,0,0,0,105,103,1,0,0,0,106,
+  	108,5,32,0,0,107,98,1,0,0,0,107,99,1,0,0,0,107,108,1,0,0,0,108,109,1,
+  	0,0,0,109,110,5,20,0,0,110,11,1,0,0,0,111,112,7,2,0,0,112,13,1,0,0,0,
+  	15,15,19,21,29,34,37,42,54,72,75,83,88,96,103,107
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -215,13 +224,16 @@ PippCSParser::Pipp_csContext* PippCSParser::pipp_cs() {
     setState(21);
     _errHandler->sync(this);
     _la = _input->LA(1);
-    while (_la == PippCSParser::Shift_fl_frmt
-
-    || _la == PippCSParser::RETURN) {
+    while ((((_la & ~ 0x3fULL) == 0) &&
+      ((1ULL << _la) & 9437242) != 0)) {
       setState(19);
       _errHandler->sync(this);
       switch (_input->LA(1)) {
-        case PippCSParser::Shift_fl_frmt: {
+        case PippCSParser::Shift_fl_frmt:
+        case PippCSParser::First_res_in_seq:
+        case PippCSParser::Exp_peak_pick_tbl:
+        case PippCSParser::Res_ID:
+        case PippCSParser::Res_ID_: {
           setState(17);
           pipp_format();
           break;
@@ -321,39 +333,58 @@ PippCSParser::Pipp_formatContext* PippCSParser::pipp_format() {
     exitRule();
   });
   try {
+    size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(26);
-    match(PippCSParser::Shift_fl_frmt);
-    setState(27);
-    match(PippCSParser::Res_siad);
-    setState(28);
-    match(PippCSParser::RETURN);
     setState(29);
-    match(PippCSParser::First_res_in_seq);
-    setState(30);
-    match(PippCSParser::Integer);
-    setState(31);
-    match(PippCSParser::RETURN);
-    setState(33);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if (_la == PippCSParser::Shift_fl_frmt) {
+      setState(26);
+      match(PippCSParser::Shift_fl_frmt);
+      setState(27);
+      match(PippCSParser::Res_siad);
+      setState(28);
+      match(PippCSParser::RETURN);
+    }
+    setState(34);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if (_la == PippCSParser::First_res_in_seq) {
+      setState(31);
+      match(PippCSParser::First_res_in_seq);
+      setState(32);
+      match(PippCSParser::Integer);
+      setState(33);
+      match(PippCSParser::RETURN);
+    }
+    setState(37);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == PippCSParser::Exp_peak_pick_tbl) {
-      setState(32);
+      setState(36);
       ext_peak_pick_tbl();
     }
-    setState(36); 
+    setState(40); 
     _errHandler->sync(this);
-    _la = _input->LA(1);
+    alt = 1;
     do {
-      setState(35);
-      residue_list();
-      setState(38); 
-      _errHandler->sync(this);
-      _la = _input->LA(1);
-    } while (_la == PippCSParser::Res_ID
+      switch (alt) {
+        case 1: {
+              setState(39);
+              residue_list();
+              break;
+            }
 
-    || _la == PippCSParser::Res_ID_);
+      default:
+        throw NoViableAltException(this);
+      }
+      setState(42); 
+      _errHandler->sync(this);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 6, _ctx);
+    } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
    
   }
   catch (RecognitionException &e) {
@@ -434,27 +465,27 @@ PippCSParser::Ext_peak_pick_tblContext* PippCSParser::ext_peak_pick_tbl() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(40);
-    match(PippCSParser::Exp_peak_pick_tbl);
-    setState(41);
-    match(PippCSParser::RETURN_ET);
-    setState(42);
-    match(PippCSParser::Label);
-    setState(43);
-    match(PippCSParser::Exp_par_fl);
     setState(44);
-    match(PippCSParser::Peak_pick_fl);
+    match(PippCSParser::Exp_peak_pick_tbl);
     setState(45);
-    match(PippCSParser::Cross_ref);
-    setState(46);
     match(PippCSParser::RETURN_ET);
-    setState(48); 
+    setState(46);
+    match(PippCSParser::Label);
+    setState(47);
+    match(PippCSParser::Exp_par_fl);
+    setState(48);
+    match(PippCSParser::Peak_pick_fl);
+    setState(49);
+    match(PippCSParser::Cross_ref);
+    setState(50);
+    match(PippCSParser::RETURN_ET);
+    setState(52); 
     _errHandler->sync(this);
     _la = _input->LA(1);
     do {
-      setState(47);
+      setState(51);
       ext_peak_pick_tbl_row();
-      setState(50); 
+      setState(54); 
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while (_la == PippCSParser::Simple_name_ET);
@@ -513,15 +544,15 @@ PippCSParser::Ext_peak_pick_tbl_rowContext* PippCSParser::ext_peak_pick_tbl_row(
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(52);
-    match(PippCSParser::Simple_name_ET);
-    setState(53);
-    match(PippCSParser::Simple_name_ET);
-    setState(54);
-    match(PippCSParser::Simple_name_ET);
-    setState(55);
-    match(PippCSParser::Simple_name_ET);
     setState(56);
+    match(PippCSParser::Simple_name_ET);
+    setState(57);
+    match(PippCSParser::Simple_name_ET);
+    setState(58);
+    match(PippCSParser::Simple_name_ET);
+    setState(59);
+    match(PippCSParser::Simple_name_ET);
+    setState(60);
     match(PippCSParser::RETURN_ET);
    
   }
@@ -568,10 +599,6 @@ tree::TerminalNode* PippCSParser::Residue_listContext::Spin_system_ID() {
   return getToken(PippCSParser::Spin_system_ID, 0);
 }
 
-tree::TerminalNode* PippCSParser::Residue_listContext::Heterogeneity() {
-  return getToken(PippCSParser::Heterogeneity, 0);
-}
-
 tree::TerminalNode* PippCSParser::Residue_listContext::End_res_def() {
   return getToken(PippCSParser::End_res_def, 0);
 }
@@ -588,12 +615,28 @@ tree::TerminalNode* PippCSParser::Residue_listContext::EOF() {
   return getToken(PippCSParser::EOF, 0);
 }
 
+tree::TerminalNode* PippCSParser::Residue_listContext::Prev_type() {
+  return getToken(PippCSParser::Prev_type, 0);
+}
+
+tree::TerminalNode* PippCSParser::Residue_listContext::Heterogeneity() {
+  return getToken(PippCSParser::Heterogeneity, 0);
+}
+
 std::vector<PippCSParser::Shift_listContext *> PippCSParser::Residue_listContext::shift_list() {
   return getRuleContexts<PippCSParser::Shift_listContext>();
 }
 
 PippCSParser::Shift_listContext* PippCSParser::Residue_listContext::shift_list(size_t i) {
   return getRuleContext<PippCSParser::Shift_listContext>(i);
+}
+
+std::vector<tree::TerminalNode *> PippCSParser::Residue_listContext::Type_pred() {
+  return getTokens(PippCSParser::Type_pred);
+}
+
+tree::TerminalNode* PippCSParser::Residue_listContext::Type_pred(size_t i) {
+  return getToken(PippCSParser::Type_pred, i);
 }
 
 
@@ -623,7 +666,7 @@ PippCSParser::Residue_listContext* PippCSParser::residue_list() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(58);
+    setState(62);
     _la = _input->LA(1);
     if (!(_la == PippCSParser::Res_ID
 
@@ -634,41 +677,67 @@ PippCSParser::Residue_listContext* PippCSParser::residue_list() {
       _errHandler->reportMatch(this);
       consume();
     }
-    setState(59);
-    match(PippCSParser::Integer);
-    setState(60);
-    match(PippCSParser::RETURN);
-    setState(61);
-    match(PippCSParser::Res_type);
-    setState(62);
-    match(PippCSParser::Simple_name);
     setState(63);
-    match(PippCSParser::RETURN);
+    match(PippCSParser::Integer);
     setState(64);
-    match(PippCSParser::Spin_system_ID);
+    match(PippCSParser::RETURN);
     setState(65);
-    match(PippCSParser::Integer);
+    match(PippCSParser::Res_type);
     setState(66);
-    match(PippCSParser::RETURN);
+    match(PippCSParser::Simple_name);
     setState(67);
-    match(PippCSParser::Heterogeneity);
-    setState(68);
-    match(PippCSParser::Integer);
-    setState(69);
     match(PippCSParser::RETURN);
-    setState(71); 
+    setState(75);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if (_la == PippCSParser::Prev_type) {
+      setState(68);
+      match(PippCSParser::Prev_type);
+      setState(70); 
+      _errHandler->sync(this);
+      _la = _input->LA(1);
+      do {
+        setState(69);
+        match(PippCSParser::Type_pred);
+        setState(72); 
+        _errHandler->sync(this);
+        _la = _input->LA(1);
+      } while (_la == PippCSParser::Type_pred);
+      setState(74);
+      match(PippCSParser::RETURN);
+    }
+    setState(77);
+    match(PippCSParser::Spin_system_ID);
+    setState(78);
+    match(PippCSParser::Integer);
+    setState(79);
+    match(PippCSParser::RETURN);
+    setState(83);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if (_la == PippCSParser::Heterogeneity) {
+      setState(80);
+      match(PippCSParser::Heterogeneity);
+      setState(81);
+      match(PippCSParser::Integer);
+      setState(82);
+      match(PippCSParser::RETURN);
+    }
+    setState(86); 
     _errHandler->sync(this);
     _la = _input->LA(1);
     do {
-      setState(70);
+      setState(85);
       shift_list();
-      setState(73); 
+      setState(88); 
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while (_la == PippCSParser::Simple_name);
-    setState(75);
+    setState(90);
     match(PippCSParser::End_res_def);
-    setState(76);
+    setState(91);
     _la = _input->LA(1);
     if (!(_la == PippCSParser::EOF
 
@@ -696,28 +765,40 @@ PippCSParser::Shift_listContext::Shift_listContext(ParserRuleContext *parent, si
   : ParserRuleContext(parent, invokingState) {
 }
 
-std::vector<tree::TerminalNode *> PippCSParser::Shift_listContext::Simple_name() {
-  return getTokens(PippCSParser::Simple_name);
+tree::TerminalNode* PippCSParser::Shift_listContext::Simple_name() {
+  return getToken(PippCSParser::Simple_name, 0);
 }
 
-tree::TerminalNode* PippCSParser::Shift_listContext::Simple_name(size_t i) {
-  return getToken(PippCSParser::Simple_name, i);
+std::vector<PippCSParser::NumberContext *> PippCSParser::Shift_listContext::number() {
+  return getRuleContexts<PippCSParser::NumberContext>();
 }
 
-PippCSParser::NumberContext* PippCSParser::Shift_listContext::number() {
-  return getRuleContext<PippCSParser::NumberContext>(0);
-}
-
-tree::TerminalNode* PippCSParser::Shift_listContext::L_paren() {
-  return getToken(PippCSParser::L_paren, 0);
-}
-
-tree::TerminalNode* PippCSParser::Shift_listContext::R_paren() {
-  return getToken(PippCSParser::R_paren, 0);
+PippCSParser::NumberContext* PippCSParser::Shift_listContext::number(size_t i) {
+  return getRuleContext<PippCSParser::NumberContext>(i);
 }
 
 tree::TerminalNode* PippCSParser::Shift_listContext::RETURN() {
   return getToken(PippCSParser::RETURN, 0);
+}
+
+tree::TerminalNode* PippCSParser::Shift_listContext::Single_note() {
+  return getToken(PippCSParser::Single_note, 0);
+}
+
+tree::TerminalNode* PippCSParser::Shift_listContext::Note_begin() {
+  return getToken(PippCSParser::Note_begin, 0);
+}
+
+tree::TerminalNode* PippCSParser::Shift_listContext::Note_end() {
+  return getToken(PippCSParser::Note_end, 0);
+}
+
+std::vector<tree::TerminalNode *> PippCSParser::Shift_listContext::Note_middle() {
+  return getTokens(PippCSParser::Note_middle);
+}
+
+tree::TerminalNode* PippCSParser::Shift_listContext::Note_middle(size_t i) {
+  return getToken(PippCSParser::Note_middle, i);
 }
 
 
@@ -747,25 +828,55 @@ PippCSParser::Shift_listContext* PippCSParser::shift_list() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(78);
+    setState(93);
     match(PippCSParser::Simple_name);
-    setState(79);
+    setState(94);
     number();
-    setState(80);
-    match(PippCSParser::L_paren);
-    setState(82); 
+    setState(96);
     _errHandler->sync(this);
+
     _la = _input->LA(1);
-    do {
-      setState(81);
-      match(PippCSParser::Simple_name);
-      setState(84); 
-      _errHandler->sync(this);
-      _la = _input->LA(1);
-    } while (_la == PippCSParser::Simple_name);
-    setState(86);
-    match(PippCSParser::R_paren);
-    setState(87);
+    if (_la == PippCSParser::Integer
+
+    || _la == PippCSParser::Float) {
+      setState(95);
+      number();
+    }
+    setState(107);
+    _errHandler->sync(this);
+    switch (_input->LA(1)) {
+      case PippCSParser::Single_note: {
+        setState(98);
+        match(PippCSParser::Single_note);
+        break;
+      }
+
+      case PippCSParser::Note_begin: {
+        setState(99);
+        match(PippCSParser::Note_begin);
+        setState(103);
+        _errHandler->sync(this);
+        _la = _input->LA(1);
+        while (_la == PippCSParser::Note_middle) {
+          setState(100);
+          match(PippCSParser::Note_middle);
+          setState(105);
+          _errHandler->sync(this);
+          _la = _input->LA(1);
+        }
+        setState(106);
+        match(PippCSParser::Note_end);
+        break;
+      }
+
+      case PippCSParser::RETURN: {
+        break;
+      }
+
+    default:
+      break;
+    }
+    setState(109);
     match(PippCSParser::RETURN);
    
   }
@@ -790,10 +901,6 @@ tree::TerminalNode* PippCSParser::NumberContext::Float() {
 
 tree::TerminalNode* PippCSParser::NumberContext::Integer() {
   return getToken(PippCSParser::Integer, 0);
-}
-
-tree::TerminalNode* PippCSParser::NumberContext::Simple_name() {
-  return getToken(PippCSParser::Simple_name, 0);
 }
 
 
@@ -823,10 +930,11 @@ PippCSParser::NumberContext* PippCSParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(89);
+    setState(111);
     _la = _input->LA(1);
-    if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 77824) != 0))) {
+    if (!(_la == PippCSParser::Integer
+
+    || _la == PippCSParser::Float)) {
     _errHandler->recoverInline(this);
     }
     else {

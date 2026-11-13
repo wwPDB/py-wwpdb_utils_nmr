@@ -67,4 +67,3 @@ number:	Float | Integer;
 
 /* number expression in contributions */
 number_c: Float | Integer;
-

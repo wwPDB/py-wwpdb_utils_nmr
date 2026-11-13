@@ -60,7 +60,7 @@ EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
 Chiral_code:		R | S;
-Atom_selection:		DECIMAL ':' SIMPLE_NAME '_' ALPHA? DECIMAL ALPHA? ':' SIMPLE_NAME;
+Atom_selection:		DECIMAL ':' SIMPLE_NAME '_'? ALPHA? DECIMAL ALPHA? ':' SIMPLE_NAME;
 //Simple_name:		SIMPLE_NAME;
 //Residue_number:	Integer;
 //Residue_name:		SIMPLE_NAME;
@@ -74,6 +74,8 @@ fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#' | '|' 
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
 Ordinal:		DECIMAL '.';
+
+Or:			'+';
 
 /* Insight II distance restraint */
 Restraint:		'restraint' -> pushMode(INSIGHT_II_MODE);
@@ -103,4 +105,3 @@ Relative:		'relative';
 SPACE_II:		[ \t]+ -> skip;
 
 RETURN_II:		[\r\n]+ -> popMode;
-

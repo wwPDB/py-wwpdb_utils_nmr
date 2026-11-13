@@ -54,4 +54,3 @@ peak_4d:
 
 /* number expression in peak list */
 number:	Float | Real;
-

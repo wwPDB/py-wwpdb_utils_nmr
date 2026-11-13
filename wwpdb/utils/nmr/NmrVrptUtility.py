@@ -2279,7 +2279,8 @@ class NmrVrptUtility:
             if self.__trust_pdbx_auth_atom_name and self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')\
             else 'auth_atom_id'
 
-        data_items = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+        data_items = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                       'default': REPRESENTATIVE_ASYM_ID},
                       {'name': 'auth_seq_id', 'type': 'int'},
                       {'name': 'auth_comp_id', 'type': 'str'},
                       {'name': _auth_atom_id, 'type': 'str', 'alt_name': 'auth_atom_id'},
@@ -2301,10 +2302,12 @@ class NmrVrptUtility:
         _filter_items = [{'name': 'type_symbol', 'type': 'enum', 'enum': NMR_OBS_NUCS},
                          # remove label_alt_id filter because of missing of ayth_asym_id: B (2n2k)
                          # {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)},
-                         {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': self.__eff_model_ids[0]}]
+                         {'name': 'pdbx_PDB_model_num', 'type': 'int',
+                          'value': self.__eff_model_ids[0] if len(self.__eff_model_ids) > 0 else self.__representative_model_id}]
 
         if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
             _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,
+                                  'default': REPRESENTATIVE_ASYM_ID,
                                   'fetch_first_match': True})  # to process large assembly avoiding forced timeout
 
         self.__entityInstance, self.__entityUninstance = {}, {}
@@ -2684,7 +2687,8 @@ class NmrVrptUtility:
             if self.__trust_pdbx_auth_atom_name and self.__cR.hasItem('atom_site', 'pdbx_auth_atom_name')\
             else 'auth_atom_id'
 
-        data_items = [{'name': 'auth_asym_id', 'type': 'str'},
+        data_items = [{'name': 'auth_asym_id', 'type': 'str',
+                       'default': REPRESENTATIVE_ASYM_ID},
                       {'name': 'auth_seq_id', 'type': 'int'},
                       {'name': 'auth_comp_id', 'type': 'str'},
                       {'name': _auth_atom_id, 'type': 'str', 'alt_name': 'auth_atom_id'},
@@ -2709,6 +2713,7 @@ class NmrVrptUtility:
 
         if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
             _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,
+                                  'default': REPRESENTATIVE_ASYM_ID,
                                   'fetch_first_match': True})  # to process large assembly avoiding forced timeout
 
         self.__atomIdList, self.__coordinates = {}, {}
@@ -4032,7 +4037,8 @@ class NmrVrptUtility:
                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                        ],
-                                                      [{'name': 'auth_asym_id', 'type': 'str', 'value': auth_chain_id},
+                                                      [{'name': 'auth_asym_id', 'type': 'str', 'value': auth_chain_id,
+                                                        'default': REPRESENTATIVE_ASYM_ID},
                                                        {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id},
                                                        {'name': 'label_atom_id', 'type': 'str', 'value': atom_id},
                                                        {'name': 'pdbx_PDB_model_num', 'type': 'int',
@@ -4057,7 +4063,8 @@ class NmrVrptUtility:
         try:
 
             _neighbor = self.__cR.getDictListWithFilter('atom_site',
-                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id'},
+                                                        [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'auth_chain_id',
+                                                          'default': REPRESENTATIVE_ASYM_ID},
                                                          {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'auth_seq_id'},
                                                          {'name': 'label_comp_id', 'type': 'starts-with-alnum',
                                                           'alt_name': 'comp_id'},
@@ -4232,7 +4239,8 @@ class NmrVrptUtility:
                                                    {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'},
                                                    {'name': 'pdbx_PDB_model_num', 'type': 'int', 'alt_name': 'model_id'}
                                                    ],
-                                                  [{'name': 'auth_asym_id', 'type': 'str', 'value': na['auth_chain_id']},
+                                                  [{'name': 'auth_asym_id', 'type': 'str', 'value': na['auth_chain_id'],
+                                                    'default': REPRESENTATIVE_ASYM_ID},
                                                    {'name': 'auth_seq_id', 'type': 'int', 'value': na['auth_seq_id']},
                                                    {'name': 'label_comp_id', 'type': 'str', 'value': na['comp_id']},
                                                    {'name': 'label_atom_id', 'type': 'enum', 'enum': ring_atoms},
@@ -4318,7 +4326,8 @@ class NmrVrptUtility:
                                                        {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                        {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                        ],
-                                                      [{'name': 'auth_asym_id', 'type': 'str', 'value': auth_chain_id},
+                                                      [{'name': 'auth_asym_id', 'type': 'str', 'value': auth_chain_id,
+                                                        'default': REPRESENTATIVE_ASYM_ID},
                                                        {'name': 'auth_seq_id', 'type': 'int', 'value': auth_seq_id},
                                                        {'name': 'label_atom_id', 'type': 'str', 'value': atom_id},
                                                        {'name': 'pdbx_PDB_model_num', 'type': 'int',
@@ -4409,7 +4418,8 @@ class NmrVrptUtility:
                                                   {'name': 'Cartn_y', 'type': 'float', 'alt_name': 'y'},
                                                   {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                                                   ],
-                                                 [{'name': 'auth_asym_id', 'type': 'str', 'value': p['auth_chain_id']},
+                                                 [{'name': 'auth_asym_id', 'type': 'str', 'value': p['auth_chain_id'],
+                                                   'default': REPRESENTATIVE_ASYM_ID},
                                                   {'name': 'auth_seq_id', 'type': 'int', 'value': p['auth_seq_id']},
                                                   {'name': 'label_comp_id', 'type': 'str', 'value': p['comp_id']},
                                                   {'name': 'label_atom_id', 'type': 'str', 'value': p['atom_id']},

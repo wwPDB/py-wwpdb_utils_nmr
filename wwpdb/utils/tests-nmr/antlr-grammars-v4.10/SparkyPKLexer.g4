@@ -99,4 +99,3 @@ Note_LA:		'Note' | 'NOTE';
 
 SPACE_LA:		[ \t]+ -> skip;
 RETURN_LA:		[\r\n]+ -> popMode;
-

@@ -125,8 +125,8 @@ Simple_name:		SIMPLE_NAME;
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
-fragment START_CHAR:	ALPHA_NUM | '_';
-fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#' | '|';
+fragment START_CHAR:	ALPHA_NUM | '_' | '*';
+fragment NAME_CHAR:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '#' | '|';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
@@ -163,7 +163,7 @@ Concat_atom_2:		A T O M '2=' SIMPLE_NAME;
 Concat_res_1:		R E S I D U E '1=' ('+' | '-')? DECIMAL;
 Concat_res_2:		R E S I D U E '2=' ('+' | '-')? DECIMAL;
 
-Integer_HB:		('+' | '-')? DECIMAL;
+Integer_HB:		Integer;
 Simple_name_HB:		SIMPLE_NAME;
 
 SPACE_HB:		[ \t]+ -> skip;
@@ -195,7 +195,7 @@ LINE_COMMENT_VA:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+
 mode MAP_MODE;
 
 Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
-Integer_MP:		('+' | '-')? DECIMAL;
+Integer_MP:		Integer;
 Simple_name_MP:		SIMPLE_NAME;
 
 Equ_op_MP:		'=';
@@ -205,4 +205,3 @@ RETURN_MP:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 //SECTION_COMMENT_MP:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K S?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT_MP:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K S?) ~[\r\n]* -> channel(HIDDEN);
-

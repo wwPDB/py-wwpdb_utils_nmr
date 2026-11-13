@@ -57,27 +57,28 @@ void baremrparserParserInitialize() {
     std::vector<std::string>{
     },
     std::vector<std::string>{
-      "", "Integer", "Float", "SHARP_COMMENT", "EXCLM_COMMENT", "Number_of_name", 
-      "Simple_name", "Double_quote_string", "Double_quote_integer", "Double_quote_float", 
-      "SPACE", "RETURN", "SECTION_COMMENT", "LINE_COMMENT"
+      "", "Data_block", "Integer", "Float", "SHARP_COMMENT", "EXCLM_COMMENT", 
+      "Number_of_name", "Simple_name", "Double_quote_string", "Double_quote_integer", 
+      "Double_quote_float", "SPACE", "RETURN", "SECTION_COMMENT", "LINE_COMMENT"
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,13,49,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,1,0,3,0,14,
-  	8,0,1,0,1,0,5,0,18,8,0,10,0,12,0,21,9,0,1,0,1,0,1,1,1,1,4,1,27,8,1,11,
-  	1,12,1,28,1,2,4,2,32,8,2,11,2,12,2,33,1,2,1,2,1,3,4,3,39,8,3,11,3,12,
-  	3,40,1,3,1,3,1,4,1,4,1,5,1,5,1,5,0,0,6,0,2,4,6,8,10,0,3,1,1,11,11,2,0,
-  	1,2,6,9,1,0,5,7,48,0,13,1,0,0,0,2,24,1,0,0,0,4,31,1,0,0,0,6,38,1,0,0,
-  	0,8,44,1,0,0,0,10,46,1,0,0,0,12,14,5,11,0,0,13,12,1,0,0,0,13,14,1,0,0,
-  	0,14,19,1,0,0,0,15,18,3,2,1,0,16,18,5,11,0,0,17,15,1,0,0,0,17,16,1,0,
-  	0,0,18,21,1,0,0,0,19,17,1,0,0,0,19,20,1,0,0,0,20,22,1,0,0,0,21,19,1,0,
-  	0,0,22,23,5,0,0,1,23,1,1,0,0,0,24,26,3,4,2,0,25,27,3,6,3,0,26,25,1,0,
-  	0,0,27,28,1,0,0,0,28,26,1,0,0,0,28,29,1,0,0,0,29,3,1,0,0,0,30,32,3,10,
-  	5,0,31,30,1,0,0,0,32,33,1,0,0,0,33,31,1,0,0,0,33,34,1,0,0,0,34,35,1,0,
-  	0,0,35,36,5,11,0,0,36,5,1,0,0,0,37,39,3,8,4,0,38,37,1,0,0,0,39,40,1,0,
-  	0,0,40,38,1,0,0,0,40,41,1,0,0,0,41,42,1,0,0,0,42,43,7,0,0,0,43,7,1,0,
-  	0,0,44,45,7,1,0,0,45,9,1,0,0,0,46,47,7,2,0,0,47,11,1,0,0,0,6,13,17,19,
-  	28,33,40
+  	4,1,14,54,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,1,0,3,0,14,
+  	8,0,1,0,1,0,1,0,3,0,19,8,0,1,0,1,0,5,0,23,8,0,10,0,12,0,26,9,0,1,0,1,
+  	0,1,1,1,1,4,1,32,8,1,11,1,12,1,33,1,2,4,2,37,8,2,11,2,12,2,38,1,2,1,2,
+  	1,3,4,3,44,8,3,11,3,12,3,45,1,3,1,3,1,4,1,4,1,5,1,5,1,5,0,0,6,0,2,4,6,
+  	8,10,0,3,1,1,12,12,2,0,2,3,7,10,1,0,6,8,55,0,18,1,0,0,0,2,29,1,0,0,0,
+  	4,36,1,0,0,0,6,43,1,0,0,0,8,49,1,0,0,0,10,51,1,0,0,0,12,14,5,12,0,0,13,
+  	12,1,0,0,0,13,14,1,0,0,0,14,15,1,0,0,0,15,16,5,1,0,0,16,19,5,12,0,0,17,
+  	19,5,12,0,0,18,13,1,0,0,0,18,17,1,0,0,0,18,19,1,0,0,0,19,24,1,0,0,0,20,
+  	23,3,2,1,0,21,23,5,12,0,0,22,20,1,0,0,0,22,21,1,0,0,0,23,26,1,0,0,0,24,
+  	22,1,0,0,0,24,25,1,0,0,0,25,27,1,0,0,0,26,24,1,0,0,0,27,28,5,0,0,1,28,
+  	1,1,0,0,0,29,31,3,4,2,0,30,32,3,6,3,0,31,30,1,0,0,0,32,33,1,0,0,0,33,
+  	31,1,0,0,0,33,34,1,0,0,0,34,3,1,0,0,0,35,37,3,10,5,0,36,35,1,0,0,0,37,
+  	38,1,0,0,0,38,36,1,0,0,0,38,39,1,0,0,0,39,40,1,0,0,0,40,41,5,12,0,0,41,
+  	5,1,0,0,0,42,44,3,8,4,0,43,42,1,0,0,0,44,45,1,0,0,0,45,43,1,0,0,0,45,
+  	46,1,0,0,0,46,47,1,0,0,0,47,48,7,0,0,0,48,7,1,0,0,0,49,50,7,1,0,0,50,
+  	9,1,0,0,0,51,52,7,2,0,0,52,11,1,0,0,0,7,13,18,22,24,33,38,45
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -136,6 +137,10 @@ tree::TerminalNode* BareMRParser::Bare_mrContext::EOF() {
   return getToken(BareMRParser::EOF, 0);
 }
 
+tree::TerminalNode* BareMRParser::Bare_mrContext::Data_block() {
+  return getToken(BareMRParser::Data_block, 0);
+}
+
 std::vector<tree::TerminalNode *> BareMRParser::Bare_mrContext::RETURN() {
   return getTokens(BareMRParser::RETURN);
 }
@@ -179,12 +184,28 @@ BareMRParser::Bare_mrContext* BareMRParser::bare_mr() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(13);
+    setState(18);
     _errHandler->sync(this);
 
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 0, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 1, _ctx)) {
     case 1: {
-      setState(12);
+      setState(13);
+      _errHandler->sync(this);
+
+      _la = _input->LA(1);
+      if (_la == BareMRParser::RETURN) {
+        setState(12);
+        match(BareMRParser::RETURN);
+      }
+      setState(15);
+      match(BareMRParser::Data_block);
+      setState(16);
+      match(BareMRParser::RETURN);
+      break;
+    }
+
+    case 2: {
+      setState(17);
       match(BareMRParser::RETURN);
       break;
     }
@@ -192,24 +213,24 @@ BareMRParser::Bare_mrContext* BareMRParser::bare_mr() {
     default:
       break;
     }
-    setState(19);
+    setState(24);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 2272) != 0)) {
-      setState(17);
+      ((1ULL << _la) & 4544) != 0)) {
+      setState(22);
       _errHandler->sync(this);
       switch (_input->LA(1)) {
         case BareMRParser::Number_of_name:
         case BareMRParser::Simple_name:
         case BareMRParser::Double_quote_string: {
-          setState(15);
+          setState(20);
           mr_row_format();
           break;
         }
 
         case BareMRParser::RETURN: {
-          setState(16);
+          setState(21);
           match(BareMRParser::RETURN);
           break;
         }
@@ -217,11 +238,11 @@ BareMRParser::Bare_mrContext* BareMRParser::bare_mr() {
       default:
         throw NoViableAltException(this);
       }
-      setState(21);
+      setState(26);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(22);
+    setState(27);
     match(BareMRParser::EOF);
    
   }
@@ -279,15 +300,15 @@ BareMRParser::Mr_row_formatContext* BareMRParser::mr_row_format() {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(24);
+    setState(29);
     header();
-    setState(26); 
+    setState(31); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(25);
+              setState(30);
               mr_row_list();
               break;
             }
@@ -295,9 +316,9 @@ BareMRParser::Mr_row_formatContext* BareMRParser::mr_row_format() {
       default:
         throw NoViableAltException(this);
       }
-      setState(28); 
+      setState(33); 
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 3, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 4, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
    
   }
@@ -355,18 +376,18 @@ BareMRParser::HeaderContext* BareMRParser::header() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(31); 
+    setState(36); 
     _errHandler->sync(this);
     _la = _input->LA(1);
     do {
-      setState(30);
+      setState(35);
       column_name();
-      setState(33); 
+      setState(38); 
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 224) != 0));
-    setState(35);
+      ((1ULL << _la) & 448) != 0));
+    setState(40);
     match(BareMRParser::RETURN);
    
   }
@@ -428,18 +449,18 @@ BareMRParser::Mr_row_listContext* BareMRParser::mr_row_list() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(38); 
+    setState(43); 
     _errHandler->sync(this);
     _la = _input->LA(1);
     do {
-      setState(37);
+      setState(42);
       any();
-      setState(40); 
+      setState(45); 
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 966) != 0));
-    setState(42);
+      ((1ULL << _la) & 1932) != 0));
+    setState(47);
     _la = _input->LA(1);
     if (!(_la == BareMRParser::EOF
 
@@ -518,10 +539,10 @@ BareMRParser::AnyContext* BareMRParser::any() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(44);
+    setState(49);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 966) != 0))) {
+      ((1ULL << _la) & 1932) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -584,10 +605,10 @@ BareMRParser::Column_nameContext* BareMRParser::column_name() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(46);
+    setState(51);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 224) != 0))) {
+      ((1ULL << _la) & 448) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {

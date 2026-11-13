@@ -17,7 +17,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 import copy
 import ctypes
@@ -693,7 +693,7 @@ PARSABLE_PK_FILE_TYPES = ('nm-aux-xea',
 
 PARSABLE_CS_FILE_TYPES = ('nm-shi-ari', 'nm-shi-bar', 'nm-shi-dia', 'nm-shi-gar',
                           'nm-shi-npi', 'nm-shi-oli', 'nm-shi-pip', 'nm-shi-ppm',
-                          'nm-shi-st2', 'nm-shi-vie', 'nm-shi-xea')
+                          'nm-shi-st2', 'nm-shi-xea')
 
 LARGE_ASYM_ID = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
                  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -732,7 +732,7 @@ REPRESENTATIVE_ALT_ID = 'A'
 
 MAX_PREF_LABEL_SCHEME_COUNT = 100
 
-GLOBAL_OFFSET_ATTEMPT = 1000
+GLOBAL_OFFSET_ATTEMPT = 1_000
 LOCAL_OFFSET_ATTEMPT = 100
 PERIPH_OFFSET_ATTEMPT = 10
 
@@ -740,7 +740,7 @@ MAX_ALLOWED_EXT_SEQ = 2
 
 MIN_EXT_SEQ_FOR_ATOM_SEL_ERR = 12
 
-UNREAL_AUTH_SEQ_NUM = -10000
+UNREAL_AUTH_SEQ_NUM = -10_000
 
 MAX_CONFLICT_ATTEMPT = 11  # DAOTHER-10684
 
@@ -963,6 +963,13 @@ XPLOR_RDC_PRINCIPAL_AXIS_NAMES = ('OO', 'X', 'Y', 'Z')
 XPLOR_ORIGIN_AXIS_COLS = (0, 1, 2, 3)
 
 XPLOR_NITROXIDE_NAMES = ('NO', 'NX', 'NR', 'NAI', 'NAQ', 'NS1', 'ON', 'OS', 'OS1', 'OAH', 'SLC', 'GD')
+
+# Never add common atom names such as 'O1' or 'O2'. The XPLOR-NIH/CNS listeners compare only the first two letters of
+# an atom name against this tuple, and real atoms (O1P/O2P, O2', pyrimidine O2, lipid O1/O2) would then be taken for
+# nitroxide spin labels. Adding 'O2' (2v93) made the 6pts remediation select whole residues: 4x the restraint rows and
+# 3612 s instead of 72 s of CPU for nmr-cs-mr-merge. Use a pre-existing name such as 'ON' in corrected restraints.
+assert not any(name[:2] in ('O1', 'O2') for name in XPLOR_NITROXIDE_NAMES), (
+    'XPLOR_NITROXIDE_NAMES must not contain common atom names such as O1 or O2')
 
 NITROOXIDE_ANCHOR_RES_NAMES = ('CYS', 'SER', 'GLU', 'ASP', 'GLN', 'ASN', 'LYS', 'THR', 'HIS',
                                'ILE', 'LEU', 'MET', 'R1A', '3X9')
@@ -8975,7 +8982,8 @@ CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                     ]
 
-AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                         'default': REPRESENTATIVE_ASYM_ID},
                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                         {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                         {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
@@ -8988,13 +8996,15 @@ ATOM_NAME_DATA_ITEMS = [{'name': 'label_comp_id', 'type': 'starts-with-alnum', '
 AUTH_ATOM_CARTN_DATA_ITEMS = CARTN_DATA_ITEMS
 AUTH_ATOM_CARTN_DATA_ITEMS.extend(AUTH_ATOM_DATA_ITEMS)
 
-PTNR1_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+PTNR1_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                               'default': REPRESENTATIVE_ASYM_ID},
                               {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                               {'name': 'ptnr1_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                               {'name': 'ptnr1_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                               ]
 
-PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                               'default': REPRESENTATIVE_ASYM_ID},
                               {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                               {'name': 'ptnr2_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                               {'name': 'ptnr2_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}

@@ -310,14 +310,16 @@ Double_quote_string:	'"' ~["\r\n]* '"';
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
+fragment H_NAME:	[ABCDEGHMNOPQRZ*%#+'"0-9];
+fragment NON_H_NAME:	~[ABCDEGHMNOPQRZ*%#+'"0-9 \t\r\n];
 
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
-COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
+COMMENT:		('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) '#'* | '!'+) -> mode(COMMENT_MODE);
 
 Simple_name:		SIMPLE_NAME;
-Simple_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
-Integers:		(WILDCARD | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
+Simple_names:		(WILDCARD SIMPLE_NAME? | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
+Integers:		(WILDCARD Integer? | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
 //Class_name:		SIMPLE_NAME;
 //Class_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;
 //Segment_name:		SIMPLE_NAME;
@@ -359,7 +361,7 @@ Symbol_name:		SYMBOL_NAME;
 SPACE:			[ \t\r\n]+ -> skip;
 CONTINUE:		'-'+ SPACE -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
+SECTION_COMMENT:	('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		(';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
 //SET_VARIABLE:		Set ([\r\n]*)? ~[\r\n]* ([\r\n]*)? End -> channel(HIDDEN);
 
@@ -367,7 +369,7 @@ mode VECTOR_EXPR_MODE;
 
 Equ_op_VE:		'=';
 
-Integer_VE:		Integer;
+Integer_VE:		('+' | '-')? DECIMAL;
 Real_VE:		Real;
 Simple_name_VE:		SIMPLE_NAME;
 
@@ -389,4 +391,3 @@ Attr_properties:	('X' | 'Y' | 'Z' | 'WMAI' 'N'? | 'XCOM' 'P'? | 'YCOM' 'P'? | 'Z
 Comparison_ops:		(Equ_op | Lt_op | Gt_op | Leq_op | Geq_op | Neq_op | Aeq_op) -> popMode;
 
 SPACE_AP:		[ \t\r\n]+ -> skip;
-

@@ -105,4 +105,3 @@ position_restraint:
 
 /* number expression in restrains */
 number:	Float | Integer;
-

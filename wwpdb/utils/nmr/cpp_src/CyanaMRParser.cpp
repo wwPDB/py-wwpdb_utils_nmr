@@ -98,7 +98,7 @@ void cyanamrparserParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,76,819,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,76,820,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
   	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,
   	21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,2,27,7,27,2,28,7,
@@ -140,48 +140,48 @@ void cyanamrparserParserInitialize() {
   	1,31,1,31,1,31,1,31,3,31,511,8,31,1,31,3,31,514,8,31,1,31,3,31,517,8,
   	31,1,32,4,32,520,8,32,11,32,12,32,521,1,33,1,33,1,33,1,33,1,33,1,33,1,
   	33,3,33,531,8,33,1,33,1,33,1,33,1,33,3,33,537,8,33,3,33,539,8,33,1,33,
-  	3,33,542,8,33,1,33,3,33,545,8,33,1,34,1,34,1,34,1,34,4,34,551,8,34,11,
-  	34,12,34,552,1,34,3,34,556,8,34,1,35,4,35,559,8,35,11,35,12,35,560,1,
-  	36,1,36,1,36,1,36,1,36,1,36,1,36,1,36,1,36,1,36,3,36,573,8,36,1,36,3,
-  	36,576,8,36,1,36,3,36,579,8,36,1,36,3,36,582,8,36,1,36,3,36,585,8,36,
-  	1,37,4,37,588,8,37,11,37,12,37,589,1,38,1,38,1,38,1,38,1,38,1,38,1,38,
-  	1,38,1,38,1,38,3,38,602,8,38,1,38,3,38,605,8,38,1,38,3,38,608,8,38,1,
-  	38,3,38,611,8,38,1,38,3,38,614,8,38,1,39,4,39,617,8,39,11,39,12,39,618,
-  	1,40,1,40,1,40,1,40,1,40,1,40,1,40,1,40,1,40,1,40,3,40,631,8,40,1,40,
-  	3,40,634,8,40,1,40,3,40,637,8,40,1,40,3,40,640,8,40,1,40,3,40,643,8,40,
-  	1,41,4,41,646,8,41,11,41,12,41,647,1,42,1,42,1,42,1,42,1,42,1,42,1,42,
-  	3,42,657,8,42,1,42,1,42,1,42,3,42,662,8,42,1,42,3,42,665,8,42,1,43,4,
-  	43,668,8,43,11,43,12,43,669,1,44,1,44,1,44,1,44,1,44,1,44,3,44,678,8,
-  	44,1,44,3,44,681,8,44,1,44,3,44,684,8,44,1,44,3,44,687,8,44,1,44,3,44,
-  	690,8,44,1,45,1,45,1,45,1,46,1,46,1,46,1,46,3,46,699,8,46,1,46,1,46,3,
-  	46,703,8,46,1,46,1,46,1,46,3,46,708,8,46,1,46,1,46,3,46,712,8,46,1,46,
-  	1,46,1,46,3,46,717,8,46,1,46,1,46,3,46,721,8,46,1,46,1,46,1,46,3,46,726,
-  	8,46,1,46,1,46,3,46,730,8,46,1,46,1,46,1,47,1,47,1,47,1,47,1,47,1,47,
-  	1,48,1,48,1,48,1,48,1,49,1,49,5,49,746,8,49,10,49,12,49,749,9,49,1,49,
-  	1,49,1,50,1,50,1,51,1,51,5,51,757,8,51,10,51,12,51,760,9,51,1,51,1,51,
-  	1,52,1,52,1,52,1,52,1,53,1,53,1,53,3,53,771,8,53,1,53,1,53,4,53,775,8,
-  	53,11,53,12,53,776,1,54,1,54,1,54,1,54,4,54,783,8,54,11,54,12,54,784,
-  	1,54,1,54,1,55,1,55,1,55,3,55,792,8,55,1,55,1,55,4,55,796,8,55,11,55,
-  	12,55,797,1,56,1,56,1,56,1,56,1,56,4,56,805,8,56,11,56,12,56,806,1,56,
+  	3,33,542,8,33,1,33,3,33,545,8,33,1,34,1,34,1,34,1,34,5,34,551,8,34,10,
+  	34,12,34,554,9,34,1,34,3,34,557,8,34,1,35,4,35,560,8,35,11,35,12,35,561,
+  	1,36,1,36,1,36,1,36,1,36,1,36,1,36,1,36,1,36,1,36,3,36,574,8,36,1,36,
+  	3,36,577,8,36,1,36,3,36,580,8,36,1,36,3,36,583,8,36,1,36,3,36,586,8,36,
+  	1,37,4,37,589,8,37,11,37,12,37,590,1,38,1,38,1,38,1,38,1,38,1,38,1,38,
+  	1,38,1,38,1,38,3,38,603,8,38,1,38,3,38,606,8,38,1,38,3,38,609,8,38,1,
+  	38,3,38,612,8,38,1,38,3,38,615,8,38,1,39,4,39,618,8,39,11,39,12,39,619,
+  	1,40,1,40,1,40,1,40,1,40,1,40,1,40,1,40,1,40,1,40,3,40,632,8,40,1,40,
+  	3,40,635,8,40,1,40,3,40,638,8,40,1,40,3,40,641,8,40,1,40,3,40,644,8,40,
+  	1,41,4,41,647,8,41,11,41,12,41,648,1,42,1,42,1,42,1,42,1,42,1,42,1,42,
+  	3,42,658,8,42,1,42,1,42,1,42,3,42,663,8,42,1,42,3,42,666,8,42,1,43,4,
+  	43,669,8,43,11,43,12,43,670,1,44,1,44,1,44,1,44,1,44,1,44,3,44,679,8,
+  	44,1,44,3,44,682,8,44,1,44,3,44,685,8,44,1,44,3,44,688,8,44,1,44,3,44,
+  	691,8,44,1,45,1,45,1,45,1,46,1,46,1,46,1,46,3,46,700,8,46,1,46,1,46,3,
+  	46,704,8,46,1,46,1,46,1,46,3,46,709,8,46,1,46,1,46,3,46,713,8,46,1,46,
+  	1,46,1,46,3,46,718,8,46,1,46,1,46,3,46,722,8,46,1,46,1,46,1,46,3,46,727,
+  	8,46,1,46,1,46,3,46,731,8,46,1,46,1,46,1,47,1,47,1,47,1,47,1,47,1,47,
+  	1,48,1,48,1,48,1,48,1,49,1,49,5,49,747,8,49,10,49,12,49,750,9,49,1,49,
+  	1,49,1,50,1,50,1,51,1,51,5,51,758,8,51,10,51,12,51,761,9,51,1,51,1,51,
+  	1,52,1,52,1,52,1,52,1,53,1,53,1,53,3,53,772,8,53,1,53,1,53,4,53,776,8,
+  	53,11,53,12,53,777,1,54,1,54,1,54,1,54,4,54,784,8,54,11,54,12,54,785,
+  	1,54,1,54,1,55,1,55,1,55,3,55,793,8,55,1,55,1,55,4,55,797,8,55,11,55,
+  	12,55,798,1,56,1,56,1,56,1,56,1,56,4,56,806,8,56,11,56,12,56,807,1,56,
   	1,56,1,57,1,57,1,58,1,58,1,59,1,59,1,60,1,60,1,60,0,0,61,0,2,4,6,8,10,
   	12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,
   	58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100,102,
   	104,106,108,110,112,114,116,118,120,0,10,1,1,43,43,2,0,2,2,34,36,1,0,
   	9,11,1,0,14,15,1,0,12,13,2,0,70,70,72,72,1,0,2,4,2,0,2,2,34,35,1,0,34,
-  	36,2,0,1,1,34,36,911,0,162,1,0,0,0,2,167,1,0,0,0,4,177,1,0,0,0,6,181,
+  	36,2,0,1,1,34,36,912,0,162,1,0,0,0,2,167,1,0,0,0,4,177,1,0,0,0,6,181,
   	1,0,0,0,8,204,1,0,0,0,10,208,1,0,0,0,12,225,1,0,0,0,14,236,1,0,0,0,16,
   	241,1,0,0,0,18,255,1,0,0,0,20,266,1,0,0,0,22,271,1,0,0,0,24,280,1,0,0,
   	0,26,284,1,0,0,0,28,301,1,0,0,0,30,305,1,0,0,0,32,323,1,0,0,0,34,327,
   	1,0,0,0,36,346,1,0,0,0,38,350,1,0,0,0,40,367,1,0,0,0,42,371,1,0,0,0,44,
   	389,1,0,0,0,46,393,1,0,0,0,48,412,1,0,0,0,50,416,1,0,0,0,52,442,1,0,0,
   	0,54,446,1,0,0,0,56,469,1,0,0,0,58,473,1,0,0,0,60,496,1,0,0,0,62,500,
-  	1,0,0,0,64,519,1,0,0,0,66,523,1,0,0,0,68,546,1,0,0,0,70,558,1,0,0,0,72,
-  	562,1,0,0,0,74,587,1,0,0,0,76,591,1,0,0,0,78,616,1,0,0,0,80,620,1,0,0,
-  	0,82,645,1,0,0,0,84,649,1,0,0,0,86,667,1,0,0,0,88,671,1,0,0,0,90,691,
-  	1,0,0,0,92,694,1,0,0,0,94,733,1,0,0,0,96,739,1,0,0,0,98,743,1,0,0,0,100,
-  	752,1,0,0,0,102,754,1,0,0,0,104,763,1,0,0,0,106,767,1,0,0,0,108,778,1,
-  	0,0,0,110,788,1,0,0,0,112,799,1,0,0,0,114,810,1,0,0,0,116,812,1,0,0,0,
-  	118,814,1,0,0,0,120,816,1,0,0,0,122,161,5,5,0,0,123,125,5,6,0,0,124,123,
+  	1,0,0,0,64,519,1,0,0,0,66,523,1,0,0,0,68,546,1,0,0,0,70,559,1,0,0,0,72,
+  	563,1,0,0,0,74,588,1,0,0,0,76,592,1,0,0,0,78,617,1,0,0,0,80,621,1,0,0,
+  	0,82,646,1,0,0,0,84,650,1,0,0,0,86,668,1,0,0,0,88,672,1,0,0,0,90,692,
+  	1,0,0,0,92,695,1,0,0,0,94,734,1,0,0,0,96,740,1,0,0,0,98,744,1,0,0,0,100,
+  	753,1,0,0,0,102,755,1,0,0,0,104,764,1,0,0,0,106,768,1,0,0,0,108,779,1,
+  	0,0,0,110,789,1,0,0,0,112,800,1,0,0,0,114,811,1,0,0,0,116,813,1,0,0,0,
+  	118,815,1,0,0,0,120,817,1,0,0,0,122,161,5,5,0,0,123,125,5,6,0,0,124,123,
   	1,0,0,0,125,126,1,0,0,0,126,124,1,0,0,0,126,127,1,0,0,0,127,161,1,0,0,
   	0,128,161,3,2,1,0,129,161,3,4,2,0,130,161,3,24,12,0,131,161,3,28,14,0,
   	132,161,3,32,16,0,133,161,3,36,18,0,134,161,3,40,20,0,135,161,3,44,22,
@@ -309,90 +309,90 @@ void cyanamrparserParserInitialize() {
   	0,0,0,537,539,1,0,0,0,538,532,1,0,0,0,538,539,1,0,0,0,539,541,1,0,0,0,
   	540,542,5,36,0,0,541,540,1,0,0,0,541,542,1,0,0,0,542,544,1,0,0,0,543,
   	545,5,2,0,0,544,543,1,0,0,0,544,545,1,0,0,0,545,67,1,0,0,0,546,547,5,
-  	18,0,0,547,548,3,118,59,0,548,550,3,116,58,0,549,551,3,118,59,0,550,549,
-  	1,0,0,0,551,552,1,0,0,0,552,550,1,0,0,0,552,553,1,0,0,0,553,555,1,0,0,
-  	0,554,556,5,2,0,0,555,554,1,0,0,0,555,556,1,0,0,0,556,69,1,0,0,0,557,
-  	559,3,72,36,0,558,557,1,0,0,0,559,560,1,0,0,0,560,558,1,0,0,0,560,561,
-  	1,0,0,0,561,71,1,0,0,0,562,563,5,2,0,0,563,564,3,118,59,0,564,565,3,118,
-  	59,0,565,566,3,118,59,0,566,567,5,2,0,0,567,568,3,118,59,0,568,569,3,
-  	118,59,0,569,570,3,118,59,0,570,572,3,114,57,0,571,573,3,114,57,0,572,
-  	571,1,0,0,0,572,573,1,0,0,0,573,575,1,0,0,0,574,576,3,114,57,0,575,574,
-  	1,0,0,0,575,576,1,0,0,0,576,578,1,0,0,0,577,579,3,114,57,0,578,577,1,
-  	0,0,0,578,579,1,0,0,0,579,581,1,0,0,0,580,582,3,114,57,0,581,580,1,0,
-  	0,0,581,582,1,0,0,0,582,584,1,0,0,0,583,585,3,114,57,0,584,583,1,0,0,
-  	0,584,585,1,0,0,0,585,73,1,0,0,0,586,588,3,76,38,0,587,586,1,0,0,0,588,
-  	589,1,0,0,0,589,587,1,0,0,0,589,590,1,0,0,0,590,75,1,0,0,0,591,592,3,
-  	118,59,0,592,593,5,2,0,0,593,594,3,118,59,0,594,595,3,118,59,0,595,596,
-  	3,118,59,0,596,597,5,2,0,0,597,598,3,118,59,0,598,599,3,118,59,0,599,
-  	601,3,114,57,0,600,602,3,114,57,0,601,600,1,0,0,0,601,602,1,0,0,0,602,
-  	604,1,0,0,0,603,605,3,114,57,0,604,603,1,0,0,0,604,605,1,0,0,0,605,607,
-  	1,0,0,0,606,608,3,114,57,0,607,606,1,0,0,0,607,608,1,0,0,0,608,610,1,
-  	0,0,0,609,611,3,114,57,0,610,609,1,0,0,0,610,611,1,0,0,0,611,613,1,0,
-  	0,0,612,614,3,114,57,0,613,612,1,0,0,0,613,614,1,0,0,0,614,77,1,0,0,0,
-  	615,617,3,80,40,0,616,615,1,0,0,0,617,618,1,0,0,0,618,616,1,0,0,0,618,
-  	619,1,0,0,0,619,79,1,0,0,0,620,621,3,118,59,0,621,622,3,118,59,0,622,
-  	623,5,2,0,0,623,624,3,118,59,0,624,625,3,118,59,0,625,626,3,118,59,0,
-  	626,627,5,2,0,0,627,628,3,118,59,0,628,630,3,114,57,0,629,631,3,114,57,
-  	0,630,629,1,0,0,0,630,631,1,0,0,0,631,633,1,0,0,0,632,634,3,114,57,0,
-  	633,632,1,0,0,0,633,634,1,0,0,0,634,636,1,0,0,0,635,637,3,114,57,0,636,
-  	635,1,0,0,0,636,637,1,0,0,0,637,639,1,0,0,0,638,640,3,114,57,0,639,638,
-  	1,0,0,0,639,640,1,0,0,0,640,642,1,0,0,0,641,643,3,114,57,0,642,641,1,
-  	0,0,0,642,643,1,0,0,0,643,81,1,0,0,0,644,646,3,84,42,0,645,644,1,0,0,
-  	0,646,647,1,0,0,0,647,645,1,0,0,0,647,648,1,0,0,0,648,83,1,0,0,0,649,
-  	650,3,118,59,0,650,651,5,2,0,0,651,652,3,118,59,0,652,653,3,118,59,0,
-  	653,654,3,114,57,0,654,656,3,114,57,0,655,657,3,114,57,0,656,655,1,0,
-  	0,0,656,657,1,0,0,0,657,661,1,0,0,0,658,659,5,19,0,0,659,660,5,20,0,0,
-  	660,662,5,2,0,0,661,658,1,0,0,0,661,662,1,0,0,0,662,664,1,0,0,0,663,665,
-  	5,21,0,0,664,663,1,0,0,0,664,665,1,0,0,0,665,85,1,0,0,0,666,668,3,88,
-  	44,0,667,666,1,0,0,0,668,669,1,0,0,0,669,667,1,0,0,0,669,670,1,0,0,0,
-  	670,87,1,0,0,0,671,672,3,116,58,0,672,673,3,118,59,0,673,674,3,118,59,
-  	0,674,675,3,118,59,0,675,677,3,114,57,0,676,678,3,114,57,0,677,676,1,
-  	0,0,0,677,678,1,0,0,0,678,680,1,0,0,0,679,681,3,114,57,0,680,679,1,0,
-  	0,0,680,681,1,0,0,0,681,683,1,0,0,0,682,684,3,114,57,0,683,682,1,0,0,
-  	0,683,684,1,0,0,0,684,686,1,0,0,0,685,687,3,114,57,0,686,685,1,0,0,0,
-  	686,687,1,0,0,0,687,689,1,0,0,0,688,690,3,114,57,0,689,688,1,0,0,0,689,
-  	690,1,0,0,0,690,89,1,0,0,0,691,692,5,22,0,0,692,693,5,23,0,0,693,91,1,
-  	0,0,0,694,702,5,24,0,0,695,696,5,44,0,0,696,699,5,48,0,0,697,699,5,49,
-  	0,0,698,695,1,0,0,0,698,697,1,0,0,0,698,699,1,0,0,0,699,700,1,0,0,0,700,
-  	703,5,58,0,0,701,703,5,53,0,0,702,698,1,0,0,0,702,701,1,0,0,0,703,711,
-  	1,0,0,0,704,705,5,46,0,0,705,708,5,48,0,0,706,708,5,51,0,0,707,704,1,
-  	0,0,0,707,706,1,0,0,0,707,708,1,0,0,0,708,709,1,0,0,0,709,712,5,57,0,
-  	0,710,712,5,55,0,0,711,707,1,0,0,0,711,710,1,0,0,0,712,720,1,0,0,0,713,
-  	714,5,45,0,0,714,717,5,48,0,0,715,717,5,50,0,0,716,713,1,0,0,0,716,715,
-  	1,0,0,0,716,717,1,0,0,0,717,718,1,0,0,0,718,721,5,58,0,0,719,721,5,54,
-  	0,0,720,716,1,0,0,0,720,719,1,0,0,0,721,729,1,0,0,0,722,723,5,47,0,0,
-  	723,726,5,48,0,0,724,726,5,52,0,0,725,722,1,0,0,0,725,724,1,0,0,0,725,
-  	726,1,0,0,0,726,727,1,0,0,0,727,730,5,57,0,0,728,730,5,56,0,0,729,725,
-  	1,0,0,0,729,728,1,0,0,0,730,731,1,0,0,0,731,732,5,60,0,0,732,93,1,0,0,
-  	0,733,734,5,25,0,0,734,735,3,118,59,0,735,736,3,116,58,0,736,737,3,118,
-  	59,0,737,738,3,116,58,0,738,95,1,0,0,0,739,740,5,26,0,0,740,741,5,62,
-  	0,0,741,742,5,64,0,0,742,97,1,0,0,0,743,747,5,27,0,0,744,746,5,66,0,0,
-  	745,744,1,0,0,0,746,749,1,0,0,0,747,745,1,0,0,0,747,748,1,0,0,0,748,750,
-  	1,0,0,0,749,747,1,0,0,0,750,751,5,68,0,0,751,99,1,0,0,0,752,753,5,29,
-  	0,0,753,101,1,0,0,0,754,758,5,28,0,0,755,757,5,66,0,0,756,755,1,0,0,0,
-  	757,760,1,0,0,0,758,756,1,0,0,0,758,759,1,0,0,0,759,761,1,0,0,0,760,758,
-  	1,0,0,0,761,762,5,68,0,0,762,103,1,0,0,0,763,764,5,30,0,0,764,765,5,62,
-  	0,0,765,766,5,64,0,0,766,105,1,0,0,0,767,768,5,31,0,0,768,770,3,118,59,
-  	0,769,771,3,2,1,0,770,769,1,0,0,0,770,771,1,0,0,0,771,774,1,0,0,0,772,
-  	775,3,108,54,0,773,775,3,2,1,0,774,772,1,0,0,0,774,773,1,0,0,0,775,776,
-  	1,0,0,0,776,774,1,0,0,0,776,777,1,0,0,0,777,107,1,0,0,0,778,779,5,32,
-  	0,0,779,780,5,72,0,0,780,782,5,73,0,0,781,783,5,72,0,0,782,781,1,0,0,
-  	0,783,784,1,0,0,0,784,782,1,0,0,0,784,785,1,0,0,0,785,786,1,0,0,0,786,
-  	787,5,75,0,0,787,109,1,0,0,0,788,789,5,31,0,0,789,791,3,118,59,0,790,
-  	792,3,2,1,0,791,790,1,0,0,0,791,792,1,0,0,0,792,795,1,0,0,0,793,796,3,
-  	112,56,0,794,796,3,2,1,0,795,793,1,0,0,0,795,794,1,0,0,0,796,797,1,0,
-  	0,0,797,795,1,0,0,0,797,798,1,0,0,0,798,111,1,0,0,0,799,800,5,33,0,0,
-  	800,801,7,5,0,0,801,804,5,73,0,0,802,803,5,72,0,0,803,805,5,71,0,0,804,
-  	802,1,0,0,0,805,806,1,0,0,0,806,804,1,0,0,0,806,807,1,0,0,0,807,808,1,
-  	0,0,0,808,809,5,75,0,0,809,113,1,0,0,0,810,811,7,6,0,0,811,115,1,0,0,
-  	0,812,813,7,7,0,0,813,117,1,0,0,0,814,815,7,8,0,0,815,119,1,0,0,0,816,
-  	817,7,9,0,0,817,121,1,0,0,0,116,126,160,162,171,179,189,192,195,198,201,
-  	206,214,219,222,227,232,234,252,257,262,264,282,287,296,298,303,308,318,
-  	320,325,330,341,343,348,354,362,364,369,375,384,386,391,397,407,409,414,
-  	425,433,436,439,444,460,463,466,471,487,490,493,498,510,513,516,521,530,
-  	536,538,541,544,552,555,560,572,575,578,581,584,589,601,604,607,610,613,
-  	618,630,633,636,639,642,647,656,661,664,669,677,680,683,686,689,698,702,
-  	707,711,716,720,725,729,747,758,770,774,776,784,791,795,797,806
+  	18,0,0,547,548,3,118,59,0,548,552,3,116,58,0,549,551,3,118,59,0,550,549,
+  	1,0,0,0,551,554,1,0,0,0,552,550,1,0,0,0,552,553,1,0,0,0,553,556,1,0,0,
+  	0,554,552,1,0,0,0,555,557,5,2,0,0,556,555,1,0,0,0,556,557,1,0,0,0,557,
+  	69,1,0,0,0,558,560,3,72,36,0,559,558,1,0,0,0,560,561,1,0,0,0,561,559,
+  	1,0,0,0,561,562,1,0,0,0,562,71,1,0,0,0,563,564,5,2,0,0,564,565,3,118,
+  	59,0,565,566,3,118,59,0,566,567,3,118,59,0,567,568,5,2,0,0,568,569,3,
+  	118,59,0,569,570,3,118,59,0,570,571,3,118,59,0,571,573,3,114,57,0,572,
+  	574,3,114,57,0,573,572,1,0,0,0,573,574,1,0,0,0,574,576,1,0,0,0,575,577,
+  	3,114,57,0,576,575,1,0,0,0,576,577,1,0,0,0,577,579,1,0,0,0,578,580,3,
+  	114,57,0,579,578,1,0,0,0,579,580,1,0,0,0,580,582,1,0,0,0,581,583,3,114,
+  	57,0,582,581,1,0,0,0,582,583,1,0,0,0,583,585,1,0,0,0,584,586,3,114,57,
+  	0,585,584,1,0,0,0,585,586,1,0,0,0,586,73,1,0,0,0,587,589,3,76,38,0,588,
+  	587,1,0,0,0,589,590,1,0,0,0,590,588,1,0,0,0,590,591,1,0,0,0,591,75,1,
+  	0,0,0,592,593,3,118,59,0,593,594,5,2,0,0,594,595,3,118,59,0,595,596,3,
+  	118,59,0,596,597,3,118,59,0,597,598,5,2,0,0,598,599,3,118,59,0,599,600,
+  	3,118,59,0,600,602,3,114,57,0,601,603,3,114,57,0,602,601,1,0,0,0,602,
+  	603,1,0,0,0,603,605,1,0,0,0,604,606,3,114,57,0,605,604,1,0,0,0,605,606,
+  	1,0,0,0,606,608,1,0,0,0,607,609,3,114,57,0,608,607,1,0,0,0,608,609,1,
+  	0,0,0,609,611,1,0,0,0,610,612,3,114,57,0,611,610,1,0,0,0,611,612,1,0,
+  	0,0,612,614,1,0,0,0,613,615,3,114,57,0,614,613,1,0,0,0,614,615,1,0,0,
+  	0,615,77,1,0,0,0,616,618,3,80,40,0,617,616,1,0,0,0,618,619,1,0,0,0,619,
+  	617,1,0,0,0,619,620,1,0,0,0,620,79,1,0,0,0,621,622,3,118,59,0,622,623,
+  	3,118,59,0,623,624,5,2,0,0,624,625,3,118,59,0,625,626,3,118,59,0,626,
+  	627,3,118,59,0,627,628,5,2,0,0,628,629,3,118,59,0,629,631,3,114,57,0,
+  	630,632,3,114,57,0,631,630,1,0,0,0,631,632,1,0,0,0,632,634,1,0,0,0,633,
+  	635,3,114,57,0,634,633,1,0,0,0,634,635,1,0,0,0,635,637,1,0,0,0,636,638,
+  	3,114,57,0,637,636,1,0,0,0,637,638,1,0,0,0,638,640,1,0,0,0,639,641,3,
+  	114,57,0,640,639,1,0,0,0,640,641,1,0,0,0,641,643,1,0,0,0,642,644,3,114,
+  	57,0,643,642,1,0,0,0,643,644,1,0,0,0,644,81,1,0,0,0,645,647,3,84,42,0,
+  	646,645,1,0,0,0,647,648,1,0,0,0,648,646,1,0,0,0,648,649,1,0,0,0,649,83,
+  	1,0,0,0,650,651,3,118,59,0,651,652,5,2,0,0,652,653,3,118,59,0,653,654,
+  	3,118,59,0,654,655,3,114,57,0,655,657,3,114,57,0,656,658,3,114,57,0,657,
+  	656,1,0,0,0,657,658,1,0,0,0,658,662,1,0,0,0,659,660,5,19,0,0,660,661,
+  	5,20,0,0,661,663,5,2,0,0,662,659,1,0,0,0,662,663,1,0,0,0,663,665,1,0,
+  	0,0,664,666,5,21,0,0,665,664,1,0,0,0,665,666,1,0,0,0,666,85,1,0,0,0,667,
+  	669,3,88,44,0,668,667,1,0,0,0,669,670,1,0,0,0,670,668,1,0,0,0,670,671,
+  	1,0,0,0,671,87,1,0,0,0,672,673,3,116,58,0,673,674,3,118,59,0,674,675,
+  	3,118,59,0,675,676,3,118,59,0,676,678,3,114,57,0,677,679,3,114,57,0,678,
+  	677,1,0,0,0,678,679,1,0,0,0,679,681,1,0,0,0,680,682,3,114,57,0,681,680,
+  	1,0,0,0,681,682,1,0,0,0,682,684,1,0,0,0,683,685,3,114,57,0,684,683,1,
+  	0,0,0,684,685,1,0,0,0,685,687,1,0,0,0,686,688,3,114,57,0,687,686,1,0,
+  	0,0,687,688,1,0,0,0,688,690,1,0,0,0,689,691,3,114,57,0,690,689,1,0,0,
+  	0,690,691,1,0,0,0,691,89,1,0,0,0,692,693,5,22,0,0,693,694,5,23,0,0,694,
+  	91,1,0,0,0,695,703,5,24,0,0,696,697,5,44,0,0,697,700,5,48,0,0,698,700,
+  	5,49,0,0,699,696,1,0,0,0,699,698,1,0,0,0,699,700,1,0,0,0,700,701,1,0,
+  	0,0,701,704,5,58,0,0,702,704,5,53,0,0,703,699,1,0,0,0,703,702,1,0,0,0,
+  	704,712,1,0,0,0,705,706,5,46,0,0,706,709,5,48,0,0,707,709,5,51,0,0,708,
+  	705,1,0,0,0,708,707,1,0,0,0,708,709,1,0,0,0,709,710,1,0,0,0,710,713,5,
+  	57,0,0,711,713,5,55,0,0,712,708,1,0,0,0,712,711,1,0,0,0,713,721,1,0,0,
+  	0,714,715,5,45,0,0,715,718,5,48,0,0,716,718,5,50,0,0,717,714,1,0,0,0,
+  	717,716,1,0,0,0,717,718,1,0,0,0,718,719,1,0,0,0,719,722,5,58,0,0,720,
+  	722,5,54,0,0,721,717,1,0,0,0,721,720,1,0,0,0,722,730,1,0,0,0,723,724,
+  	5,47,0,0,724,727,5,48,0,0,725,727,5,52,0,0,726,723,1,0,0,0,726,725,1,
+  	0,0,0,726,727,1,0,0,0,727,728,1,0,0,0,728,731,5,57,0,0,729,731,5,56,0,
+  	0,730,726,1,0,0,0,730,729,1,0,0,0,731,732,1,0,0,0,732,733,5,60,0,0,733,
+  	93,1,0,0,0,734,735,5,25,0,0,735,736,3,118,59,0,736,737,3,116,58,0,737,
+  	738,3,118,59,0,738,739,3,116,58,0,739,95,1,0,0,0,740,741,5,26,0,0,741,
+  	742,5,62,0,0,742,743,5,64,0,0,743,97,1,0,0,0,744,748,5,27,0,0,745,747,
+  	5,66,0,0,746,745,1,0,0,0,747,750,1,0,0,0,748,746,1,0,0,0,748,749,1,0,
+  	0,0,749,751,1,0,0,0,750,748,1,0,0,0,751,752,5,68,0,0,752,99,1,0,0,0,753,
+  	754,5,29,0,0,754,101,1,0,0,0,755,759,5,28,0,0,756,758,5,66,0,0,757,756,
+  	1,0,0,0,758,761,1,0,0,0,759,757,1,0,0,0,759,760,1,0,0,0,760,762,1,0,0,
+  	0,761,759,1,0,0,0,762,763,5,68,0,0,763,103,1,0,0,0,764,765,5,30,0,0,765,
+  	766,5,62,0,0,766,767,5,64,0,0,767,105,1,0,0,0,768,769,5,31,0,0,769,771,
+  	3,118,59,0,770,772,3,2,1,0,771,770,1,0,0,0,771,772,1,0,0,0,772,775,1,
+  	0,0,0,773,776,3,108,54,0,774,776,3,2,1,0,775,773,1,0,0,0,775,774,1,0,
+  	0,0,776,777,1,0,0,0,777,775,1,0,0,0,777,778,1,0,0,0,778,107,1,0,0,0,779,
+  	780,5,32,0,0,780,781,5,72,0,0,781,783,5,73,0,0,782,784,5,72,0,0,783,782,
+  	1,0,0,0,784,785,1,0,0,0,785,783,1,0,0,0,785,786,1,0,0,0,786,787,1,0,0,
+  	0,787,788,5,75,0,0,788,109,1,0,0,0,789,790,5,31,0,0,790,792,3,118,59,
+  	0,791,793,3,2,1,0,792,791,1,0,0,0,792,793,1,0,0,0,793,796,1,0,0,0,794,
+  	797,3,112,56,0,795,797,3,2,1,0,796,794,1,0,0,0,796,795,1,0,0,0,797,798,
+  	1,0,0,0,798,796,1,0,0,0,798,799,1,0,0,0,799,111,1,0,0,0,800,801,5,33,
+  	0,0,801,802,7,5,0,0,802,805,5,73,0,0,803,804,5,72,0,0,804,806,5,71,0,
+  	0,805,803,1,0,0,0,806,807,1,0,0,0,807,805,1,0,0,0,807,808,1,0,0,0,808,
+  	809,1,0,0,0,809,810,5,75,0,0,810,113,1,0,0,0,811,812,7,6,0,0,812,115,
+  	1,0,0,0,813,814,7,7,0,0,814,117,1,0,0,0,815,816,7,8,0,0,816,119,1,0,0,
+  	0,817,818,7,9,0,0,818,121,1,0,0,0,116,126,160,162,171,179,189,192,195,
+  	198,201,206,214,219,222,227,232,234,252,257,262,264,282,287,296,298,303,
+  	308,318,320,325,330,341,343,348,354,362,364,369,375,384,386,391,397,407,
+  	409,414,425,433,436,439,444,460,463,466,471,487,490,493,498,510,513,516,
+  	521,530,536,538,541,544,552,556,561,573,576,579,582,585,590,602,605,608,
+  	611,614,619,631,634,637,640,643,648,657,662,665,670,678,681,684,687,690,
+  	699,703,708,712,717,721,726,730,748,759,771,775,777,785,792,796,798,807
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -4569,30 +4569,24 @@ CyanaMRParser::Diana_stereoassign_macroContext* CyanaMRParser::diana_stereoassig
     gen_simple_name();
     setState(548);
     gen_res_num();
-    setState(550); 
+    setState(552);
     _errHandler->sync(this);
-    alt = 1;
-    do {
-      switch (alt) {
-        case 1: {
-              setState(549);
-              gen_simple_name();
-              break;
-            }
-
-      default:
-        throw NoViableAltException(this);
+    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 68, _ctx);
+    while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
+      if (alt == 1) {
+        setState(549);
+        gen_simple_name(); 
       }
-      setState(552); 
+      setState(554);
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 68, _ctx);
-    } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
-    setState(555);
+    }
+    setState(556);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 69, _ctx)) {
     case 1: {
-      setState(554);
+      setState(555);
       match(CyanaMRParser::Integer);
       break;
     }
@@ -4652,13 +4646,13 @@ CyanaMRParser::Distance_w_chain_restraintsContext* CyanaMRParser::distance_w_cha
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(558); 
+    setState(559); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(557);
+              setState(558);
               distance_w_chain_restraint();
               break;
             }
@@ -4666,7 +4660,7 @@ CyanaMRParser::Distance_w_chain_restraintsContext* CyanaMRParser::distance_w_cha
       default:
         throw NoViableAltException(this);
       }
-      setState(560); 
+      setState(561); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 70, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -4737,30 +4731,30 @@ CyanaMRParser::Distance_w_chain_restraintContext* CyanaMRParser::distance_w_chai
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(562);
-    match(CyanaMRParser::Integer);
     setState(563);
-    gen_simple_name();
+    match(CyanaMRParser::Integer);
     setState(564);
     gen_simple_name();
     setState(565);
     gen_simple_name();
     setState(566);
-    match(CyanaMRParser::Integer);
-    setState(567);
     gen_simple_name();
+    setState(567);
+    match(CyanaMRParser::Integer);
     setState(568);
     gen_simple_name();
     setState(569);
     gen_simple_name();
     setState(570);
+    gen_simple_name();
+    setState(571);
     number();
-    setState(572);
+    setState(573);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 71, _ctx)) {
     case 1: {
-      setState(571);
+      setState(572);
       number();
       break;
     }
@@ -4768,12 +4762,12 @@ CyanaMRParser::Distance_w_chain_restraintContext* CyanaMRParser::distance_w_chai
     default:
       break;
     }
-    setState(575);
+    setState(576);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 72, _ctx)) {
     case 1: {
-      setState(574);
+      setState(575);
       number();
       break;
     }
@@ -4781,12 +4775,12 @@ CyanaMRParser::Distance_w_chain_restraintContext* CyanaMRParser::distance_w_chai
     default:
       break;
     }
-    setState(578);
+    setState(579);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 73, _ctx)) {
     case 1: {
-      setState(577);
+      setState(578);
       number();
       break;
     }
@@ -4794,12 +4788,12 @@ CyanaMRParser::Distance_w_chain_restraintContext* CyanaMRParser::distance_w_chai
     default:
       break;
     }
-    setState(581);
+    setState(582);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 74, _ctx)) {
     case 1: {
-      setState(580);
+      setState(581);
       number();
       break;
     }
@@ -4807,12 +4801,12 @@ CyanaMRParser::Distance_w_chain_restraintContext* CyanaMRParser::distance_w_chai
     default:
       break;
     }
-    setState(584);
+    setState(585);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 75, _ctx)) {
     case 1: {
-      setState(583);
+      setState(584);
       number();
       break;
     }
@@ -4872,13 +4866,13 @@ CyanaMRParser::Distance_w_chain2_restraintsContext* CyanaMRParser::distance_w_ch
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(587); 
+    setState(588); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(586);
+              setState(587);
               distance_w_chain2_restraint();
               break;
             }
@@ -4886,7 +4880,7 @@ CyanaMRParser::Distance_w_chain2_restraintsContext* CyanaMRParser::distance_w_ch
       default:
         throw NoViableAltException(this);
       }
-      setState(589); 
+      setState(590); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 76, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -4957,30 +4951,30 @@ CyanaMRParser::Distance_w_chain2_restraintContext* CyanaMRParser::distance_w_cha
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(591);
-    gen_simple_name();
     setState(592);
-    match(CyanaMRParser::Integer);
-    setState(593);
     gen_simple_name();
+    setState(593);
+    match(CyanaMRParser::Integer);
     setState(594);
     gen_simple_name();
     setState(595);
     gen_simple_name();
     setState(596);
-    match(CyanaMRParser::Integer);
-    setState(597);
     gen_simple_name();
+    setState(597);
+    match(CyanaMRParser::Integer);
     setState(598);
     gen_simple_name();
     setState(599);
+    gen_simple_name();
+    setState(600);
     number();
-    setState(601);
+    setState(602);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 77, _ctx)) {
     case 1: {
-      setState(600);
+      setState(601);
       number();
       break;
     }
@@ -4988,12 +4982,12 @@ CyanaMRParser::Distance_w_chain2_restraintContext* CyanaMRParser::distance_w_cha
     default:
       break;
     }
-    setState(604);
+    setState(605);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 78, _ctx)) {
     case 1: {
-      setState(603);
+      setState(604);
       number();
       break;
     }
@@ -5001,12 +4995,12 @@ CyanaMRParser::Distance_w_chain2_restraintContext* CyanaMRParser::distance_w_cha
     default:
       break;
     }
-    setState(607);
+    setState(608);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 79, _ctx)) {
     case 1: {
-      setState(606);
+      setState(607);
       number();
       break;
     }
@@ -5014,12 +5008,12 @@ CyanaMRParser::Distance_w_chain2_restraintContext* CyanaMRParser::distance_w_cha
     default:
       break;
     }
-    setState(610);
+    setState(611);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 80, _ctx)) {
     case 1: {
-      setState(609);
+      setState(610);
       number();
       break;
     }
@@ -5027,12 +5021,12 @@ CyanaMRParser::Distance_w_chain2_restraintContext* CyanaMRParser::distance_w_cha
     default:
       break;
     }
-    setState(613);
+    setState(614);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 81, _ctx)) {
     case 1: {
-      setState(612);
+      setState(613);
       number();
       break;
     }
@@ -5092,13 +5086,13 @@ CyanaMRParser::Distance_w_chain3_restraintsContext* CyanaMRParser::distance_w_ch
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(616); 
+    setState(617); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(615);
+              setState(616);
               distance_w_chain3_restraint();
               break;
             }
@@ -5106,7 +5100,7 @@ CyanaMRParser::Distance_w_chain3_restraintsContext* CyanaMRParser::distance_w_ch
       default:
         throw NoViableAltException(this);
       }
-      setState(618); 
+      setState(619); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 82, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -5177,30 +5171,30 @@ CyanaMRParser::Distance_w_chain3_restraintContext* CyanaMRParser::distance_w_cha
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(620);
-    gen_simple_name();
     setState(621);
     gen_simple_name();
     setState(622);
-    match(CyanaMRParser::Integer);
-    setState(623);
     gen_simple_name();
+    setState(623);
+    match(CyanaMRParser::Integer);
     setState(624);
     gen_simple_name();
     setState(625);
     gen_simple_name();
     setState(626);
-    match(CyanaMRParser::Integer);
-    setState(627);
     gen_simple_name();
+    setState(627);
+    match(CyanaMRParser::Integer);
     setState(628);
+    gen_simple_name();
+    setState(629);
     number();
-    setState(630);
+    setState(631);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 83, _ctx)) {
     case 1: {
-      setState(629);
+      setState(630);
       number();
       break;
     }
@@ -5208,12 +5202,12 @@ CyanaMRParser::Distance_w_chain3_restraintContext* CyanaMRParser::distance_w_cha
     default:
       break;
     }
-    setState(633);
+    setState(634);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 84, _ctx)) {
     case 1: {
-      setState(632);
+      setState(633);
       number();
       break;
     }
@@ -5221,12 +5215,12 @@ CyanaMRParser::Distance_w_chain3_restraintContext* CyanaMRParser::distance_w_cha
     default:
       break;
     }
-    setState(636);
+    setState(637);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 85, _ctx)) {
     case 1: {
-      setState(635);
+      setState(636);
       number();
       break;
     }
@@ -5234,12 +5228,12 @@ CyanaMRParser::Distance_w_chain3_restraintContext* CyanaMRParser::distance_w_cha
     default:
       break;
     }
-    setState(639);
+    setState(640);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 86, _ctx)) {
     case 1: {
-      setState(638);
+      setState(639);
       number();
       break;
     }
@@ -5247,12 +5241,12 @@ CyanaMRParser::Distance_w_chain3_restraintContext* CyanaMRParser::distance_w_cha
     default:
       break;
     }
-    setState(642);
+    setState(643);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 87, _ctx)) {
     case 1: {
-      setState(641);
+      setState(642);
       number();
       break;
     }
@@ -5312,13 +5306,13 @@ CyanaMRParser::Torsion_angle_w_chain_restraintsContext* CyanaMRParser::torsion_a
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(645); 
+    setState(646); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(644);
+              setState(645);
               torsion_angle_w_chain_restraint();
               break;
             }
@@ -5326,7 +5320,7 @@ CyanaMRParser::Torsion_angle_w_chain_restraintsContext* CyanaMRParser::torsion_a
       default:
         throw NoViableAltException(this);
       }
-      setState(647); 
+      setState(648); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 88, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -5410,24 +5404,24 @@ CyanaMRParser::Torsion_angle_w_chain_restraintContext* CyanaMRParser::torsion_an
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(649);
-    gen_simple_name();
     setState(650);
-    match(CyanaMRParser::Integer);
-    setState(651);
     gen_simple_name();
+    setState(651);
+    match(CyanaMRParser::Integer);
     setState(652);
     gen_simple_name();
     setState(653);
-    number();
+    gen_simple_name();
     setState(654);
     number();
-    setState(656);
+    setState(655);
+    number();
+    setState(657);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 89, _ctx)) {
     case 1: {
-      setState(655);
+      setState(656);
       number();
       break;
     }
@@ -5435,24 +5429,24 @@ CyanaMRParser::Torsion_angle_w_chain_restraintContext* CyanaMRParser::torsion_an
     default:
       break;
     }
-    setState(661);
+    setState(662);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == CyanaMRParser::Type) {
-      setState(658);
-      match(CyanaMRParser::Type);
       setState(659);
-      match(CyanaMRParser::Equ_op);
+      match(CyanaMRParser::Type);
       setState(660);
+      match(CyanaMRParser::Equ_op);
+      setState(661);
       match(CyanaMRParser::Integer);
     }
-    setState(664);
+    setState(665);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == CyanaMRParser::Or) {
-      setState(663);
+      setState(664);
       match(CyanaMRParser::Or);
     }
    
@@ -5507,13 +5501,13 @@ CyanaMRParser::Cco_restraintsContext* CyanaMRParser::cco_restraints() {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(667); 
+    setState(668); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(666);
+              setState(667);
               cco_restraint();
               break;
             }
@@ -5521,7 +5515,7 @@ CyanaMRParser::Cco_restraintsContext* CyanaMRParser::cco_restraints() {
       default:
         throw NoViableAltException(this);
       }
-      setState(669); 
+      setState(670); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 92, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -5588,22 +5582,22 @@ CyanaMRParser::Cco_restraintContext* CyanaMRParser::cco_restraint() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(671);
-    gen_res_num();
     setState(672);
-    gen_simple_name();
+    gen_res_num();
     setState(673);
     gen_simple_name();
     setState(674);
     gen_simple_name();
     setState(675);
+    gen_simple_name();
+    setState(676);
     number();
-    setState(677);
+    setState(678);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 93, _ctx)) {
     case 1: {
-      setState(676);
+      setState(677);
       number();
       break;
     }
@@ -5611,12 +5605,12 @@ CyanaMRParser::Cco_restraintContext* CyanaMRParser::cco_restraint() {
     default:
       break;
     }
-    setState(680);
+    setState(681);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 94, _ctx)) {
     case 1: {
-      setState(679);
+      setState(680);
       number();
       break;
     }
@@ -5624,12 +5618,12 @@ CyanaMRParser::Cco_restraintContext* CyanaMRParser::cco_restraint() {
     default:
       break;
     }
-    setState(683);
+    setState(684);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 95, _ctx)) {
     case 1: {
-      setState(682);
+      setState(683);
       number();
       break;
     }
@@ -5637,12 +5631,12 @@ CyanaMRParser::Cco_restraintContext* CyanaMRParser::cco_restraint() {
     default:
       break;
     }
-    setState(686);
+    setState(687);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 96, _ctx)) {
     case 1: {
-      setState(685);
+      setState(686);
       number();
       break;
     }
@@ -5650,12 +5644,12 @@ CyanaMRParser::Cco_restraintContext* CyanaMRParser::cco_restraint() {
     default:
       break;
     }
-    setState(689);
+    setState(690);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 97, _ctx)) {
     case 1: {
-      setState(688);
+      setState(689);
       number();
       break;
     }
@@ -5714,9 +5708,9 @@ CyanaMRParser::Ssbond_macroContext* CyanaMRParser::ssbond_macro() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(691);
-    match(CyanaMRParser::Ssbond);
     setState(692);
+    match(CyanaMRParser::Ssbond);
+    setState(693);
     match(CyanaMRParser::Ssbond_resids);
    
   }
@@ -5841,27 +5835,27 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(694);
+    setState(695);
     match(CyanaMRParser::Hbond);
-    setState(702);
+    setState(703);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
       case CyanaMRParser::Atom1:
       case CyanaMRParser::Atom1_equ:
       case CyanaMRParser::Simple_name_HB: {
-        setState(698);
+        setState(699);
         _errHandler->sync(this);
         switch (_input->LA(1)) {
           case CyanaMRParser::Atom1: {
-            setState(695);
-            match(CyanaMRParser::Atom1);
             setState(696);
+            match(CyanaMRParser::Atom1);
+            setState(697);
             match(CyanaMRParser::Equ_op_HB);
             break;
           }
 
           case CyanaMRParser::Atom1_equ: {
-            setState(697);
+            setState(698);
             match(CyanaMRParser::Atom1_equ);
             break;
           }
@@ -5873,13 +5867,13 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
         default:
           break;
         }
-        setState(700);
+        setState(701);
         match(CyanaMRParser::Simple_name_HB);
         break;
       }
 
       case CyanaMRParser::Concat_atom_1: {
-        setState(701);
+        setState(702);
         match(CyanaMRParser::Concat_atom_1);
         break;
       }
@@ -5887,25 +5881,25 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
     default:
       throw NoViableAltException(this);
     }
-    setState(711);
+    setState(712);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
       case CyanaMRParser::Residue1:
       case CyanaMRParser::Residue1_equ:
       case CyanaMRParser::Integer_HB: {
-        setState(707);
+        setState(708);
         _errHandler->sync(this);
         switch (_input->LA(1)) {
           case CyanaMRParser::Residue1: {
-            setState(704);
-            match(CyanaMRParser::Residue1);
             setState(705);
+            match(CyanaMRParser::Residue1);
+            setState(706);
             match(CyanaMRParser::Equ_op_HB);
             break;
           }
 
           case CyanaMRParser::Residue1_equ: {
-            setState(706);
+            setState(707);
             match(CyanaMRParser::Residue1_equ);
             break;
           }
@@ -5917,13 +5911,13 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
         default:
           break;
         }
-        setState(709);
+        setState(710);
         match(CyanaMRParser::Integer_HB);
         break;
       }
 
       case CyanaMRParser::Concat_res_1: {
-        setState(710);
+        setState(711);
         match(CyanaMRParser::Concat_res_1);
         break;
       }
@@ -5931,25 +5925,25 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
     default:
       throw NoViableAltException(this);
     }
-    setState(720);
+    setState(721);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
       case CyanaMRParser::Atom2:
       case CyanaMRParser::Atom2_equ:
       case CyanaMRParser::Simple_name_HB: {
-        setState(716);
+        setState(717);
         _errHandler->sync(this);
         switch (_input->LA(1)) {
           case CyanaMRParser::Atom2: {
-            setState(713);
-            match(CyanaMRParser::Atom2);
             setState(714);
+            match(CyanaMRParser::Atom2);
+            setState(715);
             match(CyanaMRParser::Equ_op_HB);
             break;
           }
 
           case CyanaMRParser::Atom2_equ: {
-            setState(715);
+            setState(716);
             match(CyanaMRParser::Atom2_equ);
             break;
           }
@@ -5961,13 +5955,13 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
         default:
           break;
         }
-        setState(718);
+        setState(719);
         match(CyanaMRParser::Simple_name_HB);
         break;
       }
 
       case CyanaMRParser::Concat_atom_2: {
-        setState(719);
+        setState(720);
         match(CyanaMRParser::Concat_atom_2);
         break;
       }
@@ -5975,25 +5969,25 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
     default:
       throw NoViableAltException(this);
     }
-    setState(729);
+    setState(730);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
       case CyanaMRParser::Residue2:
       case CyanaMRParser::Residue2_equ:
       case CyanaMRParser::Integer_HB: {
-        setState(725);
+        setState(726);
         _errHandler->sync(this);
         switch (_input->LA(1)) {
           case CyanaMRParser::Residue2: {
-            setState(722);
-            match(CyanaMRParser::Residue2);
             setState(723);
+            match(CyanaMRParser::Residue2);
+            setState(724);
             match(CyanaMRParser::Equ_op_HB);
             break;
           }
 
           case CyanaMRParser::Residue2_equ: {
-            setState(724);
+            setState(725);
             match(CyanaMRParser::Residue2_equ);
             break;
           }
@@ -6005,13 +5999,13 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
         default:
           break;
         }
-        setState(727);
+        setState(728);
         match(CyanaMRParser::Integer_HB);
         break;
       }
 
       case CyanaMRParser::Concat_res_2: {
-        setState(728);
+        setState(729);
         match(CyanaMRParser::Concat_res_2);
         break;
       }
@@ -6019,7 +6013,7 @@ CyanaMRParser::Hbond_macroContext* CyanaMRParser::hbond_macro() {
     default:
       throw NoViableAltException(this);
     }
-    setState(731);
+    setState(732);
     match(CyanaMRParser::RETURN_HB);
    
   }
@@ -6084,15 +6078,15 @@ CyanaMRParser::Link_statementContext* CyanaMRParser::link_statement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(733);
-    match(CyanaMRParser::Link);
     setState(734);
-    gen_simple_name();
+    match(CyanaMRParser::Link);
     setState(735);
-    gen_res_num();
-    setState(736);
     gen_simple_name();
+    setState(736);
+    gen_res_num();
     setState(737);
+    gen_simple_name();
+    setState(738);
     gen_res_num();
    
   }
@@ -6149,11 +6143,11 @@ CyanaMRParser::Stereoassign_macroContext* CyanaMRParser::stereoassign_macro() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(739);
-    match(CyanaMRParser::Atom_stereo);
     setState(740);
-    match(CyanaMRParser::Double_quote_string);
+    match(CyanaMRParser::Atom_stereo);
     setState(741);
+    match(CyanaMRParser::Double_quote_string);
+    setState(742);
     match(CyanaMRParser::RETURN_PR);
    
   }
@@ -6215,19 +6209,19 @@ CyanaMRParser::Declare_variableContext* CyanaMRParser::declare_variable() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(743);
+    setState(744);
     match(CyanaMRParser::Var);
-    setState(747);
+    setState(748);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == CyanaMRParser::Simple_name_VA) {
-      setState(744);
+      setState(745);
       match(CyanaMRParser::Simple_name_VA);
-      setState(749);
+      setState(750);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(750);
+    setState(751);
     match(CyanaMRParser::RETURN_VA);
    
   }
@@ -6276,7 +6270,7 @@ CyanaMRParser::Set_variableContext* CyanaMRParser::set_variable() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(752);
+    setState(753);
     match(CyanaMRParser::SetVar);
    
   }
@@ -6338,19 +6332,19 @@ CyanaMRParser::Unset_variableContext* CyanaMRParser::unset_variable() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(754);
+    setState(755);
     match(CyanaMRParser::Unset);
-    setState(758);
+    setState(759);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == CyanaMRParser::Simple_name_VA) {
-      setState(755);
+      setState(756);
       match(CyanaMRParser::Simple_name_VA);
-      setState(760);
+      setState(761);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(761);
+    setState(762);
     match(CyanaMRParser::RETURN_VA);
    
   }
@@ -6407,11 +6401,11 @@ CyanaMRParser::Print_macroContext* CyanaMRParser::print_macro() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(763);
-    match(CyanaMRParser::Print);
     setState(764);
-    match(CyanaMRParser::Double_quote_string);
+    match(CyanaMRParser::Print);
     setState(765);
+    match(CyanaMRParser::Double_quote_string);
+    setState(766);
     match(CyanaMRParser::RETURN_PR);
    
   }
@@ -6481,16 +6475,16 @@ CyanaMRParser::Unambig_atom_name_mappingContext* CyanaMRParser::unambig_atom_nam
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(767);
-    match(CyanaMRParser::Residue);
     setState(768);
+    match(CyanaMRParser::Residue);
+    setState(769);
     gen_simple_name();
-    setState(770);
+    setState(771);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 108, _ctx)) {
     case 1: {
-      setState(769);
+      setState(770);
       comment();
       break;
     }
@@ -6498,23 +6492,23 @@ CyanaMRParser::Unambig_atom_name_mappingContext* CyanaMRParser::unambig_atom_nam
     default:
       break;
     }
-    setState(774); 
+    setState(775); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(774);
+              setState(775);
               _errHandler->sync(this);
               switch (_input->LA(1)) {
                 case CyanaMRParser::Mapping: {
-                  setState(772);
+                  setState(773);
                   mapping_list();
                   break;
                 }
 
                 case CyanaMRParser::COMMENT: {
-                  setState(773);
+                  setState(774);
                   comment();
                   break;
                 }
@@ -6528,7 +6522,7 @@ CyanaMRParser::Unambig_atom_name_mappingContext* CyanaMRParser::unambig_atom_nam
       default:
         throw NoViableAltException(this);
       }
-      setState(776); 
+      setState(777); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 110, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -6596,23 +6590,23 @@ CyanaMRParser::Mapping_listContext* CyanaMRParser::mapping_list() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(778);
-    match(CyanaMRParser::Mapping);
     setState(779);
-    match(CyanaMRParser::Simple_name_MP);
+    match(CyanaMRParser::Mapping);
     setState(780);
+    match(CyanaMRParser::Simple_name_MP);
+    setState(781);
     match(CyanaMRParser::Equ_op_MP);
-    setState(782); 
+    setState(783); 
     _errHandler->sync(this);
     _la = _input->LA(1);
     do {
-      setState(781);
+      setState(782);
       match(CyanaMRParser::Simple_name_MP);
-      setState(784); 
+      setState(785); 
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while (_la == CyanaMRParser::Simple_name_MP);
-    setState(786);
+    setState(787);
     match(CyanaMRParser::RETURN_MP);
    
   }
@@ -6682,16 +6676,16 @@ CyanaMRParser::Ambig_atom_name_mappingContext* CyanaMRParser::ambig_atom_name_ma
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(788);
-    match(CyanaMRParser::Residue);
     setState(789);
+    match(CyanaMRParser::Residue);
+    setState(790);
     gen_simple_name();
-    setState(791);
+    setState(792);
     _errHandler->sync(this);
 
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 112, _ctx)) {
     case 1: {
-      setState(790);
+      setState(791);
       comment();
       break;
     }
@@ -6699,23 +6693,23 @@ CyanaMRParser::Ambig_atom_name_mappingContext* CyanaMRParser::ambig_atom_name_ma
     default:
       break;
     }
-    setState(795); 
+    setState(796); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(795);
+              setState(796);
               _errHandler->sync(this);
               switch (_input->LA(1)) {
                 case CyanaMRParser::Ambig: {
-                  setState(793);
+                  setState(794);
                   ambig_list();
                   break;
                 }
 
                 case CyanaMRParser::COMMENT: {
-                  setState(794);
+                  setState(795);
                   comment();
                   break;
                 }
@@ -6729,7 +6723,7 @@ CyanaMRParser::Ambig_atom_name_mappingContext* CyanaMRParser::ambig_atom_name_ma
       default:
         throw NoViableAltException(this);
       }
-      setState(797); 
+      setState(798); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 114, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -6809,9 +6803,9 @@ CyanaMRParser::Ambig_listContext* CyanaMRParser::ambig_list() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(799);
-    match(CyanaMRParser::Ambig);
     setState(800);
+    match(CyanaMRParser::Ambig);
+    setState(801);
     _la = _input->LA(1);
     if (!(_la == CyanaMRParser::Ambig_code_MP
 
@@ -6822,21 +6816,21 @@ CyanaMRParser::Ambig_listContext* CyanaMRParser::ambig_list() {
       _errHandler->reportMatch(this);
       consume();
     }
-    setState(801);
+    setState(802);
     match(CyanaMRParser::Equ_op_MP);
-    setState(804); 
+    setState(805); 
     _errHandler->sync(this);
     _la = _input->LA(1);
     do {
-      setState(802);
-      match(CyanaMRParser::Simple_name_MP);
       setState(803);
+      match(CyanaMRParser::Simple_name_MP);
+      setState(804);
       match(CyanaMRParser::Integer_MP);
-      setState(806); 
+      setState(807); 
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while (_la == CyanaMRParser::Simple_name_MP);
-    setState(808);
+    setState(809);
     match(CyanaMRParser::RETURN_MP);
    
   }
@@ -6894,7 +6888,7 @@ CyanaMRParser::NumberContext* CyanaMRParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(810);
+    setState(811);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 28) != 0))) {
@@ -6960,7 +6954,7 @@ CyanaMRParser::Gen_res_numContext* CyanaMRParser::gen_res_num() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(812);
+    setState(813);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 51539607556) != 0))) {
@@ -7026,7 +7020,7 @@ CyanaMRParser::Gen_simple_nameContext* CyanaMRParser::gen_simple_name() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(814);
+    setState(815);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 120259084288) != 0))) {
@@ -7096,7 +7090,7 @@ CyanaMRParser::Gen_atom_nameContext* CyanaMRParser::gen_atom_name() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(816);
+    setState(817);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 120259084290) != 0))) {

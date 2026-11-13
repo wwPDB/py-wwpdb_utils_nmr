@@ -19,7 +19,7 @@ parser grammar BareMRParser;
 options { tokenVocab=BareMRLexer; }
 
 bare_mr:
-	RETURN?
+	(RETURN? Data_block RETURN | RETURN)?
 	(
 	mr_row_format |
 	RETURN
@@ -42,4 +42,3 @@ any:	Float | Integer | Simple_name | Double_quote_float | Double_quote_integer |
 /* any column name of header */
 column_name:
 	Simple_name | Double_quote_string | Number_of_name;
-

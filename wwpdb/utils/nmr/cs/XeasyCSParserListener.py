@@ -95,7 +95,7 @@ class XeasyCSParserListener(ParseTreeListener, BaseCSParserListener):
                 self.chemShifts -= 1
                 return
 
-            assignment = self.extractChemShiftAssignment(1, L, index)
+            assignment = self.extractChemShiftAssignment(1, L, index, with_atomid=atomId)
 
             if assignment is None:
                 self.chemShifts -= 1

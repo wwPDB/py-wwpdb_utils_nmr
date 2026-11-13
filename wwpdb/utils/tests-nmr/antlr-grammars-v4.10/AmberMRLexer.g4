@@ -574,4 +574,3 @@ RETURN_MP:		[\r\n]+ -> popMode;
 
 //SECTION_COMMENT_MP:	('#' | '!' | ';' | '\\' | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT_MP:	('#' | '!' | ';' | '\\' | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+) ~[\r\n]* -> channel(HIDDEN);
-

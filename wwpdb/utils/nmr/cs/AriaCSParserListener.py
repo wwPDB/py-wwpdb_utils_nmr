@@ -172,7 +172,8 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                             chain_id, L = concat_assignment(atom)
 
-                            assignment = self.extractChemShiftAssignment(1, L, index, chain_id)
+                            assignment = self.extractChemShiftAssignment(1, L, index, chain_id,
+                                                                         str(atom['residue']), atom['name'])
 
                             if assignment is None:
                                 continue
@@ -213,7 +214,8 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                                     chain_id, L = concat_assignment(atom)
 
-                                    assignment = self.extractChemShiftAssignment(1, L, index, chain_id)
+                                    assignment = self.extractChemShiftAssignment(1, L, index, chain_id,
+                                                                                 str(atom['residue']), atom['name'])
 
                                     if assignment is None:
                                         continue
@@ -254,7 +256,8 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                                 chain_id, L = concat_assignment(atom)
 
-                                assignment = self.extractChemShiftAssignment(1, L, index, chain_id)
+                                assignment = self.extractChemShiftAssignment(1, L, index, chain_id,
+                                                                             str(atom['residue']), atom['name'])
 
                                 if assignment is None:
                                     continue
@@ -294,7 +297,8 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
                         chain_id, L = concat_assignment(atom)
 
-                        assignment = self.extractChemShiftAssignment(1, L, index, chain_id)
+                        assignment = self.extractChemShiftAssignment(1, L, index, chain_id,
+                                                                     str(atom['residue']), atom['name'])
 
                         if assignment is None:
                             return

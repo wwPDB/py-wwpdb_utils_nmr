@@ -33,6 +33,7 @@ try:
                                                RDC_BB_PAIR_CODE,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_RESTRAINT_ERROR,
                                                CS_RESTRAINT_ERROR,
@@ -97,6 +98,7 @@ except ImportError:
                                    RDC_BB_PAIR_CODE,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_RESTRAINT_ERROR,
                                    CS_RESTRAINT_ERROR,
@@ -7779,7 +7781,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         # struct_conn category
                         _atom = self.cR.getDictListWithFilter('struct_conn',
                                                               PTNR1_AUTH_ATOM_DATA_ITEMS,
-                                                              [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': chainId},
+                                                              [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': chainId,
+                                                                'default': REPRESENTATIVE_ASYM_ID},
                                                                {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': seqId},
                                                                {'name': 'ptnr2_label_atom_id', 'type': 'str', 'value': atomId},
                                                                {'name': self.modelNumName, 'type': 'int',
@@ -7791,7 +7794,8 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         _atom = self.cR.getDictListWithFilter('struct_conn',
                                                               PTNR2_AUTH_ATOM_DATA_ITEMS,
-                                                              [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': chainId},
+                                                              [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': chainId,
+                                                                'default': REPRESENTATIVE_ASYM_ID},
                                                                {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': seqId},
                                                                {'name': 'ptnr1_label_atom_id', 'type': 'str', 'value': atomId},
                                                                {'name': self.modelNumName, 'type': 'int',
@@ -8439,6 +8443,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                       f"The symbol {symbol_name!r} is not defined.")
 
+                elif ctx.Double_quote_string(0):
+                    val = str(ctx.Double_quote_string(0)).strip('"').strip()
+                    if val.isdigit():
+                        self.factor['seq_id'] = [int(val)]
+                    else:
+                        self.factor['atom'] = [None]
+                        self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
+                                      "The 'residue' clause has no effect "
+                                      f"because {val!r} is not integer.")
+
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
                         __atomId = __factor['atom_id'][0].upper() if len(__factor['atom_id'][0]) <= 2\
@@ -8502,6 +8516,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     else:
                         self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                       f"The symbol {symbol_name!r} is not defined.")
+
+                elif ctx.Double_quote_string(0):
+                    self.factor['comp_id'] = [str(ctx.Double_quote_string(0)).strip('"').strip().upper()]
 
                 if eval_factor and 'atom_selection' in self.factor:
                     if len(self.factor['atom_selection']) == 0 and 'atom_id' in __factor:
@@ -9078,14 +9095,22 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
         """ Exit a parse tree produced by XplorMRParser#evaluate_statement.
         """
 
-        if len(self.stackVflc) == 2:
-            self.evaluate[self.cur_symbol_name] = self.stackVflc[0]
+        len_stack_vflc = len(self.stackVflc)
 
-            if self.cur_vflc_op_code in ('+', '-', '*', '/', '^'):
-                s = self.stackVflc[0]
-                n = self.stackVflc[1]
+        if len_stack_vflc == 0:
+            return
+
+        s = self.stackVflc[0]
+
+        if len_stack_vflc == 1:
+            self.evaluate[self.cur_symbol_name] = s
+
+        elif len_stack_vflc == 2:
+            n = self.stackVflc[1]
+
+            if self.cur_vflc_op_code in ('', '+', '-', '*', '/', '^'):
                 if isinstance(s, list) and not isinstance(n, list):
-                    if self.cur_vflc_op_code == '+':
+                    if self.cur_vflc_op_code in ('', '+'):
                         self.evaluate[self.cur_symbol_name] = [_s + n for _s in s]
                     elif self.cur_vflc_op_code == '-':
                         self.evaluate[self.cur_symbol_name] = [_s - n for _s in s]
@@ -9096,7 +9121,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     elif self.cur_vflc_op_code == '^':
                         self.evaluate[self.cur_symbol_name] = [_s ** n for _s in s]
                 elif not isinstance(s, list) and isinstance(n, list):
-                    if self.cur_vflc_op_code == '+':
+                    if self.cur_vflc_op_code in ('', '+'):
                         self.evaluate[self.cur_symbol_name] = [s + _n for _n in n]
                     elif self.cur_vflc_op_code == '-':
                         self.evaluate[self.cur_symbol_name] = [s - _n for _n in n]
@@ -9107,7 +9132,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     elif self.cur_vflc_op_code == '^':
                         self.evaluate[self.cur_symbol_name] = [s ** _n for _n in n]
                 elif isinstance(s, list) and isinstance(n, list):
-                    if self.cur_vflc_op_code == '+':
+                    if self.cur_vflc_op_code in ('', '+'):
                         self.evaluate[self.cur_symbol_name] = [_s + _n for _s, _n in zip(s, n)]
                     elif self.cur_vflc_op_code == '-':
                         self.evaluate[self.cur_symbol_name] = [_s - _n for _s, _n in zip(s, n)]
@@ -9118,7 +9143,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     elif self.cur_vflc_op_code == '^':
                         self.evaluate[self.cur_symbol_name] = [_s ** _n for _s, _n in zip(s, n)]
                 else:
-                    if self.cur_vflc_op_code == '+':
+                    if self.cur_vflc_op_code in ('', '+'):
                         self.evaluate[self.cur_symbol_name] = s + n
                     elif self.cur_vflc_op_code == '-':
                         self.evaluate[self.cur_symbol_name] = s - n
@@ -9128,6 +9153,9 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         self.evaluate[self.cur_symbol_name] = s / n
                     elif self.cur_vflc_op_code == '^':
                         self.evaluate[self.cur_symbol_name] = s ** n
+
+            else:
+                self.evaluate[self.cur_symbol_name] = s
 
         self.stackVflc.clear()
 

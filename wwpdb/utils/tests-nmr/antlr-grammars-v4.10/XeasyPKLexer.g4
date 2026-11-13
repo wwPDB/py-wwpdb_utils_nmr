@@ -67,14 +67,14 @@ LINE_COMMENT:		(';' | '\\' | '&' | COMMENT_START_CHAR '/'+ | COMMENT_START_CHAR 
 
 mode NUM_OF_DIM_MODE;
 
-Integer_ND:		('+' | '-')? DECIMAL;
+Integer_ND:		Integer;
 
 SPACE_ND:		[ \t]+ -> skip;
 RETURN_ND:		[\r\n]+ -> popMode;
 
 mode NUM_OF_PEAK_MODE;
 
-Integer_NP:		('+' | '-')? DECIMAL;
+Integer_NP:		Integer;
 
 SPACE_NP:		[ \t]+ -> skip;
 RETURN_NP:		[\r\n]+ -> popMode;
@@ -88,7 +88,7 @@ RETURN_FO:		[\r\n]+ -> popMode;
 
 mode INAME_MODE;
 
-Integer_IN:		('+' | '-')? DECIMAL;
+Integer_IN:		Integer;
 Simple_name_IN:		SIMPLE_NAME;
 
 SPACE_IN:		[ \t]+ -> skip;
@@ -121,4 +121,3 @@ Any_name:		~[ \t\r\n]+;
 
 SPACE_CM:		[ \t]+ -> skip;
 RETURN_CM:		[\r\n]+ -> mode(DEFAULT_MODE);
-

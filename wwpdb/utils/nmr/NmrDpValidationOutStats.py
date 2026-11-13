@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 import copy
 import os
@@ -490,10 +490,11 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                         completeness['well_defined'][0]
                     cs_summary['number_of_favorable_assigned_shifts_in_well_defined_region'] =\
                         completeness['favor_well_defined'][0]
-                    cs_summary['completeness_in_well_defined_region'] =\
-                        round(float(completeness['well_defined'][0]) / completeness['well_defined'][1], 3)
-                    cs_summary['completeness_in_well_defined_region_with_favorable_shift'] =\
-                        round(float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1], 3)
+                    if completeness['well_defined'][1] > 0:
+                        cs_summary['completeness_in_well_defined_region'] =\
+                            round(float(completeness['well_defined'][0]) / completeness['well_defined'][1], 3)
+                        cs_summary['completeness_in_well_defined_region_with_favorable_shift'] =\
+                            round(float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1], 3)
 
                 cs_summary['number_of_target_shifts_in_full_length_region'] =\
                     completeness['full_length'][1]
@@ -501,10 +502,11 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                     completeness['full_length'][0]
                 cs_summary['number_of_favorable_assigned_shifts_in_full_length_region'] =\
                     completeness['favor_full_length'][0]
-                cs_summary['completeness_in_full_length_region'] =\
-                    round(float(completeness['full_length'][0]) / completeness['full_length'][1], 3)
-                cs_summary['completeness_in_full_length_region_with_favorable_shift'] =\
-                    round(float(completeness['favor_full_length'][0]) / completeness['full_length'][1], 3)
+                if completeness['full_length'][1] > 0:
+                    cs_summary['completeness_in_full_length_region'] =\
+                        round(float(completeness['full_length'][0]) / completeness['full_length'][1], 3)
+                    cs_summary['completeness_in_full_length_region_with_favorable_shift'] =\
+                        round(float(completeness['favor_full_length'][0]) / completeness['full_length'][1], 3)
 
                 self._reg.output_statistics.setItemValue('chem_shift_summary', cs_summary)
 
@@ -1341,8 +1343,13 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                 tags = ['ID', 'Auth_asym_ID', 'Auth_seq_ID', 'Auth_comp_ID', 'Auth_atom_ID', 'Details']
 
                                 if set(tags) & set(lp.tags) != set(tags):
-                                    sf_info['number_of_mapped_to_model'] = 0
-                                    sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                                    if self._reg.cifChecked:
+                                        sf_info['number_of_mapped_to_model'] = 0
+                                        sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
+                                    else:
+                                        # unmapped_error should be zero when model file is not available (DAOTHER-9785)
+                                        sf_info['number_of_mapped_to_model'] = sf_info['number_of_parsed']
+                                        sf_info['number_of_unmapped_to_model'] = 0
 
                                 else:
 
@@ -1357,9 +1364,14 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                         if all(row[col] not in EMPTY_VALUE for col in range(1, 5)):
                                             mapped_ids.add(row[0])
 
-                                    sf_info['number_of_mapped_to_model'] = len(mapped_ids)
-                                    sf_info['number_of_unmapped_to_model'] =\
-                                        sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+                                    if self._reg.cifChecked:
+                                        sf_info['number_of_mapped_to_model'] = len(mapped_ids)
+                                        sf_info['number_of_unmapped_to_model'] =\
+                                            sf_info['number_of_parsed'] - sf_info['number_of_mapped_to_model']
+                                    else:
+                                        # unmapped_error should be zero when model file is not available (DAOTHER-9785)
+                                        sf_info['number_of_mapped_to_model'] = sf_info['number_of_parsed']
+                                        sf_info['number_of_unmapped_to_model'] = 0
 
                             if vrpt_cs is not None:
                                 if 'completeness_items' in vrpt_cs\
@@ -1984,10 +1996,10 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                                 sf_info['number_of_mapped_to_model'] = 0
                                 sf_info['number_of_unmapped_to_model'] = sf_info['number_of_parsed']
 
+                        err_ordinals, warn_ordinals = set(), set()
+
                         if content_subtype != 'chem_shift' or vrpt_cs is None:
                             errors = self._reg.report.error.getInheritableDictBySf(sf_framecode)
-
-                            err_ordinals = set()
 
                             if errors is None:
                                 sf_info['number_of_unparsed_with_error'] = 0
@@ -2013,7 +2025,6 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
 
                         else:
 
-                            warn_ordinals = set()
                             for k, v in warnings.items():
                                 is_err = 'restraint' in content_subtype and k in self._reg.report.warning.mr_err_items
                                 for item in v:

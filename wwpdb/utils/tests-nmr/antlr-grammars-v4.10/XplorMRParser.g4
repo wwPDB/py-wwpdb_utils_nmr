@@ -207,6 +207,7 @@ noe_annotation:
 */
 dihedral_statement:
 	vector_statement |
+	evaluate_statement |
 	dihedral_assign |
 	dihedral_assign_loop |
 	Nassign Equ_op? Integer |
@@ -307,6 +308,7 @@ anis_assign:
 */
 planar_statement:
 	vector_statement |
+	evaluate_statement |
 	planar_group |
 	planar_group_loop |
 	Initialize |
@@ -324,6 +326,7 @@ group_statement:
 */
 harmonic_statement:
 	vector_statement |
+	evaluate_statement |
 	Exponent Equ_op? Integer |
 	Normal Equ_op? L_paren (number_s Comma? number_s Comma? number_s | Tail Equ_op? selection Comma? (Head Equ_op? selection)?) R_paren;
 
@@ -773,8 +776,8 @@ factor:
 	Point L_paren Tail Equ_op? selection Comma? (Head Equ_op? selection)? R_paren Cut number_f |
 	Previous |
 	Pseudo |
-	Residue (Integers | Integer (Colon Integer)? | Symbol_name) |
-	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name) |
+	Residue (Integers | Integer (Colon Integer)? | Symbol_name | Double_quote_string) |
+	Resname (Simple_names | Simple_name (Colon Simple_name)? | Symbol_name | Double_quote_string) |
 	factor Saround number_f |
 	SegIdentifier Equ_op? (Simple_names | Simple_name (Colon Simple_name)? | Double_quote_string (Colon Double_quote_string)? | Symbol_name | Integer) |
 	Store1 | Store2 | Store3 | Store4 | Store5 | Store6 | Store7 | Store8 | Store9 |
@@ -870,7 +873,7 @@ evaluate_statement:
 	Evaluate_Lp Symbol_name_VE Equ_op_VE evaluate_operation R_paren_VE;
 
 evaluate_operation:
-	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE) evaluate_operation)?;
+	vflc ((Add_op_VE | Sub_op_VE | Mul_op_VE | Div_op_VE | Exp_op_VE)? evaluate_operation)?;
 
 /* XPLOR-NIH: Patching the Molecular Structure - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node86.html
@@ -968,4 +971,3 @@ planar_group_loop:
 	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
 	(evaluate_statement | planar_group | planar_restraint)*
 	End Loop Simple_name_LL;
-

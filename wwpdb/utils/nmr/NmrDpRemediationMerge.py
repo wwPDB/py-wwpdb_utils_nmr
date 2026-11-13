@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 import gc
 import os
@@ -100,9 +100,10 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
         input_source = self._reg.report.input_sources[0]
         input_source_dic = input_source.get()
 
-        original_file_name = input_source_dic['file_name']
+        original_file_name = os.path.basename(input_source_dic['file_name'])\
+            if input_source_dic['file_name'] is not None else None
         if 'original_file_name' in input_source_dic and input_source_dic['original_file_name'] is not None:
-            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+            original_file_name = input_source_dic['original_file_name']
 
         file_type = 'nmr-star'
 
@@ -283,7 +284,8 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                     if 'original_file_name' in ar and ar['original_file_name'] not in EMPTY_VALUE:
                         file_name = ar['original_file_name']
                     else:
-                        file_name = input_source_dic['file_name']
+                        file_name = os.path.basename(input_source_dic['file_name'])\
+                            if input_source_dic['file_name'] is not None else None
 
                     file_names.append(retrieveOriginalFileName(file_name))
 
@@ -1620,7 +1622,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                 original_file_name = None
                 if 'original_file_name' in input_source_dic:
                     if input_source_dic['original_file_name'] is not None:
-                        original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                        original_file_name = input_source_dic['original_file_name']
 
                 self._reg.list_id_counter = incListIdCounter(None, self._reg.list_id_counter)
 
@@ -1701,7 +1703,8 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
 
                     else:
 
-                        file_name = input_source_dic['file_name']
+                        file_name = os.path.basename(input_source_dic['file_name'])\
+                            if input_source_dic['file_name'] is not None else None
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
@@ -2125,7 +2128,8 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                 if 'original_file_name' in ar and ar['original_file_name'] not in EMPTY_VALUE:
                     file_name = ar['original_file_name']
                 else:
-                    file_name = input_source_dic['file_name']
+                    file_name = os.path.basename(input_source_dic['file_name'])\
+                        if input_source_dic['file_name'] is not None else None
 
                 file_names.append(retrieveOriginalFileName(file_name))
 
@@ -2284,7 +2288,8 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
             if content_subtype in lp_counts:
                 mr_loops += lp_counts[content_subtype]
 
-        if mr_loops == 0 and not self._reg.validation_server and not self._reg.mr_has_valid_star_restraint:
+        if mr_loops == 0 and not self._reg.validation_server and not self._reg.mr_has_valid_star_restraint\
+           and not self._reg.permit_missing_cs_file:
 
             if 'other_data_types' not in self._reg.sf_category_list:
 
@@ -2300,7 +2305,7 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
                     if file_type != 'nmr-star':
                         continue
 
-                    mr_file_names.append(input_source_dic['file_name'])
+                    mr_file_names.append(os.path.basename(input_source_dic['file_name']))
 
                 if AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict:
 
@@ -2315,10 +2320,10 @@ class NmrDpRemediationMerge(NmrDpRemediationBase):
 
                         fileListId += 1
 
-                        if file_type == 'nm-res-mr':
+                        if file_type in ('nm-res-mr', 'nm-aux-pdb'):
                             continue
 
-                        mr_file_names.append(input_source_dic['file_name'])
+                        mr_file_names.append(os.path.basename(input_source_dic['file_name']))
 
                 if len(mr_file_names) > 0:
 

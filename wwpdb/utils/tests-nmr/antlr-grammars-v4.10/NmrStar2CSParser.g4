@@ -19,7 +19,7 @@ parser grammar NmrStar2CSParser;
 options { tokenVocab=NmrStar2CSLexer; }
 
 nmrstar2_cs:
-	RETURN?
+	(RETURN? Data_block RETURN | RETURN)?
 	(
 	seq_loop |
 	cs_loop |
@@ -28,10 +28,15 @@ nmrstar2_cs:
 	EOF;
 
 seq_loop:
-	Loop RETURN
+	(Saveframe_block RETURN
+	 Saveframe_category Simple_name RETURN)?
+	RETURN?
+	Loop RETURN?
 	seq_tags+
+	RETURN?
 	seq_data+
-	Stop (RETURN | EOF)?;
+	Stop
+	(RETURN Save)? (RETURN | EOF)?;
 
 seq_tags:
 	(Residue_seq_code | Residue_label) RETURN;
@@ -40,10 +45,15 @@ seq_data:
 	any+ RETURN;
 
 cs_loop:
-	Loop RETURN
+	(Saveframe_block RETURN
+	 Saveframe_category Simple_name RETURN)?
+	RETURN?
+	Loop RETURN?
 	cs_tags+
+	RETURN?
 	cs_data+
-	Stop (RETURN | EOF)?;
+	Stop
+	(RETURN Save)? (RETURN | EOF)?;
 
 cs_tags:
 	(
@@ -63,4 +73,3 @@ cs_data:
 
 /* any data expression in chemical shift list */
 any:	Float | Integer | Simple_name | Double_quote_string | Single_quote_string;
-

@@ -52,7 +52,8 @@ try:
                                                ASSIGNMENT_SEPARATOR_PAT,
                                                ASSIGNMENT_RESID_PAT,
                                                ASSIGNMENT_HALF_SPIN_NUCLEUS,
-                                               INSTRUCTION_FOR_FULL_SEQUENCE)
+                                               INSTRUCTION_FOR_FULL_SEQUENCE,
+                                               REPRESENTATIVE_ASYM_ID)
     from wwpdb.utils.nmr.AlignUtil import (getOneLetterCode,
                                            updatePolySeqRst,
                                            revertPolySeqRst,
@@ -110,7 +111,8 @@ except ImportError:
                                    ASSIGNMENT_SEPARATOR_PAT,
                                    ASSIGNMENT_RESID_PAT,
                                    ASSIGNMENT_HALF_SPIN_NUCLEUS,
-                                   INSTRUCTION_FOR_FULL_SEQUENCE)
+                                   INSTRUCTION_FOR_FULL_SEQUENCE,
+                                   REPRESENTATIVE_ASYM_ID)
     from nmr.AlignUtil import (getOneLetterCode,
                                updatePolySeqRst,
                                revertPolySeqRst,
@@ -220,6 +222,9 @@ class BaseCSParserListener():
 
     # collection of any selection
     anySelection = []
+
+    # collection of number selection
+    numberSelection = []
 
     warningMessage = None
 
@@ -734,6 +739,10 @@ class BaseCSParserListener():
                     sf = self.getSf()
                     sf['saveframe'].add_loop(sf['loop'])
 
+            elif not self.hasPolySeq and self.__createSfDict:
+                sf = self.getSf()
+                sf['saveframe'].add_loop(sf['loop'])
+
         finally:
             self.warningMessage = sorted(list(set(self.f)), key=self.f.index)
 
@@ -1000,7 +1009,7 @@ class BaseCSParserListener():
 
     def extractChemShiftAssignment(self, numOfDim: int, string: str, src_index: int,
                                    with_segid: Optional[str] = None, with_compid: Optional[str] = None,
-                                   hint: Optional[List[dict]] = None
+                                   with_atomid: Optional[str] = None, hint: Optional[List[dict]] = None
                                    ) -> Optional[List[dict]]:
         """ Extract chemical shift assignment from a given string.
         """
@@ -1023,13 +1032,13 @@ class BaseCSParserListener():
 
         lenStr = len(_str)
 
-        segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike, atomNameLike_ =\
+        segIdLike, resIdLike, resNameLike, atomNameLike, _atomNameLike, __atomNameLike, ___atomNameLike =\
             [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr, \
-            [False] * lenStr, [False] * lenStr, [False] * lenStr, [False] * lenStr
+            [False] * lenStr, [False] * lenStr, [False] * lenStr
 
-        segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan, siblingAtomName =\
+        segIdSpan, resIdSpan, resNameSpan, atomNameSpan, _atomNameSpan, __atomNameSpan, ___atomNameSpan =\
             [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr, \
-            [None] * lenStr, [None] * lenStr, [None] * lenStr, [None] * lenStr
+            [None] * lenStr, [None] * lenStr, [None] * lenStr
 
         oneLetterCodeSet = []
         extMonDict3 = {}
@@ -1043,18 +1052,19 @@ class BaseCSParserListener():
             oneLetterCodeSet = [getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1]
             extMonDict3 = {compId: getOneLetterCode(compId) for compId in self.compIdSet if len(compId) == 1}
 
-        for np in self.polySeq:
-            if len(np['seq_id']) != 1:
-                continue
-            if np['comp_id'][0][0].isalpha() and np['comp_id'][0][0] not in oneLetterCodeSet:
-                oneLetterCodeSet.append(np['comp_id'][0][0])
-                extMonDict3[np['comp_id'][0]] = np['comp_id'][0][0]
-            if 'auth_comp_id' in np and np['auth_comp_id'][0][0].isalpha() and np['auth_comp_id'][0][0] not in oneLetterCodeSet:
-                oneLetterCodeSet.append(np['auth_comp_id'][0][0])
-                extMonDict3[np['comp_id'][0]] = np['auth_comp_id'][0][0]
-            if 'alt_comp_id' in np and np['alt_comp_id'][0][0].isalpha() and np['alt_comp_id'][0][0] not in oneLetterCodeSet:
-                oneLetterCodeSet.append(np['alt_comp_id'][0][0])
-                extMonDict3[np['comp_id'][0]] = np['alt_comp_id'][0][0]
+        if self.hasPolySeq:
+            for np in self.polySeq:
+                if len(np['seq_id']) != 1:
+                    continue
+                if np['comp_id'][0][0].isalpha() and np['comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['comp_id'][0][0]
+                if 'auth_comp_id' in np and np['auth_comp_id'][0][0].isalpha() and np['auth_comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['auth_comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['auth_comp_id'][0][0]
+                if 'alt_comp_id' in np and np['alt_comp_id'][0][0].isalpha() and np['alt_comp_id'][0][0] not in oneLetterCodeSet:
+                    oneLetterCodeSet.append(np['alt_comp_id'][0][0])
+                    extMonDict3[np['comp_id'][0]] = np['alt_comp_id'][0][0]
 
         hasOneLetterCodeSet = len(oneLetterCodeSet) > 0
         useOneLetterCodeSet = forceOneLetterCodeSet =\
@@ -1193,24 +1203,16 @@ class BaseCSParserListener():
                                         _, _, details =\
                                             self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
                                         if details is None:
-                                            atomNameLike[idx] = atomNameLike_[_idx] = useOneLetterCodeSet = True
+                                            atomNameLike[idx] = useOneLetterCodeSet = True
                                             atomNameSpan[idx] = (_index, len(term))
-                                            if siblingAtomName[_idx] is None:
-                                                siblingAtomName[_idx] = []
-                                            if _atomId not in siblingAtomName[_idx]:
-                                                siblingAtomName[_idx].append(_atomId)
                                             break
                                     if (with_compid is not None and _atomId.startswith(with_compid)) or _atomId.startswith('MET'):
                                         continue
                                     _atomId = translateToStdAtomName(_atomId, _compId, ccU=self.ccU)
                                     _, _, details = self.nefT.get_valid_star_atom_in_xplor(_compId, _atomId, leave_unmatched=True)
                                     if details is None:
-                                        atomNameLike[idx] = atomNameLike_[_idx] = True
+                                        atomNameLike[idx] = True
                                         atomNameSpan[idx] = (_index, len(term))
-                                        if siblingAtomName[_idx] is None:
-                                            siblingAtomName[_idx] = []
-                                        if _atomId not in siblingAtomName[_idx]:
-                                            siblingAtomName[_idx].append(_atomId)
                                         break
                             if atomNameLike[idx]:
                                 break
@@ -2188,8 +2190,8 @@ class BaseCSParserListener():
                                 ca_idx = 0
                             segId, _, resName, _ = chainAssign[ca_idx]
                 elif segId is None:
-                    chainAssign, _ = self.assignCoordPolymerSequence(self.__defaultSegId,
-                                                                     resId, resName, atomName, src_index)
+                    chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId,
+                                                                                resId, resName, atomName, src_index)
                     is_valid = is_valid_chain_assign(chainAssign, resName)
                     if not is_valid:
                         if self.__defaultSegId != self.__defaultSegId__:
@@ -2227,21 +2229,40 @@ class BaseCSParserListener():
                     if len(chainAssign) > 0:
                         ca_idx = next((chainAssign.index(a) for a in chainAssign if a[1] == resId), 0)
                         resName = chainAssign[ca_idx][2]
-                _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
-                if details is not None:
+                if with_atomid is None or not with_atomid.startswith(atomName):
                     atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                    _, _, details = self.nefT.get_valid_star_atom_in_xplor(resName, atomName, leave_unmatched=True)
+                    if details is not None:
+                        atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                else:
+                    atomName = with_atomid
                 ret.append({'dim_id': dimId, 'chain_id': segId, 'auth_chain_id': _segId, 'seq_id': resId,
                             'auth_seq_id': authResId, 'comp_id': resName, 'atom_id': atomName})
             else:
+                if resName is not None:
+                    if with_atomid is None or not with_atomid.startswith(atomName):
+                        atomName = translateToStdAtomName(atomName, resName, ccU=self.ccU)
+                    else:
+                        atomName = with_atomid
                 ass = {'dim': dimId, 'atom_id': atomName}
                 if _segId is not None:
                     ass['auth_chain_id'] = _segId
                 if segId is not None:
                     ass['chain_id'] = segId
+                elif not self.hasPolySeq:
+                    ass['chain_id'] = REPRESENTATIVE_ASYM_ID
                 if resId is not None:
                     ass['seq_id'] = resId
                 if resName is not None:
                     ass['comp_id'] = resName
+                    if with_compid is not None:
+                        _resName = translateToStdResName(with_compid, ccU=self.ccU)
+                        if resName != _resName and not self.hasPolySeq:
+                            ass['comp_id'] = _resName
+                            ass['atom_id'] = translateToStdAtomName(atomName, _resName, ccU=self.ccU)
+                elif with_compid is not None:
+                    ass['comp_id'] = translateToStdResName(with_compid, ccU=self.ccU)
+                    ass['atom_id'] = translateToStdAtomName(atomName, ass['comp_id'], ccU=self.ccU)
                 ret.append(ass)
             dimId += 1
             return False
@@ -2325,20 +2346,6 @@ class BaseCSParserListener():
                 atomName = term[atomNameSpan[idx][0]:atomNameSpan[idx][1]]
                 if append_atom_assignment():
                     continue
-            elif atomNameLike_[idx] and siblingAtomName[idx] is not None:
-                if resIdLater:
-                    for _idx, _term in enumerate(_str):
-                        if _idx > idx and resIdLike[_idx]:
-                            resId = int(_term[resIdSpan[_idx][0]:resIdSpan[_idx][1]])
-                            segId = resName = None
-                            break
-                if resId is None:
-                    if _resId is None or len(ret) >= len(_resId):
-                        return None
-                    resId = _resId[len(ret)]
-                for atomName in siblingAtomName[idx]:
-                    if append_atom_assignment():
-                        continue
 
         return ret if len(ret) > 0 else None
 
@@ -2414,6 +2421,9 @@ class BaseCSParserListener():
         """ A wrapper function for ParserListenerUtil.translateToStdResName().
         """
 
+        if not self.hasPolySeq:
+            return translateToStdResName(compId, ccU=self.ccU)
+
         _compId = compId
         refCompId = None
         for ps in self.polySeq:
@@ -2488,6 +2498,10 @@ class BaseCSParserListener():
                 _seqId = fixedSeqId
 
         updatePolySeqRst(self.polySeqCs, self.polySeq[0]['chain_id'] if refChainId is None else refChainId, _seqId, compId, _compId)
+
+        if not self.hasPolySeq:
+            chainAssign.add((refChainId, seqId, compId, True))
+            return chainAssign, asis
 
         types = self.csStat.getTypeOfCompId(compId)
         if all(not t for t in types) or compId in ('MTS', 'ORI'):
@@ -2863,6 +2877,10 @@ class BaseCSParserListener():
                 _seqId = fixedSeqId
 
         updatePolySeqRst(self.polySeqCs, str(refChainId), _seqId, compId, _compId)
+
+        if not self.hasPolySeq:
+            chainAssign.add((refChainId, seqId, compId, True))
+            return chainAssign, asis
 
         types = self.csStat.getTypeOfCompId(compId)
         if all(not t for t in types) or compId in ('MTS', 'ORI'):
@@ -3759,6 +3777,10 @@ class BaseCSParserListener():
             return None
 
         seqKey = (chainId, seqId)
+
+        if not self.hasPolySeq:
+            return seqKey, None
+
         if cifCheck:
             preferAuthSeq = __preferAuthSeq if asis else not __preferAuthSeq
             if preferAuthSeq:

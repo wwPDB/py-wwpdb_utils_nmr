@@ -113,8 +113,8 @@ R_paren_DA:		')';
 L_brkt_DA:		'[';
 R_brkt_DA:		']';
 
-Integer_DA:		('+' | '-')? DECIMAL;
-Float_DA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC);
+Integer_DA:		Integer;
+Float_DA:		Float;
 Real_DA:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;
 
 Simple_name_DA:		SIMPLE_NAME;
@@ -207,4 +207,3 @@ RETURN_FO:		[\r\n]+ -> popMode;
 
 //SECTION_COMMENT_FO:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT_FO:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
-

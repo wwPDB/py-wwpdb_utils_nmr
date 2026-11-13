@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 import copy
 import os
@@ -393,12 +393,13 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
                 if file_type == 'nm-aux-xea':
                     has_aux_xea = True
 
-                    file_name = input_source_dic['file_name']
+                    file_name = os.path.basename(input_source_dic['file_name'])\
+                        if input_source_dic['file_name'] is not None else None
 
                     original_file_name = None
                     if 'original_file_name' in input_source_dic:
                         if input_source_dic['original_file_name'] is not None:
-                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                            original_file_name = input_source_dic['original_file_name']
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
@@ -744,9 +745,8 @@ class NmrDpRemediationLegacyPk(NmrDpRemediationBase):
 
             file_path = self.testPathWithSuffix(file_path, '-corrected')
 
-            file_name = input_source_dic['file_name']
-
-            original_file_name = os.path.basename(file_path)
+            file_name = original_file_name = os.path.basename(input_source_dic['file_name'])\
+                if input_source_dic['file_name'] is not None else None
 
             if file_type == 'nm-pea-any':
 

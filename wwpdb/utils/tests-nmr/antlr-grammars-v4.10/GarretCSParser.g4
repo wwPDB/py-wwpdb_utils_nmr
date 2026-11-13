@@ -34,4 +34,3 @@ shift_list:
 
 /* number expression in chemical shift */
 number: Float | Integer | Simple_name;
-

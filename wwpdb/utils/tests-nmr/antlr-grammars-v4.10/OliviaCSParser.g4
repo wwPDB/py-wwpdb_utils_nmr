@@ -61,4 +61,3 @@ number:	Integer | Float | Real;
 
 comment:
 	COMMENT Any_name* RETURN_CM;
-

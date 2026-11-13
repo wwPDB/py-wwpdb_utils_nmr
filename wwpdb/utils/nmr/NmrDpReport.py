@@ -142,7 +142,6 @@
 # 29-Sep-2026  M. Yokochi - stream the report to its JSON file in writeFile() (DAOTHER-7829, 9785)
 # 21-Oct-2026  M. Yokochi - fix hasSequenceMismatchErrorInCsLoop() and add hasSequenceMismatchErrorsInMrLoop() (DAOTHER-11129)
 # 28-Oct-2026  M. Yokochi - add getUnmappedSeqKeyOfModelChainId() (DAOTHER-9785, 10987)
-# 04-Nov-2026  M. Yokochi - add 'nm-shi-vie' and 'nm-csp-vie' file types for NMRVIEW chemical shift file (DAOTHER-8905, 9785)
 # 06-Nov-2026  M. Yokochi - add 'nm-shi-dia' file type for DIANA chemical shift file (DAOTHER-8905, 9785)
 ##
 """ Wrapper class for NMR data processing report.
@@ -152,11 +151,12 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 import copy
 import functools
 import json
+import os
 import re
 import sys
 from operator import itemgetter
@@ -1717,12 +1717,18 @@ class NmrDpReport:
 
         self.__immutable = False
 
-    def get(self) -> dict:
+    def get(self, file_path_to_name: bool = False) -> dict:
         """ Return NMR data processing report.
         """
 
-        if not self.__immutable:
-            self.__report['information']['input_sources'] = [input_source.get() for input_source in self.input_sources]
+        if self.__immutable:
+            if file_path_to_name:
+                for input_source in self.__report['information']['input_sources']:
+                    if 'file_name' in input_source and input_source['file_name'] is not None:
+                        input_source['file_name'] = os.path.basename(input_source['file_name'])
+        else:
+            self.__report['information']['input_sources'] = [input_source.get(file_path_to_name)
+                                                             for input_source in self.input_sources]
             self.__report['information']['sequence_alignments'] = self.sequence_alignment.get()
             self.__report['information']['chain_assignments'] = self.chain_assignment.get()
             if self.output_statistics is not None:
@@ -1779,7 +1785,7 @@ class NmrDpReport:
             return False
 
         with open(out_path, 'w', encoding='utf-8') as file:
-            writePrettyJson(self.get(), file)
+            writePrettyJson(self.get(True), file)
 
         return True
 
@@ -1817,8 +1823,8 @@ class NmrDpReport:
 
             for c in value_list:
 
-                if 'file_name' in c:
-                    c['file_name'] = file_name
+                if 'file_name' in c and c['file_name'] is not None:
+                    c['file_name'] = os.path.basename(c['file_name'])
 
                 self.error.appendDescription(item, c)
 
@@ -1870,8 +1876,8 @@ class NmrDpReport:
 
             for c in value_list:
 
-                if 'file_name' in c:
-                    c['file_name'] = file_name
+                if 'file_name' in c and c['file_name'] is not None:
+                    c['file_name'] = os.path.basename(c['file_name'])
 
                 self.warning.appendDescription(item, c)
 
@@ -1900,8 +1906,8 @@ class NmrDpReport:
 
             for c in value_list:
 
-                if 'file_name' in c:
-                    c['file_name'] = file_name
+                if 'file_name' in c and c['file_name'] is not None:
+                    c['file_name'] = os.path.basename(c['file_name'])
 
                 self.warning.appendDescription(item, c)
 
@@ -2070,10 +2076,9 @@ class NmrDpReportInputSource:
                            'nm-pea-pip', 'nm-pea-pon', 'nm-pea-spa', 'nm-pea-sps', 'nm-pea-top',
                            'nm-pea-vie', 'nm-pea-vnm', 'nm-pea-xea', 'nm-pea-xwi',
                            'nm-shi-ari', 'nm-shi-bar', 'nm-shi-dia', 'nm-shi-gar', 'nm-shi-npi',
-                           'nm-shi-oli', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', 'nm-shi-vie',
-                           'nm-shi-xea',
+                           'nm-shi-oli', 'nm-shi-pip', 'nm-shi-ppm', 'nm-shi-st2', 'nm-shi-xea',
                            'nm-csp-ari', 'nm-csp-bar', 'nm-csp-gar', 'nm-csp-npi', 'nm-csp-oli',
-                           'nm-csp-pip', 'nm-csp-ppm', 'nm-csp-st2', 'nm-csp-vie', 'nm-csp-xea')
+                           'nm-csp-pip', 'nm-csp-ppm', 'nm-csp-st2', 'nm-csp-xea')
         self.content_types = ('model',
                               'nmr-data-nef', 'nmr-data-str',
                               'nmr-chemical-shifts', 'nmr-restraints', 'nmr-peaks')
@@ -2145,9 +2150,13 @@ class NmrDpReportInputSource:
             raise KeyError(f"+{self.__class_name__}.setItemValue() "
                            f"++ Error  - Unknown item type {item}")
 
-    def get(self) -> dict:
+    def get(self, file_path_to_name: bool = False) -> dict:
         """ Retrieve contents.
         """
+
+        if file_path_to_name:
+            if 'file_name' in self.__contents and self.__contents['file_name'] is not None:
+                self.__contents['file_name'] = os.path.basename(self.__contents['file_name'])
 
         return self.__contents
 

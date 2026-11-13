@@ -663,14 +663,16 @@ Double_quote_string:	'"' ~["\r\n]* '"';
 fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL?) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
+fragment H_NAME:	[ABCDEGHMNOPQRZ*%#+'"0-9];
+fragment NON_H_NAME:	~[ABCDEGHMNOPQRZ*%#+'"0-9 \t\r\n];
 
-SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+SHARP_COMMENT:		'#'+ (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
 Simple_name:		SIMPLE_NAME;
-Simple_names:		(WILDCARD | WILDCARD* SIMPLE_NAME WILDCARD+ (SIMPLE_NAME | WILDCARD)*) POST_WC_CHAR*;
-Integers:		(WILDCARD | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
+Simple_names:		(WILDCARD SIMPLE_NAME? | WILDCARD* SIMPLE_NAME WILDCARD+ (SIMPLE_NAME | WILDCARD)*) POST_WC_CHAR*;
+Integers:		(WILDCARD Integer? | WILDCARD* Integer WILDCARD+) DEC_DIGIT*;
 
 /* Wildcard - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/node19.html
@@ -701,8 +703,8 @@ Symbol_name:		SYMBOL_NAME;
 
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
-LINE_COMMENT:		('#' | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
+SECTION_COMMENT:	('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
+LINE_COMMENT:		('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
 SET_VARIABLE:		Set ([\r\n]*)? ~[\r\n]* ([\r\n]*)? End -> channel(HIDDEN);
 
 mode ATTR_MODE; // Inside of Attribute tag
@@ -783,8 +785,8 @@ Div_op_VE:		'/';
 Exp_op_VE:		('^' | '*' '*');
 Comma_VE:		',';
 
-Integer_VE:		DECIMAL;
-Real_VE:		(DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
+Integer_VE:		('+' | '-')? DECIMAL;
+Real_VE:		Real;
 
 Atom_properties_VE:	('B' | 'BCOM' 'P'? | 'CHAR' 'G'? 'E'? | 'CHEM' 'I'? 'C'? 'A'? 'L'? | 'DX' | 'DY' | 'DZ' | 'FBET' 'A'? | 'HARM' 'O'? 'N'? 'I'? 'C'? 'S'? | 'MASS' | 'NAME' | 'Q' | 'QCOM' 'P'? | 'REFX' | 'REFY' | 'REFZ' | 'RESI' 'D'? 'U'? 'E'? | 'RESN' 'A'? 'M'? 'E'? | 'RMSD' | 'SEGI' 'D'? 'E'? 'N'? 'T'? 'I'? 'F'? 'I'? 'E'? 'R'? | 'STORE1' | 'STORE2' | 'STORE3' | 'STORE4' | 'STORE5' | 'STORE6' | 'STORE7' | 'STORE8' | 'STORE9' | 'PSEU' 'D'? 'O'? | 'VX' | 'VY' | 'VZ' | 'X' | 'XCOM' 'P'? | 'Y' | 'YCOM' 'P'? | 'Z' | 'ZCOM' 'P'?);
 
@@ -846,8 +848,8 @@ L_paren_CF:		'(';
 R_paren_CF:		')' -> popMode;
 In_CF:			'IN';
 
-Integer_CF:		'-'? DECIMAL;
-Real_CF:		('+' | '-')? (DECIMAL | DEC_DOT_DEC) ('E' ('+' | '-')? DECIMAL)?;
+Integer_CF:		('+' | '-')? DECIMAL;
+Real_CF:		Real;
 Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;
 
@@ -859,4 +861,3 @@ mode LOOP_LABEL_MODE; // loop label
 Simple_name_LL:		SIMPLE_NAME -> mode(DEFAULT_MODE);
 
 SPACE_LL:		[ \t\r\n]+ -> skip;
-

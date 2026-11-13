@@ -11,7 +11,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 import copy
 import os
@@ -325,12 +325,13 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
 
                 if 'is_valid' in ar and ar['is_valid']:
 
-                    file_name = input_source_dic['file_name']
+                    file_name = os.path.basename(input_source_dic['file_name'])\
+                        if input_source_dic['file_name'] is not None else None
 
                     original_file_name = None
                     if 'original_file_name' in input_source_dic:
                         if input_source_dic['original_file_name'] is not None:
-                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                            original_file_name = input_source_dic['original_file_name']
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
@@ -361,12 +362,12 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
 
                 if 'is_valid' in ar and ar['is_valid']:
 
-                    file_name = input_source_dic['file_name']
+                    file_name = os.path.basename(input_source_dic['file_name'])
 
                     original_file_name = None
                     if 'original_file_name' in input_source_dic:
                         if input_source_dic['original_file_name'] is not None:
-                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                            original_file_name = input_source_dic['original_file_name']
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
@@ -397,12 +398,13 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
 
                 if 'is_valid' in ar and ar['is_valid']:
 
-                    file_name = input_source_dic['file_name']
+                    file_name = os.path.basename(input_source_dic['file_name'])\
+                        if input_source_dic['file_name'] is not None else None
 
                     original_file_name = None
                     if 'original_file_name' in input_source_dic:
                         if input_source_dic['original_file_name'] is not None:
-                            original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                            original_file_name = input_source_dic['original_file_name']
                         if file_name != original_file_name and original_file_name is not None:
                             file_name = f"{original_file_name} ({file_name})"
 
@@ -438,12 +440,13 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
                        or (has_res_gro and not has_aux_gro)\
                        or has_res_sch:
 
-                        file_name = input_source_dic['file_name']
+                        file_name = os.path.basename(input_source_dic['file_name'])\
+                            if input_source_dic['file_name'] is not None else None
 
                         original_file_name = None
                         if 'original_file_name' in input_source_dic:
                             if input_source_dic['original_file_name'] is not None:
-                                original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                                original_file_name = input_source_dic['original_file_name']
                             if file_name != original_file_name and original_file_name is not None:
                                 file_name = f"{original_file_name} ({file_name})"
 
@@ -617,12 +620,12 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
             if 'is_valid' not in ar or not ar['is_valid']:
                 continue
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = original_file_name
 
@@ -1021,12 +1024,12 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
             if self._reg.remediation_mode and os.path.exists(self.testPathWithSuffix(file_path, '-ignored', True)):
                 continue
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
             if original_file_name in EMPTY_VALUE and self._reg.internal_mode:
@@ -2159,14 +2162,14 @@ class NmrDpRemediationLegacyMr(NmrDpRemediationBase):
             if file_type != 'nm-res-sax':
                 continue
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
 
-            original_file_name = os.path.basename(file_name).replace('-corrected', '').replace('-selected-as-res-sax', '')
+            original_file_name = file_name.replace('-corrected', '').replace('-selected-as-res-sax', '')
             if '-div_' in original_file_name:
                 original_file_name = None
                 # if 'original_file_name' in input_source_dic:
                 #     if input_source_dic['original_file_name'] is not None:
-                #         original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                #         original_file_name = input_source_dic['original_file_name']
 
             sf_item = {}
 

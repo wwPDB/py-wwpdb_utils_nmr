@@ -138,4 +138,3 @@ jcoupling:
 
 /* number expression in peak list */
 number:	Real | Float | Integer | Simple_name;
-

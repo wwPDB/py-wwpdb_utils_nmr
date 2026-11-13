@@ -148,7 +148,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi, Kumaran Baskaran"
 __email__ = "yokochi@protein.osaka-u.ac.jp, baskaran@uchc.edu"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 import collections
 import copy
@@ -207,6 +207,7 @@ try:
                                                LP_CATEGORIES,
                                                KEY_ITEMS,
                                                DATA_ITEMS,
+                                               REPRESENTATIVE_ASYM_ID,
                                                MIN_INPUT_SIZE_FOR_GC)
     from wwpdb.utils.nmr.AlignUtil import (letterToDigit,
                                            indexToLetter,
@@ -260,6 +261,7 @@ except ImportError:
                                    LP_CATEGORIES,
                                    KEY_ITEMS,
                                    DATA_ITEMS,
+                                   REPRESENTATIVE_ASYM_ID,
                                    MIN_INPUT_SIZE_FOR_GC)
     from nmr.AlignUtil import (letterToDigit,
                                indexToLetter,
@@ -2582,7 +2584,7 @@ class NefTranslator:
 
         f = []  # user warnings
 
-        def_chain_id = 'A' if self.__remediation_mode else '1'
+        def_chain_id = REPRESENTATIVE_ASYM_ID if self.__remediation_mode else '1'
 
         data = []  # data of all loops
         tags = [seq_id_name, comp_id_name, chain_id_name]
@@ -12155,7 +12157,7 @@ class NefTranslator:
                 if not self.__internal_mode:  # DAOTHER-6694
                     error.append("Missing mandatory '_nef_sequence' category.")
                     return False, {'info': info, 'error': error}
-                self.authChainId = ('A', )
+                self.authChainId = (REPRESENTATIVE_ASYM_ID, )
             else:
                 self.authChainId = sorted(set(nef_data.get_loops_by_category('nef_sequence')[0].get_tag('chain_code')))
                 has_nef_seq = True
@@ -12174,7 +12176,7 @@ class NefTranslator:
         if not has_nef_seq:
             self.authSeqMap = {}
             for dummy_seq_id in range(1, 1000):
-                self.authSeqMap[('A', dummy_seq_id)] = ('1', dummy_seq_id)
+                self.authSeqMap[(REPRESENTATIVE_ASYM_ID, dummy_seq_id)] = ('1', dummy_seq_id)
             self.selfSeqMap = self.authSeqMap
 
         asm_id = cs_list_id = dist_list_id = dihed_list_id = rdc_list_id = peak_list_id = 0

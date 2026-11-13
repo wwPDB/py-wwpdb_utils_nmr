@@ -110,6 +110,7 @@ try:
                                                TRUE_VALUE,
                                                ELEMENT_SYMBOLS,
                                                LEN_MAJOR_ASYM_ID,
+                                               REPRESENTATIVE_ASYM_ID,
                                                RMSD_OVERLAID_EXACTLY,
                                                RMSD_CUTOFF_FOR_DOMAIN,
                                                CARTN_DATA_ITEMS,
@@ -120,6 +121,7 @@ except ImportError:
                                    TRUE_VALUE,
                                    ELEMENT_SYMBOLS,
                                    LEN_MAJOR_ASYM_ID,
+                                   REPRESENTATIVE_ASYM_ID,
                                    RMSD_OVERLAID_EXACTLY,
                                    RMSD_CUTOFF_FOR_DOMAIN,
                                    CARTN_DATA_ITEMS,
@@ -1357,9 +1359,11 @@ class CifReader:
             _catName = 'pdbx_validate_polymer_linkage'
 
             if self.hasCategory(_catName):
-                _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id', 'default': 'A'},
+                _keyItems = [{'name': 'auth_asym_id_1', 'type': 'str', 'alt_name': 'auth_chain_id',
+                              'default': REPRESENTATIVE_ASYM_ID},
                              {'name': 'auth_seq_id_1', 'type': 'int'},
-                             {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id', 'default': 'A'},
+                             {'name': 'auth_asym_id_2', 'type': 'str', 'alt_name': 'test_auth_chain_id',
+                              'default': REPRESENTATIVE_ASYM_ID},
                              {'name': 'auth_seq_id_2', 'type': 'int'}
                              ]
                 _filterItems = [{'name': 'PDB_model_num', 'type': 'int', 'value': repModelId},

@@ -204,8 +204,8 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
             if 'sequence_code' not in self.__tag_order or 'atom_name' not in self.__tag_order or 'value' not in self.__tag_order:
                 return
 
-            if not self.hasPolySeq:
-                return
+            # if not self.hasPolySeq:
+            #     return
 
             if 'index' in self.__tag_order:
                 index = self.anySelection[self.__tag_order.index('index')]
@@ -268,7 +268,7 @@ class NmrStar2CSParserListener(ParseTreeListener, BaseCSParserListener):
 
             L = concat_assignment(seq_id, comp_id, atom_id)
 
-            assignment = self.extractChemShiftAssignment(1, L, index, with_compid=comp_id)
+            assignment = self.extractChemShiftAssignment(1, L, index, with_compid=comp_id, with_atomid=atom_id)
 
             if assignment is None:
                 return

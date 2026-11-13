@@ -246,4 +246,3 @@ Simple_name_LA:		SIMPLE_NAME;
 
 SPACE_LA:		[ \t]+ -> skip;
 RETURN_LA:		[\r\n]+;
-

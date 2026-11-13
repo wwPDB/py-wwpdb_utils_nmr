@@ -55,7 +55,7 @@ gromacs_pt:
 */
 default_statement:
 	L_brkt Default R_brkt
-	Integer Integer Simple_name Real Real		// nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ
+	Integer Integer Simple_name number number	// nbfunc comb-rule gen-pairs fudgeLJ fudgeQQ
 	Simple_name?;
 
 moleculetype_statement:
@@ -70,8 +70,8 @@ atomtypes_statement:
 	atomtypes*;
 
 atomtypes:
-	Simple_name Integer Real Real Integer
-	Real Real;					// name at.num mass charge ptype V W
+	Simple_name Integer Real Real (Integer | Simple_name)
+	number number;					// name at.num mass charge ptype V W
 
 pairtypes_statement:
 	L_brkt Pairtypes R_brkt
@@ -267,4 +267,3 @@ position_restraint:
 	Integer Integer number number number		// ai funct=1 kx ky kz
 							// ai funct=2 g r k
 	Simple_name?;
-

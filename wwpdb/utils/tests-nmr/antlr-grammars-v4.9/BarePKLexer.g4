@@ -75,4 +75,3 @@ Comment:		[Cc] 'omment' | [Nn] 'ote';
 
 SPACE_FO:		[ \t]+ -> skip;
 RETURN_FO:		[\r\n]+ -> popMode;
-

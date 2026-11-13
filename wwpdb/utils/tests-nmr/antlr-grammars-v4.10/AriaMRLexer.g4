@@ -99,4 +99,3 @@ SPACE_A:		[, \t]+ -> skip;
 ATypeFlag:		ATypeCode ','? -> popMode;
 
 RETURN_A:		[\r\n]+ -> popMode;
-

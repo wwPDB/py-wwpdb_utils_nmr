@@ -95,4 +95,3 @@ Vol_method:		'Vol. Method';
 
 SPACE_VARS:		[ \t]+ -> skip;
 RETURN_VARS:		[\r\n]+ -> popMode;
-

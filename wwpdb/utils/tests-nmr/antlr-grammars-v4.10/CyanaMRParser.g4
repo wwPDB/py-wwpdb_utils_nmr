@@ -225,7 +225,7 @@ diana_coupling_constant_restraint:
 
 /* DIANA stereoassign macro (undocumented) */
 diana_stereoassign_macro:
-	Stereo gen_simple_name gen_res_num gen_simple_name+
+	Stereo gen_simple_name gen_res_num gen_simple_name*
 	Integer?;
 
 /* CYANA (undocumented) - arbitrary order among chain_id, comp_id, and atom_id
@@ -339,4 +339,3 @@ gen_simple_name:
 /* atom id extenstion with ambig code */
 gen_atom_name:
 	Simple_name | Capital_integer | Integer_capital | Ambig_code;
-

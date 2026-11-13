@@ -16,7 +16,7 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 import codecs
 import copy
@@ -2683,7 +2683,7 @@ class NmrDpMrSplitter:
 
             input_source_dic = self.__reg.report.input_sources[fileListId].get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
             content_subtype = input_source_dic['content_subtype']
 
@@ -2794,7 +2794,7 @@ class NmrDpMrSplitter:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             fileListId += 1
@@ -2807,7 +2807,7 @@ class NmrDpMrSplitter:
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
@@ -2889,7 +2889,7 @@ class NmrDpMrSplitter:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             fileListId += 1
@@ -2904,7 +2904,7 @@ class NmrDpMrSplitter:
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
@@ -3062,7 +3062,12 @@ class NmrDpMrSplitter:
                     is_valid, message = self.__reg.nefT.validate_file(file_path, file_subtype)
 
                     if not is_valid:
-                        _is_valid, message = self.__reg.nefT.validate_file(file_path, 'S')
+
+                        _file_path = self.getNextPath(file_path, '.cif2str')
+                        if not self.__reg.c2S.convert(file_path, _file_path):
+                            _file_path = file_path
+
+                        _is_valid, message = self.__reg.nefT.validate_file(_file_path, 'S')
                         if _is_valid:
                             cs_str = True
                     else:
@@ -3079,6 +3084,7 @@ class NmrDpMrSplitter:
                     is_valid, message = self.__reg.nefT.validate_file(_file_path, file_subtype)
 
                     if not is_valid:
+
                         _is_valid, message = self.__reg.nefT.validate_file(_file_path, 'S')
                         if _is_valid:
                             cs_str = True
@@ -3241,7 +3247,7 @@ class NmrDpMrSplitter:
             input_source = self.__reg.report.input_sources[fileListId]
             input_source_dic = input_source.get()
 
-            file_name = input_source_dic['file_name']
+            file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
             file_type = input_source_dic['file_type']
 
             fileListId += 1
@@ -3255,7 +3261,8 @@ class NmrDpMrSplitter:
                     with open(src_file, 'r', encoding='utf-8', errors='ignore') as ifh:
                         for line in ifh:
                             if 'Submitted Coord H atom name' in line\
-                               or 'Entry H atom name' in line:
+                               or 'Entry H atom name' in line\
+                               or 'Start of MODEL' in line:
                                 input_source.setItemValue('file_type', 'nm-res-mr')
                                 return self.extractPublicMrFileIntoLegacyMr()
 
@@ -3264,7 +3271,7 @@ class NmrDpMrSplitter:
             original_file_name = None
             if 'original_file_name' in input_source_dic:
                 if input_source_dic['original_file_name'] is not None:
-                    original_file_name = os.path.basename(input_source_dic['original_file_name'])
+                    original_file_name = input_source_dic['original_file_name']
                 if file_name != original_file_name and original_file_name is not None:
                     file_name = f"{original_file_name} ({file_name})"
 
@@ -3673,24 +3680,35 @@ class NmrDpMrSplitter:
                         is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
                         if not is_valid or not self.__reg.has_star_chem_shift:
+
                             _mrPath = self.getNextPath(mrPath, '.cif2str')
                             if self.__reg.c2S.convert(mrPath, _mrPath):
                                 mrPath = _mrPath
-                            _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
-                            if _is_valid:
-                                if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
-                                    del self.__reg.report.input_sources[insert_index]
-                                    input_source = self.__reg.report.input_sources[0]
-                                    input_source.setItemValue('file_name', mrPath)
-                                    input_source.setItemValue('file_type', file_type)
-                                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
-                                    input_source.setItemValue('content_subtype', {'chem_shift': 1})
-                                    self.__reg.cs_file_path_list_len = 1
-                                    self.__reg.file_path_list_len -= 1
-                                    insert_index = 0
-                                    file_subtype = 'S'
-                                    is_valid = True
-                                has_cs_str = True
+
+                            is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
+
+                            if is_valid:
+                                _mrPath = None  # to prevent to remove the file later
+
+                            if not is_valid:
+                                _is_valid, _message = self.__reg.nefT.validate_file(mrPath, 'S')
+
+                                if _is_valid:
+                                    _mrPath = None  # to prevent to remove th file later
+
+                                    if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
+                                        del self.__reg.report.input_sources[insert_index]
+                                        input_source = self.__reg.report.input_sources[0]
+                                        input_source.setItemValue('file_name', mrPath)
+                                        input_source.setItemValue('file_type', file_type)
+                                        input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                                        input_source.setItemValue('content_subtype', {'chem_shift': 1})
+                                        self.__reg.cs_file_path_list_len = 1
+                                        self.__reg.file_path_list_len -= 1
+                                        insert_index = 0
+                                        file_subtype = 'S'
+                                        is_valid = True
+                                    has_cs_str = True
 
                         self.__reg.original_error_message.append(message)
 
@@ -3880,24 +3898,35 @@ class NmrDpMrSplitter:
                         is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
 
                         if not is_valid or not self.__reg.has_star_chem_shift:
+
                             _mrPath = self.getNextPath(mrPath, '.cif2str')
                             if self.__reg.c2S.convert(mrPath, _mrPath):
                                 mrPath = _mrPath
-                            _is_valid, _ = self.__reg.nefT.validate_file(mrPath, 'S')
-                            if _is_valid:
-                                if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
-                                    del self.__reg.report.input_sources[insert_index]
-                                    input_source = self.__reg.report.input_sources[0]
-                                    input_source.setItemValue('file_name', mrPath)
-                                    input_source.setItemValue('file_type', file_type)
-                                    input_source.setItemValue('content_type', 'nmr-chemical-shifts')
-                                    input_source.setItemValue('content_subtype', {'chem_shift': 1})
-                                    self.__reg.cs_file_path_list_len = 1
-                                    self.__reg.file_path_list_len -= 1
-                                    insert_index = 0
-                                    file_subtype = 'S'
-                                    is_valid = True
-                                has_cs_str = True
+
+                            is_valid, message = self.__reg.nefT.validate_file(mrPath, file_subtype)
+
+                            if is_valid:
+                                _mrPath = None  # to prevent to remove the file later
+
+                            if not is_valid:
+                                _is_valid, _message = self.__reg.nefT.validate_file(mrPath, 'S')
+
+                                if _is_valid:
+                                    _mrPath = None  # to prevent to remove th file later
+
+                                    if self.__reg.cs_file_path_list_len == 0 and self.__reg.permit_missing_cs_file:
+                                        del self.__reg.report.input_sources[insert_index]
+                                        input_source = self.__reg.report.input_sources[0]
+                                        input_source.setItemValue('file_name', mrPath)
+                                        input_source.setItemValue('file_type', file_type)
+                                        input_source.setItemValue('content_type', 'nmr-chemical-shifts')
+                                        input_source.setItemValue('content_subtype', {'chem_shift': 1})
+                                        self.__reg.cs_file_path_list_len = 1
+                                        self.__reg.file_path_list_len -= 1
+                                        insert_index = 0
+                                        file_subtype = 'S'
+                                        is_valid = True
+                                    has_cs_str = True
 
                         self.__reg.original_error_message.append(message)
 
@@ -5537,7 +5566,7 @@ class NmrDpMrSplitter:
                 input_source = self.__reg.report.input_sources[fileListId]
                 input_source_dic = input_source.get()
 
-                file_name = input_source_dic['file_name']
+                file_name = os.path.basename(input_source_dic['file_name']) if input_source_dic['file_name'] is not None else None
                 file_type = input_source_dic['file_type']
                 content_type = input_source_dic['content_type']
 

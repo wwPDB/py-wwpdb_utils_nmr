@@ -25,13 +25,15 @@ Exp_peak_pick_tbl:	'EXP_PEAK_PICK_TBL' -> pushMode(EXT_TBL_MODE);
 
 Res_ID:			'RES_ID';
 Res_type:		'RES_TYPE';
+Prev_type:		'PREV_TYPE';
 Spin_system_ID:		'SPIN_SYSTEM_ID';
 Heterogeneity:		'HETEROGENEITY';
 
 End_res_def:		'END_RES_DEF';
 
-L_paren:		'(';
-R_paren:		')';
+Type_pred:		ALPHA+ '(' (DECIMAL | DEC_DOT_DEC) ')';
+Single_note:		'(' ' '* NOTE ' '* ')';
+Note_begin:		'(' ' '* NOTE -> pushMode(MULTIPLE_NOTE_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -40,6 +42,7 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 fragment SEPARATOR:	[,:|/];
+fragment NOTE:		('+' | '-')? (ALPHA+ '.' DECIMAL | SIMPLE_NAME);
 
 SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
@@ -80,3 +83,9 @@ Simple_name_ET:		SIMPLE_NAME;
 SPACE_ET:		[ \t]+ -> skip;
 RETURN_ET:		[\r\n]+;
 
+mode MULTIPLE_NOTE_MODE;
+
+Note_middle:		NOTE;
+Note_end:		NOTE ' '* ')' -> popMode;
+
+SPACE_MN:		[ \t]+ -> skip;

@@ -16,6 +16,8 @@ limitations under the License.
 
 lexer grammar BareMRLexer;
 
+Data_block:		'data_' ~[\r\n]+;
+
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
 // Real:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) ([Ee] ('+' | '-')? DECIMAL)?;

@@ -11,18 +11,22 @@ __docformat__ = "restructuredtext en"
 __author__ = "Masashi Yokochi"
 __email__ = "yokochi@protein.osaka-u.ac.jp"
 __license__ = "Apache License 2.0"
-__version__ = "5.4.6"
+__version__ = "5.4.7"
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
-                                               LEN_MAJOR_ASYM_ID)
+                                               LEN_MAJOR_ASYM_ID,
+                                               REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ASYM_ID)
     from wwpdb.utils.nmr.CifToNmrStar import has_key_value
     from wwpdb.utils.nmr.NmrVrptUtility import write_as_pickle
     from wwpdb.utils.nmr.mr.ParserListenerUtil import isLikeHis
     from wwpdb.utils.nmr.NmrDpValidationBase import NmrDpValidationBase
 except ImportError:
     from nmr.NmrDpConstant import (LARGE_ASYM_ID,
-                                   LEN_MAJOR_ASYM_ID)
+                                   LEN_MAJOR_ASYM_ID,
+                                   REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ASYM_ID)
     from nmr.CifToNmrStar import has_key_value
     from nmr.NmrVrptUtility import write_as_pickle
     from nmr.mr.ParserListenerUtil import isLikeHis
@@ -119,13 +123,15 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                                                                            [{'name': 'PDB_model_num', 'type': 'int',
                                                                              'value': self._reg.representative_model_id},
                                                                             {'name': 'auth_asym_id_1', 'type': 'str',
-                                                                             'value': auth_cif_chain_id},
+                                                                             'value': auth_cif_chain_id,
+                                                                             'default': REPRESENTATIVE_ASYM_ID},
                                                                             {'name': 'auth_seq_id_1', 'type': 'int',
                                                                              'value': auth_beg_cif_seq_id},
                                                                             {'name': 'auth_atom_id_1', 'type': 'str',
                                                                              'value': 'N'},
                                                                             {'name': 'auth_asym_id_2', 'type': 'str',
-                                                                             'value': auth_cif_chain_id},
+                                                                             'value': auth_cif_chain_id,
+                                                                             'default': REPRESENTATIVE_ASYM_ID},
                                                                             {'name': 'auth_seq_id_2', 'type': 'int',
                                                                              'value': auth_end_cif_seq_id},
                                                                             {'name': 'auth_atom_id_2', 'type': 'str',
@@ -259,7 +265,8 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                     rep_tautomer = tautomer_per_model[self._reg.representative_model_id]
                 except KeyError:
                     try:
-                        rep_tautomer = tautomer_per_model[self._reg.eff_model_ids[0]]
+                        rep_tautomer = tautomer_per_model[self._reg.eff_model_ids[0]
+                                                          if len(self.__reg.eff_model_ids) > 0 else REPRESENTATIVE_MODEL_ID]
                     except KeyError:
                         continue
 
@@ -389,7 +396,8 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                         rep_tautomer = tautomer_per_model[self._reg.representative_model_id]
                     except KeyError:
                         try:
-                            rep_tautomer = tautomer_per_model[self._reg.eff_model_ids[0]]
+                            rep_tautomer = tautomer_per_model[self._reg.eff_model_ids[0]
+                                                              if len(self.__reg.eff_model_ids) > 0 else REPRESENTATIVE_MODEL_ID]
                         except KeyError:
                             continue
 

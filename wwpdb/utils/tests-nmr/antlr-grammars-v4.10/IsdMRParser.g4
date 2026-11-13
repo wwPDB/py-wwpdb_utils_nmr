@@ -30,4 +30,3 @@ distance_restraints:
 
 distance_restraint:
 	Atom_selection Atom_selection;
-

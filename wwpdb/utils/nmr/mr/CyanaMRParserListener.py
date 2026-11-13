@@ -6012,10 +6012,15 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.jcoupRestraints -= 1
                 return
 
-            combinations = 2 if len(self.genSimpleNameSelection) == 5\
-                else 1 if len(self.genSimpleNameSelection) == 3 else 0
+            len_simple_name_selection = len(self.genSimpleNameSelection)
 
-            if combinations == 0:
+            if len_simple_name_selection == 7:
+                combinations = 3
+            elif len_simple_name_selection == 5:
+                combinations = 2
+            elif len_simple_name_selection == 3:
+                combinations = 1
+            else:
                 self.jcoupRestraints -= 1
                 return
 
@@ -6171,6 +6176,149 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             target = self.numberSelection[2 if has_error else 1]
             error = self.numberSelection[3] if has_error else None
+
+            target_value = target
+            lower_limit = target - error if error is not None else None
+            upper_limit = target + error if error is not None else None
+
+            dstFunc = self.validateRdcRange(weight, None, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId2)
+
+            if 0 in (len(chainAssign1), len(chainAssign2)):
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId1, compId1, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if not self.areUniqueCoordAtoms('a scalar coupling'):
+                return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              "Non-magnetic susceptible spin appears in scalar coupling constant; "
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            if chain_id_1 != chain_id_2:
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                                  "Found inter-chain scalar coupling constant; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) > 1:
+
+                if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
+                    self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                                  "Found inter-residue scalar coupling constant; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
+                         or {atom_id_1, atom_id_2} == {'H', 'N'}):
+                    pass
+
+                elif self.csStat.getTypeOfCompId(comp_id_1)[1] and self.csStat.getTypeOfCompId(comp_id_1)[1]\
+                        and seq_id_1 < seq_id_2 and atom_id_2 == 'P':
+                    pass
+
+                else:
+                    self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                                  "Found inter-residue scalar coupling constant; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              "Found zero scalar coupling constant; "
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            self.jcoupRestraints += 1
+
+            if self.createSfDict:
+                sf = self.getSf()
+                sf['id'] += 1
+
+            for atom1, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if isLongRangeRestraint([atom1, atom4], self.polySeq if self.gapInAuthSeq else None):
+                    if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                        continue
+                self.ccU.updateChemCompDict(atom1['comp_id'])
+                atom2_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
+                atom3_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
+                atom_id_2 = atom_id_3 = None
+                for ccb in self.ccU.lastBondDictList:
+                    if ccb['atom_id_1'] in atom2_can and ccb['atom_id_2'] in atom3_can:
+                        atom_id_2 = ccb['atom_id_1']
+                        atom_id_3 = ccb['atom_id_2']
+                        break
+                    if ccb['atom_id_2'] in atom2_can and ccb['atom_id_1'] in atom3_can:
+                        atom_id_2 = ccb['atom_id_2']
+                        atom_id_3 = ccb['atom_id_1']
+                        break
+                if None in (atom_id_2, atom_id_3):
+                    continue
+                atom2 = copy.copy(atom1)
+                atom2['atom_id'] = atom_id_2
+                atom3 = copy.copy(atom4)
+                atom3['atom_id'] = atom_id_3
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.jcoupRestraints} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None, None,
+                                 sf['list_id'], self.entryId, dstFunc,
+                                 self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                 atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis1, asis3=asis2, asis4=asis2)
+                    sf['loop'].add_data(row)
+
+            if combinations == 2:
+                return
+
+            self.atomSelectionSet.clear()
+
+            atomId1 = self.genSimpleNameSelection[5].upper()
+            atomId2 = self.genSimpleNameSelection[6].upper()
+
+            target = self.numberSelection[4 if has_error else 2]
+            error = self.numberSelection[5] if has_error else None
 
             target_value = target
             lower_limit = target - error if error is not None else None

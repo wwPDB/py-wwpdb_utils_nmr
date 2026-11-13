@@ -221,6 +221,7 @@ diana_coupling_constant_restraint:
 	gen_simple_name gen_res_num
 	gen_simple_name gen_simple_name number number?
 	(gen_simple_name gen_simple_name number number?)?
+	(gen_simple_name gen_simple_name number number?)?
 	Simple_name? Integer?;
 
 /* DIANA stereoassign macro (undocumented) */

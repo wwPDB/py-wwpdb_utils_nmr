@@ -732,7 +732,7 @@ REPRESENTATIVE_ALT_ID = 'A'
 
 MAX_PREF_LABEL_SCHEME_COUNT = 100
 
-GLOBAL_OFFSET_ATTEMPT = 1000
+GLOBAL_OFFSET_ATTEMPT = 1_000
 LOCAL_OFFSET_ATTEMPT = 100
 PERIPH_OFFSET_ATTEMPT = 10
 
@@ -740,7 +740,7 @@ MAX_ALLOWED_EXT_SEQ = 2
 
 MIN_EXT_SEQ_FOR_ATOM_SEL_ERR = 12
 
-UNREAL_AUTH_SEQ_NUM = -10000
+UNREAL_AUTH_SEQ_NUM = -10_000
 
 MAX_CONFLICT_ATTEMPT = 11  # DAOTHER-10684
 
@@ -8982,7 +8982,8 @@ CARTN_DATA_ITEMS = [{'name': 'Cartn_x', 'type': 'float', 'alt_name': 'x'},
                     {'name': 'Cartn_z', 'type': 'float', 'alt_name': 'z'}
                     ]
 
-AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id', 'default': REPRESENTATIVE_ASYM_ID},
+AUTH_ATOM_DATA_ITEMS = [{'name': 'auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                         'default': REPRESENTATIVE_ASYM_ID},
                         {'name': 'auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                         {'name': 'label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                         {'name': 'label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
@@ -8995,13 +8996,15 @@ ATOM_NAME_DATA_ITEMS = [{'name': 'label_comp_id', 'type': 'starts-with-alnum', '
 AUTH_ATOM_CARTN_DATA_ITEMS = CARTN_DATA_ITEMS
 AUTH_ATOM_CARTN_DATA_ITEMS.extend(AUTH_ATOM_DATA_ITEMS)
 
-PTNR1_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+PTNR1_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                               'default': REPRESENTATIVE_ASYM_ID},
                               {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                               {'name': 'ptnr1_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                               {'name': 'ptnr1_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}
                               ]
 
-PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id'},
+PTNR2_AUTH_ATOM_DATA_ITEMS = [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'alt_name': 'chain_id',
+                               'default': REPRESENTATIVE_ASYM_ID},
                               {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'alt_name': 'seq_id'},
                               {'name': 'ptnr2_label_comp_id', 'type': 'starts-with-alnum', 'alt_name': 'comp_id'},
                               {'name': 'ptnr2_label_atom_id', 'type': 'starts-with-alnum', 'alt_name': 'atom_id'}

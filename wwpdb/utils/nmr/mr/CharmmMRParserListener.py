@@ -26,6 +26,7 @@ from rmsd.calculate_rmsd import ELEMENT_WEIGHTS, int_atom  # noqa: F401 pylint: 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
                                                REPRESENTATIVE_MODEL_ID,
+                                               REPRESENTATIVE_ASYM_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP,
@@ -63,6 +64,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
                                    REPRESENTATIVE_MODEL_ID,
+                                   REPRESENTATIVE_ASYM_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP,
@@ -2003,7 +2005,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                         # struct_conn category
                         _atom = self.cR.getDictListWithFilter('struct_conn',
                                                               PTNR1_AUTH_ATOM_DATA_ITEMS,
-                                                              [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': chainId},
+                                                              [{'name': 'ptnr2_auth_asym_id', 'type': 'str', 'value': chainId,
+                                                                'default': REPRESENTATIVE_ASYM_ID},
                                                                {'name': 'ptnr2_auth_seq_id', 'type': 'int', 'value': seqId},
                                                                {'name': 'ptnr2_label_atom_id', 'type': 'str', 'value': atomId},
                                                                {'name': self.modelNumName, 'type': 'int',
@@ -2015,7 +2018,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
 
                         _atom = self.cR.getDictListWithFilter('struct_conn',
                                                               PTNR2_AUTH_ATOM_DATA_ITEMS,
-                                                              [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': chainId},
+                                                              [{'name': 'ptnr1_auth_asym_id', 'type': 'str', 'value': chainId,
+                                                                'default': REPRESENTATIVE_ASYM_ID},
                                                                {'name': 'ptnr1_auth_seq_id', 'type': 'int', 'value': seqId},
                                                                {'name': 'ptnr1_label_atom_id', 'type': 'str', 'value': atomId},
                                                                {'name': self.modelNumName, 'type': 'int',

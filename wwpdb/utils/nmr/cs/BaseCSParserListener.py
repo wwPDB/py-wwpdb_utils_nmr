@@ -52,7 +52,8 @@ try:
                                                ASSIGNMENT_SEPARATOR_PAT,
                                                ASSIGNMENT_RESID_PAT,
                                                ASSIGNMENT_HALF_SPIN_NUCLEUS,
-                                               INSTRUCTION_FOR_FULL_SEQUENCE)
+                                               INSTRUCTION_FOR_FULL_SEQUENCE,
+                                               REPRESENTATIVE_ASYM_ID)
     from wwpdb.utils.nmr.AlignUtil import (getOneLetterCode,
                                            updatePolySeqRst,
                                            revertPolySeqRst,
@@ -110,7 +111,8 @@ except ImportError:
                                    ASSIGNMENT_SEPARATOR_PAT,
                                    ASSIGNMENT_RESID_PAT,
                                    ASSIGNMENT_HALF_SPIN_NUCLEUS,
-                                   INSTRUCTION_FOR_FULL_SEQUENCE)
+                                   INSTRUCTION_FOR_FULL_SEQUENCE,
+                                   REPRESENTATIVE_ASYM_ID)
     from nmr.AlignUtil import (getOneLetterCode,
                                updatePolySeqRst,
                                revertPolySeqRst,
@@ -2248,7 +2250,7 @@ class BaseCSParserListener():
                 if segId is not None:
                     ass['chain_id'] = segId
                 elif not self.hasPolySeq:
-                    ass['chain_id'] = 'A'
+                    ass['chain_id'] = REPRESENTATIVE_ASYM_ID
                 if resId is not None:
                     ass['seq_id'] = resId
                 if resName is not None:

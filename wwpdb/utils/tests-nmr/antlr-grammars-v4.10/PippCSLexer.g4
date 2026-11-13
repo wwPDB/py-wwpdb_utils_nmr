@@ -42,7 +42,7 @@ fragment DEC_DOT_DEC:	(DECIMAL '.' DECIMAL) | ('.' DECIMAL);
 fragment DEC_DIGIT:	[0-9];
 fragment DECIMAL:	DEC_DIGIT+;
 fragment SEPARATOR:	[,:|/];
-fragment NOTE:		('+' | '-')? ALPHA+ '.' DECIMAL;
+fragment NOTE:		('+' | '-')? (ALPHA+ '.' DECIMAL | SIMPLE_NAME);
 
 SHARP_COMMENT:		'#'+ ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);

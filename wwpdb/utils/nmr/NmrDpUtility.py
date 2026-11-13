@@ -14179,7 +14179,8 @@ class NmrDpUtility:
                     rep_tautomer = tautomer_per_model[self.__reg.representative_model_id]
                 except KeyError:
                     try:
-                        rep_tautomer = tautomer_per_model[self.__reg.eff_model_ids[0]]
+                        rep_tautomer = tautomer_per_model[self.__reg.eff_model_ids[0]
+                                                          if len(self.__reg.eff_model_ids) > 0 else REPRESENTATIVE_MODEL_ID]
                     except KeyError:
                         continue
 
@@ -14307,7 +14308,8 @@ class NmrDpUtility:
                         rep_tautomer = tautomer_per_model[self.__reg.representative_model_id]
                     except KeyError:
                         try:
-                            rep_tautomer = tautomer_per_model[self.__reg.eff_model_ids[0]]
+                            rep_tautomer = tautomer_per_model[self.__reg.eff_model_ids[0]
+                                                              if len(self.__reg.eff_model_ids) > 0 else REPRESENTATIVE_MODEL_ID]
                         except KeyError:
                             continue
 

@@ -2302,7 +2302,8 @@ class NmrVrptUtility:
         _filter_items = [{'name': 'type_symbol', 'type': 'enum', 'enum': NMR_OBS_NUCS},
                          # remove label_alt_id filter because of missing of ayth_asym_id: B (2n2k)
                          # {'name': 'label_alt_id', 'type': 'enum', 'enum': (self.__representative_alt_id,)},
-                         {'name': 'pdbx_PDB_model_num', 'type': 'int', 'value': self.__eff_model_ids[0]}]
+                         {'name': 'pdbx_PDB_model_num', 'type': 'int',
+                          'value': self.__eff_model_ids[0] if len(self.__eff_model_ids) > 0 else self.__representative_model_id}]
 
         if len(self.__caC['polymer_sequence']) >= LEN_MAJOR_ASYM_ID:
             _filter_items.append({'name': 'auth_asym_id', 'type': 'enum', 'enum': LARGE_ASYM_ID,

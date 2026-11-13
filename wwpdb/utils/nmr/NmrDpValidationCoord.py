@@ -16,6 +16,7 @@ __version__ = "5.4.6"
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (LARGE_ASYM_ID,
                                                LEN_MAJOR_ASYM_ID,
+                                               REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ASYM_ID)
     from wwpdb.utils.nmr.CifToNmrStar import has_key_value
     from wwpdb.utils.nmr.NmrVrptUtility import write_as_pickle
@@ -24,6 +25,7 @@ try:
 except ImportError:
     from nmr.NmrDpConstant import (LARGE_ASYM_ID,
                                    LEN_MAJOR_ASYM_ID,
+                                   REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ASYM_ID)
     from nmr.CifToNmrStar import has_key_value
     from nmr.NmrVrptUtility import write_as_pickle
@@ -263,7 +265,8 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                     rep_tautomer = tautomer_per_model[self._reg.representative_model_id]
                 except KeyError:
                     try:
-                        rep_tautomer = tautomer_per_model[self._reg.eff_model_ids[0]]
+                        rep_tautomer = tautomer_per_model[self._reg.eff_model_ids[0]
+                                                          if len(self.__reg.eff_model_ids) > 0 else REPRESENTATIVE_MODEL_ID]
                     except KeyError:
                         continue
 
@@ -393,7 +396,8 @@ class NmrDpValidationCoord(NmrDpValidationBase):
                         rep_tautomer = tautomer_per_model[self._reg.representative_model_id]
                     except KeyError:
                         try:
-                            rep_tautomer = tautomer_per_model[self._reg.eff_model_ids[0]]
+                            rep_tautomer = tautomer_per_model[self._reg.eff_model_ids[0]
+                                                              if len(self.__reg.eff_model_ids) > 0 else REPRESENTATIVE_MODEL_ID]
                         except KeyError:
                             continue
 

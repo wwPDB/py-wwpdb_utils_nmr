@@ -490,10 +490,11 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                         completeness['well_defined'][0]
                     cs_summary['number_of_favorable_assigned_shifts_in_well_defined_region'] =\
                         completeness['favor_well_defined'][0]
-                    cs_summary['completeness_in_well_defined_region'] =\
-                        round(float(completeness['well_defined'][0]) / completeness['well_defined'][1], 3)
-                    cs_summary['completeness_in_well_defined_region_with_favorable_shift'] =\
-                        round(float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1], 3)
+                    if completeness['well_defined'][1] > 0:
+                        cs_summary['completeness_in_well_defined_region'] =\
+                            round(float(completeness['well_defined'][0]) / completeness['well_defined'][1], 3)
+                        cs_summary['completeness_in_well_defined_region_with_favorable_shift'] =\
+                            round(float(completeness['favor_well_defined'][0]) / completeness['well_defined'][1], 3)
 
                 cs_summary['number_of_target_shifts_in_full_length_region'] =\
                     completeness['full_length'][1]
@@ -501,10 +502,11 @@ class NmrDpValidationOutStats(NmrDpValidationBase):
                     completeness['full_length'][0]
                 cs_summary['number_of_favorable_assigned_shifts_in_full_length_region'] =\
                     completeness['favor_full_length'][0]
-                cs_summary['completeness_in_full_length_region'] =\
-                    round(float(completeness['full_length'][0]) / completeness['full_length'][1], 3)
-                cs_summary['completeness_in_full_length_region_with_favorable_shift'] =\
-                    round(float(completeness['favor_full_length'][0]) / completeness['full_length'][1], 3)
+                if completeness['full_length'][1] > 0:
+                    cs_summary['completeness_in_full_length_region'] =\
+                        round(float(completeness['full_length'][0]) / completeness['full_length'][1], 3)
+                    cs_summary['completeness_in_full_length_region_with_favorable_shift'] =\
+                        round(float(completeness['favor_full_length'][0]) / completeness['full_length'][1], 3)
 
                 self._reg.output_statistics.setItemValue('chem_shift_summary', cs_summary)
 

@@ -245,6 +245,11 @@ class AriaMRReader:
 if __name__ == "__main__":
     reader = AriaMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1xx0/noe.peak',
+                 '../../tests-nmr/mock-data-remediation/1xx0/1xx0.cif')
+
+    reader = AriaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2bug/2bug-trimmed.mr',
                  '../../tests-nmr/mock-data-remediation/2bug/2bug.cif')
 

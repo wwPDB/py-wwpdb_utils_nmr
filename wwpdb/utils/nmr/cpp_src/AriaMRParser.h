@@ -209,9 +209,9 @@ public:
     antlr4::tree::TerminalNode* Integer(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Float();
     antlr4::tree::TerminalNode* Float(size_t i);
-    antlr4::tree::TerminalNode *Real();
     std::vector<antlr4::tree::TerminalNode *> Hyphen();
     antlr4::tree::TerminalNode* Hyphen(size_t i);
+    antlr4::tree::TerminalNode *Real();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

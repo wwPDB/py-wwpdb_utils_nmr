@@ -15,7 +15,7 @@ __version__ = "5.4.6"
 
 import copy
 import os
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import pynmrstar
 
@@ -242,212 +242,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                          'auth_asym_id': item[_auth_asym_id].split(',')[0]}
 
             if nmr_poly_seq is None and AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict:
-
-                def deal_aux_warn_message(file_name, listener, dry_run=False):
-
-                    valid = True
-
-                    if listener.warningMessage is not None:
-
-                        for warn in listener.warningMessage:
-
-                            msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
-
-                            if warn.startswith('[Concatenated sequence]'):
-                                if not dry_run:
-                                    self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
-
-                                    if self._reg.verbose:
-                                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Sequence mismatch]'):
-                                if not dry_run:
-                                    self._reg.report.error.appendDescription('sequence_mismatch', msg_dict)
-
-                                    if self._reg.verbose:
-                                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Error  - {warn}\n")
-
-                                    valid = False
-
-                            elif warn.startswith('[Unknown atom name]'):
-                                if not dry_run:
-                                    self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
-
-                                    if self._reg.verbose:
-                                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
-
-                            elif warn.startswith('[Unknown residue name]'):
-                                if not dry_run:
-                                    self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
-
-                                    if self._reg.verbose:
-                                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ Warning  - {warn}\n")
-
-                            else:
-                                if not dry_run:
-                                    self._reg.report.error.appendDescription('internal_error',
-                                                                             f"+{self.__class_name__}.validateLegacyCs() "
-                                                                             "++ KeyError  - " + warn)
-
-                                    if self._reg.verbose:
-                                        self._reg.log.write(f"+{self.__class_name__}.validateLegacyCs() ++ KeyError  - {warn}\n")
-
-                                valid = False
-
-                    else:
-                        valid = False
-
-                    return valid
-
-                fileListId = self._reg.file_path_list_len
-
-                for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
-                    file_path = ar['file_name']
-
-                    input_source = self._reg.report.input_sources[fileListId]
-                    input_source_dic = input_source.get()
-
-                    file_type = input_source_dic['file_type']
-                    content_subtype = input_source_dic['content_subtype']
-
-                    fileListId += 1
-
-                    if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
-
-                        file_name = os.path.basename(input_source_dic['file_name'])\
-                            if input_source_dic['file_name'] is not None else None
-
-                        original_file_name = None
-                        if 'original_file_name' in input_source_dic:
-                            if input_source_dic['original_file_name'] is not None:
-                                original_file_name = input_source_dic['original_file_name']
-                            if file_name != original_file_name and original_file_name is not None:
-                                file_name = f"{original_file_name} ({file_name})"
-
-                        reader = AmberPTReader(self._reg.verbose, self._reg.log,
-                                               self._reg.representative_model_id,
-                                               self._reg.representative_alt_id,
-                                               self._reg.mr_atom_name_mapping,
-                                               self._reg.cR, self._reg.caC,
-                                               self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath)
-
-                        if listener is not None:
-
-                            deal_aux_warn_message(file_name, listener)
-
-                            nmr_poly_seq = listener.getPolymerSequence()
-                            if nmr_poly_seq is not None:
-                                input_source.setItemValue('polymer_sequence', nmr_poly_seq)
-
-                            seq_align = listener.getSequenceAlignment()
-                            if seq_align is not None:
-                                self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
-
-                    elif file_type == 'nm-aux-cha' and content_subtype is not None and 'topology' in content_subtype:
-
-                        file_name = os.path.basename(input_source_dic['file_name'])
-
-                        original_file_name = None
-                        if 'original_file_name' in input_source_dic:
-                            if input_source_dic['original_file_name'] is not None:
-                                original_file_name = input_source_dic['original_file_name']
-                            if file_name != original_file_name and original_file_name is not None:
-                                file_name = f"{original_file_name} ({file_name})"
-
-                        reader = CharmmCRDReader(self._reg.verbose, self._reg.log,
-                                                 self._reg.representative_model_id,
-                                                 self._reg.representative_alt_id,
-                                                 self._reg.mr_atom_name_mapping,
-                                                 self._reg.cR, self._reg.caC,
-                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath)
-
-                        if listener is not None:
-
-                            deal_aux_warn_message(file_name, listener)
-
-                            nmr_poly_seq = listener.getPolymerSequence()
-                            if nmr_poly_seq is not None:
-                                input_source.setItemValue('polymer_sequence', nmr_poly_seq)
-
-                            seq_align = listener.getSequenceAlignment()
-                            if seq_align is not None:
-                                self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
-
-                    elif file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
-
-                        file_name = os.path.basename(input_source_dic['file_name'])\
-                            if input_source_dic['file_name'] is not None else None
-
-                        original_file_name = None
-                        if 'original_file_name' in input_source_dic:
-                            if input_source_dic['original_file_name'] is not None:
-                                original_file_name = input_source_dic['original_file_name']
-                            if file_name != original_file_name and original_file_name is not None:
-                                file_name = f"{original_file_name} ({file_name})"
-
-                        reader = GromacsPTReader(self._reg.verbose, self._reg.log,
-                                                 self._reg.representative_model_id,
-                                                 self._reg.representative_alt_id,
-                                                 self._reg.mr_atom_name_mapping,
-                                                 self._reg.cR, self._reg.caC,
-                                                 self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath)
-
-                        if listener is not None:
-
-                            deal_aux_warn_message(file_name, listener)
-
-                            nmr_poly_seq = listener.getPolymerSequence()
-                            if nmr_poly_seq is not None:
-                                input_source.setItemValue('polymer_sequence', nmr_poly_seq)
-
-                            seq_align = listener.getSequenceAlignment()
-                            if seq_align is not None:
-                                self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
-
-                    elif file_type == 'nm-aux-pdb' and content_subtype is not None and 'topology' in content_subtype:
-
-                        file_name = os.path.basename(input_source_dic['file_name'])\
-                            if input_source_dic['file_name'] is not None else None
-
-                        original_file_name = None
-                        if 'original_file_name' in input_source_dic:
-                            if input_source_dic['original_file_name'] is not None:
-                                original_file_name = input_source_dic['original_file_name']
-                            if file_name != original_file_name and original_file_name is not None:
-                                file_name = f"{original_file_name} ({file_name})"
-
-                        reader = BarePDBReader(self._reg.verbose, self._reg.log,
-                                               self._reg.representative_model_id,
-                                               self._reg.representative_alt_id,
-                                               self._reg.mr_atom_name_mapping,
-                                               self._reg.cR, self._reg.caC,
-                                               self._reg.ccU, self._reg.csStat, self._reg.nefT)
-
-                        file_path = self.testPathWithSuffix(file_path, '-corrected')
-
-                        listener, _, _ = reader.parse(file_path, self._reg.cifPath)
-
-                        if listener is not None:
-
-                            valid = deal_aux_warn_message(file_name, listener, True)
-
-                            if not valid:
-                                continue
-
-                            nmr_poly_seq = listener.getPolymerSequence()
-
-                            if nmr_poly_seq is not None:
-                                input_source.setItemValue('polymer_sequence', nmr_poly_seq)
-
-                            seq_align = listener.getSequenceAlignment()
-                            if seq_align is not None:
-                                self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+                nmr_poly_seq = self.__getPolySeqFromTopology()
 
             create_sf_dict = True
 
@@ -837,7 +632,7 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
 
         has_poly_seq = has_key_value(input_source_dic, 'polymer_sequence')
 
-        if not has_poly_seq:
+        if not has_poly_seq and not self._reg.permit_missing_cs_file:
             return False
 
         nmr_poly_seq = input_source_dic['polymer_sequence']
@@ -892,6 +687,9 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                 entity_assembly[str(item['entity_assembly_id'])] =\
                     {'entity_id': item['entity_id'],
                      'auth_asym_id': item[_auth_asym_id].split(',')[0]}
+
+        if nmr_poly_seq is None and AR_FILE_PATH_LIST_KEY in self._reg.inputParamDict:
+            nmr_poly_seq = self.__getPolySeqFromTopology()
 
         create_sf_dict = True
 
@@ -1213,3 +1011,232 @@ class NmrDpRemediationLegacyCs(NmrDpRemediationBase):
                 master_entry.add_saveframe(sf['saveframe'])
 
         return not self._reg.report.isError()
+
+    def __getPolySeqFromTopology(self) -> Optional[List[dict]]:
+        """ Retrieve polymer sequence from topology file.
+        """
+
+        def deal_aux_warn_message(file_name, listener, dry_run=False):
+
+            valid = True
+
+            if listener.warningMessage is not None:
+
+                for warn in listener.warningMessage:
+
+                    msg_dict = {'file_name': file_name, 'description': warn, 'inheritable': True}
+
+                    if warn.startswith('[Concatenated sequence]'):
+                        if not dry_run:
+                            self._reg.report.warning.appendDescription('concatenated_sequence', msg_dict)
+
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.__getPolySeqFromTopology() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Sequence mismatch]'):
+                        if not dry_run:
+                            self._reg.report.error.appendDescription('sequence_mismatch', msg_dict)
+
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.__getPolySeqFromTopology() ++ Error  - {warn}\n")
+
+                            valid = False
+
+                    elif warn.startswith('[Unknown atom name]'):
+                        if not dry_run:
+                            self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.__getPolySeqFromTopology() ++ Warning  - {warn}\n")
+
+                    elif warn.startswith('[Unknown residue name]'):
+                        if not dry_run:
+                            self._reg.report.warning.appendDescription('inconsistent_mr_data', msg_dict)
+
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.__getPolySeqFromTopology() ++ Warning  - {warn}\n")
+
+                    else:
+                        if not dry_run:
+                            self._reg.report.error.appendDescription('internal_error',
+                                                                     f"+{self.__class_name__}.__getPolySeqFromTopology() "
+                                                                     "++ KeyError  - " + warn)
+
+                            if self._reg.verbose:
+                                self._reg.log.write(f"+{self.__class_name__}.__getPolySeqFromTopology() ++ KeyError  - {warn}\n")
+
+                        valid = False
+
+            else:
+                valid = False
+
+            return valid
+
+        fileListId = self._reg.file_path_list_len
+
+        for ar in self._reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
+            file_path = ar['file_name']
+
+            input_source = self._reg.report.input_sources[fileListId]
+            input_source_dic = input_source.get()
+
+            file_type = input_source_dic['file_type']
+            content_subtype = input_source_dic['content_subtype']
+
+            fileListId += 1
+
+            if file_type == 'nm-aux-amb' and content_subtype is not None and 'topology' in content_subtype:
+
+                if has_key_value(input_source_dic, 'polymer_sequence'):
+                    return input_source_dic['polymer_sequence']
+
+                file_name = os.path.basename(input_source_dic['file_name'])\
+                    if input_source_dic['file_name'] is not None else None
+
+                original_file_name = None
+                if 'original_file_name' in input_source_dic:
+                    if input_source_dic['original_file_name'] is not None:
+                        original_file_name = input_source_dic['original_file_name']
+                    if file_name != original_file_name and original_file_name is not None:
+                        file_name = f"{original_file_name} ({file_name})"
+
+                reader = AmberPTReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
+
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath)
+
+                if listener is not None:
+
+                    deal_aux_warn_message(file_name, listener)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        return poly_seq
+
+            elif file_type == 'nm-aux-cha' and content_subtype is not None and 'topology' in content_subtype:
+
+                if has_key_value(input_source_dic, 'polymer_sequence'):
+                    return input_source_dic['polymer_sequence']
+
+                file_name = os.path.basename(input_source_dic['file_name'])
+
+                original_file_name = None
+                if 'original_file_name' in input_source_dic:
+                    if input_source_dic['original_file_name'] is not None:
+                        original_file_name = input_source_dic['original_file_name']
+                    if file_name != original_file_name and original_file_name is not None:
+                        file_name = f"{original_file_name} ({file_name})"
+
+                reader = CharmmCRDReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
+
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath)
+
+                if listener is not None:
+
+                    deal_aux_warn_message(file_name, listener)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        return poly_seq
+
+            elif file_type == 'nm-aux-gro' and content_subtype is not None and 'topology' in content_subtype:
+
+                if has_key_value(input_source_dic, 'polymer_sequence'):
+                    return input_source_dic['polymer_sequence']
+
+                file_name = os.path.basename(input_source_dic['file_name'])\
+                    if input_source_dic['file_name'] is not None else None
+
+                original_file_name = None
+                if 'original_file_name' in input_source_dic:
+                    if input_source_dic['original_file_name'] is not None:
+                        original_file_name = input_source_dic['original_file_name']
+                    if file_name != original_file_name and original_file_name is not None:
+                        file_name = f"{original_file_name} ({file_name})"
+
+                reader = GromacsPTReader(self._reg.verbose, self._reg.log,
+                                         self._reg.representative_model_id,
+                                         self._reg.representative_alt_id,
+                                         self._reg.mr_atom_name_mapping,
+                                         self._reg.cR, self._reg.caC,
+                                         self._reg.ccU, self._reg.csStat, self._reg.nefT)
+
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath)
+
+                if listener is not None:
+
+                    deal_aux_warn_message(file_name, listener)
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        return poly_seq
+
+            elif file_type == 'nm-aux-pdb' and content_subtype is not None and 'topology' in content_subtype:
+
+                if has_key_value(input_source_dic, 'polymer_sequence'):
+                    return input_source_dic['polymer_sequence']
+
+                file_name = os.path.basename(input_source_dic['file_name'])\
+                    if input_source_dic['file_name'] is not None else None
+
+                original_file_name = None
+                if 'original_file_name' in input_source_dic:
+                    if input_source_dic['original_file_name'] is not None:
+                        original_file_name = input_source_dic['original_file_name']
+                    if file_name != original_file_name and original_file_name is not None:
+                        file_name = f"{original_file_name} ({file_name})"
+
+                reader = BarePDBReader(self._reg.verbose, self._reg.log,
+                                       self._reg.representative_model_id,
+                                       self._reg.representative_alt_id,
+                                       self._reg.mr_atom_name_mapping,
+                                       self._reg.cR, self._reg.caC,
+                                       self._reg.ccU, self._reg.csStat, self._reg.nefT)
+
+                file_path = self.testPathWithSuffix(file_path, '-corrected')
+
+                listener, _, _ = reader.parse(file_path, self._reg.cifPath)
+
+                if listener is not None:
+
+                    valid = deal_aux_warn_message(file_name, listener, True)
+
+                    if not valid:
+                        continue
+
+                    poly_seq = listener.getPolymerSequence()
+
+                    seq_align = listener.getSequenceAlignment()
+                    if seq_align is not None:
+                        self._reg.report.sequence_alignment.setItemValue('model_poly_seq_vs_mr_topology', seq_align)
+
+                    poly_seq = listener.getPolymerSequence()
+                    if poly_seq is not None:
+                        input_source.setItemValue('polymer_sequence', poly_seq)
+                        return poly_seq
+
+        return None

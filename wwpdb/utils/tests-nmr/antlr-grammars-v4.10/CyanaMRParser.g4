@@ -53,7 +53,8 @@ cyana_mr:
 	unset_variable |
 	print_macro |
 	unambig_atom_name_mapping |
-	ambig_atom_name_mapping
+	ambig_atom_name_mapping |
+	ambig_list
 	)*
 	EOF;
 

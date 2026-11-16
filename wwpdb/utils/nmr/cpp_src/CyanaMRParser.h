@@ -208,6 +208,8 @@ public:
     Unambig_atom_name_mappingContext* unambig_atom_name_mapping(size_t i);
     std::vector<Ambig_atom_name_mappingContext *> ambig_atom_name_mapping();
     Ambig_atom_name_mappingContext* ambig_atom_name_mapping(size_t i);
+    std::vector<Ambig_listContext *> ambig_list();
+    Ambig_listContext* ambig_list(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Tensor_header();
     antlr4::tree::TerminalNode* Tensor_header(size_t i);
 

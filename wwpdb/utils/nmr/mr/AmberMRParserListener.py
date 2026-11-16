@@ -1210,9 +1210,10 @@ class AmberMRParserListener(ParseTreeListener):
             self.decideRestraintType(self.likeDist)
 
             if len(self.__cur_subtype) == 0:
-                self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
-                                "Couldn't specify NMR restraint type because the number of columns "
-                                "in the 'iat' clause did not match.")
+                if self.iat[0] > 0:  # 1fmy
+                    self.__f.append(f"[Invalid data] {self.__getCurrentRestraint()}"
+                                    "Couldn't specify NMR restraint type because the number of columns "
+                                    "in the 'iat' clause did not match.")
                 return
 
             # conventional restraint

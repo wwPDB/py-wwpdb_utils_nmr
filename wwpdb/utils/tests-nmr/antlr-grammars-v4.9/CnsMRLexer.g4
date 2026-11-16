@@ -428,7 +428,7 @@ fragment DECIMAL:	DEC_DIGIT+;
 fragment H_NAME:	[AaBbCcDdEeGgHhMmNnOoPpQqRrZz*%#+'"0-9];
 fragment NON_H_NAME:	~[AaBbCcDdEeGgHhMmNnOoPpQqRrZz*%#+'"0-9 \t\r\n];
 
-SHARP_COMMENT:		'#'+ (~[Hh] | H (NON_H_NAME | H_NAME NON_H_NAME)) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+SHARP_COMMENT:		'#'+ (~[Hh] | H (NON_H_NAME | H_NAME NON_H_NAME | H B O N D)) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 

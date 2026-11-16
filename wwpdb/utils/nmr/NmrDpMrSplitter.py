@@ -264,7 +264,9 @@ COMMENT_CODE_MIXED_SET = {'#', '!'}
 
 COMMENT_CODE_SEMICOLON_SET = frozenset(('#', '!', ';'))
 
-PAREN_SPLIT_PAT = re.compile('[ ()]')
+PAREN_SPLIT_PAT = re.compile(r'[ ()]')
+
+SYNTAX_ERR_LINE_PAT = re.compile(r'.*\] line (\d+):\d+ .*')
 
 # File types whose content subtype is guessed by the light-weight text scan of
 # NmrDpMrSplitter.detectContentSubTypeOfLegacyMr(), rather than by a format-specific state machine.
@@ -7931,12 +7933,19 @@ class NmrDpMrSplitter:
         is_valid = agreed_w_cns = False
         err = ''
         genuine_type = []
-        valid_types, possible_types = {}, {}
+        valid_types, possible_types, reachable_line = {}, {}, {}
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-xpl':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-xpl', agreed_w_cns=agreed_w_cns)
+
+            if _is_valid:
+                try:
+                    g = SYNTAX_ERR_LINE_PAT.search(_err).groups()
+                    reachable_line['nm-res-xml'] = int(g[0])
+                except AttributeError:
+                    pass
 
             is_valid |= _is_valid
             agreed_w_cns |= _is_valid
@@ -7953,6 +7962,13 @@ class NmrDpMrSplitter:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cns', agreed_w_cns=agreed_w_cns)
+
+            if _is_valid:
+                try:
+                    g = SYNTAX_ERR_LINE_PAT.search(_err).groups()
+                    reachable_line['nm-res-cns'] = int(g[0])
+                except AttributeError:
+                    pass
 
             is_valid |= _is_valid
             agreed_w_cns |= _is_valid
@@ -7976,12 +7992,23 @@ class NmrDpMrSplitter:
                 _valid_types = {}
                 _possible_types = {}
 
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
+            if _is_valid:
+                try:
+                    g = SYNTAX_ERR_LINE_PAT.search(_err).groups()
+                    reachable_line['nm-res-cha'] = int(g[0])
+
+                    if len(reachable_line) > 1 and max(reachable_line.values()) > reachable_line['nm-res-cha']:
+                        _is_valid = False
+                except AttributeError:
+                    pass
+
+            if _is_valid:
+                is_valid |= _is_valid
+                err += _err
+                if _genuine_type is not None:
+                    genuine_type.append(_genuine_type)
+                valid_types.update(_valid_types)
+                possible_types.update(_possible_types)
 
         if len(genuine_type) > 0:
             multiple_check = False
@@ -8193,12 +8220,23 @@ class NmrDpMrSplitter:
                 _valid_types = {}
                 _possible_types = {}
 
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None and 'nm-res-noa' not in genuine_type:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
+            if _is_valid:
+                try:
+                    g = SYNTAX_ERR_LINE_PAT.search(_err).groups()
+                    reachable_line['nm-res-cha'] = int(g[0])
+
+                    if len(reachable_line) > 1 and max(reachable_line.values()) > reachable_line['nm-res-cha']:
+                        _is_valid = False
+                except AttributeError:
+                    pass
+
+            if _is_valid:
+                is_valid |= _is_valid
+                err += _err
+                if _genuine_type is not None and 'nm-res-noa' not in genuine_type:
+                    genuine_type.append(_genuine_type)
+                valid_types.update(_valid_types)
+                possible_types.update(_possible_types)
 
         _file_type = get_peak_list_format(file_path, True)
 

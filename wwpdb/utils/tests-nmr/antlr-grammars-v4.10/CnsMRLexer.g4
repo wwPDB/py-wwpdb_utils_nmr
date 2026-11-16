@@ -85,6 +85,7 @@ Spectrum:		'SPECTRUM';				// = Integer
 //Weight:		'WEIGHT';				// = Real
 Volume:			'VOLUME';				// = Real
 Vol:			'VOL';					// = Real
+Hpm1:			'HPM1';					// = Real
 Ppm1:			'PPM1';					// = Real
 Ppm2:			'PPM2';					// = Real
 //Cv:			'CV';					// = Integer

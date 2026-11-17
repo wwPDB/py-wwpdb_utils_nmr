@@ -904,10 +904,14 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                     return "H1'A"
                 if atomId == "H1''" and "H1'" in refAtomIdList:
                     return "H1'"
+                if atomId == "H1''" and "H1'2" in refAtomIdList:  # 3DR
+                    return "H1'2"
                 if atomId == "H1''" and "H1'A" in _refAtomIdList:  # 4DG
                     return "H1'A"
                 if atomId == "H1''" and "H1'" in _refAtomIdList:
                     return "H1'"
+                if atomId == "H1'" and "H1'1" in refAtomIdList:  # 3DR
+                    return "H1'1"
             elif atomId.startswith("H2'"):
                 if atomId == "H2'" and "H2'1" in refAtomIdList:  # DCZ, THM
                     return "H2'1"

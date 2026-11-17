@@ -880,6 +880,7 @@ Integer_CF:		('+' | '-')? DECIMAL;
 Real_CF:		Real;
 Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;
+Double_quote_string_CF:	'"' SIMPLE_NAME '"';
 
 SPACE_CF:		[ \t\r\n]+ -> skip;
 COMMENT_CF:		'{' (COMMENT_CF | .)*? '}' -> channel(HIDDEN);

@@ -8638,14 +8638,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             val = self.evaluate[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         elif symbol_name in self.evaluateFor:
                             val = self.evaluateFor[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         else:
@@ -9257,6 +9259,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitNoe_assign_loop(self, ctx: XplorMRParser.Noe_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#noe_assign_loop.
         """
@@ -9308,6 +9322,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9371,6 +9397,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitSani_assign_loop(self, ctx: XplorMRParser.Sani_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#sani_assign_loop.
         """
@@ -9422,6 +9460,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9485,8 +9535,89 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitCoup_assign_loop(self, ctx: XplorMRParser.Coup_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#coup_assign_loop.
+        """
+
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+        self.in_loop = False
+
+    def enterCarbon_shift_assign_loop(self, ctx: XplorMRParser.Carbon_shift_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#carbon_shift_assign_loop.
+        """
+
+        self.in_loop = True
+
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    def exitCarbon_shift_assign_loop(self, ctx: XplorMRParser.Carbon_shift_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#carbon_shift_assign_loop.
         """
 
         if ctx.Symbol_name_CF():
@@ -9536,6 +9667,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9599,6 +9742,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitCsa_assign_loop(self, ctx: XplorMRParser.Csa_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#csa_assign_loop.
         """
@@ -9650,6 +9805,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9713,6 +9880,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitPcs_assign_loop(self, ctx: XplorMRParser.Pcs_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#pcs_assign_loop.
         """
@@ -9764,6 +9943,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9827,6 +10018,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitHbond_db_assign_loop(self, ctx: XplorMRParser.Hbond_db_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#hbond_db_assign_loop.
         """
@@ -9878,6 +10081,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break

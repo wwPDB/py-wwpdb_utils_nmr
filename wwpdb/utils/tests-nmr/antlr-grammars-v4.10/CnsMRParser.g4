@@ -551,36 +551,36 @@ parameter_statement:
 */
 noe_assign_loop:
 	For Symbol_name_CF
-	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | noe_assign | distance_restraint)*
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF* | Double_quote_string_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | noe_assign | noe_assign_loop | distance_restraint)*
 	End Loop Simple_name_LL;
 
 dihedral_assign_loop:
 	For Symbol_name_CF
-	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | dihedral_assign | dihedral_angle_restraint)*
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF* | Double_quote_string_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | dihedral_assign | dihedral_assign_loop | dihedral_angle_restraint)*
 	End Loop Simple_name_LL;
 
 sani_assign_loop:
 	For Symbol_name_CF
-	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | sani_assign | rdc_restraint)*
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF* | Double_quote_string_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | sani_assign | sani_assign_loop | rdc_restraint)*
 	End Loop Simple_name_LL;
 
 coup_assign_loop:
 	For Symbol_name_CF
-	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | coup_assign | coupling_restraint)*
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF* | Double_quote_string_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | coup_assign | coup_assign_loop | coupling_restraint)*
 	End Loop Simple_name_LL;
 
 carbon_shift_assign_loop:
 	For Symbol_name_CF
-	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | carbon_shift_assign | carbon_shift_restraint)*
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF* | Double_quote_string_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | carbon_shift_assign | carbon_shift_assign_loop | carbon_shift_restraint)*
 	End Loop Simple_name_LL;
 
 plane_group_loop:
 	For Symbol_name_CF
-	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF*) R_paren_CF Loop Simple_name_LL
-	(evaluate_statement | plane_group | plane_restraint)*
+	In_CF L_paren_CF (Integer_CF* | Real_CF* | Simple_name_CF* | Double_quote_string_CF*) R_paren_CF Loop Simple_name_LL
+	(evaluate_statement | plane_group | plane_group_loop | plane_restraint)*
 	End Loop Simple_name_LL;

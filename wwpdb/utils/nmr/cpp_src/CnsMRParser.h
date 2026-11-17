@@ -63,8 +63,8 @@ public:
     R_paren_VS = 239, Average_VS = 240, Element_VS = 241, Max_VS = 242, 
     Min_VS = 243, Norm_VS = 244, Rms_VS = 245, Sum_VS = 246, Atom_properties_VS = 247, 
     SPACE_VS = 248, L_paren_CF = 249, R_paren_CF = 250, In_CF = 251, Integer_CF = 252, 
-    Real_CF = 253, Symbol_name_CF = 254, Simple_name_CF = 255, SPACE_CF = 256, 
-    COMMENT_CF = 257, Simple_name_LL = 258, SPACE_LL = 259
+    Real_CF = 253, Symbol_name_CF = 254, Simple_name_CF = 255, Double_quote_string_CF = 256, 
+    SPACE_CF = 257, COMMENT_CF = 258, Simple_name_LL = 259, SPACE_LL = 260
   };
 
   enum {
@@ -1814,6 +1814,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Noe_assignContext *> noe_assign();
     Noe_assignContext* noe_assign(size_t i);
+    std::vector<Noe_assign_loopContext *> noe_assign_loop();
+    Noe_assign_loopContext* noe_assign_loop(size_t i);
     std::vector<Distance_restraintContext *> distance_restraint();
     Distance_restraintContext* distance_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -1822,6 +1824,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -1848,6 +1852,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Dihedral_assignContext *> dihedral_assign();
     Dihedral_assignContext* dihedral_assign(size_t i);
+    std::vector<Dihedral_assign_loopContext *> dihedral_assign_loop();
+    Dihedral_assign_loopContext* dihedral_assign_loop(size_t i);
     std::vector<Dihedral_angle_restraintContext *> dihedral_angle_restraint();
     Dihedral_angle_restraintContext* dihedral_angle_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -1856,6 +1862,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -1882,6 +1890,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Sani_assignContext *> sani_assign();
     Sani_assignContext* sani_assign(size_t i);
+    std::vector<Sani_assign_loopContext *> sani_assign_loop();
+    Sani_assign_loopContext* sani_assign_loop(size_t i);
     std::vector<Rdc_restraintContext *> rdc_restraint();
     Rdc_restraintContext* rdc_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -1890,6 +1900,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -1916,6 +1928,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Coup_assignContext *> coup_assign();
     Coup_assignContext* coup_assign(size_t i);
+    std::vector<Coup_assign_loopContext *> coup_assign_loop();
+    Coup_assign_loopContext* coup_assign_loop(size_t i);
     std::vector<Coupling_restraintContext *> coupling_restraint();
     Coupling_restraintContext* coupling_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -1924,6 +1938,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -1950,6 +1966,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Carbon_shift_assignContext *> carbon_shift_assign();
     Carbon_shift_assignContext* carbon_shift_assign(size_t i);
+    std::vector<Carbon_shift_assign_loopContext *> carbon_shift_assign_loop();
+    Carbon_shift_assign_loopContext* carbon_shift_assign_loop(size_t i);
     std::vector<Carbon_shift_restraintContext *> carbon_shift_restraint();
     Carbon_shift_restraintContext* carbon_shift_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -1958,6 +1976,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -1984,6 +2004,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Plane_groupContext *> plane_group();
     Plane_groupContext* plane_group(size_t i);
+    std::vector<Plane_group_loopContext *> plane_group_loop();
+    Plane_group_loopContext* plane_group_loop(size_t i);
     std::vector<Plane_restraintContext *> plane_restraint();
     Plane_restraintContext* plane_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -1992,6 +2014,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

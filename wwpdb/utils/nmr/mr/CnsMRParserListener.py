@@ -5184,14 +5184,16 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             val = self.evaluate[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         elif symbol_name in self.evaluateFor:
                             val = self.evaluateFor[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         else:
@@ -5792,6 +5794,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitNoe_assign_loop(self, ctx: CnsMRParser.Noe_assign_loopContext):
         """ Exit a parse tree produced by CnsMRParser#noe_assign_loop.
         """
@@ -5843,6 +5857,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -5906,6 +5932,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitSani_assign_loop(self, ctx: CnsMRParser.Sani_assign_loopContext):
         """ Exit a parse tree produced by CnsMRParser#sani_assign_loop.
         """
@@ -5957,6 +5995,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -6020,6 +6070,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitCarbon_shift_assign_loop(self, ctx: CnsMRParser.Carbon_shift_assign_loopContext):
         """ Exit a parse tree produced by CnsMRParser#carbon_shift_assign_loop.
         """
@@ -6071,6 +6133,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break

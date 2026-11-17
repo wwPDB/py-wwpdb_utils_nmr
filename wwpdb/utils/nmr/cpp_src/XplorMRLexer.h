@@ -73,8 +73,8 @@ public:
     Max_VS = 290, Min_VS = 291, Norm_VS = 292, Rms_VS = 293, Sum_VS = 294, 
     Atom_properties_VS = 295, SPACE_VS = 296, L_paren_CF = 297, R_paren_CF = 298, 
     In_CF = 299, Integer_CF = 300, Real_CF = 301, Symbol_name_CF = 302, 
-    Simple_name_CF = 303, SPACE_CF = 304, COMMENT_CF = 305, Simple_name_LL = 306, 
-    SPACE_LL = 307
+    Simple_name_CF = 303, Double_quote_string_CF = 304, SPACE_CF = 305, 
+    COMMENT_CF = 306, Simple_name_LL = 307, SPACE_LL = 308
   };
 
   enum {

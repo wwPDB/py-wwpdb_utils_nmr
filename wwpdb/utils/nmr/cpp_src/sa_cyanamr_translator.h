@@ -73,6 +73,10 @@ class SA_CyanaMRTranslator : public CyanaMRParserBaseVisitor {
     PyObject *Gen_res_numContext_cls = NULL;
     PyObject *Gen_simple_nameContext_cls = NULL;
     PyObject *Gen_atom_nameContext_cls = NULL;
+    PyObject *Number_qcContext_cls = NULL;
+    PyObject *Gen_res_num_qcContext_cls = NULL;
+    PyObject *Gen_simple_name_qcContext_cls = NULL;
+    PyObject *Gen_atom_name_qcContext_cls = NULL;
 
     public:
     SA_CyanaMRTranslator(speedy_antlr::Translator *translator);
@@ -198,5 +202,13 @@ class SA_CyanaMRTranslator : public CyanaMRParserBaseVisitor {
     antlrcpp::Any visitGen_simple_name(CyanaMRParser::Gen_simple_nameContext *ctx);
 
     antlrcpp::Any visitGen_atom_name(CyanaMRParser::Gen_atom_nameContext *ctx);
+
+    antlrcpp::Any visitNumber_qc(CyanaMRParser::Number_qcContext *ctx);
+
+    antlrcpp::Any visitGen_res_num_qc(CyanaMRParser::Gen_res_num_qcContext *ctx);
+
+    antlrcpp::Any visitGen_simple_name_qc(CyanaMRParser::Gen_simple_name_qcContext *ctx);
+
+    antlrcpp::Any visitGen_atom_name_qc(CyanaMRParser::Gen_atom_name_qcContext *ctx);
 
 };

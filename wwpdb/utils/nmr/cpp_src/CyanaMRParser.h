@@ -28,7 +28,9 @@ public:
     Integer_PR = 65, Simple_name_PR = 66, SPACE_PR = 67, RETURN_PR = 68, 
     LINE_COMMENT_PR = 69, Simple_name_VA = 70, SPACE_VA = 71, RETURN_VA = 72, 
     LINE_COMMENT_VA = 73, Ambig_code_MP = 74, Integer_MP = 75, Simple_name_MP = 76, 
-    Equ_op_MP = 77, SPACE_MP = 78, RETURN_MP = 79, LINE_COMMENT_MP = 80
+    Equ_op_MP = 77, SPACE_MP = 78, RETURN_MP = 79, LINE_COMMENT_MP = 80, 
+    Integer_QC = 81, Float_QC = 82, Float_DecimalComma_QC = 83, Simple_name_QC = 84, 
+    Capital_integer_QC = 85, Integer_capital_QC = 86, SPACE_QC = 87, RETURN_QC = 88
   };
 
   enum {
@@ -55,7 +57,9 @@ public:
     RuleStereoassign_macro = 48, RuleDeclare_variable = 49, RuleSet_variable = 50, 
     RuleUnset_variable = 51, RulePrint_macro = 52, RuleUnambig_atom_name_mapping = 53, 
     RuleMapping_list = 54, RuleAmbig_atom_name_mapping = 55, RuleAmbig_list = 56, 
-    RuleNumber = 57, RuleGen_res_num = 58, RuleGen_simple_name = 59, RuleGen_atom_name = 60
+    RuleNumber = 57, RuleGen_res_num = 58, RuleGen_simple_name = 59, RuleGen_atom_name = 60, 
+    RuleNumber_qc = 61, RuleGen_res_num_qc = 62, RuleGen_simple_name_qc = 63, 
+    RuleGen_atom_name_qc = 64
   };
 
   explicit CyanaMRParser(antlr4::TokenStream *input);
@@ -135,7 +139,11 @@ public:
   class NumberContext;
   class Gen_res_numContext;
   class Gen_simple_nameContext;
-  class Gen_atom_nameContext; 
+  class Gen_atom_nameContext;
+  class Number_qcContext;
+  class Gen_res_num_qcContext;
+  class Gen_simple_name_qcContext;
+  class Gen_atom_name_qcContext; 
 
   class  Cyana_mrContext : public antlr4::ParserRuleContext {
   public:
@@ -643,17 +651,18 @@ public:
   public:
     Diana_distance_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<Gen_simple_nameContext *> gen_simple_name();
-    Gen_simple_nameContext* gen_simple_name(size_t i);
-    std::vector<Gen_res_numContext *> gen_res_num();
-    Gen_res_numContext* gen_res_num(size_t i);
-    std::vector<NumberContext *> number();
-    NumberContext* number(size_t i);
+    std::vector<Gen_simple_name_qcContext *> gen_simple_name_qc();
+    Gen_simple_name_qcContext* gen_simple_name_qc(size_t i);
+    std::vector<Gen_res_num_qcContext *> gen_res_num_qc();
+    Gen_res_num_qcContext* gen_res_num_qc(size_t i);
+    std::vector<Number_qcContext *> number_qc();
+    Number_qcContext* number_qc(size_t i);
+    antlr4::tree::TerminalNode *RETURN_QC();
     antlr4::tree::TerminalNode *NoeUpp();
     antlr4::tree::TerminalNode *NoeLow();
     antlr4::tree::TerminalNode *NoeUpLo();
-    antlr4::tree::TerminalNode *Simple_name();
-    antlr4::tree::TerminalNode *Integer();
+    antlr4::tree::TerminalNode *Simple_name_QC();
+    antlr4::tree::TerminalNode *Integer_QC();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -680,17 +689,18 @@ public:
   public:
     Diana_ssbond_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<Gen_simple_nameContext *> gen_simple_name();
-    Gen_simple_nameContext* gen_simple_name(size_t i);
-    std::vector<Gen_res_numContext *> gen_res_num();
-    Gen_res_numContext* gen_res_num(size_t i);
-    std::vector<NumberContext *> number();
-    NumberContext* number(size_t i);
+    std::vector<Gen_simple_name_qcContext *> gen_simple_name_qc();
+    Gen_simple_name_qcContext* gen_simple_name_qc(size_t i);
+    std::vector<Gen_res_num_qcContext *> gen_res_num_qc();
+    Gen_res_num_qcContext* gen_res_num_qc(size_t i);
+    std::vector<Number_qcContext *> number_qc();
+    Number_qcContext* number_qc(size_t i);
+    antlr4::tree::TerminalNode *RETURN_QC();
     antlr4::tree::TerminalNode *SSUpp();
     antlr4::tree::TerminalNode *SSLow();
     antlr4::tree::TerminalNode *SSUpLo();
-    antlr4::tree::TerminalNode *Simple_name();
-    antlr4::tree::TerminalNode *Integer();
+    antlr4::tree::TerminalNode *Simple_name_QC();
+    antlr4::tree::TerminalNode *Integer_QC();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -717,17 +727,18 @@ public:
   public:
     Diana_hbond_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    std::vector<Gen_simple_nameContext *> gen_simple_name();
-    Gen_simple_nameContext* gen_simple_name(size_t i);
-    std::vector<Gen_res_numContext *> gen_res_num();
-    Gen_res_numContext* gen_res_num(size_t i);
-    std::vector<NumberContext *> number();
-    NumberContext* number(size_t i);
+    std::vector<Gen_simple_name_qcContext *> gen_simple_name_qc();
+    Gen_simple_name_qcContext* gen_simple_name_qc(size_t i);
+    std::vector<Gen_res_num_qcContext *> gen_res_num_qc();
+    Gen_res_num_qcContext* gen_res_num_qc(size_t i);
+    std::vector<Number_qcContext *> number_qc();
+    Number_qcContext* number_qc(size_t i);
+    antlr4::tree::TerminalNode *RETURN_QC();
     antlr4::tree::TerminalNode *HBUpp();
     antlr4::tree::TerminalNode *HBLow();
     antlr4::tree::TerminalNode *HBUpLo();
-    antlr4::tree::TerminalNode *Simple_name();
-    antlr4::tree::TerminalNode *Integer();
+    antlr4::tree::TerminalNode *Simple_name_QC();
+    antlr4::tree::TerminalNode *Integer_QC();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -755,13 +766,14 @@ public:
     Diana_torsion_angle_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Angle();
-    std::vector<Gen_simple_nameContext *> gen_simple_name();
-    Gen_simple_nameContext* gen_simple_name(size_t i);
-    Gen_res_numContext *gen_res_num();
-    std::vector<NumberContext *> number();
-    NumberContext* number(size_t i);
-    antlr4::tree::TerminalNode *Simple_name();
-    antlr4::tree::TerminalNode *Integer();
+    std::vector<Gen_simple_name_qcContext *> gen_simple_name_qc();
+    Gen_simple_name_qcContext* gen_simple_name_qc(size_t i);
+    Gen_res_num_qcContext *gen_res_num_qc();
+    std::vector<Number_qcContext *> number_qc();
+    Number_qcContext* number_qc(size_t i);
+    antlr4::tree::TerminalNode *RETURN_QC();
+    antlr4::tree::TerminalNode *Simple_name_QC();
+    antlr4::tree::TerminalNode *Integer_QC();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -789,13 +801,14 @@ public:
     Diana_coupling_constant_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Jcoupl();
-    std::vector<Gen_simple_nameContext *> gen_simple_name();
-    Gen_simple_nameContext* gen_simple_name(size_t i);
-    Gen_res_numContext *gen_res_num();
-    std::vector<NumberContext *> number();
-    NumberContext* number(size_t i);
-    antlr4::tree::TerminalNode *Simple_name();
-    antlr4::tree::TerminalNode *Integer();
+    std::vector<Gen_simple_name_qcContext *> gen_simple_name_qc();
+    Gen_simple_name_qcContext* gen_simple_name_qc(size_t i);
+    Gen_res_num_qcContext *gen_res_num_qc();
+    std::vector<Number_qcContext *> number_qc();
+    Number_qcContext* number_qc(size_t i);
+    antlr4::tree::TerminalNode *RETURN_QC();
+    antlr4::tree::TerminalNode *Simple_name_QC();
+    antlr4::tree::TerminalNode *Integer_QC();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -809,10 +822,11 @@ public:
     Diana_stereoassign_macroContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Stereo();
-    std::vector<Gen_simple_nameContext *> gen_simple_name();
-    Gen_simple_nameContext* gen_simple_name(size_t i);
-    Gen_res_numContext *gen_res_num();
-    antlr4::tree::TerminalNode *Integer();
+    std::vector<Gen_simple_name_qcContext *> gen_simple_name_qc();
+    Gen_simple_name_qcContext* gen_simple_name_qc(size_t i);
+    Gen_res_num_qcContext *gen_res_num_qc();
+    antlr4::tree::TerminalNode *RETURN_QC();
+    antlr4::tree::TerminalNode *Integer_QC();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -1257,6 +1271,66 @@ public:
   };
 
   Gen_atom_nameContext* gen_atom_name();
+
+  class  Number_qcContext : public antlr4::ParserRuleContext {
+  public:
+    Number_qcContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Float_QC();
+    antlr4::tree::TerminalNode *Float_DecimalComma_QC();
+    antlr4::tree::TerminalNode *Integer_QC();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Number_qcContext* number_qc();
+
+  class  Gen_res_num_qcContext : public antlr4::ParserRuleContext {
+  public:
+    Gen_res_num_qcContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Integer_QC();
+    antlr4::tree::TerminalNode *Capital_integer_QC();
+    antlr4::tree::TerminalNode *Integer_capital_QC();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Gen_res_num_qcContext* gen_res_num_qc();
+
+  class  Gen_simple_name_qcContext : public antlr4::ParserRuleContext {
+  public:
+    Gen_simple_name_qcContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Simple_name_QC();
+    antlr4::tree::TerminalNode *Capital_integer_QC();
+    antlr4::tree::TerminalNode *Integer_capital_QC();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Gen_simple_name_qcContext* gen_simple_name_qc();
+
+  class  Gen_atom_name_qcContext : public antlr4::ParserRuleContext {
+  public:
+    Gen_atom_name_qcContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Simple_name_QC();
+    antlr4::tree::TerminalNode *Capital_integer_QC();
+    antlr4::tree::TerminalNode *Integer_capital_QC();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Gen_atom_name_qcContext* gen_atom_name_qc();
 
 
   // By default the static state used to implement the parser is lazily initialized during the first

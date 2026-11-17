@@ -28,12 +28,14 @@ public:
     Integer_PR = 65, Simple_name_PR = 66, SPACE_PR = 67, RETURN_PR = 68, 
     LINE_COMMENT_PR = 69, Simple_name_VA = 70, SPACE_VA = 71, RETURN_VA = 72, 
     LINE_COMMENT_VA = 73, Ambig_code_MP = 74, Integer_MP = 75, Simple_name_MP = 76, 
-    Equ_op_MP = 77, SPACE_MP = 78, RETURN_MP = 79, LINE_COMMENT_MP = 80
+    Equ_op_MP = 77, SPACE_MP = 78, RETURN_MP = 79, LINE_COMMENT_MP = 80, 
+    Integer_QC = 81, Float_QC = 82, Float_DecimalComma_QC = 83, Simple_name_QC = 84, 
+    Capital_integer_QC = 85, Integer_capital_QC = 86, SPACE_QC = 87, RETURN_QC = 88
   };
 
   enum {
     COMMENT_MODE = 1, HBOND_MODE = 2, PRINT_MODE = 3, VARIABLE_MODE = 4, 
-    MAP_MODE = 5
+    MAP_MODE = 5, QCONVR_MODE = 6
   };
 
   explicit CyanaMRLexer(antlr4::CharStream *input);

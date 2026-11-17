@@ -378,6 +378,9 @@ class BaseLinearMRParserListener():
     # collection of number selection
     numberSelection = []
 
+    # collection of number selection in QCONVR mode (CYANA specific)
+    numberSelection_qc = []
+
     # collection of auxiliary atom selection (CYANA/DYNAMO specific)
     auxAtomSelectionSet = ''
 
@@ -393,11 +396,20 @@ class BaseLinearMRParserListener():
     # collection of general residue number extended with chain code (CYANA/ROSETTA specific)
     genResNumSelection = []
 
+    # collection of general residue number extended with chain code in QCONVR mode (CYANA specific)
+    genResNumSelection_qc = []
+
     # collection of general simple name (CYANA/ROSETTA specific)
     genSimpleNameSelection = []
 
+    # collection of general simple name in QCONVR mode (CYANA specific)
+    genSimpleNameSelection_qc = []
+
     # collection of general atom name extended with ambig code (CYANA specific)
     genAtomNameSelection = []
+
+    # collection of general atom name extended with ambig code in QCONVR mode (CYANA specific)
+    genAtomNameSelection_qc = []
 
     # current Insight II restraint declaration (BIOSYM specific)
     cur_ins_decl = None

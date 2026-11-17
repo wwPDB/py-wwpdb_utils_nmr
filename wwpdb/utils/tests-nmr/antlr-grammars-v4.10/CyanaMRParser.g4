@@ -175,10 +175,11 @@ diana_distance_restraints:
 
 diana_distance_restraint:
 	(NoeUpp | NoeLow | NoeUpLo)
-	gen_simple_name gen_res_num
-	gen_simple_name gen_simple_name gen_res_num gen_simple_name number number?
-	(gen_simple_name gen_simple_name gen_res_num gen_simple_name number)?
-	Simple_name? Integer?;
+	gen_simple_name_qc gen_res_num_qc
+	gen_simple_name_qc gen_simple_name_qc gen_res_num_qc gen_simple_name_qc number_qc number_qc?
+	(gen_simple_name_qc gen_simple_name_qc gen_res_num_qc gen_simple_name_qc number_qc)?
+	Simple_name_QC? Integer_QC?
+	RETURN_QC;
 
 /* DIANA disulfide bond restraints (undocumented) */
 diana_ssbond_restraints:
@@ -186,10 +187,11 @@ diana_ssbond_restraints:
 
 diana_ssbond_restraint:
 	(SSUpp | SSLow | SSUpLo)
-	gen_simple_name gen_res_num
-	gen_simple_name gen_simple_name gen_res_num gen_simple_name number number?
-	(gen_simple_name gen_simple_name gen_res_num gen_simple_name number)?
-	Simple_name? Integer?;
+	gen_simple_name_qc gen_res_num_qc
+	gen_simple_name_qc gen_simple_name_qc gen_res_num_qc gen_simple_name_qc number_qc number_qc?
+	(gen_simple_name_qc gen_simple_name_qc gen_res_num_qc gen_simple_name_qc number_qc)?
+	Simple_name_QC? Integer_QC?
+	RETURN_QC;
 
 /* DIANA hydrogen bond restraints (undocumented) */
 diana_hbond_restraints:
@@ -197,10 +199,11 @@ diana_hbond_restraints:
 
 diana_hbond_restraint:
 	(HBUpp | HBLow | HBUpLo)
-	gen_simple_name gen_res_num
-	gen_simple_name gen_simple_name gen_res_num gen_simple_name number number?
-	(gen_simple_name gen_simple_name gen_res_num gen_simple_name number)?
-	Simple_name? Integer?;
+	gen_simple_name_qc gen_res_num_qc
+	gen_simple_name_qc gen_simple_name_qc gen_res_num_qc gen_simple_name_qc number_qc number_qc?
+	(gen_simple_name_qc gen_simple_name_qc gen_res_num_qc gen_simple_name_qc number_qc)?
+	Simple_name_QC? Integer_QC?
+	RETURN_QC;
 
 /* DIANA torsion angle restraints (undocumented) */
 diana_torsion_angle_restraints:
@@ -208,10 +211,11 @@ diana_torsion_angle_restraints:
 
 diana_torsion_angle_restraint:
 	Angle
-	gen_simple_name gen_res_num
-	gen_simple_name number number
-	(gen_simple_name number number)?
-	Simple_name? Integer?;
+	gen_simple_name_qc gen_res_num_qc
+	gen_simple_name_qc number_qc number_qc
+	(gen_simple_name_qc number_qc number_qc)?
+	Simple_name_QC? Integer_QC?
+	RETURN_QC;
 
 /* DIANA coupling constant restraints (undocumented) */
 diana_coupling_constant_restraints:
@@ -219,16 +223,18 @@ diana_coupling_constant_restraints:
 
 diana_coupling_constant_restraint:
 	Jcoupl
-	gen_simple_name gen_res_num
-	gen_simple_name gen_simple_name number number?
-	(gen_simple_name gen_simple_name number number?)?
-	(gen_simple_name gen_simple_name number number?)?
-	Simple_name? Integer?;
+	gen_simple_name_qc gen_res_num_qc
+	gen_simple_name_qc gen_simple_name_qc number_qc number_qc?
+	(gen_simple_name_qc gen_simple_name_qc number_qc number_qc?)?
+	(gen_simple_name_qc gen_simple_name_qc number_qc number_qc?)?
+	Simple_name_QC? Integer_QC?
+	RETURN_QC;
 
 /* DIANA stereoassign macro (undocumented) */
 diana_stereoassign_macro:
-	Stereo gen_simple_name gen_res_num gen_simple_name*
-	Integer?;
+	Stereo gen_simple_name_qc gen_res_num_qc gen_simple_name_qc*
+	Integer_QC?
+	RETURN_QC;
 
 /* CYANA (undocumented) - arbitrary order among chain_id, comp_id, and atom_id
 */
@@ -341,3 +347,19 @@ gen_simple_name:
 /* atom id extenstion with ambig code */
 gen_atom_name:
 	Simple_name | Capital_integer | Integer_capital | Ambig_code;
+
+/* number expression in restrains */
+number_qc: Float_QC | Float_DecimalComma_QC | Integer_QC;
+
+/* residue number allowing chain identification */
+gen_res_num_qc:
+	Integer_QC | Capital_integer_QC | Integer_capital_QC;
+
+/* residue name or atom name */
+gen_simple_name_qc:
+	Simple_name_QC | Capital_integer_QC | Integer_capital_QC;
+
+/* atom id extenstion with ambig code */
+gen_atom_name_qc:
+	Simple_name_QC | Capital_integer_QC | Integer_capital_QC;
+

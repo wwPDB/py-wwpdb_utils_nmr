@@ -38,18 +38,18 @@ SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 
 /* DIANA restraint headers */
-NoeUpp:			'NOEUPP';
-NoeLow:			'NOELOW';
-NoeUpLo:		'NOEUPLO';
-HBUpp:			'HBUPP';
-HBLow:			'HBLOW';
-HBUpLo:			'HBUPLO';
-SSUpp:			'SSUPP';
-SSLow:			'SSLOW';
-SSUpLo:			'SSUPLO';
-Jcoupl:			'JCOUPL';
-Angle:			'ANGLE';
-Stereo:			'STEREO';
+NoeUpp:			'NOEUPP' -> mode(QCONVR_MODE);
+NoeLow:			'NOELOW' -> mode(QCONVR_MODE);
+NoeUpLo:		'NOEUPLO' -> mode(QCONVR_MODE);
+HBUpp:			'HBUPP' -> mode(QCONVR_MODE);
+HBLow:			'HBLOW' -> mode(QCONVR_MODE);
+HBUpLo:			'HBUPLO' -> mode(QCONVR_MODE);
+SSUpp:			'SSUPP' -> mode(QCONVR_MODE);
+SSLow:			'SSLOW' -> mode(QCONVR_MODE);
+SSUpLo:			'SSUPLO' -> mode(QCONVR_MODE);
+Jcoupl:			'JCOUPL' -> mode(QCONVR_MODE);
+Angle:			'ANGLE' -> mode(QCONVR_MODE);
+Stereo:			'STEREO' -> mode(QCONVR_MODE);
 
 /* extensions for torsion angle restraints */
 Type:			'TYPE';		// = Integer
@@ -181,3 +181,16 @@ RETURN_MP:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 //SECTION_COMMENT_MP:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT_MP:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
+
+mode QCONVR_MODE;
+
+Integer_QC:		Integer;
+Float_QC:		Float;
+Float_DecimalComma_QC:	Float_DecimalComma;
+Simple_name_QC:		SIMPLE_NAME;
+
+Capital_integer_QC:	Capital_integer;
+Integer_capital_QC:	Integer_capital;
+
+SPACE_QC:		[ \t]+ -> skip;
+RETURN_QC:		[\r\n]+ -> mode(DEFAULT_MODE);

@@ -769,11 +769,14 @@ public:
   public:
     Sani_assignContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Assign();
+    std::vector<antlr4::tree::TerminalNode *> Assign();
+    antlr4::tree::TerminalNode* Assign(size_t i);
     std::vector<SelectionContext *> selection();
     SelectionContext* selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Or_op();
+    antlr4::tree::TerminalNode* Or_op(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

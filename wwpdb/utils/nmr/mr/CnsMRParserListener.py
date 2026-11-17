@@ -1598,7 +1598,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 sf = self.getSf(potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc),
                                 rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
-                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1:
+                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1 or len(self.atomSelectionSet) > 6:
                     combinationId = 0
 
             for atom1, atom2 in (itertools.product(self.atomSelectionSet[4],
@@ -1637,6 +1637,45 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if len(self.atomSelectionSet) > 6:
+                for i in range(6, len(self.atomSelectionSet), 2):
+                    for atom1, atom2 in (itertools.product(self.atomSelectionSet[i],
+                                                           self.atomSelectionSet[i + 1])
+                                         if not self.in_loop else
+                                         zip(self.atomSelectionSet[i],
+                                             self.atomSelectionSet[i + 1])):
+                        atoms = [atom1, atom2]
+                        if isDefinedSegmentRestraint(atoms):
+                            continue
+                        if isIdenticalRestraint(atoms, self.nefT):
+                            continue
+                        if self.symmetric == 'no':
+                            if isLongRangeRestraint(atoms, self.polySeq if self.gapInAuthSeq else None):
+                                continue
+                        else:
+                            if isAsymmetricRangeRestraint(atoms, chain_id_set, self.symmetric):
+                                continue
+                            if atom1['chain_id'] != atom2['chain_id']:
+                                self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                              "Found inter-chain RDC vector; "
+                                              f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "
+                                              f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "
+                                              "However, it might be an artificial RDC constraint on solid-state NMR "
+                                              "applied to symmetric samples such as fibrils.")
+                        if isinstance(combinationId, int):
+                            combinationId += 1
+                        if self.debug:
+                            print(f"subtype={self.cur_subtype} (SANI) id={self.rdcRestraints} "
+                                  f"atom1={atom1} atom2={atom2} {dstFunc}")
+                        if self.createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                         combinationId, None, None,
+                                         sf['list_id'], self.entryId, dstFunc,
+                                         self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                         atom1, atom2)
+                            sf['loop'].add_data(row)
 
             if self.createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.cur_subtype, sf['loop'].data[-1])

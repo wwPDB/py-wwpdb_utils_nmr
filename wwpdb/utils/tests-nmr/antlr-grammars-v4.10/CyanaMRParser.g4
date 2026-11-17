@@ -298,7 +298,7 @@ link_statement:
 /* CYANA (macro) - stereoassign
 */
 stereoassign_macro:
-	Atom_stereo Double_quote_string RETURN_PR;
+	Atom_stereo (Double_quote_string | Simple_name_PR Simple_name_PR? Integer_PR) RETURN_PR;
 
 declare_variable:
 	Var Simple_name_VA* RETURN_VA;

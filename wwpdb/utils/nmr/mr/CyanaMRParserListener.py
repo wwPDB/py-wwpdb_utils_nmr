@@ -8833,8 +8833,16 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.fchiralRestraints += 1
 
-            _strip = str(ctx.Double_quote_string()).strip('"').strip()
-            _split = re.sub(' +', ' ', _strip).split(' ')
+            if ctx.Double_quote_string():
+                _strip = str(ctx.Double_quote_string()).strip('"').strip()
+                _split = re.sub(' +', ' ', _strip).split(' ')
+
+            else:  # 1ksm
+                _split = []
+                _split.append(str(ctx.Simple_name_PR(0)))
+                if ctx.Simple_name_PR(1):
+                    _split.append(str(ctx.Simple_name_PR(1)))
+                _split.append(str(ctx.Integer_PR()))
 
             len_split = len(_split)
 

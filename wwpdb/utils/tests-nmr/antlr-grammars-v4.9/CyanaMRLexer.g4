@@ -175,6 +175,8 @@ LINE_COMMENT_HB:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+
 mode PRINT_MODE;
 
 Double_quote_string:	'"' ~["\r\n]* '"';
+Integer_PR:		Integer;
+Simple_name_PR:		SIMPLE_NAME;
 
 SPACE_PR:		[ \t]+ -> skip;
 RETURN_PR:		[\r\n]+ -> mode(DEFAULT_MODE);

@@ -24,11 +24,11 @@ public:
     Residue2 = 47, Equ_op_HB = 48, Atom1_equ = 49, Atom2_equ = 50, Residue1_equ = 51, 
     Residue2_equ = 52, Concat_atom_1 = 53, Concat_atom_2 = 54, Concat_res_1 = 55, 
     Concat_res_2 = 56, Integer_HB = 57, Simple_name_HB = 58, SPACE_HB = 59, 
-    RETURN_HB = 60, LINE_COMMENT_HB = 61, Double_quote_string = 62, SPACE_PR = 63, 
-    RETURN_PR = 64, LINE_COMMENT_PR = 65, Simple_name_VA = 66, SPACE_VA = 67, 
-    RETURN_VA = 68, LINE_COMMENT_VA = 69, Ambig_code_MP = 70, Integer_MP = 71, 
-    Simple_name_MP = 72, Equ_op_MP = 73, SPACE_MP = 74, RETURN_MP = 75, 
-    LINE_COMMENT_MP = 76
+    RETURN_HB = 60, LINE_COMMENT_HB = 61, Double_quote_string = 62, Integer_PR = 63, 
+    Simple_name_PR = 64, SPACE_PR = 65, RETURN_PR = 66, LINE_COMMENT_PR = 67, 
+    Simple_name_VA = 68, SPACE_VA = 69, RETURN_VA = 70, LINE_COMMENT_VA = 71, 
+    Ambig_code_MP = 72, Integer_MP = 73, Simple_name_MP = 74, Equ_op_MP = 75, 
+    SPACE_MP = 76, RETURN_MP = 77, LINE_COMMENT_MP = 78
   };
 
   enum {
@@ -1049,8 +1049,11 @@ public:
     Stereoassign_macroContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Atom_stereo();
-    antlr4::tree::TerminalNode *Double_quote_string();
     antlr4::tree::TerminalNode *RETURN_PR();
+    antlr4::tree::TerminalNode *Double_quote_string();
+    std::vector<antlr4::tree::TerminalNode *> Simple_name_PR();
+    antlr4::tree::TerminalNode* Simple_name_PR(size_t i);
+    antlr4::tree::TerminalNode *Integer_PR();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

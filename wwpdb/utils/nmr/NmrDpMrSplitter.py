@@ -3472,6 +3472,9 @@ class NmrDpMrSplitter:
                     _ar['file_type'] = _file_type
                     split_file_list.append(_ar)
 
+                    if _file_type == 'nm-res-cya':
+                        self.__scanCyanaMrWith0Ambig(sel_file)
+
                     designated = True
 
                     break
@@ -4362,6 +4365,9 @@ class NmrDpMrSplitter:
                                 _ar['file_type'] = _file_type
                                 split_file_list.append(_ar)
 
+                                if _file_type == 'nm-res-cya':
+                                    self.__scanCyanaMrWith0Ambig(dst_file)
+
                                 mr_part_paths.append({_file_type: dst_file})
 
                                 designated = True
@@ -4974,6 +4980,9 @@ class NmrDpMrSplitter:
 
                             split_file_list.append(_ar)
 
+                            if _file_type == 'nm-res-cya':
+                                self.__scanCyanaMrWith0Ambig(dst_file)
+
                             mr_part_paths.append({_file_type: dst_file,
                                                   'original_file_name':
                                                   None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
@@ -5365,6 +5374,9 @@ class NmrDpMrSplitter:
                                     _ar['original_file_name'] = file_name
 
                                 split_file_list.append(_ar)
+
+                                if _file_type == 'nm-res-cya':
+                                    self.__scanCyanaMrWith0Ambig(_dst_file)
 
                                 mr_part_paths.append({_file_type: _dst_file,
                                                       'original_file_name':

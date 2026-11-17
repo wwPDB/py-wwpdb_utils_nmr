@@ -9174,7 +9174,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 j += 1
 
             if self.cur_resname_for_mapping in EMPTY_VALUE:
-                return
+                self.cur_resname_for_mapping = 'AMB'
 
             if self.cur_resname_for_mapping not in self.ambigAtomNameMapping:
                 self.ambigAtomNameMapping[self.cur_resname_for_mapping] = {}

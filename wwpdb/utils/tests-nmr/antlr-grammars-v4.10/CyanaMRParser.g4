@@ -185,9 +185,9 @@ diana_ssbond_restraints:
 	diana_ssbond_restraint+;
 
 diana_ssbond_restraint:
-	(SSUpp | SSLow)
+	(SSUpp | SSLow | SSUpLo)
 	gen_simple_name gen_res_num
-	gen_simple_name gen_simple_name gen_res_num gen_simple_name number
+	gen_simple_name gen_simple_name gen_res_num gen_simple_name number number?
 	(gen_simple_name gen_simple_name gen_res_num gen_simple_name number)?
 	Simple_name? Integer?;
 
@@ -196,9 +196,9 @@ diana_hbond_restraints:
 	diana_hbond_restraint+;
 
 diana_hbond_restraint:
-	(HBUpp | HBLow)
+	(HBUpp | HBLow | HBUpLo)
 	gen_simple_name gen_res_num
-	gen_simple_name gen_simple_name gen_res_num gen_simple_name number
+	gen_simple_name gen_simple_name gen_res_num gen_simple_name number number?
 	(gen_simple_name gen_simple_name gen_res_num gen_simple_name number)?
 	Simple_name? Integer?;
 

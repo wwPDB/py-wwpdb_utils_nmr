@@ -14,21 +14,21 @@ public:
   enum {
     Ambig_code = 1, Integer = 2, Float = 3, Float_DecimalComma = 4, Orientation_header = 5, 
     Tensor_header = 6, SMCLN_COMMENT = 7, COMMENT = 8, NoeUpp = 9, NoeLow = 10, 
-    NoeUpLo = 11, HBUpp = 12, HBLow = 13, SSUpp = 14, SSLow = 15, Jcoupl = 16, 
-    Angle = 17, Stereo = 18, Type = 19, Equ_op = 20, Or = 21, Ssbond = 22, 
-    Ssbond_resids = 23, Hbond = 24, Link = 25, Atom_stereo = 26, Var = 27, 
-    Unset = 28, SetVar = 29, Print = 30, Residue = 31, Mapping = 32, Ambig = 33, 
-    Capital_integer = 34, Integer_capital = 35, Simple_name = 36, SPACE = 37, 
-    ENCLOSE_COMMENT = 38, SECTION_COMMENT = 39, LINE_COMMENT = 40, Any_name = 41, 
-    SPACE_CM = 42, RETURN_CM = 43, Atom1 = 44, Atom2 = 45, Residue1 = 46, 
-    Residue2 = 47, Equ_op_HB = 48, Atom1_equ = 49, Atom2_equ = 50, Residue1_equ = 51, 
-    Residue2_equ = 52, Concat_atom_1 = 53, Concat_atom_2 = 54, Concat_res_1 = 55, 
-    Concat_res_2 = 56, Integer_HB = 57, Simple_name_HB = 58, SPACE_HB = 59, 
-    RETURN_HB = 60, LINE_COMMENT_HB = 61, Double_quote_string = 62, Integer_PR = 63, 
-    Simple_name_PR = 64, SPACE_PR = 65, RETURN_PR = 66, LINE_COMMENT_PR = 67, 
-    Simple_name_VA = 68, SPACE_VA = 69, RETURN_VA = 70, LINE_COMMENT_VA = 71, 
-    Ambig_code_MP = 72, Integer_MP = 73, Simple_name_MP = 74, Equ_op_MP = 75, 
-    SPACE_MP = 76, RETURN_MP = 77, LINE_COMMENT_MP = 78
+    NoeUpLo = 11, HBUpp = 12, HBLow = 13, HBUpLo = 14, SSUpp = 15, SSLow = 16, 
+    SSUpLo = 17, Jcoupl = 18, Angle = 19, Stereo = 20, Type = 21, Equ_op = 22, 
+    Or = 23, Ssbond = 24, Ssbond_resids = 25, Hbond = 26, Link = 27, Atom_stereo = 28, 
+    Var = 29, Unset = 30, SetVar = 31, Print = 32, Residue = 33, Mapping = 34, 
+    Ambig = 35, Capital_integer = 36, Integer_capital = 37, Simple_name = 38, 
+    SPACE = 39, ENCLOSE_COMMENT = 40, SECTION_COMMENT = 41, LINE_COMMENT = 42, 
+    Any_name = 43, SPACE_CM = 44, RETURN_CM = 45, Atom1 = 46, Atom2 = 47, 
+    Residue1 = 48, Residue2 = 49, Equ_op_HB = 50, Atom1_equ = 51, Atom2_equ = 52, 
+    Residue1_equ = 53, Residue2_equ = 54, Concat_atom_1 = 55, Concat_atom_2 = 56, 
+    Concat_res_1 = 57, Concat_res_2 = 58, Integer_HB = 59, Simple_name_HB = 60, 
+    SPACE_HB = 61, RETURN_HB = 62, LINE_COMMENT_HB = 63, Double_quote_string = 64, 
+    Integer_PR = 65, Simple_name_PR = 66, SPACE_PR = 67, RETURN_PR = 68, 
+    LINE_COMMENT_PR = 69, Simple_name_VA = 70, SPACE_VA = 71, RETURN_VA = 72, 
+    LINE_COMMENT_VA = 73, Ambig_code_MP = 74, Integer_MP = 75, Simple_name_MP = 76, 
+    Equ_op_MP = 77, SPACE_MP = 78, RETURN_MP = 79, LINE_COMMENT_MP = 80
   };
 
   enum {
@@ -688,6 +688,7 @@ public:
     NumberContext* number(size_t i);
     antlr4::tree::TerminalNode *SSUpp();
     antlr4::tree::TerminalNode *SSLow();
+    antlr4::tree::TerminalNode *SSUpLo();
     antlr4::tree::TerminalNode *Simple_name();
     antlr4::tree::TerminalNode *Integer();
 
@@ -724,6 +725,7 @@ public:
     NumberContext* number(size_t i);
     antlr4::tree::TerminalNode *HBUpp();
     antlr4::tree::TerminalNode *HBLow();
+    antlr4::tree::TerminalNode *HBUpLo();
     antlr4::tree::TerminalNode *Simple_name();
     antlr4::tree::TerminalNode *Integer();
 

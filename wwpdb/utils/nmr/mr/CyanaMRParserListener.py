@@ -4471,7 +4471,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            up_and_low = bool(ctx.NoeUpLo())
+            up_and_low = bool(ctx.NoeUpLo()) | bool(ctx.HBUpLo()) | bool(ctx.SSUpLo())
 
             upl = bool(ctx.NoeUpp()) if self.cur_subtype == 'dist'\
                 else bool(ctx.SSUpp()) if self.cur_subtype == 'ssbond'\

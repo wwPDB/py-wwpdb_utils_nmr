@@ -1460,7 +1460,8 @@ class BaseLinearMRParserListener():
         return dstFunc
 
     def validatePeakVolumeRange(self, weight: float, target_value: Optional[float],
-                                lower_limit: Optional[float], upper_limit: Optional[float]
+                                lower_limit: Optional[float], upper_limit: Optional[float],
+                                target_value_uncertainty: Optional[float] = None
                                 ) -> Optional[dict]:
         """ Validate NOESY peak volume value range.
         """
@@ -1476,6 +1477,9 @@ class BaseLinearMRParserListener():
 
         if upper_limit is not None:
             dstFunc['upper_limit'] = f"{upper_limit}"
+
+        if target_value_uncertainty is not None:
+            dstFunc['target_value_uncertainty'] = f"{target_value_uncertainty}"
 
         if target_value is not None:
 

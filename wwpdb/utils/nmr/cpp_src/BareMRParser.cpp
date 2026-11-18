@@ -57,25 +57,25 @@ void baremrparserParserInitialize() {
     std::vector<std::string>{
     },
     std::vector<std::string>{
-      "", "Data_block", "Integer", "Float", "SHARP_COMMENT", "EXCLM_COMMENT", 
+      "", "Data_block", "Integer", "Float", "Real", "SHARP_COMMENT", "EXCLM_COMMENT", 
       "Number_of_name", "Simple_name", "Double_quote_string", "Double_quote_integer", 
       "Double_quote_float", "SPACE", "RETURN", "SECTION_COMMENT", "LINE_COMMENT"
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,14,54,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,1,0,3,0,14,
+  	4,1,15,54,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,1,0,3,0,14,
   	8,0,1,0,1,0,1,0,3,0,19,8,0,1,0,1,0,5,0,23,8,0,10,0,12,0,26,9,0,1,0,1,
   	0,1,1,1,1,4,1,32,8,1,11,1,12,1,33,1,2,4,2,37,8,2,11,2,12,2,38,1,2,1,2,
   	1,3,4,3,44,8,3,11,3,12,3,45,1,3,1,3,1,4,1,4,1,5,1,5,1,5,0,0,6,0,2,4,6,
-  	8,10,0,3,1,1,12,12,2,0,2,3,7,10,1,0,6,8,55,0,18,1,0,0,0,2,29,1,0,0,0,
-  	4,36,1,0,0,0,6,43,1,0,0,0,8,49,1,0,0,0,10,51,1,0,0,0,12,14,5,12,0,0,13,
-  	12,1,0,0,0,13,14,1,0,0,0,14,15,1,0,0,0,15,16,5,1,0,0,16,19,5,12,0,0,17,
-  	19,5,12,0,0,18,13,1,0,0,0,18,17,1,0,0,0,18,19,1,0,0,0,19,24,1,0,0,0,20,
-  	23,3,2,1,0,21,23,5,12,0,0,22,20,1,0,0,0,22,21,1,0,0,0,23,26,1,0,0,0,24,
+  	8,10,0,3,1,1,13,13,2,0,2,4,8,11,1,0,7,9,55,0,18,1,0,0,0,2,29,1,0,0,0,
+  	4,36,1,0,0,0,6,43,1,0,0,0,8,49,1,0,0,0,10,51,1,0,0,0,12,14,5,13,0,0,13,
+  	12,1,0,0,0,13,14,1,0,0,0,14,15,1,0,0,0,15,16,5,1,0,0,16,19,5,13,0,0,17,
+  	19,5,13,0,0,18,13,1,0,0,0,18,17,1,0,0,0,18,19,1,0,0,0,19,24,1,0,0,0,20,
+  	23,3,2,1,0,21,23,5,13,0,0,22,20,1,0,0,0,22,21,1,0,0,0,23,26,1,0,0,0,24,
   	22,1,0,0,0,24,25,1,0,0,0,25,27,1,0,0,0,26,24,1,0,0,0,27,28,5,0,0,1,28,
   	1,1,0,0,0,29,31,3,4,2,0,30,32,3,6,3,0,31,30,1,0,0,0,32,33,1,0,0,0,33,
   	31,1,0,0,0,33,34,1,0,0,0,34,3,1,0,0,0,35,37,3,10,5,0,36,35,1,0,0,0,37,
-  	38,1,0,0,0,38,36,1,0,0,0,38,39,1,0,0,0,39,40,1,0,0,0,40,41,5,12,0,0,41,
+  	38,1,0,0,0,38,36,1,0,0,0,38,39,1,0,0,0,39,40,1,0,0,0,40,41,5,13,0,0,41,
   	5,1,0,0,0,42,44,3,8,4,0,43,42,1,0,0,0,44,45,1,0,0,0,45,43,1,0,0,0,45,
   	46,1,0,0,0,46,47,1,0,0,0,47,48,7,0,0,0,48,7,1,0,0,0,49,50,7,1,0,0,50,
   	9,1,0,0,0,51,52,7,2,0,0,52,11,1,0,0,0,7,13,18,22,24,33,38,45
@@ -217,7 +217,7 @@ BareMRParser::Bare_mrContext* BareMRParser::bare_mr() {
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 4544) != 0)) {
+      ((1ULL << _la) & 9088) != 0)) {
       setState(22);
       _errHandler->sync(this);
       switch (_input->LA(1)) {
@@ -386,7 +386,7 @@ BareMRParser::HeaderContext* BareMRParser::header() {
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 448) != 0));
+      ((1ULL << _la) & 896) != 0));
     setState(40);
     match(BareMRParser::RETURN);
    
@@ -459,7 +459,7 @@ BareMRParser::Mr_row_listContext* BareMRParser::mr_row_list() {
       _errHandler->sync(this);
       _la = _input->LA(1);
     } while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 1932) != 0));
+      ((1ULL << _la) & 3868) != 0));
     setState(47);
     _la = _input->LA(1);
     if (!(_la == BareMRParser::EOF
@@ -486,6 +486,10 @@ BareMRParser::Mr_row_listContext* BareMRParser::mr_row_list() {
 
 BareMRParser::AnyContext::AnyContext(ParserRuleContext *parent, size_t invokingState)
   : ParserRuleContext(parent, invokingState) {
+}
+
+tree::TerminalNode* BareMRParser::AnyContext::Real() {
+  return getToken(BareMRParser::Real, 0);
 }
 
 tree::TerminalNode* BareMRParser::AnyContext::Float() {
@@ -542,7 +546,7 @@ BareMRParser::AnyContext* BareMRParser::any() {
     setState(49);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 1932) != 0))) {
+      ((1ULL << _la) & 3868) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -608,7 +612,7 @@ BareMRParser::Column_nameContext* BareMRParser::column_name() {
     setState(51);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 448) != 0))) {
+      ((1ULL << _la) & 896) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {

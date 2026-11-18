@@ -245,9 +245,19 @@ class BareMRReader:
 if __name__ == "__main__":
     reader = BareMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1jve/noe_peak_150ms.tab',
+                 '../../tests-nmr/mock-data-remediation/1jve/1jve.cif')
+
+    reader = BareMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1jve/distance_restraint.tab',
+                 '../../tests-nmr/mock-data-remediation/1jve/1jve.cif')
+
+    reader = BareMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-C_8000242/3_1_Peptide14_restraints.txt',
                  '../../tests-nmr/mock-data-C_8000242/1_5NIQ.cif')
-    sys.exit()
+
     reader = BareMRReader(True)
     reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2h49/2h49-selected-as-res-bar.mr',

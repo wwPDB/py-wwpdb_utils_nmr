@@ -2250,7 +2250,7 @@ class CifReader:
                         del_idx.append(idx)
 
                     if len(del_idx) > 0:
-                        for idx in sorted(del_idx, reversed=True):
+                        for idx in sorted(del_idx, reverse=True):
                             del _bb_atom_site_dict[model_id][idx]
 
         matrix_size = (size, size)

@@ -2868,6 +2868,19 @@ class NmrDpMrSplitter:
 
         fileListId = self.__reg.file_path_list_len
 
+        if fileListId >= len(self.__reg.report.input_sources):
+
+            err = 'Discrepancy was found in the internal input source. Please verify that the auxiliary STAR-format file is valid.'
+
+            self.__reg.report.error.appendDescription('internal_error',
+                                                      f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
+                                                      "++ Error  - " + err)
+
+            if self.__reg.verbose:
+                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+
+            return False
+
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
 
@@ -2962,6 +2975,9 @@ class NmrDpMrSplitter:
             return True
 
         fileListId = self.__reg.file_path_list_len
+
+        if fileListId >= len(self.__reg.report.input_sources):
+            return False
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
@@ -3322,6 +3338,9 @@ class NmrDpMrSplitter:
 
         if self.__reg.permit_missing_cs_file:  # NMR data remediation (Phase 3)
             settled_file_types.extend(list(PARSABLE_CS_FILE_TYPES))
+
+        if fileListId >= len(self.__reg.report.input_sources):
+            return False
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             src_file = ar['file_name']

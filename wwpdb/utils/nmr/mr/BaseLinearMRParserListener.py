@@ -2250,7 +2250,7 @@ class BaseLinearMRParserListener():
                             for _refChainId in refChainIds:
                                 chainAssign.add((_refChainId, _seqId, compId, True))
                         asis = True
-                    else:
+                    elif _seqId != 0 and not _compId.startswith('AMB'):
                         if enableWarning:
                             self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
                                           f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")

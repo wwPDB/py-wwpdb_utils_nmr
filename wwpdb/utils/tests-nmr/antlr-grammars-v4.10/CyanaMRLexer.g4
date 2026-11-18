@@ -170,7 +170,7 @@ LINE_COMMENT_VA:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+
 
 mode MAP_MODE;
 
-Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
+Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME ('.' | ':') DECIMAL);
 Integer_MP:		Integer;
 Simple_name_MP:		SIMPLE_NAME;
 

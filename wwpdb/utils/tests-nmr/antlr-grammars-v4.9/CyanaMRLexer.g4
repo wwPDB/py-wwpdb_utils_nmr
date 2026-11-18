@@ -49,7 +49,7 @@ fragment Z:		[zZ];
 /* CYANA 3.0 Reference Manual
  See also http://www.cyana.org/wiki/index.php/CYANA_3.0_Reference_Manual
 */
-Ambig_code:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
+Ambig_code:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME ('.' | ':') DECIMAL);
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 Float_DecimalComma:	('+' | '-')? (DEC_COM_DEC) ('E' ('+' | '-')? DECIMAL)?;

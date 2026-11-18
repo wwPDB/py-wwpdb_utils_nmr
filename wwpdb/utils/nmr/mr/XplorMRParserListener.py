@@ -7305,11 +7305,11 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     s = name_score.index(min(filter(None, name_score), default=None))
 
                 if (ctx.Simple_name(0) and t in (-1, 0))\
-                   or (ctx.Double_quote_string(0) and t in (-1, 2)):
+                   or (ctx.Double_quote_string(0) and (t in (-1, 2) or t == s == 1)):
                     if ctx.Simple_name(0) and t in (-1, 0):
                         chainId = str(ctx.Simple_name(0))
                         simpleNameIndex += 1
-                    elif ctx.Double_quote_string(0) and t in (-1, 2):
+                    elif ctx.Double_quote_string(0) and (t in (-1, 2) or t == s == 1):
                         chainId = str(ctx.Double_quote_string(0)).strip('"').strip()
                         if len(chainId) == 0:
                             return
@@ -7342,7 +7342,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     self.factor['chain_id'].append(__chainId)
                     simpleNamesIndex += 1
 
-                if len(self.factor['chain_id']) == 0:
+                if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
                     if len(self.fibril_chain_ids) > 0 and not self.hasNonPoly:
                         if chainId[0] in self.fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]

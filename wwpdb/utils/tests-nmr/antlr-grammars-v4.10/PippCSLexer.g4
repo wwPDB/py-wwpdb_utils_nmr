@@ -32,8 +32,7 @@ Heterogeneity:		'HETEROGENEITY';
 End_res_def:		'END_RES_DEF';
 
 Type_pred:		ALPHA+ '(' (DECIMAL | DEC_DOT_DEC) ')';
-Single_note:		'(' ' '* NOTE ' '* ')';
-Note_begin:		'(' ' '* NOTE -> pushMode(MULTIPLE_NOTE_MODE);
+Note_begin:		'(' -> pushMode(MULTIPLE_NOTE_MODE);
 
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC);
@@ -55,8 +54,8 @@ Simple_name:		SIMPLE_NAME;
 
 fragment ALPHA:		[A-Za-z];
 fragment ALPHA_NUM:	ALPHA | DEC_DIGIT;
-fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?' | '(' | '{' | '[';
-fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' | ')' | '}' | ']';
+fragment START_CHAR:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?' | '{' | '[';
+fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' | '}' | ']';
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
@@ -85,7 +84,7 @@ RETURN_ET:		[\r\n]+;
 
 mode MULTIPLE_NOTE_MODE;
 
-Note_middle:		NOTE;
-Note_end:		NOTE ' '* ')' -> popMode;
+Note:			NOTE;
+Note_end:		')' -> popMode;
 
 SPACE_MN:		[ \t]+ -> skip;

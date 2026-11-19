@@ -259,6 +259,22 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitNumber_qc(CyanaMRParser::Number_qcContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitGen_res_num_qc(CyanaMRParser::Gen_res_num_qcContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitGen_simple_name_qc(CyanaMRParser::Gen_simple_name_qcContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitGen_atom_name_qc(CyanaMRParser::Gen_atom_name_qcContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
 
 };
 

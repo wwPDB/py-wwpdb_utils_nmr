@@ -585,10 +585,10 @@ class AriaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.__cur_comb_id += 1
 
         atom_pair = [{'atom_id': str(ctx.Simple_name(2)).upper(),
-                      'seq_id': int(str(ctx.Integer(0))),
+                      'seq_id': int(str(ctx.Integer(0))) if ctx.Integer(0) else None,
                       'comp_id': str(ctx.Simple_name(0)).upper()},
                      {'atom_id': str(ctx.Simple_name(5)).upper(),
-                      'seq_id': int(str(ctx.Integer(1))),
+                      'seq_id': int(str(ctx.Integer(1))) if ctx.Integer(1) else None,
                       'comp_id': str(ctx.Simple_name(3)).upper()}]
 
         weight = float(str(ctx.Float(1))) if ctx.Float(1) else -1.0

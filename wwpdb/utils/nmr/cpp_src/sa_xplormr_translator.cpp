@@ -134,6 +134,7 @@ SA_XplorMRTranslator::~SA_XplorMRTranslator() {
     Py_XDECREF(Sani_assign_loopContext_cls);
     Py_XDECREF(Xadc_assign_loopContext_cls);
     Py_XDECREF(Coup_assign_loopContext_cls);
+    Py_XDECREF(Carbon_shift_assign_loopContext_cls);
     Py_XDECREF(Coll_assign_loopContext_cls);
     Py_XDECREF(Csa_assign_loopContext_cls);
     Py_XDECREF(Pre_assign_loopContext_cls);
@@ -879,6 +880,12 @@ antlrcpp::Any SA_XplorMRTranslator::visitXadc_assign_loop(XplorMRParser::Xadc_as
 antlrcpp::Any SA_XplorMRTranslator::visitCoup_assign_loop(XplorMRParser::Coup_assign_loopContext *ctx){
     if(!Coup_assign_loopContext_cls) Coup_assign_loopContext_cls = PyObject_GetAttrString(translator->parser_cls, "Coup_assign_loopContext");
     PyObject *py_ctx = translator->convert_ctx(this, ctx, Coup_assign_loopContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_XplorMRTranslator::visitCarbon_shift_assign_loop(XplorMRParser::Carbon_shift_assign_loopContext *ctx){
+    if(!Carbon_shift_assign_loopContext_cls) Carbon_shift_assign_loopContext_cls = PyObject_GetAttrString(translator->parser_cls, "Carbon_shift_assign_loopContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Carbon_shift_assign_loopContext_cls);
     return py_ctx;
 }
 

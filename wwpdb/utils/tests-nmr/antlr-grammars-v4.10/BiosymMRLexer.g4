@@ -52,6 +52,8 @@ Or:			'+';
 /* Insight II distance restraint */
 Restraint:		'restraint' -> pushMode(INSIGHT_II_MODE);
 
+Mixing_times:		'#mixing_times' [\r\n]+ -> pushMode(MIXING_TIME_MODE);
+
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
@@ -77,3 +79,18 @@ Relative:		'relative';
 SPACE_II:		[ \t]+ -> skip;
 
 RETURN_II:		[\r\n]+ -> popMode;
+
+mode MIXING_TIME_MODE;
+
+fragment UNIT_MT:	's' | 'sec' | 'ms' | 'msec';
+
+Real_MT:		Real UNIT_MT?;
+Float_MT:		Float UNIT_MT?;
+Integer_MT:		Integer UNIT_MT?;
+
+Comma_MT:		',';
+Period_MT:		'.';
+
+SPACE_MT:		[ \t]+ -> skip;
+
+RETURN_MT:		[\r\n]+ -> popMode;

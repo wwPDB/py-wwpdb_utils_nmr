@@ -54,7 +54,7 @@ old_distance_restraint:
 	c_row+;
 
 p_row:
-	P_code Integer Integer Integer Float Real Hyphen Hyphen Hyphen Hyphen Float Float Float Hyphen Float Float Float;
+	P_code Integer Integer Integer Float (Real | Hyphen) Hyphen Hyphen Hyphen Hyphen Float Float Float Hyphen Float Float Float;
 
 a_row:
 	A_code Integer Float Float Float Float Real Real Real Real Integer Integer;

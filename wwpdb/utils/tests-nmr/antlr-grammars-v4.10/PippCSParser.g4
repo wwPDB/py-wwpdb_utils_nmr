@@ -50,7 +50,7 @@ residue_list:
 	End_res_def (RETURN | EOF);
 
 shift_list:
-	Simple_name number number? (Single_note | Note_begin Note_middle* Note_end)? RETURN;
+	Simple_name number number? (Note_begin Note* Note_end)? RETURN;
 
 /* number expression in chemical shift */
 number: Float | Integer;

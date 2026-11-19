@@ -1593,6 +1593,16 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 seqId, chainId = self.genResNumSelection[0]
                 angleName = self.genSimpleNameSelection[1].upper()
 
+            if angleName in ('H', 'HN', 'HA') and abs(self.numberSelection[0]) < 30.0:
+                self.dihedRestraints = -1
+                self.cur_subtype = 'rdc'
+                self.cur_dist_type = ''
+                self.rdcRestraints += 1
+                if self.createSfDict:
+                    self.trimSfWoLp()
+                self.__exitTorsion_angle_as_Rdc_restraint(chainId, seqId, compId, angleName)
+                return
+
             if len(self.numberSelection) == 0 or None in self.numberSelection:
                 self.dihedRestraints -= 1
                 return
@@ -2408,6 +2418,186 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.numberSelection.clear()
             self.genResNumSelection.clear()
             self.genSimpleNameSelection.clear()
+
+    def __exitTorsion_angle_as_Rdc_restraint(self, chainId1: str, seqId1: int, compId1: str, atomId1: str):
+        """ Read as torsion angle restraints as RDC restraint due to syntax collision.
+            Invoked from exitTorsion_angle_restraint().
+        """
+
+        try:
+
+            chainId2, seqId2, compId2 = chainId1, seqId1, compId1
+
+            if atomId1 in ('H', 'HN'):
+                atomId2 = 'N'
+
+            elif atomId1 == 'HA':
+                atomId2 = 'CA'
+
+            else:
+                self.rdcRestraints -= 1
+                return
+
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.rdcRestraints -= 1
+                return
+
+            target = self.numberSelection[0]
+            error = abs(self.numberSelection[1])
+            weight = 1.0
+
+            if len(self.numberSelection) > 2:
+                weight = self.numberSelection[2]
+
+            if weight < 0.0:
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              f"The relative weight value of '{weight}' must not be a negative value.")
+                return
+            if weight == 0.0:
+                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
+                              f"The relative weight value of '{weight}' should be a positive value.")
+
+            target_value = target
+            lower_limit = target - error
+            upper_limit = target + error
+
+            dstFunc = self.validateRdcRange(weight, None, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            self.retrieveLocalSeqScheme()
+
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
+
+            if 0 in (len(chainAssign1), len(chainAssign2)):
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+            # """
+            # if not self.areUniqueCoordAtoms('an RDC'):
+            #     return
+            # """
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                self.areUniqueCoordAtoms('an RDC')
+                return
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              "Non-magnetic susceptible spin appears in RDC vector; "
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            if chain_id_1 != chain_id_2:
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                  "Found inter-chain RDC vector; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                  "Found inter-residue RDC vector; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                    pass
+
+                else:
+                    self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                  "Found inter-residue RDC vector; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              "Found zero RDC vector; "
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not self.ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+
+                    if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                      "Found an RDC vector over multiple covalent bonds; "
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+
+            combinationId = '.'
+            if self.createSfDict:
+                cyanaParameter = None
+                sf = self.getSf(potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc),
+                                rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
+                                orientationId=None, cyanaParameter=cyanaParameter)
+                sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.nefT):
+                    continue
+                if isLongRangeRestraint(atoms, self.polySeq if self.gapInAuthSeq else None):
+                    continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                 combinationId, None, None,
+                                 sf['list_id'], self.entryId, dstFunc,
+                                 self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                 atom1, atom2, asis1=asis1, asis2=asis2)
+                    sf['loop'].add_data(row)
+
+            if self.createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.cur_subtype, sf['loop'].data[-1])
+
+        except (ValueError, AttributeError):
+            self.rdcRestraints -= 1
 
     def enterPcs_restraints(self, ctx: CyanaMRParser.Pcs_restraintsContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by CyanaMRParser#pcs_restraints.
@@ -4471,33 +4661,43 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            up_and_low = bool(ctx.NoeUpLo())
+            try:
+                up_and_low = bool(ctx.NoeUpLo())
+            except AttributeError:
+                try:
+                    up_and_low = bool(ctx.SSUpLo())
+                except AttributeError:
+                    up_and_low = bool(ctx.HBUpLo())
 
-            upl = bool(ctx.NoeUpp()) if self.cur_subtype == 'dist'\
-                else bool(ctx.SSUpp()) if self.cur_subtype == 'ssbond'\
-                else bool(ctx.HBUpp())
+            try:
+                upl = bool(ctx.NoeUpp())
+            except AttributeError:
+                try:
+                    upl = bool(ctx.SSUpp())
+                except AttributeError:
+                    upl = bool(ctx.HBUpp())
 
             if self.cur_subtype != 'dist':
                 self.cur_subtype = 'dist'
 
-            seqId1, chainId1 = self.genResNumSelection[0]
-            compId1 = self.genSimpleNameSelection[0].upper()
-            atomId1 = self.genSimpleNameSelection[1].upper()
-            seqId2, chainId2 = self.genResNumSelection[1]
-            compId2 = self.genSimpleNameSelection[2].upper()
-            atomId2 = self.genSimpleNameSelection[3].upper()
+            seqId1, chainId1 = self.genResNumSelection_qc[0]
+            compId1 = self.genSimpleNameSelection_qc[0].upper()
+            atomId1 = self.genSimpleNameSelection_qc[1].upper()
+            seqId2, chainId2 = self.genResNumSelection_qc[1]
+            compId2 = self.genSimpleNameSelection_qc[2].upper()
+            atomId2 = self.genSimpleNameSelection_qc[3].upper()
 
-            if len(self.genSimpleNameSelection) > 6 and len(self.genResNumSelection) > 2:
-                atomId3 = self.genSimpleNameSelection[4].upper()
-                seqId4, chainId4 = self.genResNumSelection[2]
-                compId4 = self.genSimpleNameSelection[5].upper()
-                atomId4 = self.genSimpleNameSelection[6].upper()
+            if len(self.genSimpleNameSelection_qc) > 6 and len(self.genResNumSelection_qc) > 2:
+                atomId3 = self.genSimpleNameSelection_qc[4].upper()
+                seqId4, chainId4 = self.genResNumSelection_qc[2]
+                compId4 = self.genSimpleNameSelection_qc[5].upper()
+                atomId4 = self.genSimpleNameSelection_qc[6].upper()
             else:
                 atomId3 = chainId4 = seqId4 = compId4 = atomId4 = None
 
             target_value = lower_limit = upper_limit = None
 
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
+            if len(self.numberSelection_qc) == 0 or None in self.numberSelection_qc:
                 self.distRestraints -= 1
                 return
 
@@ -4507,8 +4707,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             weight = 1.0
 
             if up_and_low:
-                upper_limit = self.numberSelection[0]
-                lower_limit = self.numberSelection[1]
+                upper_limit = self.numberSelection_qc[0]
+                lower_limit = self.numberSelection_qc[1]
 
                 if self.max_dist_value < upper_limit <= DIST_RANGE_MAX:
                     self.max_dist_value = upper_limit
@@ -4516,7 +4716,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     self.min_dist_value = lower_limit
 
             else:
-                value = self.numberSelection[0]
+                value = self.numberSelection_qc[0]
 
                 if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
                     if upl and value > self.max_dist_value:
@@ -4646,7 +4846,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             if self.createSfDict and sf is not None and isinstance(memberId, int) and memberId == 1:
                 sf['loop'].data[-1] = resetMemberId(self.cur_subtype, sf['loop'].data[-1])
 
-            if None in (atomId3, atomId4) or len(self.numberSelection) not in (2, 4):
+            if None in (atomId3, atomId4) or len(self.numberSelection_qc) not in (2, 4):
                 return
 
             self.atomSelectionSet.clear()
@@ -4656,8 +4856,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             target_value = lower_limit = upper_limit = None
 
             if up_and_low:
-                upper_limit = self.numberSelection[2]
-                lower_limit = self.numberSelection[3]
+                upper_limit = self.numberSelection_qc[2]
+                lower_limit = self.numberSelection_qc[3]
 
                 if self.max_dist_value < upper_limit <= DIST_RANGE_MAX:
                     self.max_dist_value = upper_limit
@@ -4665,7 +4865,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     self.min_dist_value = lower_limit
 
             else:
-                value = self.numberSelection[1]
+                value = self.numberSelection_qc[1]
 
                 if DIST_RANGE_MIN <= value <= DIST_RANGE_MAX:
                     if upl and value > self.max_dist_value:
@@ -4799,9 +4999,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.distRestraints -= 1
 
         finally:
-            self.numberSelection.clear()
-            self.genResNumSelection.clear()
-            self.genSimpleNameSelection.clear()
+            self.numberSelection_qc.clear()
+            self.genResNumSelection_qc.clear()
+            self.genSimpleNameSelection_qc.clear()
 
     def enterDiana_ssbond_restraints(self, ctx: CyanaMRParser.Diana_ssbond_restraintsContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by CyanaMRParser#diana_ssbond_restraints.
@@ -4879,29 +5079,29 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            _compId = self.genSimpleNameSelection[0].upper()
+            _compId = self.genSimpleNameSelection_qc[0].upper()
             compId = translateToStdResName(_compId, ccU=self.ccU)
             if _compId != compId:
                 _types = self.csStat.getTypeOfCompId(_compId)
                 if any(t for t in _types) and _types != self.csStat.getTypeOfCompId(compId):
                     compId = _compId
 
-            seqId, chainId = self.genResNumSelection[0]
-            angleName = self.genSimpleNameSelection[1].upper()
+            seqId, chainId = self.genResNumSelection_qc[0]
+            angleName = self.genSimpleNameSelection_qc[1].upper()
 
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
+            if len(self.numberSelection_qc) == 0 or None in self.numberSelection_qc:
                 self.dihedRestraints -= 1
                 return
 
-            combinations = len(self.numberSelection) / 2
+            combinations = len(self.numberSelection_qc) / 2
 
-            if len(self.numberSelection) not in (2, 4):
+            if len(self.numberSelection_qc) not in (2, 4):
                 self.dihedRestraints -= 1
                 return
 
             target_value = None
-            lower_limit = self.numberSelection[0]
-            upper_limit = self.numberSelection[1]
+            lower_limit = self.numberSelection_qc[0]
+            upper_limit = self.numberSelection_qc[1]
 
             if self.remediate and self.reasons is not None and 'dihed_unusual_order' in self.reasons:
                 target_value, deviation = lower_limit, upper_limit
@@ -4941,7 +5141,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                      if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
+                                  f"The angle identifier {self.genSimpleNameSelection_qc[1]!r} is unknown "
                                   f"for the residue {_compId!r}, "
                                   "of which CYANA residue library should be uploaded.")
                     return
@@ -5032,7 +5232,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
+                                      f"The angle identifier {self.genSimpleNameSelection_qc[1]!r} is unknown "
                                       f"for the residue {_compId!r}, "
                                       "of which CYANA residue library should be uploaded.")
                         return
@@ -5161,7 +5361,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
+                                                  f"The angle identifier {self.genSimpleNameSelection_qc[1]!r} is unknown "
                                                   f"for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
@@ -5309,7 +5509,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {self.genSimpleNameSelection[1]!r} did not match with "
+                                      f"The angle identifier {self.genSimpleNameSelection_qc[1]!r} did not match with "
                                       f"residue {_compId!r}.")
                         return
 
@@ -5355,7 +5555,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {self.genSimpleNameSelection[1]!r} is unknown "
+                                                  f"The angle identifier {self.genSimpleNameSelection_qc[1]!r} is unknown "
                                                   f"for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
@@ -5438,11 +5638,11 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.atomSelectionSet.clear()
 
-            angleName = self.genSimpleNameSelection[2].upper()
+            angleName = self.genSimpleNameSelection_qc[2].upper()
 
             target_value = None
-            lower_limit = self.numberSelection[2]
-            upper_limit = self.numberSelection[3]
+            lower_limit = self.numberSelection_qc[2]
+            upper_limit = self.numberSelection_qc[3]
 
             if self.remediate and self.reasons is not None and 'dihed_unusual_order' in self.reasons:
                 target_value, deviation = lower_limit, upper_limit
@@ -5477,7 +5677,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                      if len(name) >= lenAngleName and name[:lenAngleName] == angleName)
                 except StopIteration:
                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
+                                  f"The angle identifier {self.genSimpleNameSelection_qc[2]!r} is unknown "
                                   f"for the residue {_compId!r}, "
                                   "of which CYANA residue library should be uploaded.")
                     return
@@ -5568,7 +5768,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
+                                      f"The angle identifier {self.genSimpleNameSelection_qc[2]!r} is unknown "
                                       f"for the residue {_compId!r}, "
                                       "of which CYANA residue library should be uploaded.")
                         return
@@ -5697,7 +5897,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
+                                                  f"The angle identifier {self.genSimpleNameSelection_qc[2]!r} is unknown "
                                                   f"for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
@@ -5843,7 +6043,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         pass
                     else:
                         self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                      f"The angle identifier {self.genSimpleNameSelection[2]!r} did not match with "
+                                      f"The angle identifier {self.genSimpleNameSelection_qc[2]!r} did not match with "
                                       f"residue {_compId!r}.")
                         return
 
@@ -5889,7 +6089,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                                   f"of chain {chainId} of the coordinates. {INSTRUCTION_FOR_FULL_SEQUENCE}")
                                 elif _compId in STD_MON_DICT:
                                     self.f.append(f"[Insufficient angle selection] {self.getCurrentRestraint()}"
-                                                  f"The angle identifier {self.genSimpleNameSelection[2]!r} is unknown "
+                                                  f"The angle identifier {self.genSimpleNameSelection_qc[2]!r} is unknown "
                                                   f"for the residue {_compId!r}.")
                                 else:
                                     self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
@@ -5971,9 +6171,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.dihedRestraints -= 1
 
         finally:
-            self.numberSelection.clear()
-            self.genResNumSelection.clear()
-            self.genSimpleNameSelection.clear()
+            self.numberSelection_qc.clear()
+            self.genResNumSelection_qc.clear()
+            self.genSimpleNameSelection_qc.clear()
 
     def enterDiana_coupling_constant_restraints(self, ctx: CyanaMRParser.Diana_coupling_constant_restraintsContext
                                                 ):  # pylint: disable=unused-argument
@@ -6003,26 +6203,31 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            seqId1, chainId1 = self.genResNumSelection[0]
-            compId1 = self.genSimpleNameSelection[0].upper()
-            atomId1 = self.genSimpleNameSelection[1].upper()
-            atomId2 = self.genSimpleNameSelection[2].upper()
+            seqId1, chainId1 = self.genResNumSelection_qc[0]
+            compId1 = self.genSimpleNameSelection_qc[0].upper()
+            atomId1 = self.genSimpleNameSelection_qc[1].upper()
+            atomId2 = self.genSimpleNameSelection_qc[2].upper()
 
-            if len(self.numberSelection) == 0 or None in self.numberSelection:
+            if len(self.numberSelection_qc) == 0 or None in self.numberSelection_qc:
                 self.jcoupRestraints -= 1
                 return
 
-            combinations = 2 if len(self.genSimpleNameSelection) == 5\
-                else 1 if len(self.genSimpleNameSelection) == 3 else 0
+            len_simple_name_selection = len(self.genSimpleNameSelection_qc)
 
-            if combinations == 0:
+            if len_simple_name_selection == 7:
+                combinations = 3
+            elif len_simple_name_selection == 5:
+                combinations = 2
+            elif len_simple_name_selection == 3:
+                combinations = 1
+            else:
                 self.jcoupRestraints -= 1
                 return
 
-            has_error = len(self.numberSelection) == 2 * combinations
+            has_error = len(self.numberSelection_qc) == 2 * combinations
 
-            target = self.numberSelection[0]
-            error = self.numberSelection[1] if has_error else None
+            target = self.numberSelection_qc[0]
+            error = self.numberSelection_qc[1] if has_error else None
 
             weight = 1.0
 
@@ -6166,11 +6371,154 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.atomSelectionSet.clear()
 
-            atomId1 = self.genSimpleNameSelection[3].upper()
-            atomId2 = self.genSimpleNameSelection[4].upper()
+            atomId1 = self.genSimpleNameSelection_qc[3].upper()
+            atomId2 = self.genSimpleNameSelection_qc[4].upper()
 
-            target = self.numberSelection[2 if has_error else 1]
-            error = self.numberSelection[3] if has_error else None
+            target = self.numberSelection_qc[2 if has_error else 1]
+            error = self.numberSelection_qc[3] if has_error else None
+
+            target_value = target
+            lower_limit = target - error if error is not None else None
+            upper_limit = target + error if error is not None else None
+
+            dstFunc = self.validateRdcRange(weight, None, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId2)
+
+            if 0 in (len(chainAssign1), len(chainAssign2)):
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId1, compId1, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                return
+
+            if not self.areUniqueCoordAtoms('a scalar coupling'):
+                return
+
+            chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+            seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+            comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+            atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+            chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+            seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+            comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+            atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              "Non-magnetic susceptible spin appears in scalar coupling constant; "
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            if chain_id_1 != chain_id_2:
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                                  "Found inter-chain scalar coupling constant; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) > 1:
+
+                if abs(seq_id_1 - seq_id_2) > 2 or {atom_id_1, atom_id_2} != {'H', 'N'}:
+                    self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                                  "Found inter-residue scalar coupling constant; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 in ('H', 'N'))
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in ('H', 'N') and atom_id_2.startswith('HA'))
+                         or {atom_id_1, atom_id_2} == {'H', 'N'}):
+                    pass
+
+                elif self.csStat.getTypeOfCompId(comp_id_1)[1] and self.csStat.getTypeOfCompId(comp_id_1)[1]\
+                        and seq_id_1 < seq_id_2 and atom_id_2 == 'P':
+                    pass
+
+                else:
+                    self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                                  "Found inter-residue scalar coupling constant; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              "Found zero scalar coupling constant; "
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            self.jcoupRestraints += 1
+
+            if self.createSfDict:
+                sf = self.getSf()
+                sf['id'] += 1
+
+            for atom1, atom4 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                if isLongRangeRestraint([atom1, atom4], self.polySeq if self.gapInAuthSeq else None):
+                    if {atom1['atom_id'], atom4['atom_id']} != {'H', 'N'}:
+                        continue
+                self.ccU.updateChemCompDict(atom1['comp_id'])
+                atom2_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom1['atom_id'])
+                atom3_can = self.ccU.getBondedAtoms(atom1['comp_id'], atom4['atom_id'])
+                atom_id_2 = atom_id_3 = None
+                for ccb in self.ccU.lastBondDictList:
+                    if ccb['atom_id_1'] in atom2_can and ccb['atom_id_2'] in atom3_can:
+                        atom_id_2 = ccb['atom_id_1']
+                        atom_id_3 = ccb['atom_id_2']
+                        break
+                    if ccb['atom_id_2'] in atom2_can and ccb['atom_id_1'] in atom3_can:
+                        atom_id_2 = ccb['atom_id_2']
+                        atom_id_3 = ccb['atom_id_1']
+                        break
+                if None in (atom_id_2, atom_id_3):
+                    continue
+                atom2 = copy.copy(atom1)
+                atom2['atom_id'] = atom_id_2
+                atom3 = copy.copy(atom4)
+                atom3['atom_id'] = atom_id_3
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.jcoupRestraints} "
+                          f"atom1={atom1} atom2={atom2} atom3={atom3} atom4={atom4} {dstFunc}")
+                if self.createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None, None,
+                                 sf['list_id'], self.entryId, dstFunc,
+                                 self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                 atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis1, asis3=asis2, asis4=asis2)
+                    sf['loop'].add_data(row)
+
+            if combinations == 2:
+                return
+
+            self.atomSelectionSet.clear()
+
+            atomId1 = self.genSimpleNameSelection_qc[5].upper()
+            atomId2 = self.genSimpleNameSelection_qc[6].upper()
+
+            target = self.numberSelection_qc[4 if has_error else 2]
+            error = self.numberSelection_qc[5] if has_error else None
 
             target_value = target
             lower_limit = target - error if error is not None else None
@@ -6308,9 +6656,9 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.jcoupRestraints -= 1
 
         finally:
-            self.numberSelection.clear()
-            self.genResNumSelection.clear()
-            self.genSimpleNameSelection.clear()
+            self.numberSelection_qc.clear()
+            self.genResNumSelection_qc.clear()
+            self.genSimpleNameSelection_qc.clear()
 
     def enterDiana_stereoassign_macro(self, ctx: CyanaMRParser.Diana_stereoassign_macroContext
                                       ):  # pylint: disable=unused-argument
@@ -6329,22 +6677,22 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         try:
 
-            if len(self.genSimpleNameSelection) == 0:
+            if len(self.genSimpleNameSelection_qc) == 0:
                 return
 
             self.fchiralRestraints += 1
 
-            seqId, _ = self.genResNumSelection[0]
-            compId = self.genSimpleNameSelection[0].upper()
+            seqId, _ = self.genResNumSelection_qc[0]
+            compId = self.genSimpleNameSelection_qc[0].upper()
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
 
             self.retrieveLocalSeqScheme()
 
-            for idx in range(1, len(self.genSimpleNameSelection)):
+            for idx in range(1, len(self.genSimpleNameSelection_qc)):
 
-                atomId = self.genSimpleNameSelection[idx].upper()
+                atomId = self.genSimpleNameSelection_qc[idx].upper()
 
                 chainAssign = self.assignCoordPolymerSequenceWithoutCompId(seqId, atomId)
 
@@ -6408,8 +6756,8 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.fchiralRestraints -= 1
 
         finally:
-            self.genResNumSelection.clear()
-            self.genSimpleNameSelection.clear()
+            self.genResNumSelection_qc.clear()
+            self.genSimpleNameSelection_qc.clear()
 
     def enterDistance_w_chain_restraints(self, ctx: CyanaMRParser.Distance_w_chain_restraintsContext
                                          ):  # pylint: disable=unused-argument
@@ -8685,8 +9033,16 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
             self.fchiralRestraints += 1
 
-            _strip = str(ctx.Double_quote_string()).strip('"').strip()
-            _split = re.sub(' +', ' ', _strip).split(' ')
+            if ctx.Double_quote_string():
+                _strip = str(ctx.Double_quote_string()).strip('"').strip()
+                _split = re.sub(' +', ' ', _strip).split(' ')
+
+            else:  # 1ksm
+                _split = []
+                _split.append(str(ctx.Simple_name_PR(0)))
+                if ctx.Simple_name_PR(1):
+                    _split.append(str(ctx.Simple_name_PR(1)))
+                _split.append(str(ctx.Integer_PR()))
 
             len_split = len(_split)
 
@@ -9018,7 +9374,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 j += 1
 
             if self.cur_resname_for_mapping in EMPTY_VALUE:
-                return
+                self.cur_resname_for_mapping = 'AMB'
 
             if self.cur_resname_for_mapping not in self.ambigAtomNameMapping:
                 self.ambigAtomNameMapping[self.cur_resname_for_mapping] = {}
@@ -9106,3 +9462,83 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         else:
             self.genAtomNameSelection.append(None)
+
+    def enterNumber_qc(self, ctx: CyanaMRParser.Number_qcContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#number_qc.
+        """
+
+    def exitNumber_qc(self, ctx: CyanaMRParser.Number_qcContext):
+        """ Exit a parse tree produced by CyanaMRParser#number_qc.
+        """
+
+        if ctx.Float_QC():
+            self.numberSelection_qc.append(float(str(ctx.Float_QC())))
+
+        elif ctx.Float_DecimalComma_QC():
+            self.numberSelection_qc.append(float(str(ctx.Float_DecimalComma_QC()).replace(',', '.', 1)))
+
+        elif ctx.Integer_QC():
+            self.numberSelection_qc.append(float(str(ctx.Integer_QC())))
+
+        else:
+            self.numberSelection_qc.append(None)
+
+    def enterGen_res_num_qc(self, ctx: CyanaMRParser.Gen_res_num_qcContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#gen_res_num_qc.
+        """
+
+    def exitGen_res_num_qc(self, ctx: CyanaMRParser.Gen_res_num_qcContext):
+        """ Exit a parse tree produced by CyanaMRParser#gen_res_num_qc.
+        """
+
+        if ctx.Integer_QC():
+            self.genResNumSelection_qc.append((int(str(ctx.Integer_QC())), None))
+
+        elif ctx.Capital_integer_QC():
+            self.genResNumSelection_qc.append((int(str(ctx.Capital_integer_QC())[1:]), str(ctx.Capital_integer_QC())[0]))
+
+        elif ctx.Integer_capital_QC():
+            self.genResNumSelection_qc.append((int(str(ctx.Integer_capital_QC())[:-1]), str(ctx.Integer_capital_QC())[-1]))
+
+        else:
+            self.genResNumSelection_qc.append((None, None))
+
+    def enterGen_simple_name_qc(self, ctx: CyanaMRParser.Gen_simple_name_qcContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#gen_simple_name_qc.
+        """
+
+    def exitGen_simple_name_qc(self, ctx: CyanaMRParser.Gen_simple_name_qcContext):
+        """ Exit a parse tree produced by CyanaMRParser#gen_simple_name_qc.
+        """
+
+        if ctx.Simple_name_QC():
+            self.genSimpleNameSelection_qc.append(str(ctx.Simple_name_QC()))
+
+        elif ctx.Capital_integer_QC():
+            self.genSimpleNameSelection_qc.append(str(ctx.Capital_integer_QC()))
+
+        elif ctx.Integer_capital_QC():
+            self.genSimpleNameSelection_qc.append(str(ctx.Integer_capital_QC()))
+
+        else:
+            self.genSimpleNameSelection_qc.append(None)
+
+    def enterGen_atom_name_qc(self, ctx: CyanaMRParser.Gen_atom_name_qcContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#gen_atom_name_qc.
+        """
+
+    def exitGen_atom_name_qc(self, ctx: CyanaMRParser.Gen_atom_name_qcContext):
+        """ Exit a parse tree produced by CyanaMRParser#gen_atom_name_qc.
+        """
+
+        if ctx.Simple_name_QC():
+            self.genAtomNameSelection_qc.append(str(ctx.Simple_name_QC()))
+
+        elif ctx.Capital_integer_QC():
+            self.genAtomNameSelection_qc.append(str(ctx.Capital_integer_QC()))
+
+        elif ctx.Integer_capital_QC():
+            self.genAtomNameSelection_qc.append(str(ctx.Integer_capital_QC()))
+
+        else:
+            self.genAtomNameSelection_qc.append(None)

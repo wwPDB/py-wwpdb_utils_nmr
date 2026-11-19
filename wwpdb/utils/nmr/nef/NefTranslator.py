@@ -3852,8 +3852,10 @@ class NefTranslator:
                                                             row[entity_id_col] = str(_entity_id)
                                                         break
                                                 # DAOTHER-10324
-                                                if row[auth_seq_id_col] not in EMPTY_VALUE and row[auth_seq_id_col].isdigit():
-                                                    auth_seq_id = int(row[auth_seq_id_col])
+                                                if row[auth_seq_id_col] not in EMPTY_VALUE\
+                                                   and (isinstance(row[auth_seq_id_col], int) or row[auth_seq_id_col].isdigit()):
+                                                    auth_seq_id = row[auth_seq_id_col] if isinstance(row[auth_seq_id_col], int)\
+                                                        else int(row[auth_seq_id_col])
                                                     cif_ps_can = [_ps for _ps in cif_ps
                                                                   if _ps['auth_chain_id'] != ref_chain_id
                                                                   and auth_seq_id in _ps['auth_seq_id']]
@@ -8921,7 +8923,13 @@ class NefTranslator:
                     atom_type = ref_atom[8].lstrip('*')
                     wc_code = ref_atom[7]
 
-                    if wc_code == '%':
+                    pattern = None
+
+                    if atom_type in ('#', '?', '+'):
+                        if self.__verbose:
+                            self.__log.write(f"+{self.__class_name__}.get_star_atom() "
+                                             f"++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
+                    elif wc_code == '%':
                         pattern = re.compile(fr'\d+{atom_type}') if is_std_comp_id else re.compile(fr'\S?{atom_type}')
                     elif wc_code == '*':
                         pattern = re.compile(fr'\S+{atom_type}')
@@ -8929,19 +8937,21 @@ class NefTranslator:
                         self.__log.write(f"+{self.__class_name__}.get_star_atom() "
                                          f"++ Error  - Invalid NEF atom nomenclature {nef_atom} found.\n")
 
-                    atom_list = [a for a in atoms if re.match(pattern, a)]
+                    if pattern is not None:
 
-                    if not is_std_comp_id and self.__csStat.peptideLike(comp_id)\
-                       and any(a in AMINO_PROTON_CODE for a in atom_list)\
-                       and any(a not in AMINO_PROTON_CODE for a in atom_list):
-                        atom_list = [a for a in atom_list if a not in AMINO_PROTON_CODE]  # ACA:H21, H22, H2 (5nwu)
+                        atom_list = [a for a in atoms if re.match(pattern, a)]
 
-                    ambiguity_code = 1 if atom_list[0] in methyl_atoms\
-                        else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+                        if not is_std_comp_id and self.__csStat.peptideLike(comp_id)\
+                           and any(a in AMINO_PROTON_CODE for a in atom_list)\
+                           and any(a not in AMINO_PROTON_CODE for a in atom_list):
+                            atom_list = [a for a in atom_list if a not in AMINO_PROTON_CODE]  # ACA:H21, H22, H2 (5nwu)
 
-                    # DAOTHER-8817: guess ambiguity code from pseudo CCD
-                    if ambiguity_code == 0:
-                        ambiguity_code = guess_ambiguity_code(atom_list)
+                        ambiguity_code = 1 if atom_list[0] in methyl_atoms\
+                            else self.__csStat.getMaxAmbigCodeWoSetId(comp_id, atom_list[0])
+
+                        # DAOTHER-8817: guess ambiguity code from pseudo CCD
+                        if ambiguity_code == 0:
+                            ambiguity_code = guess_ambiguity_code(atom_list)
 
                 elif self.__verbose:
                     self.__log.write(f"+{self.__class_name__}.get_star_atom() "

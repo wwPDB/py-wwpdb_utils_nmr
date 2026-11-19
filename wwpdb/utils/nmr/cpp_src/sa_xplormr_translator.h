@@ -135,6 +135,7 @@ class SA_XplorMRTranslator : public XplorMRParserBaseVisitor {
     PyObject *Sani_assign_loopContext_cls = NULL;
     PyObject *Xadc_assign_loopContext_cls = NULL;
     PyObject *Coup_assign_loopContext_cls = NULL;
+    PyObject *Carbon_shift_assign_loopContext_cls = NULL;
     PyObject *Coll_assign_loopContext_cls = NULL;
     PyObject *Csa_assign_loopContext_cls = NULL;
     PyObject *Pre_assign_loopContext_cls = NULL;
@@ -391,6 +392,8 @@ class SA_XplorMRTranslator : public XplorMRParserBaseVisitor {
     antlrcpp::Any visitXadc_assign_loop(XplorMRParser::Xadc_assign_loopContext *ctx);
 
     antlrcpp::Any visitCoup_assign_loop(XplorMRParser::Coup_assign_loopContext *ctx);
+
+    antlrcpp::Any visitCarbon_shift_assign_loop(XplorMRParser::Carbon_shift_assign_loopContext *ctx);
 
     antlrcpp::Any visitColl_assign_loop(XplorMRParser::Coll_assign_loopContext *ctx);
 

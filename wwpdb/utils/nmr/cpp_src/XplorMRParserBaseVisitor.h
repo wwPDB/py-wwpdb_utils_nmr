@@ -507,6 +507,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitCarbon_shift_assign_loop(XplorMRParser::Carbon_shift_assign_loopContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitColl_assign_loop(XplorMRParser::Coll_assign_loopContext *ctx) override {
     return visitChildren(ctx);
   }

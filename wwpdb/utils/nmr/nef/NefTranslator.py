@@ -3852,8 +3852,10 @@ class NefTranslator:
                                                             row[entity_id_col] = str(_entity_id)
                                                         break
                                                 # DAOTHER-10324
-                                                if row[auth_seq_id_col] not in EMPTY_VALUE and row[auth_seq_id_col].isdigit():
-                                                    auth_seq_id = int(row[auth_seq_id_col])
+                                                if row[auth_seq_id_col] not in EMPTY_VALUE\
+                                                   and (isinstance(row[auth_seq_id_col], int) or row[auth_seq_id_col].isdigit()):
+                                                    auth_seq_id = row[auth_seq_id_col] if isinstance(row[auth_seq_id_col], int)\
+                                                        else int(row[auth_seq_id_col])
                                                     cif_ps_can = [_ps for _ps in cif_ps
                                                                   if _ps['auth_chain_id'] != ref_chain_id
                                                                   and auth_seq_id in _ps['auth_seq_id']]

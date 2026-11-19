@@ -123,7 +123,7 @@ fixres_distance_restraints:
 
 fixres_distance_restraint:
 	gen_res_num gen_simple_name comment?
-	(gen_simple_name gen_res_num gen_simple_name gen_simple_name number | comment)+;
+	(gen_simple_name gen_res_num gen_simple_name gen_simple_name number | (comment | Float))+;
 
 /* with weight value or upper limit value */
 fixresw_distance_restraints:
@@ -131,7 +131,7 @@ fixresw_distance_restraints:
 
 fixresw_distance_restraint:
 	gen_res_num gen_simple_name comment?
-	(gen_simple_name gen_res_num gen_simple_name gen_simple_name number number | comment)+;
+	(gen_simple_name gen_res_num gen_simple_name gen_simple_name number number | (comment | Float))+;
 
 /* with lol, upl, weight value */
 fixresw2_distance_restraints:
@@ -139,7 +139,7 @@ fixresw2_distance_restraints:
 
 fixresw2_distance_restraint:
 	gen_res_num gen_simple_name comment?
-	(gen_simple_name gen_res_num gen_simple_name gen_simple_name number number number | comment)+;
+	(gen_simple_name gen_res_num gen_simple_name gen_simple_name number number number | (comment | Float))+;
 
 /* CYANA (undocumented) - ambiguous (fixed atom) distance restraint
  77 VAL H  #

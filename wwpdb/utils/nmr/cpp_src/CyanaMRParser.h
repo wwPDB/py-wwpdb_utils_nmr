@@ -455,6 +455,8 @@ public:
     CommentContext* comment(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Float();
+    antlr4::tree::TerminalNode* Float(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -489,6 +491,8 @@ public:
     CommentContext* comment(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Float();
+    antlr4::tree::TerminalNode* Float(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -523,6 +527,8 @@ public:
     CommentContext* comment(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Float();
+    antlr4::tree::TerminalNode* Float(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

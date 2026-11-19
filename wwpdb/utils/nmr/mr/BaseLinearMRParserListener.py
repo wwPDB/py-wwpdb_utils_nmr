@@ -2252,7 +2252,7 @@ class BaseLinearMRParserListener():
                         asis = True
                     elif _seqId != 0 and not _compId.startswith('AMB'):
                         if enableWarning:
-                            self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
+                            self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                                           f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                     updatePolySeqRst(self.__polySeqRstFailed, self.polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId,
                                      _seqId, compId, _compId)
@@ -6945,7 +6945,7 @@ class BaseLinearMRParserListener():
 
         return dstFunc
 
-    def validateRdcRange(self, weight: float, orientation: int, target_value: Optional[float],
+    def validateRdcRange(self, weight: float, orientation: Optional[int], target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float]
                          ) -> Optional[dict]:
         """ Validate RDC value range.

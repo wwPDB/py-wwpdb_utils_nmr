@@ -2250,9 +2250,10 @@ class BaseLinearMRParserListener():
                             for _refChainId in refChainIds:
                                 chainAssign.add((_refChainId, _seqId, compId, True))
                         asis = True
-                    elif _seqId != 0 and not _compId.startswith('AMB'):
+                    else:
+                        warn_title = 'Unsupported data' if _seqId == 0 and _compId.startswith('AMB') else 'Atom not found'
                         if enableWarning:
-                            self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
+                            self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                           f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                     updatePolySeqRst(self.__polySeqRstFailed, self.polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId,
                                      _seqId, compId, _compId)

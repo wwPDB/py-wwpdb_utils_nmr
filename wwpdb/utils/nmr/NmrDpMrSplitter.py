@@ -2870,14 +2870,19 @@ class NmrDpMrSplitter:
 
         if fileListId >= len(self.__reg.report.input_sources):
 
-            err = 'Discrepancy was found in the internal input source. Please verify that the auxiliary STAR-format file is valid.'
+            if self.__reg.internal_mode\
+               and (MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict
+                    or len(self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY]) == 0):
 
-            self.__reg.report.error.appendDescription('internal_error',
-                                                      f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
-                                                      "++ Error  - " + err)
+                err = 'Discrepancy was found in the internal input source. '\
+                    'Please verify that the auxiliary STAR-format file is valid.'
 
-            if self.__reg.verbose:
-                self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
+                                                          "++ Error  - " + err)
+
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
 
             return False
 

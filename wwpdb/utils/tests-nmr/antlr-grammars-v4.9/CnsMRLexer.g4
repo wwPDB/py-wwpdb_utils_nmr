@@ -121,7 +121,7 @@ Ppm2:			P P M '2';				// = Real
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
-Restraints:		(R E S T R? A? I? N? T? | C O N S T R A I N T) S?;	// Dihedral
+Restraints:		(R E S T R? A? I? N? T? 'S'?) | (C O N S T R A I N T 'S'?);	// Dihedral
 Dihedral:		D I H E D? R? A? L?;			// Dihedral { dihedral_statement } End
 //Assign:		A S S I G? N?;				// selection selection selection selection Real Real Real Integer
 //Cv:			C V;					// = Integer

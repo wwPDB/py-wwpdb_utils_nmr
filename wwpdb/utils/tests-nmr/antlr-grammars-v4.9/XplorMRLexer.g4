@@ -105,7 +105,7 @@ Ppm2:			P P M '2';				// = Real
 /* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
 */
-Restraints:		(R E S T R? A? I? N? T? | C O N S T R A I N T) S?;	// Dihedral
+Restraints:		(R E S T R? A? I? N? T? 'S'?) | (C O N S T R A I N T 'S'?);	// Dihedral
 Dihedral:		D I H E D? R? A? L?;			// Dihedral { dihedral_statement } End
 //Assign:		A S S I G? N?;				// selection selection selection selection Real Real Real Integer
 Nassign:		N A S S I? G? N?;			// = Integer

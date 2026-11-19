@@ -59,6 +59,8 @@ fragment NAME_CHAR:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' 
 //fragment ATM_NAME_CHAR:	ALPHA_NUM | '\'';
 fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 
+CONTINUE:		'\\' [\r\n]+ -> skip;
+
 SPACE:			[ \t]+ -> skip;
 RETURN:			[\r\n]+;
 
@@ -70,6 +72,9 @@ LINE_COMMENT:		(COMMENT_START_CHAR | COMMENT_START_CHAR '/'+ | COMMENT_START_CHA
 
 mode EXT_TBL_MODE;
 
+fragment START_CHAR_ET:	ALPHA_NUM | '_' | '-' | '+' | '.' | '*' | '?' | '{' | '[' | '/';
+fragment NAME_CHAR_ET:	START_CHAR | '\'' | '"' | ',' | ';' | '#' | '%' | '|' | '/' | '}' | ']';
+
 Res_ID_:		'RES_ID' -> popMode;
 
 Label:			'Label';
@@ -77,7 +82,7 @@ Exp_par_fl:		'Exp Par Fl';
 Peak_pick_fl:		'Peak-Pick Fl';
 Cross_ref:		'#-Cross-Ref';
 
-Simple_name_ET:		SIMPLE_NAME;
+Simple_name_ET:		START_CHAR_ET NAME_CHAR_ET*;
 
 SPACE_ET:		[ \t]+ -> skip;
 RETURN_ET:		[\r\n]+;

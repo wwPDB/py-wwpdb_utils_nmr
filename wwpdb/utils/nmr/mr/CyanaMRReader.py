@@ -268,6 +268,37 @@ class CyanaMRReader:
 if __name__ == "__main__":
     reader = CyanaMRReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2hv4/2hv4-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/2hv4/2hv4.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1sb0/1sb0-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/1sb0/1sb0.cif')
+
+    reader = CyanaMRReader(False)
+    reader.setDebugMode(False)
+    reader_listener, _, _ =\
+        reader.parse('../../tests-nmr/mock-data-remediation/1rvi/distance.txt',
+                     '../../tests-nmr/mock-data-remediation/1rvi/1rvi.cif')
+    print(reader_listener.getReasonsForReparsing())
+    reader = CyanaMRReader(True, reasons=reader_listener.getReasonsForReparsing())
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1rvi/distance.txt',
+                 '../../tests-nmr/mock-data-remediation/1rvi/1rvi.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1rvh/1rvh-corrected.mr',
+                 '../../tests-nmr/mock-data-remediation/1rvh/1rvh.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/1dtk/1dtk-trimmed.mr',
+                 '../../tests-nmr/mock-data-remediation/1dtk/1dtk.cif')
+
+    reader = CyanaMRReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/1axj/1axj-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/1axj/1axj.cif')
 

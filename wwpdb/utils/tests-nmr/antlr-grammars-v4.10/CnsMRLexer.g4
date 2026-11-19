@@ -85,6 +85,7 @@ Spectrum:		'SPECTRUM';				// = Integer
 //Weight:		'WEIGHT';				// = Real
 Volume:			'VOLUME';				// = Real
 Vol:			'VOL';					// = Real
+Hpm1:			'HPM1';					// = Real
 Ppm1:			'PPM1';					// = Real
 Ppm2:			'PPM2';					// = Real
 //Cv:			'CV';					// = Integer
@@ -92,7 +93,7 @@ Ppm2:			'PPM2';					// = Real
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
-Restraints:		'REST' 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;	// Dihedral
+Restraints:		('REST' 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?) | ('CONSTRAINT' 'S'?);	// Dihedral
 Dihedral:		'DIHE' 'D'? 'R'? 'A'? 'L'?;		// Dihedral { dihedral_statement } End
 //Assign:		'ASSI' 'G'? 'N'?;			// selection selection selection selection Real Real Real Integer
 //Cv:			'CV';					// = Integer
@@ -438,7 +439,7 @@ Symbol_name:		SYMBOL_NAME;
 
 SPACE:			[ \t\r\n]+ -> skip;
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
-SECTION_COMMENT:	('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
+SECTION_COMMENT:	('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME | 'HBOND')) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		('#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) | '!' | ';' | '\\' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | '>' '>'+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);
 SET_VARIABLE:		Set ([\r\n]*)? ~[\r\n]* ([\r\n]*)? End -> channel(HIDDEN);
 
@@ -574,6 +575,7 @@ Integer_CF:		('+' | '-')? DECIMAL;
 Real_CF:		Real;
 Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;
+Double_quote_string_CF:	'"' SIMPLE_NAME '"';
 
 SPACE_CF:		[ \t\r\n]+ -> skip;
 COMMENT_CF:		'{' (COMMENT_CF | .)*? '}' -> channel(HIDDEN);

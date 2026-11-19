@@ -736,9 +736,9 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                     return 'HB2'
                 if atomId == 'HBS':
                     return 'HB3'
-                if atomId.startswith('HDR'):
+                if atomId.startswith('HDR') or atomId.startswith('MDR'):
                     return 'HD1'
-                if atomId.startswith('HDS'):
+                if atomId.startswith('HDS') or atomId.startswith('MDS'):
                     return 'HD2'
                 if atomId == 'CDR':
                     return 'CD1'
@@ -814,9 +814,9 @@ def translateToStdAtomNameNoRef(atomId: str, refCompId: Optional[str] = None,
                 if atomId == 'HH2E':
                     return 'HH22'
             elif refCompId == 'VAL':
-                if atomId.startswith('HGR'):
+                if atomId.startswith('HGR') or atomId.startswith('MGR'):
                     return 'HG1'
-                if atomId.startswith('HGS'):
+                if atomId.startswith('HGS') or atomId.startswith('MGS'):
                     return 'HG2'
                 if atomId == 'CGR':
                     return 'CG1'
@@ -904,6 +904,10 @@ def translateToStdAtomNameWithRef(atomId: str, refCompId: Optional[str] = None,
                     return "H1'A"
                 if atomId == "H1''" and "H1'" in refAtomIdList:
                     return "H1'"
+                if atomId == "H1''" and "H1'2" in refAtomIdList:  # 3DR
+                    return "H1'2"
+                if atomId == "H1'" and "H1'1" in refAtomIdList:  # 3DR
+                    return "H1'1"
                 if atomId == "H1''" and "H1'A" in _refAtomIdList:  # 4DG
                     return "H1'A"
                 if atomId == "H1''" and "H1'" in _refAtomIdList:

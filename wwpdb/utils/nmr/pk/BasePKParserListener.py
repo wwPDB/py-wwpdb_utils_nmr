@@ -1093,12 +1093,15 @@ class BasePKParserListener():
             self.__splitLigand = ret['split_ligand']
             self.__entityAssembly = ret['entity_assembly']
 
+            self.exptlMethod = '.'
+
             exptl = cR.getDictList('exptl')
             if len(exptl) > 0:
                 for item in exptl:
                     if 'method' in item:
                         if 'NMR' in item['method']:
                             self.exptlMethod = item['method']
+
         else:
             self.exptlMethod = ''
             self.modelNumName = None
@@ -1118,8 +1121,6 @@ class BasePKParserListener():
             self.__modResidue = None
             self.__splitLigand = None
             self.__entityAssembly = None
-
-            self.exptlMethod = '.'
 
         self.polyPeptide = False
         self.polyDeoxyribonucleotide = False

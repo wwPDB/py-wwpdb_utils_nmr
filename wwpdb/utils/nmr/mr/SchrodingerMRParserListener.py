@@ -1801,7 +1801,7 @@ class SchrodingerMRParserListener(ParseTreeListener, BaseStackedMRParserListener
                     unq = int(str(_ctx.Integer(0)))
                     ret['range'] = [unq, unq]
 
-            except (TypeError, ValueError):
+            except (ValueError, TypeError):
                 pass
 
             if len(ret) == 0:

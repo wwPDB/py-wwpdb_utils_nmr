@@ -18,63 +18,63 @@ public:
     Threshold = 18, Reset = 19, Rswitch = 20, Scale = 21, SoExponent = 22, 
     SqConstant = 23, SqExponent = 24, SqOffset = 25, Temperature = 26, Cutoff = 27, 
     Cuton = 28, From = 29, To = 30, Peak = 31, Spectrum = 32, Volume = 33, 
-    Vol = 34, Ppm1 = 35, Ppm2 = 36, Restraints = 37, Dihedral = 38, Nassign = 39, 
-    Print_any = 40, Sanisotropy = 41, Coefficients = 42, ForceConstant = 43, 
-    Xdipolar = 44, Dipolar = 45, Type = 46, Sign = 47, VeAngle = 48, Cv = 49, 
-    Partition = 50, Tensor = 51, Anisotropy = 52, Planar = 53, Group = 54, 
-    Initialize = 55, Selection = 56, Weight = 57, Harmonic = 58, Exponent = 59, 
-    Normal = 60, Xadc = 61, Expectation = 62, Size = 63, Zero = 64, Coupling = 65, 
-    Degeneracy = 66, Carbon = 67, PhiStep = 68, PsiStep = 69, Rcoil = 70, 
-    Proton = 71, Observed = 72, Amides = 73, Nitrogens = 74, Oxygens = 75, 
-    RingAtoms = 76, AlphasAndAmides = 77, Error = 78, Ramachandran = 79, 
-    Gaussian = 80, Phase = 81, Quartic = 82, Shape = 83, Sort = 84, Dimensions = 85, 
-    Collapse = 86, Danisotropy = 87, Orient = 88, Height = 89, MaxGaussians = 90, 
-    NewGaussian = 91, Dcsa = 92, Sigma = 93, Pcsa = 94, OneBond = 95, AngleDb = 96, 
-    DerivFlag = 97, PMagnetic = 98, Kconst = 99, Omega = 100, Tauc = 101, 
-    Debug = 102, Xpcs = 103, Tolerance = 104, Save = 105, Fmed = 106, ErrOn = 107, 
-    ErrOff = 108, Fon = 109, Foff = 110, Son = 111, Soff = 112, Frun = 113, 
-    Xrdcoupling = 114, Xangle = 115, Xccr = 116, Weip = 117, Hbda = 118, 
-    Hbdb = 119, Kdir = 120, Klin = 121, Nseg = 122, Nmin = 123, Nmax = 124, 
-    Segm = 125, Ohcut = 126, Coh1cut = 127, Coh2cut = 128, Ohncut = 129, 
-    Updfrq = 130, Prnfrq = 131, Freemode = 132, Donor = 133, Acceptor = 134, 
-    Ncs = 135, Equivalence = 136, Sigb = 137, Flags = 138, All = 139, Around = 140, 
-    Atom = 141, Attribute = 142, BondedTo = 143, ByGroup = 144, ByRes = 145, 
-    Chemical = 146, Hydrogen = 147, Id = 148, Known = 149, Name = 150, Point = 151, 
-    Cut = 152, Previous = 153, Pseudo = 154, Residue = 155, Resname = 156, 
-    Saround = 157, SegIdentifier = 158, Store1 = 159, Store2 = 160, Store3 = 161, 
-    Store4 = 162, Store5 = 163, Store6 = 164, Store7 = 165, Store8 = 166, 
-    Store9 = 167, Tag = 168, Vector = 169, Do_Lp = 170, Identity_Lp = 171, 
-    Show = 172, Evaluate_Lp = 173, Patch = 174, Reference = 175, Nil = 176, 
-    Parameter = 177, UB = 178, Mult = 179, HBonded = 180, Improper = 181, 
-    NBFix = 182, NonB = 183, VDWOff = 184, Verbose = 185, For = 186, Loop = 187, 
-    Tail = 188, Head = 189, Or_op = 190, And_op = 191, Not_op = 192, Comma = 193, 
-    Complex = 194, Integer = 195, Logical = 196, Real = 197, Double_quote_string = 198, 
-    SHARP_COMMENT = 199, EXCLM_COMMENT = 200, SMCLN_COMMENT = 201, Simple_name = 202, 
-    Simple_names = 203, Integers = 204, L_paren = 205, R_paren = 206, Colon = 207, 
-    Equ_op = 208, Lt_op = 209, Gt_op = 210, Leq_op = 211, Geq_op = 212, 
-    Neq_op = 213, Symbol_name = 214, SPACE = 215, ENCLOSE_COMMENT = 216, 
-    SECTION_COMMENT = 217, LINE_COMMENT = 218, SET_VARIABLE = 219, Abs = 220, 
-    Attr_properties = 221, Comparison_ops = 222, SPACE_AP = 223, Equ_op_CL = 224, 
-    Class_name = 225, SPACE_CL = 226, Averaging_methods = 227, Class_name_AM = 228, 
-    SPACE_AM = 229, Equ_op_PT = 230, Potential_types = 231, Class_name_PT = 232, 
-    SPACE_PT = 233, Rdc_dist_fix_types = 234, Rdc_or_Diff_anis_types = 235, 
-    Csa_types = 236, SPACE_TY = 237, Gauss_or_Quart = 238, SPACE_SH = 239, 
-    Exclude = 240, Include = 241, End_FL = 242, Class_name_FL = 243, Any_class = 244, 
-    SPACE_FL = 245, R_paren_VE = 246, Equ_op_VE = 247, Add_op_VE = 248, 
-    Sub_op_VE = 249, Mul_op_VE = 250, Div_op_VE = 251, Exp_op_VE = 252, 
-    Comma_VE = 253, Integer_VE = 254, Real_VE = 255, Atom_properties_VE = 256, 
-    Abs_VE = 257, Acos_VE = 258, Asin_VE = 259, Cos_VE = 260, Decode_VE = 261, 
-    Encode_VE = 262, Exp_VE = 263, Gauss_VE = 264, Heavy_VE = 265, Int_VE = 266, 
-    Log10_VE = 267, Log_VE = 268, Max_VE = 269, Maxw_VE = 270, Min_VE = 271, 
-    Mod_VE = 272, Norm_VE = 273, Random_VE = 274, Sign_VE = 275, Sin_VE = 276, 
-    Sqrt_VE = 277, Tan_VE = 278, Symbol_name_VE = 279, Simple_name_VE = 280, 
-    Double_quote_string_VE = 281, SPACE_VE = 282, L_paren_VF = 283, SPACE_VF = 284, 
-    L_paren_VS = 285, R_paren_VS = 286, Average_VS = 287, Element_VS = 288, 
-    Max_VS = 289, Min_VS = 290, Norm_VS = 291, Rms_VS = 292, Sum_VS = 293, 
-    Atom_properties_VS = 294, SPACE_VS = 295, L_paren_CF = 296, R_paren_CF = 297, 
-    In_CF = 298, Integer_CF = 299, Real_CF = 300, Symbol_name_CF = 301, 
-    Simple_name_CF = 302, SPACE_CF = 303, COMMENT_CF = 304, Simple_name_LL = 305, 
-    SPACE_LL = 306
+    Vol = 34, Hpm1 = 35, Ppm1 = 36, Ppm2 = 37, Restraints = 38, Dihedral = 39, 
+    Nassign = 40, Print_any = 41, Sanisotropy = 42, Coefficients = 43, ForceConstant = 44, 
+    Xdipolar = 45, Dipolar = 46, Type = 47, Sign = 48, VeAngle = 49, Cv = 50, 
+    Partition = 51, Tensor = 52, Anisotropy = 53, Planar = 54, Group = 55, 
+    Initialize = 56, Selection = 57, Weight = 58, Harmonic = 59, Exponent = 60, 
+    Normal = 61, Xadc = 62, Expectation = 63, Size = 64, Zero = 65, Coupling = 66, 
+    Degeneracy = 67, Carbon = 68, PhiStep = 69, PsiStep = 70, Rcoil = 71, 
+    Proton = 72, Observed = 73, Amides = 74, Nitrogens = 75, Oxygens = 76, 
+    RingAtoms = 77, AlphasAndAmides = 78, Error = 79, Ramachandran = 80, 
+    Gaussian = 81, Phase = 82, Quartic = 83, Shape = 84, Sort = 85, Dimensions = 86, 
+    Collapse = 87, Danisotropy = 88, Orient = 89, Height = 90, MaxGaussians = 91, 
+    NewGaussian = 92, Dcsa = 93, Sigma = 94, Pcsa = 95, OneBond = 96, AngleDb = 97, 
+    DerivFlag = 98, PMagnetic = 99, Kconst = 100, Omega = 101, Tauc = 102, 
+    Debug = 103, Xpcs = 104, Tolerance = 105, Save = 106, Fmed = 107, ErrOn = 108, 
+    ErrOff = 109, Fon = 110, Foff = 111, Son = 112, Soff = 113, Frun = 114, 
+    Xrdcoupling = 115, Xangle = 116, Xccr = 117, Weip = 118, Hbda = 119, 
+    Hbdb = 120, Kdir = 121, Klin = 122, Nseg = 123, Nmin = 124, Nmax = 125, 
+    Segm = 126, Ohcut = 127, Coh1cut = 128, Coh2cut = 129, Ohncut = 130, 
+    Updfrq = 131, Prnfrq = 132, Freemode = 133, Donor = 134, Acceptor = 135, 
+    Ncs = 136, Equivalence = 137, Sigb = 138, Flags = 139, All = 140, Around = 141, 
+    Atom = 142, Attribute = 143, BondedTo = 144, ByGroup = 145, ByRes = 146, 
+    Chemical = 147, Hydrogen = 148, Id = 149, Known = 150, Name = 151, Point = 152, 
+    Cut = 153, Previous = 154, Pseudo = 155, Residue = 156, Resname = 157, 
+    Saround = 158, SegIdentifier = 159, Store1 = 160, Store2 = 161, Store3 = 162, 
+    Store4 = 163, Store5 = 164, Store6 = 165, Store7 = 166, Store8 = 167, 
+    Store9 = 168, Tag = 169, Vector = 170, Do_Lp = 171, Identity_Lp = 172, 
+    Show = 173, Evaluate_Lp = 174, Patch = 175, Reference = 176, Nil = 177, 
+    Parameter = 178, UB = 179, Mult = 180, HBonded = 181, Improper = 182, 
+    NBFix = 183, NonB = 184, VDWOff = 185, Verbose = 186, For = 187, Loop = 188, 
+    Tail = 189, Head = 190, Or_op = 191, And_op = 192, Not_op = 193, Comma = 194, 
+    Complex = 195, Integer = 196, Logical = 197, Real = 198, Double_quote_string = 199, 
+    SHARP_COMMENT = 200, EXCLM_COMMENT = 201, SMCLN_COMMENT = 202, Simple_name = 203, 
+    Simple_names = 204, Integers = 205, L_paren = 206, R_paren = 207, Colon = 208, 
+    Equ_op = 209, Lt_op = 210, Gt_op = 211, Leq_op = 212, Geq_op = 213, 
+    Neq_op = 214, Symbol_name = 215, SPACE = 216, ENCLOSE_COMMENT = 217, 
+    SECTION_COMMENT = 218, LINE_COMMENT = 219, SET_VARIABLE = 220, Abs = 221, 
+    Attr_properties = 222, Comparison_ops = 223, SPACE_AP = 224, Equ_op_CL = 225, 
+    Class_name = 226, SPACE_CL = 227, Averaging_methods = 228, Class_name_AM = 229, 
+    SPACE_AM = 230, Equ_op_PT = 231, Potential_types = 232, Class_name_PT = 233, 
+    SPACE_PT = 234, Rdc_dist_fix_types = 235, Rdc_or_Diff_anis_types = 236, 
+    Csa_types = 237, SPACE_TY = 238, Gauss_or_Quart = 239, SPACE_SH = 240, 
+    Exclude = 241, Include = 242, End_FL = 243, Class_name_FL = 244, Any_class = 245, 
+    SPACE_FL = 246, R_paren_VE = 247, Equ_op_VE = 248, Add_op_VE = 249, 
+    Sub_op_VE = 250, Mul_op_VE = 251, Div_op_VE = 252, Exp_op_VE = 253, 
+    Comma_VE = 254, Integer_VE = 255, Real_VE = 256, Atom_properties_VE = 257, 
+    Abs_VE = 258, Acos_VE = 259, Asin_VE = 260, Cos_VE = 261, Decode_VE = 262, 
+    Encode_VE = 263, Exp_VE = 264, Gauss_VE = 265, Heavy_VE = 266, Int_VE = 267, 
+    Log10_VE = 268, Log_VE = 269, Max_VE = 270, Maxw_VE = 271, Min_VE = 272, 
+    Mod_VE = 273, Norm_VE = 274, Random_VE = 275, Sign_VE = 276, Sin_VE = 277, 
+    Sqrt_VE = 278, Tan_VE = 279, Symbol_name_VE = 280, Simple_name_VE = 281, 
+    Double_quote_string_VE = 282, SPACE_VE = 283, L_paren_VF = 284, SPACE_VF = 285, 
+    L_paren_VS = 286, R_paren_VS = 287, Average_VS = 288, Element_VS = 289, 
+    Max_VS = 290, Min_VS = 291, Norm_VS = 292, Rms_VS = 293, Sum_VS = 294, 
+    Atom_properties_VS = 295, SPACE_VS = 296, L_paren_CF = 297, R_paren_CF = 298, 
+    In_CF = 299, Integer_CF = 300, Real_CF = 301, Symbol_name_CF = 302, 
+    Simple_name_CF = 303, Double_quote_string_CF = 304, SPACE_CF = 305, 
+    COMMENT_CF = 306, Simple_name_LL = 307, SPACE_LL = 308
   };
 
   enum {
@@ -119,9 +119,9 @@ public:
     RuleEvaluate_statement = 113, RuleEvaluate_operation = 114, RulePatch_statement = 115, 
     RuleParameter_setting = 116, RuleParameter_statement = 117, RuleNoe_assign_loop = 118, 
     RuleDihedral_assign_loop = 119, RuleSani_assign_loop = 120, RuleXadc_assign_loop = 121, 
-    RuleCoup_assign_loop = 122, RuleColl_assign_loop = 123, RuleCsa_assign_loop = 124, 
-    RulePre_assign_loop = 125, RulePcs_assign_loop = 126, RuleHbond_assign_loop = 127, 
-    RuleHbond_db_assign_loop = 128, RulePlanar_group_loop = 129
+    RuleCoup_assign_loop = 122, RuleCarbon_shift_assign_loop = 123, RuleColl_assign_loop = 124, 
+    RuleCsa_assign_loop = 125, RulePre_assign_loop = 126, RulePcs_assign_loop = 127, 
+    RuleHbond_assign_loop = 128, RuleHbond_db_assign_loop = 129, RulePlanar_group_loop = 130
   };
 
   explicit XplorMRParser(antlr4::TokenStream *input);
@@ -264,6 +264,7 @@ public:
   class Sani_assign_loopContext;
   class Xadc_assign_loopContext;
   class Coup_assign_loopContext;
+  class Carbon_shift_assign_loopContext;
   class Coll_assign_loopContext;
   class Csa_assign_loopContext;
   class Pre_assign_loopContext;
@@ -898,6 +899,7 @@ public:
     antlr4::tree::TerminalNode *Weight();
     antlr4::tree::TerminalNode *Volume();
     antlr4::tree::TerminalNode *Vol();
+    antlr4::tree::TerminalNode *Hpm1();
     antlr4::tree::TerminalNode *Ppm1();
     antlr4::tree::TerminalNode *Ppm2();
     antlr4::tree::TerminalNode *Cv();
@@ -983,11 +985,14 @@ public:
   public:
     Sani_assignContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Assign();
+    std::vector<antlr4::tree::TerminalNode *> Assign();
+    antlr4::tree::TerminalNode* Assign(size_t i);
     std::vector<SelectionContext *> selection();
     SelectionContext* selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Or_op();
+    antlr4::tree::TerminalNode* Or_op(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -2834,6 +2839,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Noe_assignContext *> noe_assign();
     Noe_assignContext* noe_assign(size_t i);
+    std::vector<Noe_assign_loopContext *> noe_assign_loop();
+    Noe_assign_loopContext* noe_assign_loop(size_t i);
     std::vector<Distance_restraintContext *> distance_restraint();
     Distance_restraintContext* distance_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -2842,6 +2849,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -2868,6 +2877,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Dihedral_assignContext *> dihedral_assign();
     Dihedral_assignContext* dihedral_assign(size_t i);
+    std::vector<Dihedral_assign_loopContext *> dihedral_assign_loop();
+    Dihedral_assign_loopContext* dihedral_assign_loop(size_t i);
     std::vector<Dihedral_angle_restraintContext *> dihedral_angle_restraint();
     Dihedral_angle_restraintContext* dihedral_angle_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -2876,6 +2887,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -2902,6 +2915,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Sani_assignContext *> sani_assign();
     Sani_assignContext* sani_assign(size_t i);
+    std::vector<Sani_assign_loopContext *> sani_assign_loop();
+    Sani_assign_loopContext* sani_assign_loop(size_t i);
     std::vector<Rdc_restraintContext *> rdc_restraint();
     Rdc_restraintContext* rdc_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -2910,6 +2925,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -2936,6 +2953,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Xadc_assignContext *> xadc_assign();
     Xadc_assignContext* xadc_assign(size_t i);
+    std::vector<Xadc_assign_loopContext *> xadc_assign_loop();
+    Xadc_assign_loopContext* xadc_assign_loop(size_t i);
     std::vector<Antidistance_restraintContext *> antidistance_restraint();
     Antidistance_restraintContext* antidistance_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -2944,6 +2963,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -2970,6 +2991,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Coup_assignContext *> coup_assign();
     Coup_assignContext* coup_assign(size_t i);
+    std::vector<Coup_assign_loopContext *> coup_assign_loop();
+    Coup_assign_loopContext* coup_assign_loop(size_t i);
     std::vector<Coupling_restraintContext *> coupling_restraint();
     Coupling_restraintContext* coupling_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -2978,6 +3001,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -2985,6 +3010,44 @@ public:
   };
 
   Coup_assign_loopContext* coup_assign_loop();
+
+  class  Carbon_shift_assign_loopContext : public antlr4::ParserRuleContext {
+  public:
+    Carbon_shift_assign_loopContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *For();
+    antlr4::tree::TerminalNode *Symbol_name_CF();
+    antlr4::tree::TerminalNode *In_CF();
+    antlr4::tree::TerminalNode *L_paren_CF();
+    antlr4::tree::TerminalNode *R_paren_CF();
+    std::vector<antlr4::tree::TerminalNode *> Loop();
+    antlr4::tree::TerminalNode* Loop(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Simple_name_LL();
+    antlr4::tree::TerminalNode* Simple_name_LL(size_t i);
+    antlr4::tree::TerminalNode *End();
+    std::vector<Evaluate_statementContext *> evaluate_statement();
+    Evaluate_statementContext* evaluate_statement(size_t i);
+    std::vector<Carbon_shift_assignContext *> carbon_shift_assign();
+    Carbon_shift_assignContext* carbon_shift_assign(size_t i);
+    std::vector<Carbon_shift_assign_loopContext *> carbon_shift_assign_loop();
+    Carbon_shift_assign_loopContext* carbon_shift_assign_loop(size_t i);
+    std::vector<Carbon_shift_restraintContext *> carbon_shift_restraint();
+    Carbon_shift_restraintContext* carbon_shift_restraint(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Integer_CF();
+    antlr4::tree::TerminalNode* Integer_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Real_CF();
+    antlr4::tree::TerminalNode* Real_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
+    antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Carbon_shift_assign_loopContext* carbon_shift_assign_loop();
 
   class  Coll_assign_loopContext : public antlr4::ParserRuleContext {
   public:
@@ -3004,6 +3067,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Coll_assignContext *> coll_assign();
     Coll_assignContext* coll_assign(size_t i);
+    std::vector<Coll_assign_loopContext *> coll_assign_loop();
+    Coll_assign_loopContext* coll_assign_loop(size_t i);
     std::vector<Radius_of_gyration_restraintContext *> radius_of_gyration_restraint();
     Radius_of_gyration_restraintContext* radius_of_gyration_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -3012,6 +3077,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -3038,6 +3105,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Csa_assignContext *> csa_assign();
     Csa_assignContext* csa_assign(size_t i);
+    std::vector<Csa_assign_loopContext *> csa_assign_loop();
+    Csa_assign_loopContext* csa_assign_loop(size_t i);
     std::vector<Csa_restraintContext *> csa_restraint();
     Csa_restraintContext* csa_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -3046,6 +3115,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -3072,6 +3143,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Pre_assignContext *> pre_assign();
     Pre_assignContext* pre_assign(size_t i);
+    std::vector<Pre_assign_loopContext *> pre_assign_loop();
+    Pre_assign_loopContext* pre_assign_loop(size_t i);
     std::vector<Pre_restraintContext *> pre_restraint();
     Pre_restraintContext* pre_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -3080,6 +3153,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -3108,14 +3183,16 @@ public:
     Pcs_assignContext* pcs_assign(size_t i);
     std::vector<Pcs_restraintContext *> pcs_restraint();
     Pcs_restraintContext* pcs_restraint(size_t i);
-    std::vector<Carbon_shift_restraintContext *> carbon_shift_restraint();
-    Carbon_shift_restraintContext* carbon_shift_restraint(size_t i);
+    std::vector<Pcs_assign_loopContext *> pcs_assign_loop();
+    Pcs_assign_loopContext* pcs_assign_loop(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
     antlr4::tree::TerminalNode* Integer_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Real_CF();
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -3142,6 +3219,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Hbond_assignContext *> hbond_assign();
     Hbond_assignContext* hbond_assign(size_t i);
+    std::vector<Hbond_assign_loopContext *> hbond_assign_loop();
+    Hbond_assign_loopContext* hbond_assign_loop(size_t i);
     std::vector<Hbond_restraintContext *> hbond_restraint();
     Hbond_restraintContext* hbond_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -3150,6 +3229,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -3176,6 +3257,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Hbond_db_assignContext *> hbond_db_assign();
     Hbond_db_assignContext* hbond_db_assign(size_t i);
+    std::vector<Hbond_db_assign_loopContext *> hbond_db_assign_loop();
+    Hbond_db_assign_loopContext* hbond_db_assign_loop(size_t i);
     std::vector<Hbond_db_restraintContext *> hbond_db_restraint();
     Hbond_db_restraintContext* hbond_db_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -3184,6 +3267,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -3210,6 +3295,8 @@ public:
     Evaluate_statementContext* evaluate_statement(size_t i);
     std::vector<Planar_groupContext *> planar_group();
     Planar_groupContext* planar_group(size_t i);
+    std::vector<Planar_group_loopContext *> planar_group_loop();
+    Planar_group_loopContext* planar_group_loop(size_t i);
     std::vector<Planar_restraintContext *> planar_restraint();
     Planar_restraintContext* planar_restraint(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Integer_CF();
@@ -3218,6 +3305,8 @@ public:
     antlr4::tree::TerminalNode* Real_CF(size_t i);
     std::vector<antlr4::tree::TerminalNode *> Simple_name_CF();
     antlr4::tree::TerminalNode* Simple_name_CF(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Double_quote_string_CF();
+    antlr4::tree::TerminalNode* Double_quote_string_CF(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

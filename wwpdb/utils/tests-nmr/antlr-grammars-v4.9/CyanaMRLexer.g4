@@ -49,7 +49,7 @@ fragment Z:		[zZ];
 /* CYANA 3.0 Reference Manual
  See also http://www.cyana.org/wiki/index.php/CYANA_3.0_Reference_Manual
 */
-Ambig_code:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
+Ambig_code:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME ('.' | ':') DECIMAL);
 Integer:		('+' | '-')? DECIMAL;
 Float:			('+' | '-')? (DECIMAL | DEC_DOT_DEC) (E ('+' | '-')? DECIMAL)?;
 Float_DecimalComma:	('+' | '-')? (DEC_COM_DEC) ('E' ('+' | '-')? DECIMAL)?;
@@ -66,16 +66,18 @@ SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 COMMENT:		('#' | '!')+ -> mode(COMMENT_MODE);
 
 /* DIANA restraint headers */
-NoeUpp:			N O E U P P;
-NoeLow:			N O E L O W;
-NoeUpLo:		N O E U P L O;
-HBUpp:			H B U P P;
-HBLow:			H B L O W;
-SSUpp:			S S U P P;
-SSLow:			S S L O W;
-Jcoupl:			J C O U P L;
-Angle:			A N G L E;
-Stereo:			S T E R E O;
+NoeUpp:			N O E U P P -> mode(QCONVR_MODE);
+NoeLow:			N O E L O W -> mode(QCONVR_MODE);
+NoeUpLo:		N O E U P L O -> mode(QCONVR_MODE);
+HBUpp:			H B U P P -> mode(QCONVR_MODE);
+HBLow:			H B L O W -> mode(QCONVR_MODE);
+HBUpLo:			H B U P L O -> mode(QCONVR_MODE);
+SSUpp:			S S U P P -> mode(QCONVR_MODE);
+SSLow:			S S L O W -> mode(QCONVR_MODE);
+SSUpLo:			S S U P L O -> mode(QCONVR_MODE);
+Jcoupl:			J C O U P L -> mode(QCONVR_MODE);
+Angle:			A N G L E -> mode(QCONVR_MODE);
+Stereo:			S T E R E O -> mode(QCONVR_MODE);
 
 /* extensions for torsion angle restraints */
 Type:			T Y P E;		// = Integer
@@ -175,6 +177,8 @@ LINE_COMMENT_HB:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+
 mode PRINT_MODE;
 
 Double_quote_string:	'"' ~["\r\n]* '"';
+Integer_PR:		Integer;
+Simple_name_PR:		SIMPLE_NAME;
 
 SPACE_PR:		[ \t]+ -> skip;
 RETURN_PR:		[\r\n]+ -> mode(DEFAULT_MODE);
@@ -194,7 +198,7 @@ LINE_COMMENT_VA:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+
 
 mode MAP_MODE;
 
-Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME '.' DECIMAL);
+Ambig_code_MP:		(DECIMAL '-' DECIMAL ':' DECIMAL | (ALPHA | '_') SIMPLE_NAME ('.' | ':') DECIMAL);
 Integer_MP:		Integer;
 Simple_name_MP:		SIMPLE_NAME;
 
@@ -205,3 +209,16 @@ RETURN_MP:		[\r\n]+ -> mode(DEFAULT_MODE);
 
 //SECTION_COMMENT_MP:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K S?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT_MP:	('#' | '!' | ';' | '\\' | '&' | '<' | '>' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | R E M A R K S?) ~[\r\n]* -> channel(HIDDEN);
+
+mode QCONVR_MODE;
+
+Integer_QC:		Integer;
+Float_QC:		Float;
+Float_DecimalComma_QC:	Float_DecimalComma;
+Simple_name_QC:		SIMPLE_NAME;
+
+Capital_integer_QC:	Capital_integer;
+Integer_capital_QC:	Integer_capital;
+
+SPACE_QC:		[ \t]+ -> skip;
+RETURN_QC:		[\r\n]+ -> mode(DEFAULT_MODE);

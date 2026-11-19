@@ -162,6 +162,8 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.__col_order.append('weight')
             elif 'PEAK' in col_name or 'RESONANCE' in col_name:
                 self.__col_order.append('evidence')
+            elif 'INTENSITY' in col_name or 'VOLUME' in col_name:
+                self.__col_order.append('volume')
             else:
                 self.__col_order.append('unknown')
 
@@ -171,8 +173,12 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         self.columnNameSelection.clear()
 
         if self.__col_order.count('atom_name') == 2:
-            self.cur_subtype = 'dist'
-            self.distRestraints = 0
+            if 'target_value' in self.__col_order or 'upper_limit' in self.__col_order or 'lower_limit' in self.__col_order:
+                self.cur_subtype = 'dist'
+                self.distRestraints = 0
+            if 'volume' in self.__col_order:
+                self.cur_subtype = 'noepk'
+                self.noepkRestraints = 0
 
         if self.__col_order.count('atom_name') == 4:
             self.cur_subtype = 'dihed'
@@ -190,6 +196,8 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             self.extractDistance_restraint()
         if self.cur_subtype == 'dihed':
             self.extractTorsion_angle_restraint()
+        if self.cur_subtype == 'noepk':
+            self.extractNoe_peak_restraint()
 
     def extractDistance_restraint(self) -> None:
         """ Extract distance restraint.
@@ -200,7 +208,16 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             len_ord = len(self.__col_order)
             len_any = len(self.anySelection)
 
-            if len_ord > len_any:
+            eff_len_ord = len_ord
+            while True:
+                if eff_len_ord <= len_any:
+                    break
+                if self.__col_order[eff_len_ord - 1] in ('details', 'unknown'):
+                    eff_len_ord -= 1
+                    continue
+                break
+
+            if eff_len_ord > len_any:
                 return
 
             if self.distRestraints == 0:
@@ -326,7 +343,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if isinstance(self.anySelection[idx], float):
                             value_uncertainty = abs(self.anySelection[idx])
                         elif isinstance(self.anySelection[idx], int):
-                            value_uncertainty = float(self.anySelection[idx])
+                            value_uncertainty = abs(float(self.anySelection[idx]))
                     elif order == 'weight':
                         if isinstance(self.anySelection[idx], float):
                             weight = self.anySelection[idx]
@@ -527,7 +544,16 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             len_ord = len(self.__col_order)
             len_any = len(self.anySelection)
 
-            if len_ord > len_any:
+            eff_len_ord = len_ord
+            while True:
+                if eff_len_ord <= len_any:
+                    break
+                if self.__col_order[eff_len_ord - 1] in ('details', 'unknown'):
+                    eff_len_ord -= 1
+                    continue
+                break
+
+            if eff_len_ord > len_any:
                 return
 
             if self.dihedRestraints == 0:
@@ -658,7 +684,7 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                         if isinstance(self.anySelection[idx], float):
                             value_uncertainty = abs(self.anySelection[idx])
                         elif isinstance(self.anySelection[idx], int):
-                            value_uncertainty = float(self.anySelection[idx])
+                            value_uncertainty = abs(float(self.anySelection[idx]))
                     elif order == 'weight':
                         if isinstance(self.anySelection[idx], float):
                             weight = self.anySelection[idx]
@@ -839,13 +865,291 @@ class BareMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         finally:
             self.anySelection.clear()
 
+    def extractNoe_peak_restraint(self) -> None:
+        """ Extract NOE peak restraint.
+        """
+
+        try:
+
+            len_ord = len(self.__col_order)
+            len_any = len(self.anySelection)
+
+            eff_len_ord = len_ord
+            while True:
+                if eff_len_ord <= len_any:
+                    break
+                if self.__col_order[eff_len_ord - 1] in ('details', 'unknown'):
+                    eff_len_ord -= 1
+                    continue
+                break
+
+            if eff_len_ord > len_any:
+                return
+
+            if self.noepkRestraints == 0:
+                if len_ord + 1 == len_any:
+                    if 'index' not in self.__col_order:
+                        self.__col_order.insert(0, 'index')
+                    else:
+                        self.__col_order.insert(0, 'unknown')
+                    self.__col_name.insert(0, 'N/A')
+                    len_ord += 1
+
+                elif len_ord + 2 == len_any and self.__col_name[0] == 'ATOM_I' and self.__col_name[1] == 'ATOM_J'\
+                        and 'sequence_code' not in self.__col_order:
+                    self.__col_order.insert(2, 'sequence_code')
+                    self.__col_name.insert(2, 'RES_J')
+                    self.__col_order.insert(1, 'sequence_code')
+                    self.__col_name.insert(1, 'RES_I')
+                    len_ord += 2
+
+                elif self.__col_order.count('sequence_code') == 4 and self.__col_order.count('residue_name') == 0:
+                    name_test = 0
+                    for name, order in zip(self.__col_name, self.__col_order):
+                        if order == 'sequence_code':
+                            if 'NUM' in name or 'NM' in name or name.endswith('ID'):
+                                continue
+                            name_test += 1
+                    if name_test == 2:
+                        for idx, (name, order) in enumerate(zip(self.__col_name, self.__col_order)):
+                            if order == 'sequence_code':
+                                if 'NUM' in name or 'NM' in name or name.endswith('ID'):
+                                    continue
+                                self.__col_order[idx] = 'residue_name'
+
+            if self.__col_order.count('sequence_code') not in (0, 2) or self.__col_order.count('atom_name') != 2\
+               or ('volume' not in self.__col_order):
+                return
+
+            for col_type in ('chain_code', 'residue_name'):
+                if col_type in self.__col_order and self.__col_order.count(col_type) != 2:
+                    return
+
+            if self.__col_order.count('volume') != 1:
+                return
+
+            self.noepkRestraints += 1
+
+            self.atomSelectionSet.clear()
+
+            if not self.hasPolySeq:
+                return
+
+            chainIds, seqIds, compIds, atomIds = [], [], [], []
+            volume = value_uncertainty = None
+            weight = 1.0
+
+            for idx in range(len_any):
+                if idx < len_ord:
+                    order = self.__col_order[idx]
+                    if order == 'chain_code':
+                        if isinstance(self.anySelection[idx], str):
+                            chainIds.append(self.anySelection[idx])
+                        elif isinstance(self.anySelection[idx], int):
+                            chainIds.append(str(self.anySelection[idx]))
+                    elif order == 'sequence_code':
+                        if isinstance(self.anySelection[idx], int):
+                            seqIds.append(self.anySelection[idx])
+                        elif isinstance(self.anySelection[idx], str):
+                            if self.__col_order.count('residue_name') == 0\
+                               and self.__reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = self.__reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                seqIds.append(int(g[1]))
+                                compId = g[0]
+                                if len(compId) == 1:
+                                    if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                        try:
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
+                                        except StopIteration:
+                                            pass
+                                    elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                        compId = f'D{compId}'
+                                compIds.append(compId)
+                            elif self.__col_order.count('residue_name') == 0\
+                                    and self.__rev_reduced_residue_name_pattern.match(self.anySelection[idx]):
+                                g = self.__rev_reduced_residue_name_pattern.search(self.anySelection[idx]).groups()
+                                seqIds.append(int(g[0]))
+                                compId = g[1]
+                                if len(compId) == 1:
+                                    if self.polyPeptide and not self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                        try:
+                                            compId = next(k for k, v in STD_MON_DICT.items() if v == compId)
+                                        except StopIteration:
+                                            pass
+                                    elif not self.polyPeptide and self.polyDeoxyribonucleotide and not self.polyRibonucleotide:
+                                        compId = f'D{compId}'
+                                compIds.append(compId)
+                            else:
+                                compIds.append(self.anySelection[idx])
+                    elif order == 'residue_name':
+                        if isinstance(self.anySelection[idx], str):
+                            compIds.append(self.anySelection[idx])
+                        elif isinstance(self.anySelection[idx], int):
+                            seqIds.append(self.anySelection[idx])
+                    elif order == 'atom_name':
+                        if isinstance(self.anySelection[idx], str):
+                            atomIds.append(self.anySelection[idx])
+                    elif order == 'volume':
+                        if isinstance(self.anySelection[idx], str):
+                            volume = self.anySelection[idx]
+                        else:
+                            volume = str(self.anySelection[idx])
+                    elif order == 'value_uncertainty':
+                        if isinstance(self.anySelection[idx], str):
+                            value_uncertainty = self.anySelection[idx]
+                        else:
+                            value_uncertainty = str(self.anySelection[idx])
+                        if value_uncertainty is not None and value_uncertainty[0] == '-':
+                            value_uncertainty = value_uncertainty[1:]
+                    elif order == 'weight':
+                        if isinstance(self.anySelection[idx], float):
+                            weight = self.anySelection[idx]
+                        elif isinstance(self.anySelection[idx], int):
+                            weight = float(self.anySelection[idx])
+
+            if weight < 0.0:
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              f"The weight value '{weight}' must not be a negative value.")
+                self.noepkRestraints -= 1
+                return
+            if weight == 0.0:
+                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
+                              f"The weight value '{weight}' should be a positive value.")
+
+            if len(chainIds) not in (0, 2) or len(seqIds) not in (0, 2) or len(compIds) not in (0, 2)\
+               or len(atomIds) != 2 or volume is None:
+                self.noepkRestraints -= 1
+                return
+
+            chainId1 = chainId2 = seqId1 = seqId2 = compId1 = compId2 = atomId1 = atomId2 = None
+
+            if len(seqIds) == 0:
+                assignment1 = self.extractAtomAssignment(1, atomIds[0],
+                                                         with_segid=(None if len(chainIds) == 0 else chainIds[0]),
+                                                         with_compid=(None if len(compIds) == 0 else compIds[0]))
+
+                if assignment1 is None:
+                    self.noepkRestraints -= 1
+                    return
+
+                assignment2 = self.extractAtomAssignment(1, atomIds[1],
+                                                         with_segid=(None if len(chainIds) == 0 else chainIds[1]),
+                                                         with_compid=(None if len(compIds) == 0 else compIds[1]))
+
+                if assignment2 is None:
+                    self.noepkRestraints -= 1
+                    return
+
+                a1 = self.extractCommonAtom(assignment1)
+                chainId1, seqId1, compId1, atomId1 =\
+                    a1['chain_id'], a1['seq_id'], a1['comp_id'], a1['auth_atom_id' if 'auth_atom_id' in a1 else 'atom_id']
+
+                a2 = self.extractCommonAtom(assignment2)
+                chainId2, seqId2, compId2, atomId2 =\
+                    a2['chain_id'], a2['seq_id'], a2['comp_id'], a2['auth_atom_id' if 'auth_atom_id' in a2 else 'atom_id']
+
+            if len(chainIds) > 0:
+                chainId1, chainId2 = chainIds[0], chainIds[1]
+
+            if len(seqIds) > 0:
+                seqId1, seqId2 = seqIds[0], seqIds[1]
+
+            if len(compIds) > 0:
+                compId1, compId2 = compIds[0], compIds[1]
+
+            if len(seqIds) > 0:
+                atomId1, atomId2 = atomIds[0], atomIds[1]
+
+            self.retrieveLocalSeqScheme()
+
+            if compId1 is not None:
+                chainAssign1, _ = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1.split('|', 1)[0])\
+                    if chainId1 is not None else self.assignCoordPolymerSequence(seqId1, compId1, atomId1.split('|', 1)[0])
+            else:
+                chainAssign1 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId1, seqId1, atomId1.split('|', 1)[0])\
+                    if chainId1 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId1, atomId1.split('|', 1)[0])
+
+            if compId2 is not None:
+                chainAssign2, _ = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2.split('|', 1)[0])\
+                    if chainId2 is not None else self.assignCoordPolymerSequence(seqId2, compId2, atomId2.split('|', 1)[0])
+            else:
+                chainAssign2 = self.assignCoordPolymerSequenceWithChainIdWithoutCompId(chainId2, seqId2, atomId2.split('|', 1)[0])\
+                    if chainId2 is not None else self.assignCoordPolymerSequenceWithoutCompId(seqId2, atomId2.split('|', 1)[0])
+
+            if 0 in (len(chainAssign1), len(chainAssign2)):
+                self.noepkRestraints -= 1
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2)
+
+            if len(self.atomSelectionSet) < 2:
+                self.noepkRestraints -= 1
+                return
+
+            self.allowZeroUpperLimit = False
+            if self.reasons is not None and 'model_chain_id_ext' in self.reasons\
+               and len(self.atomSelectionSet[0]) > 0\
+               and len(self.atomSelectionSet[0]) == len(self.atomSelectionSet[1]):
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+
+                if chain_id_1 != chain_id_2 and seq_id_1 == seq_id_2 and atom_id_1 == atom_id_2\
+                   and ((chain_id_1 in self.reasons['model_chain_id_ext']
+                         and chain_id_2 in self.reasons['model_chain_id_ext'][chain_id_1])
+                        or (chain_id_2 in self.reasons['model_chain_id_ext']
+                            and chain_id_1 in self.reasons['model_chain_id_ext'][chain_id_2])):
+                    self.allowZeroUpperLimit = True
+            self.allowZeroUpperLimit |= hasInterChainRestraint(self.atomSelectionSet)
+
+            dstFunc = self.validatePeakVolumeRange(weight, volume, None, None, value_uncertainty)
+
+            if dstFunc is None:
+                self.noepkRestraints -= 1
+                return
+
+            if self.createSfDict:
+                sf = self.getSf(constraintType=getDistConstraintType(self.atomSelectionSet, dstFunc,
+                                                                     self.csStat, self.originalFileName),
+                                potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc))
+                sf['id'] += 1
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.nefT):
+                    continue
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.noepkRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                 None, None, None,
+                                 sf['list_id'], self.entryId, dstFunc,
+                                 self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                 atom1, atom2)
+                    sf['loop'].add_data(row)
+                    break
+
+        finally:
+            self.anySelection.clear()
+
     def enterAny(self, ctx: BareMRParser.AnyContext):
         """ Enter a parse tree produced by BareMRParser#any.
         """
 
         try:
 
-            if ctx.Float():
+            if ctx.Real():
+                self.anySelection.append(str(ctx.Real()))  # used for noe peak volume as is (no need to convert to float)
+
+            elif ctx.Float():
                 value = str(ctx.Float())
                 self.anySelection.append(float(value))
 

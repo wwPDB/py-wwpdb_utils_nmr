@@ -264,7 +264,9 @@ COMMENT_CODE_MIXED_SET = {'#', '!'}
 
 COMMENT_CODE_SEMICOLON_SET = frozenset(('#', '!', ';'))
 
-PAREN_SPLIT_PAT = re.compile('[ ()]')
+PAREN_SPLIT_PAT = re.compile(r'[ ()]')
+
+SYNTAX_ERR_LINE_PAT = re.compile(r'.*\] line (\d+):\d+ .*')
 
 # File types whose content subtype is guessed by the light-weight text scan of
 # NmrDpMrSplitter.detectContentSubTypeOfLegacyMr(), rather than by a format-specific state machine.
@@ -2777,6 +2779,84 @@ class NmrDpMrSplitter:
                 file_path_2 = ar_list[j]['file_name']
                 os.symlink(file_path_2, self.testPath(file_path_2 + '-ignored', True))
 
+    def __scanCyanaMrWith0Ambig(self, src_path: str) -> bool:  # pylint: disable=no-self-use
+        """ Report whether '0 AMBIG' code in restraint file. If it is true, rewrite it to '0 AMB' for CYANA MR parser.
+        """
+
+        has_zero_ambig = False
+
+        with open(src_path, 'r', encoding='utf-8', errors='ignore') as ifh:
+
+            for line in ifh:
+                if line.isspace() or COMMENT_PAT.match(line):
+                    continue
+
+                col = line.split()
+
+                if len(col) < 6:
+                    continue
+
+                has_amb_1 = col[0] == '0' and col[1].upper().startswith('AMB')
+                has_amb_2 = col[3] == '0' and col[4].upper().startswith('AMB')
+
+                if has_amb_1 or has_amb_2:
+                    has_zero_ambig = True
+                    break
+
+        if not has_zero_ambig:
+            return False
+
+        dst_path = src_path + '~'
+
+        with open(src_path, 'r', encoding='utf-8', errors='ignore') as ifh, \
+                open(dst_path, 'w', encoding='utf-8') as ofh:
+
+            for line in ifh:
+                if line.isspace() or COMMENT_PAT.match(line):
+                    ofh.write(line)
+                    continue
+
+                col = line.split()
+                len_col = len(col)
+
+                if len_col < 6:
+                    ofh.write(line)
+                    continue
+
+                has_amb_1 = col[0] == '0' and col[1].upper().startswith('AMB')
+                has_amb_2 = col[3] == '0' and col[4].upper().startswith('AMB')
+
+                if not has_amb_1 and not has_amb_2:
+                    ofh.write(line)
+                    continue
+
+                if has_amb_1:
+                    col[1] = 'AMB'
+                    if len_col > 7 and col[2] in col[7:]:
+                        for idx in range(7, len_col):
+                            if col[idx][0] in ('#', '!', ';'):
+                                break
+                            if col[idx] == col[2]:
+                                col[idx] = ''
+
+                if has_amb_2:
+                    col[4] = 'AMB'
+                    if len_col > 7 and col[5] in col[7:]:
+                        for idx in range(7, len_col):
+                            if col[idx][0] in ('#', '!', ';'):
+                                break
+                            if col[idx] == col[5]:
+                                col[idx] = ''
+
+                ofh.write(' '.join(col) + '\n')
+
+        try:
+            os.replace(dst_path, src_path)
+        except OSError:
+            pass
+
+        return True
+
     def detectContentSubTypeOfLegacyMr(self, remediation_loop_count: int) -> bool:
         """ Detect content subtype of legacy restraint files.
         """
@@ -2787,6 +2867,24 @@ class NmrDpMrSplitter:
         name_set_cache = {}
 
         fileListId = self.__reg.file_path_list_len
+
+        if fileListId >= len(self.__reg.report.input_sources):
+
+            if self.__reg.internal_mode\
+               and (MR_FILE_PATH_LIST_KEY not in self.__reg.inputParamDict
+                    or len(self.__reg.inputParamDict[MR_FILE_PATH_LIST_KEY]) == 0):
+
+                err = 'Discrepancy was found in the internal input source. '\
+                    'Please verify that the auxiliary STAR-format file is valid.'
+
+                self.__reg.report.error.appendDescription('internal_error',
+                                                          f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() "
+                                                          "++ Error  - " + err)
+
+                if self.__reg.verbose:
+                    self.__reg.log.write(f"+{self.__class_name__}.detectContentSubTypeOfLegacyMr() ++ Error  - {err}\n")
+
+            return False
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
@@ -2882,6 +2980,9 @@ class NmrDpMrSplitter:
             return True
 
         fileListId = self.__reg.file_path_list_len
+
+        if fileListId >= len(self.__reg.report.input_sources):
+            return False
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             file_path = ar['file_name']
@@ -3149,16 +3250,18 @@ class NmrDpMrSplitter:
 
                     if len_valid_types == 1:
                         _file_type = valid_types[0]
+                        if _file_type == 'nm-res-cya':
+                            self.__scanCyanaMrWith0Ambig(file_path)
 
                     elif len_valid_types == 2:
                         if 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                             _file_type = 'nm-res-xpl'
 
+                        elif 'nm-res-cya' in valid_types and 'nm-res-ros' in valid_types:
+                            _file_type = 'nm-res-cya' if self.__scanCyanaMrWith0Ambig(file_path) else 'nm-res-ros'
+
                         elif 'nm-res-cya' in valid_types:
                             _file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
-
-                        elif 'nm-res-cya' in valid_types and 'nm-res-ros' in valid_types:
-                            _file_type = 'nm-res-ros'
 
                     elif len_valid_types == 3:
                         set_valid_types = set(valid_types)
@@ -3240,6 +3343,9 @@ class NmrDpMrSplitter:
 
         if self.__reg.permit_missing_cs_file:  # NMR data remediation (Phase 3)
             settled_file_types.extend(list(PARSABLE_CS_FILE_TYPES))
+
+        if fileListId >= len(self.__reg.report.input_sources):
+            return False
 
         for ar in self.__reg.inputParamDict[AR_FILE_PATH_LIST_KEY]:
             src_file = ar['file_name']
@@ -3389,6 +3495,9 @@ class NmrDpMrSplitter:
                     _ar['file_name'] = sel_file
                     _ar['file_type'] = _file_type
                     split_file_list.append(_ar)
+
+                    if _file_type == 'nm-res-cya':
+                        self.__scanCyanaMrWith0Ambig(sel_file)
 
                     designated = True
 
@@ -4280,6 +4389,9 @@ class NmrDpMrSplitter:
                                 _ar['file_type'] = _file_type
                                 split_file_list.append(_ar)
 
+                                if _file_type == 'nm-res-cya':
+                                    self.__scanCyanaMrWith0Ambig(dst_file)
+
                                 mr_part_paths.append({_file_type: dst_file})
 
                                 designated = True
@@ -4441,6 +4553,9 @@ class NmrDpMrSplitter:
                             _ar['file_type'] = valid_types[0]
                             split_file_list.append(_ar)
 
+                            if valid_types[0] == 'nm-res-cya':
+                                self.__scanCyanaMrWith0Ambig(dst_file)
+
                             mr_part_paths.append({_ar['file_type']: dst_file})
 
                         elif len_valid_types == 2 and 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
@@ -4450,17 +4565,17 @@ class NmrDpMrSplitter:
 
                             mr_part_paths.append({_ar['file_type']: dst_file})
 
-                        elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
+                        elif len_valid_types == 2\
+                                and set(valid_types) == {'nm-res-cya', 'nm-res-ros'}:
                             _ar['file_name'] = dst_file
-                            _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+                            _ar['file_type'] = 'nm-res-cya' if self.__scanCyanaMrWith0Ambig(dst_file) else 'nm-res-ros'
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_ar['file_type']: dst_file})
 
-                        elif len_valid_types == 2\
-                                and set(valid_types) == {'nm-res-cya', 'nm-res-ros'}:
+                        elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                             _ar['file_name'] = dst_file
-                            _ar['file_type'] = 'nm-res-ros'
+                            _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
                             split_file_list.append(_ar)
 
                             mr_part_paths.append({_ar['file_type']: dst_file})
@@ -4889,6 +5004,9 @@ class NmrDpMrSplitter:
 
                             split_file_list.append(_ar)
 
+                            if _file_type == 'nm-res-cya':
+                                self.__scanCyanaMrWith0Ambig(dst_file)
+
                             mr_part_paths.append({_file_type: dst_file,
                                                   'original_file_name':
                                                   None if dst_file.endswith('-noname.mr') else os.path.basename(dst_file)})
@@ -5281,6 +5399,9 @@ class NmrDpMrSplitter:
 
                                 split_file_list.append(_ar)
 
+                                if _file_type == 'nm-res-cya':
+                                    self.__scanCyanaMrWith0Ambig(_dst_file)
+
                                 mr_part_paths.append({_file_type: _dst_file,
                                                       'original_file_name':
                                                       None if file_name.endswith('-noname.mr') else file_name})
@@ -5363,6 +5484,9 @@ class NmrDpMrSplitter:
 
                                 split_file_list.append(_ar)
 
+                                if valid_types[0] == 'nm-res-cya':
+                                    self.__scanCyanaMrWith0Ambig(_dst_file)
+
                                 mr_part_paths.append({_ar['file_type']: _dst_file,
                                                       'original_file_name':
                                                       None if _dst_file.endswith('-noname.mr') else file_name})
@@ -5380,9 +5504,10 @@ class NmrDpMrSplitter:
                                                       'original_file_name':
                                                       None if _dst_file.endswith('-noname.mr') else file_name})
 
-                            elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
+                            elif len_valid_types == 2\
+                                    and set(valid_types) == {'nm-res-cya', 'nm-res-ros'}:
                                 _ar['file_name'] = _dst_file
-                                _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
+                                _ar['file_type'] = 'nm-res-cya' if self.__scanCyanaMrWith0Ambig(_dst_file) else 'nm-res-ros'
 
                                 if distinct:
                                     _ar['original_file_name'] = file_name
@@ -5393,10 +5518,9 @@ class NmrDpMrSplitter:
                                                       'original_file_name':
                                                       None if _dst_file.endswith('-noname.mr') else file_name})
 
-                            elif len_valid_types == 2\
-                                    and set(valid_types) == {'nm-res-cya', 'nm-res-ros'}:
+                            elif len_valid_types == 2 and 'nm-res-cya' in valid_types:
                                 _ar['file_name'] = _dst_file
-                                _ar['file_type'] = 'nm-res-ros'
+                                _ar['file_type'] = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
 
                                 if distinct:
                                     _ar['original_file_name'] = file_name
@@ -6886,15 +7010,18 @@ class NmrDpMrSplitter:
         if len_valid_types == 1:
             file_type = valid_types[0]
 
+            if file_type == 'nm-res-cya':
+                self.__scanCyanaMrWith0Ambig(file_path)
+
         elif len_valid_types == 2:
             if 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                 file_type = 'nm-res-xpl'
 
+            elif 'nm-res-cya' in valid_types and 'nm-res-ros' in valid_types:
+                file_type = 'nm-res-cya' if self.__scanCyanaMrWith0Ambig(file_path) else 'nm-res-ros'
+
             elif 'nm-res-cya' in valid_types:
                 file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
-
-            elif 'nm-res-cya' in valid_types and 'nm-res-ros' in valid_types:
-                file_type = 'nm-res-ros'
 
         elif len_valid_types == 3:
             set_valid_types = set(valid_types)
@@ -7291,15 +7418,18 @@ class NmrDpMrSplitter:
         if len_valid_types == 1:
             file_type = valid_types[0]
 
+            if file_type == 'nm-res-cya':
+                self.__scanCyanaMrWith0Ambig(file_path)
+
         elif len_valid_types == 2:
             if 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                 file_type = 'nm-res-xpl'
 
+            elif 'nm-res-cya' in valid_types and 'nm-res-ros' in valid_types:
+                file_type = 'nm-res-cya' if self.__scanCyanaMrWith0Ambig(file_path) else 'nm-res-ros'
+
             elif 'nm-res-cya' in valid_types:
                 file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
-
-            elif 'nm-res-cya' in valid_types and 'nm-res-ros' in valid_types:
-                file_type = 'nm-res-ros'
 
         elif len_valid_types == 3:
             set_valid_types = set(valid_types)
@@ -7818,15 +7948,18 @@ class NmrDpMrSplitter:
         if len_valid_types == 1:
             file_type = valid_types[0]
 
+            if file_type == 'nm-res-cya':
+                self.__scanCyanaMrWith0Ambig(file_path)
+
         elif len_valid_types == 2:
             if 'nm-res-cns' in valid_types and 'nm-res-xpl' in valid_types:
                 file_type = 'nm-res-xpl'
 
+            elif 'nm-res-cya' in valid_types and 'nm-res-ros' in valid_types:
+                file_type = 'nm-res-cya' if self.__scanCyanaMrWith0Ambig(file_path) else 'nm-res-ros'
+
             elif 'nm-res-cya' in valid_types:
                 file_type = next(valid_type for valid_type in valid_types if valid_type != 'nm-res-cya')
-
-            elif 'nm-res-cya' in valid_types and 'nm-res-ros' in valid_types:
-                file_type = 'nm-res-ros'
 
         elif len_valid_types == 3:
             set_valid_types = set(valid_types)
@@ -7931,12 +8064,19 @@ class NmrDpMrSplitter:
         is_valid = agreed_w_cns = False
         err = ''
         genuine_type = []
-        valid_types, possible_types = {}, {}
+        valid_types, possible_types, reachable_line = {}, {}, {}
 
         if (not is_valid or multiple_check) and file_type != 'nm-res-xpl':
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-xpl', agreed_w_cns=agreed_w_cns)
+
+            if _is_valid:
+                try:
+                    g = SYNTAX_ERR_LINE_PAT.search(_err).groups()
+                    reachable_line['nm-res-xpl'] = int(g[0])
+                except AttributeError:
+                    pass
 
             is_valid |= _is_valid
             agreed_w_cns |= _is_valid
@@ -7953,6 +8093,13 @@ class NmrDpMrSplitter:
             _is_valid, _err, _genuine_type, _valid_types, _possible_types =\
                 self.__detectOtherPossibleFormatAsErrorOfLegacyMr__(file_path, file_name, file_type, dismiss_err_lines,
                                                                     'nm-res-cns', agreed_w_cns=agreed_w_cns)
+
+            if _is_valid:
+                try:
+                    g = SYNTAX_ERR_LINE_PAT.search(_err).groups()
+                    reachable_line['nm-res-cns'] = int(g[0])
+                except AttributeError:
+                    pass
 
             is_valid |= _is_valid
             agreed_w_cns |= _is_valid
@@ -7976,12 +8123,23 @@ class NmrDpMrSplitter:
                 _valid_types = {}
                 _possible_types = {}
 
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
+            if _is_valid:
+                try:
+                    g = SYNTAX_ERR_LINE_PAT.search(_err).groups()
+                    reachable_line['nm-res-cha'] = int(g[0])
+
+                    if len(reachable_line) > 1 and max(reachable_line.values()) > reachable_line['nm-res-cha']:
+                        _is_valid = False
+                except AttributeError:
+                    pass
+
+            if _is_valid:
+                is_valid |= _is_valid
+                err += _err
+                if _genuine_type is not None:
+                    genuine_type.append(_genuine_type)
+                valid_types.update(_valid_types)
+                possible_types.update(_possible_types)
 
         if len(genuine_type) > 0:
             multiple_check = False
@@ -8193,12 +8351,23 @@ class NmrDpMrSplitter:
                 _valid_types = {}
                 _possible_types = {}
 
-            is_valid |= _is_valid
-            err += _err
-            if _genuine_type is not None and 'nm-res-noa' not in genuine_type:
-                genuine_type.append(_genuine_type)
-            valid_types.update(_valid_types)
-            possible_types.update(_possible_types)
+            if _is_valid:
+                try:
+                    g = SYNTAX_ERR_LINE_PAT.search(_err).groups()
+                    reachable_line['nm-res-cya'] = int(g[0])
+
+                    if len(reachable_line) > 1 and max(reachable_line.values()) > reachable_line['nm-res-cya']:
+                        _is_valid = False
+                except AttributeError:
+                    pass
+
+            if _is_valid:
+                is_valid |= _is_valid
+                err += _err
+                if _genuine_type is not None and 'nm-res-noa' not in genuine_type:
+                    genuine_type.append(_genuine_type)
+                valid_types.update(_valid_types)
+                possible_types.update(_possible_types)
 
         _file_type = get_peak_list_format(file_path, True)
 

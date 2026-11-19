@@ -1928,8 +1928,11 @@ class BaseStackedMRParserListener():
                                     if len(pro_hn_atom_not_found_warnings) + len(gly_hb_atom_not_found_warnings) > 0:
                                         self.__seqAtmRstFailed = []
                                         for f in any_atom_not_found_warnings:
-                                            g = self.__any_atom_not_found_pat.search(f).groups()
-                                            updateSeqAtmRst(self.__seqAtmRstFailed, g[0], int(g[1]), [g[2]])
+                                            try:
+                                                g = self.__any_atom_not_found_pat.search(f).groups()
+                                                updateSeqAtmRst(self.__seqAtmRstFailed, g[0], int(g[1]), [g[2]])
+                                            except AttributeError:
+                                                pass
                                         chain_id_remap_with_offset(False)  # 5xs1
 
                                 for ca in chainAssignFailed:
@@ -2508,16 +2511,22 @@ class BaseStackedMRParserListener():
                                 pro_seq_ids, gly_seq_ids = set(), set()
                                 if len(pro_hn_atom_not_found_warnings) > 0:
                                     for f in pro_hn_atom_not_found_warnings:
-                                        g = self.__pro_hn_atom_not_found_pat.search(f).groups()
-                                        if g[0] != chain_id:
-                                            continue
-                                        pro_seq_ids.add(int(g[1]))
+                                        try:
+                                            g = self.__pro_hn_atom_not_found_pat.search(f).groups()
+                                            if g[0] != chain_id:
+                                                continue
+                                            pro_seq_ids.add(int(g[1]))
+                                        except AttributeError:
+                                            pass
                                 if len(gly_hb_atom_not_found_warnings) > 0:
                                     for f in gly_hb_atom_not_found_warnings:
-                                        g = self.__gly_hb_atom_not_found_pat.search(f).groups()
-                                        if g[0] != chain_id:
-                                            continue
-                                        gly_seq_ids.add(int(g[1]))
+                                        try:
+                                            g = self.__gly_hb_atom_not_found_pat.search(f).groups()
+                                            if g[0] != chain_id:
+                                                continue
+                                            gly_seq_ids.add(int(g[1]))
+                                        except AttributeError:
+                                            pass
                                 if len(pro_seq_ids) + len(gly_seq_ids) == 0:
                                     continue
                                 ps = next((ps for ps in self.polySeq if ps['chain_id'] == chain_id), None)

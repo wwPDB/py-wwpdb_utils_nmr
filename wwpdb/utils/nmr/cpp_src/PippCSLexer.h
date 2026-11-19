@@ -14,11 +14,11 @@ public:
   enum {
     Shift_fl_frmt = 1, Res_siad = 2, First_res_in_seq = 3, Exp_peak_pick_tbl = 4, 
     Res_ID = 5, Res_type = 6, Prev_type = 7, Spin_system_ID = 8, Heterogeneity = 9, 
-    End_res_def = 10, Type_pred = 11, Single_note = 12, Note_begin = 13, 
-    Integer = 14, Float = 15, SHARP_COMMENT = 16, EXCLM_COMMENT = 17, Simple_name = 18, 
+    End_res_def = 10, Type_pred = 11, Note_begin = 12, Integer = 13, Float = 14, 
+    SHARP_COMMENT = 15, EXCLM_COMMENT = 16, Simple_name = 17, CONTINUE = 18, 
     SPACE = 19, RETURN = 20, SECTION_COMMENT = 21, LINE_COMMENT = 22, Res_ID_ = 23, 
     Label = 24, Exp_par_fl = 25, Peak_pick_fl = 26, Cross_ref = 27, Simple_name_ET = 28, 
-    SPACE_ET = 29, RETURN_ET = 30, Note_middle = 31, Note_end = 32, SPACE_MN = 33
+    SPACE_ET = 29, RETURN_ET = 30, Note = 31, Note_end = 32, SPACE_MN = 33
   };
 
   enum {

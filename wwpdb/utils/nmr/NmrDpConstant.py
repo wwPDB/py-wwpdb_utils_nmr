@@ -771,6 +771,9 @@ PRE_RESTRAINT_ERROR = {'min_exclusive': -5.0, 'max_exclusive': 10000.0}
 T1T2_RESTRAINT_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 20.0}
 T1T2_RESTRAINT_ERROR = {'min_exclusive': -0.05, 'max_exclusive': 100.0}
 
+HETERO_NOE_RANGE = {'min_inclusive': -5.0, 'max_inclusive': 5.0}
+HETERO_NOE_ERR_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 0.5}
+
 CS_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 3.0}
 
 DIST_UNCERTAINTY_RANGE = {'min_inclusive': 0.0, 'max_inclusive': 5.0}
@@ -3401,11 +3404,11 @@ DATA_ITEMS = {'nef': {'poly_seq': [{'name': 'linking', 'type': 'enum', 'mandator
                                                     'enforce-enum': True},
                                                    {'name': 'Val', 'type': 'range-float', 'mandatory': True,
                                                     'remove-bad-pattern': True,
-                                                    'range': PRE_RESTRAINT_RANGE},
+                                                    'range': HETERO_NOE_RANGE},
                                                    {'name': 'Val_err', 'type': 'range-float', 'mandatory': False,
                                                     'void-zero': True,
                                                     'clear-bad-pattern': True,
-                                                    'range': PRE_RESTRAINT_RANGE},
+                                                    'range': HETERO_NOE_ERR_RANGE},
                                                    {'name': 'Auth_entity_assembly_ID_1', 'type': 'str', 'mandatory': False},
                                                    {'name': 'Auth_seq_ID_1', 'type': 'int', 'mandatory': False},
                                                    {'name': 'Auth_comp_ID_1', 'type': 'str', 'mandatory': False},

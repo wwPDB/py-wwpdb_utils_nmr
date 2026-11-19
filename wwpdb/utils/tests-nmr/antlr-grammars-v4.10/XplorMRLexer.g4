@@ -77,7 +77,7 @@ Ppm2:			'PPM2';					// = Real
 /* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
 */
-Restraints:		'REST' 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;	// Dihedral
+Restraints:		('REST' 'R'? 'A'? 'I'? 'N'? 'T'? | 'CONSTRAINT') 'S'?;	// Dihedral
 Dihedral:		'DIHE' 'D'? 'R'? 'A'? 'L'?;		// Dihedral { dihedral_statement } End
 //Assign:		'ASSI' 'G'? 'N'?;			// selection selection selection selection Real Real Real Integer
 Nassign:		'NASS' 'I'? 'G'? 'N'?;			// = Integer

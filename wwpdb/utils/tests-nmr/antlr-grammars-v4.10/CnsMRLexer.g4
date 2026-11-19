@@ -93,7 +93,7 @@ Ppm2:			'PPM2';					// = Real
 /* CNS: Dihedral angle restraints - Syntax - restranits/dihedral
  See also https://www.mrc-lmb.cam.ac.uk/public/xtal/doc/cns/cns_1.3/syntax_manual/frame.html
 */
-Restraints:		'REST' 'R'? 'A'? 'I'? 'N'? 'T'? 'S'?;	// Dihedral
+Restraints:		('REST' 'R'? 'A'? 'I'? 'N'? 'T'? | 'CONSTRAINT') 'S'?;	// Dihedral
 Dihedral:		'DIHE' 'D'? 'R'? 'A'? 'L'?;		// Dihedral { dihedral_statement } End
 //Assign:		'ASSI' 'G'? 'N'?;			// selection selection selection selection Real Real Real Integer
 //Cv:			'CV';					// = Integer

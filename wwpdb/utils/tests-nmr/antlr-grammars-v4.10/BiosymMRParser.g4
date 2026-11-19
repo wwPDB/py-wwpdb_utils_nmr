@@ -64,7 +64,7 @@ distance_wo_w_constraints:
 
 distance_wo_w_constraint:
 	Ordinal? Atom_selection Atom_selection
-	number number						// lower limit, upper limit
+	number number number?					// lower limit, upper limit
 	(Or Atom_selection Atom_selection)*;
 
 /* BIOSYM - Dihedral angle restraints

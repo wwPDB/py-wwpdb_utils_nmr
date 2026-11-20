@@ -8132,7 +8132,7 @@ class BasePKParserListener():
                             segId, _, resName, _ = chainAssign[ca_idx]
                 elif segId is None:
                     chainAssign, _ = self.assignCoordPolymerSequenceWithChainId(self.__defaultSegId,
-                                                                               resId, resName, atomName, src_index)
+                                                                                resId, resName, atomName, src_index)
                     is_valid = is_valid_chain_assign(chainAssign, resName)
                     if not is_valid:
                         if self.__defaultSegId != self.__defaultSegId__:

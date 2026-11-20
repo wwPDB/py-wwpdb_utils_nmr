@@ -735,11 +735,11 @@ class BaseCSParserListener():
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
-                if self.__createSfDict:
+                if self.__createSfDict and len(self.cur_subtype) > 0:
                     sf = self.getSf()
                     sf['saveframe'].add_loop(sf['loop'])
 
-            elif not self.hasPolySeq and self.__createSfDict:
+            elif not self.hasPolySeq and self.__createSfDict and len(self.cur_subtype) > 0:
                 sf = self.getSf()
                 sf['saveframe'].add_loop(sf['loop'])
 

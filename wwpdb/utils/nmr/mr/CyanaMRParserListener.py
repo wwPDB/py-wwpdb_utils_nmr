@@ -2250,7 +2250,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             orientation = int(str(ctx.Integer()))
 
             if weight < 0.0:
-                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                               f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
@@ -2450,7 +2450,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 weight = self.numberSelection[2]
 
             if weight < 0.0:
-                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                               f"The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
@@ -2677,7 +2677,7 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
             orientation = int(str(ctx.Integer()))
 
             if weight < 0.0:
-                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
                               "The relative weight value of '{weight}' must not be a negative value.")
                 return
             if weight == 0.0:
@@ -8570,6 +8570,108 @@ class CyanaMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         except (ValueError, AttributeError):
             self.jcoupRestraints -= 1
+
+        finally:
+            self.numberSelection.clear()
+            self.genResNumSelection.clear()
+            self.genSimpleNameSelection.clear()
+
+    def enterPcs_no_param_restraints(self, ctx: CyanaMRParser.Pcs_no_param_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#pcs_no_param_restraints.
+        """
+
+        self.cur_subtype = 'pcs'
+
+        self.cur_subtype_altered = False
+
+        self.pcsParameterDict = {}
+
+    def exitPcs_no_param_restraints(self, ctx: CyanaMRParser.Pcs_no_param_restraintsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by CyanaMRParser#pcs_no_param_restraints.
+        """
+
+    def enterPcs_no_param_restraint(self, ctx: CyanaMRParser.Pcs_no_param_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by CyanaMRParser#pcs_no_param_restraint.
+        """
+
+        self.pcsRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+        if self.createSfDict:
+            self.trimSfWoLp()
+
+    def exitPcs_no_param_restraint(self, ctx: CyanaMRParser.Pcs_no_param_restraintContext):
+        """ Exit a parse tree produced by CyanaMRParser#pcs_no_param_restraint.
+        """
+
+        try:
+
+            seqId, chainId = self.genResNumSelection[0]
+            compId = self.genSimpleNameSelection[0].upper()
+            atomId = self.genSimpleNameSelection[1].upper()
+
+            if len(self.numberSelection) == 0 or None in self.numberSelection:
+                self.pcsRestraints -= 1
+                return
+
+            target = self.numberSelection[0]
+            # mult = int(str(ctx.Integer(0)))
+            error = abs(self.numberSelection[1])
+            weight = self.numberSelection[2]
+            orientation = int(str(ctx.Integer(1)))
+
+            if weight < 0.0:
+                self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
+                              "The relative weight value of '{weight}' must not be a negative value.")
+                return
+            if weight == 0.0:
+                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
+                              f"The relative weight value of '{weight}' should be a positive value.")
+
+            target_value = target
+            lower_limit = target - error
+            upper_limit = target + error
+
+            dstFunc = self.validatePcsRange(weight, orientation, target_value, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            self.retrieveLocalSeqScheme()
+
+            chainAssign, asis = self.assignCoordPolymerSequenceWithChainId(chainId, seqId, compId, atomId)
+
+            if len(chainAssign) == 0:
+                return
+
+            self.selectCoordAtoms(chainAssign, seqId, compId, atomId)
+
+            if len(self.atomSelectionSet) < 1:
+                return
+
+            if self.createSfDict:
+                sf = self.getSf(orientationId=orientation, cyanaParameter=None)
+                sf['id'] += 1
+
+            for atom in self.atomSelectionSet[0]:
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.pcsRestraints} "
+                          f"atom={atom} {dstFunc}")
+                if self.createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                 '.', None, None,
+                                 sf['list_id'], self.entryId, dstFunc,
+                                 self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                 atom, asis1=asis)
+                    sf['loop'].add_data(row)
+
+        except (ValueError, AttributeError):
+            self.pcsRestraints -= 1
 
         finally:
             self.numberSelection.clear()

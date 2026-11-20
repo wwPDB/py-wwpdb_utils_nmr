@@ -44,6 +44,7 @@ cyana_mr:
 	rdc_restraints |
 	pcs_restraints |
 	cco_restraints |
+	pcs_no_param_restraints |
 	ssbond_macro |
 	hbond_macro |
 	link_statement |
@@ -282,6 +283,14 @@ cco_restraints:
 cco_restraint:
 	gen_res_num gen_simple_name gen_simple_name gen_simple_name number number? number?
 	number? number? number?;	// Karplus coefficients, A B C
+
+/* CYANA (undocumented) - Pseudocontact shift
+*/
+pcs_no_param_restraints:
+	pcs_no_param_restraint+;
+
+pcs_no_param_restraint:
+	gen_res_num gen_simple_name gen_simple_name number Integer number number Integer;
 
 /* CYANA (macro) - ssbond
 */

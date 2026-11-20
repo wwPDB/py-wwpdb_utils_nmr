@@ -2364,7 +2364,7 @@ class BaseCSParserListener():
             if seqKey in self.labelToAuthSeq:
                 _chainId, _seqId = self.labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
-                    return _chainId, _seqId, ps['comp_id'][ps['seq_id'].index(seqId)]
+                    return _chainId, _seqId, ps['comp_id'][ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(_seqId)]
                 if seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
                     idx = ps['seq_id'].index(seqKey[1])
                     return _chainId, ps['auth_seq_id'][idx], ps['comp_id'][idx]

@@ -265,6 +265,11 @@ class NmrViewPKReader:
 if __name__ == "__main__":
     reader = NmrViewPKReader(True)
     reader.setDebugMode(True)
+    reader.parse('../../tests-nmr/mock-data-remediation/2jpf/n15noesy.nv',
+                 '../../tests-nmr/mock-data-remediation/2jpf/2jpf.cif')
+
+    reader = NmrViewPKReader(True)
+    reader.setDebugMode(True)
     reader.parse('../../tests-nmr/mock-data-remediation/2mai/2mai-corrected.mr',
                  '../../tests-nmr/mock-data-remediation/2mai/2mai.cif')
 

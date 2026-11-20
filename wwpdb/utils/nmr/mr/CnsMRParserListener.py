@@ -1598,7 +1598,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 sf = self.getSf(potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc),
                                 rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
-                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1:
+                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1 or len(self.atomSelectionSet) > 6:
                     combinationId = 0
 
             for atom1, atom2 in (itertools.product(self.atomSelectionSet[4],
@@ -1637,6 +1637,45 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if len(self.atomSelectionSet) > 6:
+                for i in range(6, len(self.atomSelectionSet), 2):
+                    for atom1, atom2 in (itertools.product(self.atomSelectionSet[i],
+                                                           self.atomSelectionSet[i + 1])
+                                         if not self.in_loop else
+                                         zip(self.atomSelectionSet[i],
+                                             self.atomSelectionSet[i + 1])):
+                        atoms = [atom1, atom2]
+                        if isDefinedSegmentRestraint(atoms):
+                            continue
+                        if isIdenticalRestraint(atoms, self.nefT):
+                            continue
+                        if self.symmetric == 'no':
+                            if isLongRangeRestraint(atoms, self.polySeq if self.gapInAuthSeq else None):
+                                continue
+                        else:
+                            if isAsymmetricRangeRestraint(atoms, chain_id_set, self.symmetric):
+                                continue
+                            if atom1['chain_id'] != atom2['chain_id']:
+                                self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                              "Found inter-chain RDC vector; "
+                                              f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "
+                                              f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "
+                                              "However, it might be an artificial RDC constraint on solid-state NMR "
+                                              "applied to symmetric samples such as fibrils.")
+                        if isinstance(combinationId, int):
+                            combinationId += 1
+                        if self.debug:
+                            print(f"subtype={self.cur_subtype} (SANI) id={self.rdcRestraints} "
+                                  f"atom1={atom1} atom2={atom2} {dstFunc}")
+                        if self.createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                         combinationId, None, None,
+                                         sf['list_id'], self.entryId, dstFunc,
+                                         self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                         atom1, atom2)
+                            sf['loop'].add_data(row)
 
             if self.createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.cur_subtype, sf['loop'].data[-1])
@@ -3720,11 +3759,11 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     s = name_score.index(min(filter(None, name_score), default=None))
 
                 if (ctx.Simple_name(0) and t in (-1, 0))\
-                   or (ctx.Double_quote_string(0) and t in (-1, 2)):
+                   or (ctx.Double_quote_string(0) and (t in (-1, 2) or t == s == 1)):
                     if ctx.Simple_name(0) and t in (-1, 0):
                         chainId = str(ctx.Simple_name(0))
                         simpleNameIndex += 1
-                    elif ctx.Double_quote_string(0) and t in (-1, 2):
+                    elif ctx.Double_quote_string(0) and (t in (-1, 2) or t == s == 1):
                         chainId = str(ctx.Double_quote_string(0)).strip('"').strip()
                         if len(chainId) == 0:
                             return
@@ -3757,7 +3796,7 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     self.factor['chain_id'].append(__chainId)
                     simpleNamesIndex += 1
 
-                if len(self.factor['chain_id']) == 0:
+                if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
                     if len(self.fibril_chain_ids) > 0 and not self.hasNonPoly:
                         if chainId[0] in self.fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]
@@ -5184,14 +5223,16 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             val = self.evaluate[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         elif symbol_name in self.evaluateFor:
                             val = self.evaluateFor[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         else:
@@ -5792,6 +5833,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitNoe_assign_loop(self, ctx: CnsMRParser.Noe_assign_loopContext):
         """ Exit a parse tree produced by CnsMRParser#noe_assign_loop.
         """
@@ -5843,6 +5896,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -5906,6 +5971,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitSani_assign_loop(self, ctx: CnsMRParser.Sani_assign_loopContext):
         """ Exit a parse tree produced by CnsMRParser#sani_assign_loop.
         """
@@ -5957,6 +6034,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -6020,6 +6109,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitCarbon_shift_assign_loop(self, ctx: CnsMRParser.Carbon_shift_assign_loopContext):
         """ Exit a parse tree produced by CnsMRParser#carbon_shift_assign_loop.
         """
@@ -6071,6 +6172,18 @@ class CnsMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break

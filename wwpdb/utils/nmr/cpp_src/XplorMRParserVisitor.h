@@ -265,6 +265,8 @@ public:
 
     virtual std::any visitCoup_assign_loop(XplorMRParser::Coup_assign_loopContext *context) = 0;
 
+    virtual std::any visitCarbon_shift_assign_loop(XplorMRParser::Carbon_shift_assign_loopContext *context) = 0;
+
     virtual std::any visitColl_assign_loop(XplorMRParser::Coll_assign_loopContext *context) = 0;
 
     virtual std::any visitCsa_assign_loop(XplorMRParser::Csa_assign_loopContext *context) = 0;

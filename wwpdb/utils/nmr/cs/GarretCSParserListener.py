@@ -68,10 +68,15 @@ class GarretCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by GarretCSParser#residue_list.
         """
 
-        if ctx.Integer():
-            self.__seq_id = int(str(ctx.Integer()))
-        if ctx.Simple_name():
-            self.__comp_id = str(ctx.Simple_name())
+        try:
+
+            if ctx.Integer():
+                self.__seq_id = int(str(ctx.Integer()))
+            if ctx.Simple_name():
+                self.__comp_id = str(ctx.Simple_name())
+
+        except ValueError:
+            pass
 
     def exitResidue_list(self, ctx: GarretCSParser.Residue_listContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by GarretCSParser#residue_list.

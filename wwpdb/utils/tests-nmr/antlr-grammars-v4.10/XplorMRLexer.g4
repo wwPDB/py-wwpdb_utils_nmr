@@ -69,6 +69,7 @@ Spectrum:		'SPECTRUM';				// = Integer
 //Weight:		'WEIGHT';				// = Real
 Volume:			'VOLUME';				// = Real
 Vol:			'VOL';					// = Real
+Hpm1:			'HPM1';					// = Real
 Ppm1:			'PPM1';					// = Real
 Ppm2:			'PPM2';					// = Real
 //Cv:			'CV';					// = Integer
@@ -666,7 +667,7 @@ fragment DECIMAL:	DEC_DIGIT+;
 fragment H_NAME:	[ABCDEGHMNOPQRZ*%#+'"0-9];
 fragment NON_H_NAME:	~[ABCDEGHMNOPQRZ*%#+'"0-9 \t\r\n];
 
-SHARP_COMMENT:		'#'+ (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+SHARP_COMMENT:		'#'+ (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME | 'HBOND')) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
@@ -852,6 +853,7 @@ Integer_CF:		('+' | '-')? DECIMAL;
 Real_CF:		Real;
 Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;
+Double_quote_string_CF:	'"' SIMPLE_NAME '"';
 
 SPACE_CF:		[ \t\r\n]+ -> skip;
 COMMENT_CF:		'{' (COMMENT_CF | .)*? '}' -> channel(HIDDEN);

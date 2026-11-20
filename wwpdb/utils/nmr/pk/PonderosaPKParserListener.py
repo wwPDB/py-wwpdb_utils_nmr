@@ -141,14 +141,8 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks2D
 
-            try:
-
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
-
-            except ValueError:
-                self.peaks2D -= 1
-                return
+            P1 = float(str(ctx.Float(0)))
+            P2 = float(str(ctx.Float(1)))
 
             comment = volume = None
             height = self.originalNumberSelection[0]
@@ -219,6 +213,9 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                                     comment if comment is not None or None in (L1, L2)
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2}')
+
+        except ValueError:
+            self.peaks2D -= 1
 
         finally:
             self.numberSelection.clear()
@@ -293,15 +290,9 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks3D
 
-            try:
-
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
-                P3 = float(str(ctx.Float(2)))
-
-            except ValueError:
-                self.peaks3D -= 1
-                return
+            P1 = float(str(ctx.Float(0)))
+            P2 = float(str(ctx.Float(1)))
+            P3 = float(str(ctx.Float(2)))
 
             comment = volume = None
             height = self.originalNumberSelection[0]
@@ -389,6 +380,9 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3}')
 
+        except ValueError:
+            self.peaks3D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -462,16 +456,10 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks4D
 
-            try:
-
-                P1 = float(str(ctx.Float(0)))
-                P2 = float(str(ctx.Float(1)))
-                P3 = float(str(ctx.Float(2)))
-                P4 = float(str(ctx.Float(3)))
-
-            except ValueError:
-                self.peaks4D -= 1
-                return
+            P1 = float(str(ctx.Float(0)))
+            P2 = float(str(ctx.Float(1)))
+            P3 = float(str(ctx.Float(2)))
+            P4 = float(str(ctx.Float(3)))
 
             comment = volume = None
             height = self.originalNumberSelection[0]
@@ -574,6 +562,9 @@ class PonderosaPKParserListener(ParseTreeListener, BasePKParserListener):
                                     comment if comment is not None or None in (L1, L2, L3, L4)
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3} {L4}')
+
+        except ValueError:
+            self.peaks4D -= 1
 
         finally:
             self.numberSelection.clear()

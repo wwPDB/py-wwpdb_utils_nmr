@@ -14,10 +14,12 @@ public:
   enum {
     Integer = 1, Float = 2, Float_DecimalComma = 3, Real = 4, SHARP_COMMENT = 5, 
     EXCLM_COMMENT = 6, SMCLN_COMMENT = 7, Chiral_code = 8, Atom_selection = 9, 
-    Ordinal = 10, Or = 11, Restraint = 12, SPACE = 13, ENCLOSE_COMMENT = 14, 
-    SECTION_COMMENT = 15, LINE_COMMENT = 16, Double_quote_string = 17, Create = 18, 
-    Function = 19, Target = 20, Distance = 21, Quadratic = 22, Flat_bottomed = 23, 
-    Relative = 24, SPACE_II = 25, RETURN_II = 26
+    Ordinal = 10, Or = 11, Restraint = 12, Mixing_times = 13, SPACE = 14, 
+    ENCLOSE_COMMENT = 15, SECTION_COMMENT = 16, LINE_COMMENT = 17, Double_quote_string = 18, 
+    Create = 19, Function = 20, Target = 21, Distance = 22, Quadratic = 23, 
+    Flat_bottomed = 24, Relative = 25, SPACE_II = 26, RETURN_II = 27, Real_MT = 28, 
+    Float_MT = 29, Integer_MT = 30, Comma_MT = 31, Period_MT = 32, SPACE_MT = 33, 
+    RETURN_MT = 34
   };
 
   enum {
@@ -26,11 +28,11 @@ public:
     RuleDistance_wo_w_constraint = 6, RuleDihedral_angle_restraints = 7, 
     RuleDihedral_angle_restraint = 8, RuleDihedral_angle_constraints = 9, 
     RuleDihedral_angle_constraint = 10, RuleDihedral_angle_wo_w_constraints = 11, 
-    RuleDihedral_angle_wo_w_constraint = 12, RuleChirality_constraints = 13, 
-    RuleChirality_constraint = 14, RuleProchirality_constraints = 15, RuleProchirality_constraint = 16, 
-    RuleMixing_time = 17, RuleNumber = 18, RuleIns_distance_restraints = 19, 
-    RuleIns_distance_restraint = 20, RuleDecl_create = 21, RuleDecl_function = 22, 
-    RuleDecl_target = 23
+    RuleDihedral_angle_wo_w_constraint = 12, RuleRdc_restraints = 13, RuleRdc_restraint = 14, 
+    RuleChirality_constraints = 15, RuleChirality_constraint = 16, RuleProchirality_constraints = 17, 
+    RuleProchirality_constraint = 18, RuleMixing_time = 19, RuleNumber = 20, 
+    RuleIns_distance_restraints = 21, RuleIns_distance_restraint = 22, RuleDecl_create = 23, 
+    RuleDecl_function = 24, RuleDecl_target = 25
   };
 
   explicit BiosymMRParser(antlr4::TokenStream *input);
@@ -63,6 +65,8 @@ public:
   class Dihedral_angle_constraintContext;
   class Dihedral_angle_wo_w_constraintsContext;
   class Dihedral_angle_wo_w_constraintContext;
+  class Rdc_restraintsContext;
+  class Rdc_restraintContext;
   class Chirality_constraintsContext;
   class Chirality_constraintContext;
   class Prochirality_constraintsContext;
@@ -92,6 +96,8 @@ public:
     Dihedral_angle_constraintsContext* dihedral_angle_constraints(size_t i);
     std::vector<Dihedral_angle_wo_w_constraintsContext *> dihedral_angle_wo_w_constraints();
     Dihedral_angle_wo_w_constraintsContext* dihedral_angle_wo_w_constraints(size_t i);
+    std::vector<Rdc_restraintsContext *> rdc_restraints();
+    Rdc_restraintsContext* rdc_restraints(size_t i);
     std::vector<Chirality_constraintsContext *> chirality_constraints();
     Chirality_constraintsContext* chirality_constraints(size_t i);
     std::vector<Prochirality_constraintsContext *> prochirality_constraints();
@@ -300,6 +306,37 @@ public:
 
   Dihedral_angle_wo_w_constraintContext* dihedral_angle_wo_w_constraint();
 
+  class  Rdc_restraintsContext : public antlr4::ParserRuleContext {
+  public:
+    Rdc_restraintsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<Rdc_restraintContext *> rdc_restraint();
+    Rdc_restraintContext* rdc_restraint(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Rdc_restraintsContext* rdc_restraints();
+
+  class  Rdc_restraintContext : public antlr4::ParserRuleContext {
+  public:
+    Rdc_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<antlr4::tree::TerminalNode *> Atom_selection();
+    antlr4::tree::TerminalNode* Atom_selection(size_t i);
+    std::vector<NumberContext *> number();
+    NumberContext* number(size_t i);
+    antlr4::tree::TerminalNode *Ordinal();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Rdc_restraintContext* rdc_restraint();
+
   class  Chirality_constraintsContext : public antlr4::ParserRuleContext {
   public:
     Chirality_constraintsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
@@ -362,7 +399,18 @@ public:
   public:
     Mixing_timeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *Real();
+    antlr4::tree::TerminalNode *Mixing_times();
+    antlr4::tree::TerminalNode *RETURN_MT();
+    std::vector<antlr4::tree::TerminalNode *> Real_MT();
+    antlr4::tree::TerminalNode* Real_MT(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Float_MT();
+    antlr4::tree::TerminalNode* Float_MT(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Integer_MT();
+    antlr4::tree::TerminalNode* Integer_MT(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Comma_MT();
+    antlr4::tree::TerminalNode* Comma_MT(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Period_MT();
+    antlr4::tree::TerminalNode* Period_MT(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

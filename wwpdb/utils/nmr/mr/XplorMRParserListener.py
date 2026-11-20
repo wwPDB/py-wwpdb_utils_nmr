@@ -1909,7 +1909,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                 sf = self.getSf(potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc),
                                 rdcCode=getRdcCode([self.atomSelectionSet[4][0], self.atomSelectionSet[5][0]]))
                 sf['id'] += 1
-                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1:
+                if len(self.atomSelectionSet[4]) > 1 or len(self.atomSelectionSet[5]) > 1 or len(self.atomSelectionSet) > 6:
                     combinationId = 0
 
             for atom1, atom2 in (itertools.product(self.atomSelectionSet[4],
@@ -1946,6 +1946,43 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                  self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
                                  atom1, atom2)
                     sf['loop'].add_data(row)
+
+            if len(self.atomSelectionSet) > 6:
+                for i in range(6, len(self.atomSelectionSet), 2):
+                    for atom1, atom2 in (itertools.product(self.atomSelectionSet[i],
+                                                           self.atomSelectionSet[i + 1])
+                                         if not self.in_loop else
+                                         zip(self.atomSelectionSet[i],
+                                             self.atomSelectionSet[i + 1])):
+                        atoms = [atom1, atom2]
+                        if isIdenticalRestraint(atoms, self.nefT):
+                            continue
+                        if self.symmetric == 'no':
+                            if isLongRangeRestraint(atoms, self.polySeq if self.gapInAuthSeq else None):
+                                continue
+                        else:
+                            if isAsymmetricRangeRestraint(atoms, chain_id_set, self.symmetric):
+                                continue
+                            if atom1['chain_id'] != atom2['chain_id']:
+                                self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                              "Found inter-chain RDC vector; "
+                                              f"({atom1['chain_id']}:{atom1['seq_id']}:{atom1['comp_id']}:{atom1['atom_id']}, "
+                                              f"{atom2['chain_id']}:{atom2['seq_id']}:{atom2['comp_id']}:{atom2['atom_id']}). "
+                                              "However, it might be an artificial RDC constraint on solid-state NMR "
+                                              "applied to symmetric samples such as fibrils.")
+                        if isinstance(combinationId, int):
+                            combinationId += 1
+                        if self.debug:
+                            print(f"subtype={self.cur_subtype} (SANI) id={self.rdcRestraints} "
+                                  f"atom1={atom1} atom2={atom2} {dstFunc}")
+                        if self.createSfDict and sf is not None:
+                            sf['index_id'] += 1
+                            row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                         combinationId, None, None,
+                                         sf['list_id'], self.entryId, dstFunc,
+                                         self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                         atom1, atom2)
+                            sf['loop'].add_data(row)
 
             if self.createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
                 sf['loop'].data[-1] = resetCombinationId(self.cur_subtype, sf['loop'].data[-1])
@@ -7268,11 +7305,11 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                     s = name_score.index(min(filter(None, name_score), default=None))
 
                 if (ctx.Simple_name(0) and t in (-1, 0))\
-                   or (ctx.Double_quote_string(0) and t in (-1, 2)):
+                   or (ctx.Double_quote_string(0) and (t in (-1, 2) or t == s == 1)):
                     if ctx.Simple_name(0) and t in (-1, 0):
                         chainId = str(ctx.Simple_name(0))
                         simpleNameIndex += 1
-                    elif ctx.Double_quote_string(0) and t in (-1, 2):
+                    elif ctx.Double_quote_string(0) and (t in (-1, 2) or t == s == 1):
                         chainId = str(ctx.Double_quote_string(0)).strip('"').strip()
                         if len(chainId) == 0:
                             return
@@ -7305,7 +7342,7 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                                     self.factor['chain_id'].append(__chainId)
                     simpleNamesIndex += 1
 
-                if len(self.factor['chain_id']) == 0:
+                if 'chain_id' not in self.factor or len(self.factor['chain_id']) == 0:
                     if len(self.fibril_chain_ids) > 0 and not self.hasNonPoly:
                         if chainId[0] in self.fibril_chain_ids:
                             self.factor['chain_id'] = [chainId[0]]
@@ -8638,14 +8675,16 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             val = self.evaluate[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         elif symbol_name in self.evaluateFor:
                             val = self.evaluateFor[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         else:
@@ -9257,6 +9296,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitNoe_assign_loop(self, ctx: XplorMRParser.Noe_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#noe_assign_loop.
         """
@@ -9308,6 +9359,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9371,6 +9434,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitSani_assign_loop(self, ctx: XplorMRParser.Sani_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#sani_assign_loop.
         """
@@ -9422,6 +9497,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9485,8 +9572,89 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitCoup_assign_loop(self, ctx: XplorMRParser.Coup_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#coup_assign_loop.
+        """
+
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+            if symbol_name in self.evaluateFor:
+                del self.evaluateFor[symbol_name]
+
+        self.in_loop = False
+
+    def enterCarbon_shift_assign_loop(self, ctx: XplorMRParser.Carbon_shift_assign_loopContext):
+        """ Enter a parse tree produced by XplorMRParser#carbon_shift_assign_loop.
+        """
+
+        self.in_loop = True
+
+        symbol_name = None
+        if ctx.Symbol_name_CF():
+            symbol_name = str(ctx.Symbol_name_CF())
+
+        if ctx.Integer_CF(0):
+            int_list = []
+            idx = 0
+            while True:
+                if ctx.Integer_CF(idx):
+                    int_list.append(int(str(ctx.Integer_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = int_list
+
+        if ctx.Real_CF(0):
+            real_list = []
+            idx = 0
+            while True:
+                if ctx.Real_CF(idx):
+                    real_list.append(float(str(ctx.Real_CF(idx))))
+                    idx += 1
+                else:
+                    break
+            if symbol_name[0] is not None:
+                self.evaluateFor[symbol_name] = real_list
+
+        if ctx.Simple_name_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Simple_name_CF(idx):
+                    str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+    def exitCarbon_shift_assign_loop(self, ctx: XplorMRParser.Carbon_shift_assign_loopContext):
+        """ Exit a parse tree produced by XplorMRParser#carbon_shift_assign_loop.
         """
 
         if ctx.Symbol_name_CF():
@@ -9536,6 +9704,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9599,6 +9779,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitCsa_assign_loop(self, ctx: XplorMRParser.Csa_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#csa_assign_loop.
         """
@@ -9650,6 +9842,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9713,6 +9917,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitPcs_assign_loop(self, ctx: XplorMRParser.Pcs_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#pcs_assign_loop.
         """
@@ -9764,6 +9980,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break
@@ -9827,6 +10055,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             if symbol_name is not None:
                 self.evaluateFor[symbol_name] = str_list
 
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
     def exitHbond_db_assign_loop(self, ctx: XplorMRParser.Hbond_db_assign_loopContext):
         """ Exit a parse tree produced by XplorMRParser#hbond_db_assign_loop.
         """
@@ -9878,6 +10118,18 @@ class XplorMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
             while True:
                 if ctx.Simple_name_CF(idx):
                     str_list.append(str(ctx.Simple_name_CF(idx)))
+                    idx += 1
+                else:
+                    break
+            if symbol_name is not None:
+                self.evaluateFor[symbol_name] = str_list
+
+        if ctx.Double_quote_string_CF(0):
+            str_list = []
+            idx = 0
+            while True:
+                if ctx.Double_quote_string_CF(idx):
+                    str_list.append(str(ctx.Double_quote_string_CF(idx)).strip('"').strip())
                     idx += 1
                 else:
                     break

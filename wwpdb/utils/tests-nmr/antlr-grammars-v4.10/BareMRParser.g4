@@ -37,7 +37,7 @@ mr_row_list:
 	any+ (RETURN | EOF);
 
 /* any data expression in restraints */
-any:	Float | Integer | Simple_name | Double_quote_float | Double_quote_integer | Double_quote_string;
+any:	Real | Float | Integer | Simple_name | Double_quote_float | Double_quote_integer | Double_quote_string;
 
 /* any column name of header */
 column_name:

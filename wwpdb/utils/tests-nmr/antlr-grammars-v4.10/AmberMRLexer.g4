@@ -390,7 +390,7 @@ fragment SIMPLE_NAME:	START_CHAR NAME_CHAR*;
 fragment ALPHA_EX_R:	[A-QS-Z];
 fragment START_CHAR_EX_R:	ALPHA_EX_R | DEC_DIGIT | '_';
 fragment SIMPLE_NAME_EX_R:	START_CHAR_EX_R NAME_CHAR*;
-fragment QSTRING:	SIMPLE_NAME_EX_R | '\'' SIMPLE_NAME QEXT_CHAR* '\'' | '"' SIMPLE_NAME QEXT_CHAR* '"';
+fragment QSTRING:	'\'' SIMPLE_NAME QEXT_CHAR* '\'' | '"' SIMPLE_NAME QEXT_CHAR* '"';
 
 L_paren:		'(';
 R_paren:		')';

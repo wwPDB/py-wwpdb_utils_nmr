@@ -105,21 +105,26 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by OliviaCSParser#residue.
         """
 
-        chain_id = str(ctx.Simple_name(0))
-        comp_id = str(ctx.Simple_name(1))
-        seq_id = int(str(ctx.Integer()))
+        try:
 
-        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chain_id), None)
+            chain_id = str(ctx.Simple_name(0))
+            comp_id = str(ctx.Simple_name(1))
+            seq_id = int(str(ctx.Integer()))
 
-        if ps is None:
-            self.__polySeq.append({'chain_id': chain_id, 'seq_id': [], 'comp_id': []})
-            ps = self.__polySeq[-1]
-            entity_assembly_id = len(self.__polySeq)
-            self.__entityAssembly[str(entity_assembly_id)] = {'entity_id': entity_assembly_id, 'auth_asym_id': chain_id}
-            self.predictSequenceNumberOffsetByFirstResidue(chain_id, seq_id, comp_id)
+            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chain_id), None)
 
-        ps['seq_id'].append(seq_id)
-        ps['comp_id'].append(comp_id)
+            if ps is None:
+                self.__polySeq.append({'chain_id': chain_id, 'seq_id': [], 'comp_id': []})
+                ps = self.__polySeq[-1]
+                entity_assembly_id = len(self.__polySeq)
+                self.__entityAssembly[str(entity_assembly_id)] = {'entity_id': entity_assembly_id, 'auth_asym_id': chain_id}
+                self.predictSequenceNumberOffsetByFirstResidue(chain_id, seq_id, comp_id)
+
+            ps['seq_id'].append(seq_id)
+            ps['comp_id'].append(comp_id)
+
+        except ValueError:
+            pass
 
     def exitResidue(self, ctx: OliviaCSParser.ResidueContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by OliviaCSParser#residue.
@@ -158,19 +163,13 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             index = self.chemShifts
 
-            try:
+            chain_id = str(ctx.Simple_name(0))
+            comp_id = str(ctx.Simple_name(1))
+            atom_id = str(ctx.Simple_name(2))
+            seq_id = int(str(ctx.Integer()))
 
-                chain_id = str(ctx.Simple_name(0))
-                comp_id = str(ctx.Simple_name(1))
-                atom_id = str(ctx.Simple_name(2))
-                seq_id = int(str(ctx.Integer()))
-
-                value = self.anySelection[0]
-                val_err = self.anySelection[1]
-
-            except (IndexError, ValueError):
-                self.chemShifts -= 1
-                return
+            value = self.anySelection[0]
+            val_err = self.anySelection[1]
 
             if value is None:
                 self.chemShifts -= 1
@@ -210,6 +209,9 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
                           f'{L} -> ')
+
+        except (IndexError, ValueError):
+            self.chemShifts -= 1
 
         finally:
             self.anySelection.clear()

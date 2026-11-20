@@ -1532,8 +1532,12 @@ class BaseStackedMRParserListener():
                                         matched += 100
                                         if all(abs(offset_) > 950 for offset_ in _offsets):  # 6e5n
                                             matched -= abs((offset % 100) - 100) % 100
-                                        elif ps['auth_seq_id'][idx] not in EMPTY_VALUE:
-                                            matched -= abs(offset - (ps['auth_seq_id'][idx] - ps['seq_id'][idx]))
+                                        else:
+                                            try:
+                                                if ps['auth_seq_id'][idx] not in EMPTY_VALUE:
+                                                    matched -= abs(offset - (ps['auth_seq_id'][idx] - ps['seq_id'][idx]))
+                                            except IndexError:
+                                                pass
                                 else:
                                     matched -= 100
                             if matched > _matched:
@@ -1928,8 +1932,11 @@ class BaseStackedMRParserListener():
                                     if len(pro_hn_atom_not_found_warnings) + len(gly_hb_atom_not_found_warnings) > 0:
                                         self.__seqAtmRstFailed = []
                                         for f in any_atom_not_found_warnings:
-                                            g = self.__any_atom_not_found_pat.search(f).groups()
-                                            updateSeqAtmRst(self.__seqAtmRstFailed, g[0], int(g[1]), [g[2]])
+                                            try:
+                                                g = self.__any_atom_not_found_pat.search(f).groups()
+                                                updateSeqAtmRst(self.__seqAtmRstFailed, g[0], int(g[1]), [g[2]])
+                                            except AttributeError:
+                                                pass
                                         chain_id_remap_with_offset(False)  # 5xs1
 
                                 for ca in chainAssignFailed:
@@ -2508,16 +2515,22 @@ class BaseStackedMRParserListener():
                                 pro_seq_ids, gly_seq_ids = set(), set()
                                 if len(pro_hn_atom_not_found_warnings) > 0:
                                     for f in pro_hn_atom_not_found_warnings:
-                                        g = self.__pro_hn_atom_not_found_pat.search(f).groups()
-                                        if g[0] != chain_id:
-                                            continue
-                                        pro_seq_ids.add(int(g[1]))
+                                        try:
+                                            g = self.__pro_hn_atom_not_found_pat.search(f).groups()
+                                            if g[0] != chain_id:
+                                                continue
+                                            pro_seq_ids.add(int(g[1]))
+                                        except AttributeError:
+                                            pass
                                 if len(gly_hb_atom_not_found_warnings) > 0:
                                     for f in gly_hb_atom_not_found_warnings:
-                                        g = self.__gly_hb_atom_not_found_pat.search(f).groups()
-                                        if g[0] != chain_id:
-                                            continue
-                                        gly_seq_ids.add(int(g[1]))
+                                        try:
+                                            g = self.__gly_hb_atom_not_found_pat.search(f).groups()
+                                            if g[0] != chain_id:
+                                                continue
+                                            gly_seq_ids.add(int(g[1]))
+                                        except AttributeError:
+                                            pass
                                 if len(pro_seq_ids) + len(gly_seq_ids) == 0:
                                     continue
                                 ps = next((ps for ps in self.polySeq if ps['chain_id'] == chain_id), None)
@@ -4186,7 +4199,10 @@ class BaseStackedMRParserListener():
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     idx = indexOfAuthSeqIdAcrossGap(ps, real_seq_id, offset)
                     if idx is not None:
-                        return ps['auth_seq_id'][idx]
+                        try:
+                            return ps['auth_seq_id'][idx]
+                        except IndexError:
+                            pass
 
             elif 'global_sequence_offset' in self.reasons\
                     and chain_id in self.reasons['global_sequence_offset']:
@@ -5077,8 +5093,11 @@ class BaseStackedMRParserListener():
                                 prefAltAuthSeqId = True
                             elif seqId in ps['seq_id']:
                                 idx = ps['seq_id'].index(seqId)
-                                compId = ps['comp_id'][idx]
-                                _seqId_ = ps['auth_seq_id'][idx]
+                                try:
+                                    compId = ps['comp_id'][idx]
+                                    _seqId_ = ps['auth_seq_id'][idx]
+                                except IndexError:
+                                    pass
                         elif prefAltAuthSeqId:
                             continue
 
@@ -5109,7 +5128,7 @@ class BaseStackedMRParserListener():
                                 seqId = ps['auth_seq_id'][idx]
                                 compId = ps['comp_id'][idx]
                                 seqKey, coordAtomSite = self.getCoordAtomSiteOf(chainId, seqId, cifCheck=cifCheck)
-                            except ValueError:
+                            except (ValueError, IndexError):
                                 pass
 
                     atomId = _factor['atom_id'][0].upper()
@@ -6691,7 +6710,10 @@ class BaseStackedMRParserListener():
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     idx = indexOfAuthSeqIdAcrossGap(ps, seqId, offset)
                     if idx is not None:
-                        return ps['auth_seq_id'][idx]
+                        try:
+                            return ps['auth_seq_id'][idx]
+                        except IndexError:
+                            pass
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _, _seqId = self.__labelToAuthSeq[seqKey]
@@ -6717,7 +6739,10 @@ class BaseStackedMRParserListener():
         if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
             idx = indexOfAuthSeqIdAcrossGap(ps, seqId, offset)
             if idx is not None:
-                return ps['auth_seq_id'][idx]
+                try:
+                    return ps['auth_seq_id'][idx]
+                except IndexError:
+                    pass
         return seqId
 
     def getRealSeqId(self, ps: dict, seqId: int, isPolySeq: bool = True
@@ -6761,7 +6786,10 @@ class BaseStackedMRParserListener():
                 if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
                     idx = indexOfAuthSeqIdAcrossGap(ps, seqId, offset)
                     if idx is not None:
-                        return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
+                        try:
+                            return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
+                        except IndexError:
+                            pass
             seqKey = (ps['chain_id' if isPolySeq else 'auth_chain_id'], seqId + offset)
             if seqKey in self.__labelToAuthSeq:
                 _, _seqId = self.__labelToAuthSeq[seqKey]
@@ -6771,7 +6799,10 @@ class BaseStackedMRParserListener():
                                                  else ps['auth_seq_id'].index(_seqId)], False
                 if seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
                     idx = ps['seq_id'].index(seqKey[1])
-                    return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
+                    try:
+                        return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
+                    except IndexError:
+                        pass
         else:
             if isPolySeq and self.reasons is not None and 'global_sequence_offset' in self.reasons\
                and ps['auth_chain_id'] in self.reasons['global_sequence_offset']:
@@ -6796,7 +6827,10 @@ class BaseStackedMRParserListener():
         if offset != 0 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']:
             idx = indexOfAuthSeqIdAcrossGap(ps, seqId, offset)
             if idx is not None:
-                return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
+                try:
+                    return ps['auth_seq_id'][idx], ps['comp_id'][idx], False
+                except IndexError:
+                    pass
         return seqId, None, False
 
     @functools.lru_cache(maxsize=128)
@@ -7025,21 +7059,26 @@ class BaseStackedMRParserListener():
 
         idx_list = [idx for idx, _compId in enumerate(compIds) if _compId == compId]
 
-        offsets = set(ps['auth_seq_id'][idx] - seqId for idx in idx_list)
+        try:
 
-        r = self.__getNamedReasonsForReparsing('global_sequence_offset')
-        if chainId in r:
-            if r[chainId] is None:
-                return False
-            r[chainId] &= offsets
-            if len(r[chainId]) == 0:
-                r[chainId] = None
-                return False
+            offsets = set(ps['auth_seq_id'][idx] - seqId for idx in idx_list)
+
+            r = self.__getNamedReasonsForReparsing('global_sequence_offset')
+            if chainId in r:
+                if r[chainId] is None:
+                    return False
+                r[chainId] &= offsets
+                if len(r[chainId]) == 0:
+                    r[chainId] = None
+                    return False
+                return True
+
+            r[chainId] = offsets
+
             return True
 
-        r[chainId] = offsets
-
-        return True
+        except IndexError:
+            return False
 
     def selectRealisticBondConstraint(self, atom1: str, atom2: str, alt_atom_id1: str, alt_atom_id2: str, dst_func: dict
                                       ) -> Tuple[str, str]:

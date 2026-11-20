@@ -2761,7 +2761,8 @@ class CharmmMRParserListener(ParseTreeListener, BaseStackedMRParserListener):
                             val = self.evaluate[symbol_name]
                             if isinstance(val, list):
                                 self.factor['chain_id'] = val
-                                self.factor['segment_id'] = val
+                                if len(val) == 1:
+                                    self.factor['segment_id'] = val[0]
                             else:
                                 self.factor['chain_id'] = [val]
                         else:

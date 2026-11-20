@@ -125,7 +125,7 @@ fragment NON_H_NAME:	~[ABCDEGHMNOPQRZ*%#+'"0-9 \t\r\n];
 
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
-COMMENT:		'#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME)) '#'* -> channel(HIDDEN);
+COMMENT:		'#' (~'H' | 'H' (NON_H_NAME | H_NAME NON_H_NAME | 'HBOND')) '#'* -> channel(HIDDEN);
 
 Simple_name:		SIMPLE_NAME;
 Simple_names:		(WILDCARD SIMPLE_NAME? | WILDCARD* SIMPLE_NAME WILDCARD+) POST_WC_CHAR*;

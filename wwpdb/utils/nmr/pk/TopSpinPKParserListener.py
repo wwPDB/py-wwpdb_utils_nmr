@@ -300,69 +300,74 @@ class TopSpinPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Enter a parse tree produced by XMLParser#attribute.
         """
 
-        if ctx.Name() and ctx.STRING():
-            name = str(ctx.Name())
-            string = str(ctx.STRING())[1:-1]
+        try:
 
-            if self.__cur_path == '/PeakList/PeakList2D/PeakList2DHeader':
+            if ctx.Name() and ctx.STRING():
+                name = str(ctx.Name())
+                string = str(ctx.STRING())[1:-1]
 
-                if name == 'name':
-                    self.spectrum_name = string
+                if self.__cur_path == '/PeakList/PeakList2D/PeakList2DHeader':
 
-            elif self.__cur_path == '/PeakList/PeakList3D/PeakList3DHeader':
+                    if name == 'name':
+                        self.spectrum_name = string
 
-                if name == 'name':
-                    self.spectrum_name = string
+                elif self.__cur_path == '/PeakList/PeakList3D/PeakList3DHeader':
 
-            elif self.__cur_path == '/PeakList/PeakList4D/PeakList4DHeader':
+                    if name == 'name':
+                        self.spectrum_name = string
 
-                if name == 'name':
-                    self.spectrum_name = string
+                elif self.__cur_path == '/PeakList/PeakList4D/PeakList4DHeader':
 
-            elif self.__cur_path == '/PeakList/PeakList2D/Peak2D':
+                    if name == 'name':
+                        self.spectrum_name = string
 
-                if name == 'F1':
-                    self.__f1_ppm = float(string)
-                elif name == 'F2':
-                    self.__f2_ppm = float(string)
-                elif name == 'intensity':
-                    self.__intensity = string
-                elif name == 'volume':
-                    self.__volume = string
-                elif name == 'annotation':
-                    self.__annotation = string
+                elif self.__cur_path == '/PeakList/PeakList2D/Peak2D':
 
-            elif self.__cur_path == '/PeakList/PeakList3D/Peak3D':
+                    if name == 'F1':
+                        self.__f1_ppm = float(string)
+                    elif name == 'F2':
+                        self.__f2_ppm = float(string)
+                    elif name == 'intensity':
+                        self.__intensity = string
+                    elif name == 'volume':
+                        self.__volume = string
+                    elif name == 'annotation':
+                        self.__annotation = string
 
-                if name == 'F1':
-                    self.__f1_ppm = float(string)
-                elif name == 'F2':
-                    self.__f2_ppm = float(string)
-                elif name == 'F3':
-                    self.__f3_ppm = float(string)
-                elif name == 'intensity':
-                    self.__intensity = string
-                elif name == 'volume':
-                    self.__volume = string
-                elif name == 'annotation':
-                    self.__annotation = string
+                elif self.__cur_path == '/PeakList/PeakList3D/Peak3D':
 
-            elif self.__cur_path == '/PeakList/PeakList4D/Peak4D':
+                    if name == 'F1':
+                        self.__f1_ppm = float(string)
+                    elif name == 'F2':
+                        self.__f2_ppm = float(string)
+                    elif name == 'F3':
+                        self.__f3_ppm = float(string)
+                    elif name == 'intensity':
+                        self.__intensity = string
+                    elif name == 'volume':
+                        self.__volume = string
+                    elif name == 'annotation':
+                        self.__annotation = string
 
-                if name == 'F1':
-                    self.__f1_ppm = float(string)
-                elif name == 'F2':
-                    self.__f2_ppm = float(string)
-                elif name == 'F3':
-                    self.__f3_ppm = float(string)
-                elif name == 'F4':
-                    self.__f4_ppm = float(string)
-                elif name == 'intensity':
-                    self.__intensity = string
-                elif name == 'volume':
-                    self.__volume = string
-                elif name == 'annotation':
-                    self.__annotation = string
+                elif self.__cur_path == '/PeakList/PeakList4D/Peak4D':
+
+                    if name == 'F1':
+                        self.__f1_ppm = float(string)
+                    elif name == 'F2':
+                        self.__f2_ppm = float(string)
+                    elif name == 'F3':
+                        self.__f3_ppm = float(string)
+                    elif name == 'F4':
+                        self.__f4_ppm = float(string)
+                    elif name == 'intensity':
+                        self.__intensity = string
+                    elif name == 'volume':
+                        self.__volume = string
+                    elif name == 'annotation':
+                        self.__annotation = string
+
+        except ValueError:
+            pass
 
     def exitAttribute(self, ctx: XMLParser.AttributeContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by XMLParser#attribute.

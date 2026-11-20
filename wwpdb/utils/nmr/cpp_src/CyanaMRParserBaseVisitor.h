@@ -195,6 +195,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitPcs_no_param_restraints(CyanaMRParser::Pcs_no_param_restraintsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitPcs_no_param_restraint(CyanaMRParser::Pcs_no_param_restraintContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitSsbond_macro(CyanaMRParser::Ssbond_macroContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -256,6 +264,22 @@ public:
   }
 
   virtual std::any visitGen_atom_name(CyanaMRParser::Gen_atom_nameContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitNumber_qc(CyanaMRParser::Number_qcContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitGen_res_num_qc(CyanaMRParser::Gen_res_num_qcContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitGen_simple_name_qc(CyanaMRParser::Gen_simple_name_qcContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitGen_atom_name_qc(CyanaMRParser::Gen_atom_name_qcContext *ctx) override {
     return visitChildren(ctx);
   }
 

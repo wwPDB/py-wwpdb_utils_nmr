@@ -378,6 +378,9 @@ class BaseLinearMRParserListener():
     # collection of number selection
     numberSelection = []
 
+    # collection of number selection in QCONVR mode (CYANA specific)
+    numberSelection_qc = []
+
     # collection of auxiliary atom selection (CYANA/DYNAMO specific)
     auxAtomSelectionSet = ''
 
@@ -393,11 +396,20 @@ class BaseLinearMRParserListener():
     # collection of general residue number extended with chain code (CYANA/ROSETTA specific)
     genResNumSelection = []
 
+    # collection of general residue number extended with chain code in QCONVR mode (CYANA specific)
+    genResNumSelection_qc = []
+
     # collection of general simple name (CYANA/ROSETTA specific)
     genSimpleNameSelection = []
 
+    # collection of general simple name in QCONVR mode (CYANA specific)
+    genSimpleNameSelection_qc = []
+
     # collection of general atom name extended with ambig code (CYANA specific)
     genAtomNameSelection = []
+
+    # collection of general atom name extended with ambig code in QCONVR mode (CYANA specific)
+    genAtomNameSelection_qc = []
 
     # current Insight II restraint declaration (BIOSYM specific)
     cur_ins_decl = None
@@ -1448,7 +1460,8 @@ class BaseLinearMRParserListener():
         return dstFunc
 
     def validatePeakVolumeRange(self, weight: float, target_value: Optional[float],
-                                lower_limit: Optional[float], upper_limit: Optional[float]
+                                lower_limit: Optional[float], upper_limit: Optional[float],
+                                target_value_uncertainty: Optional[float] = None
                                 ) -> Optional[dict]:
         """ Validate NOESY peak volume value range.
         """
@@ -1464,6 +1477,9 @@ class BaseLinearMRParserListener():
 
         if upper_limit is not None:
             dstFunc['upper_limit'] = f"{upper_limit}"
+
+        if target_value_uncertainty is not None:
+            dstFunc['target_value_uncertainty'] = f"{target_value_uncertainty}"
 
         if target_value is not None:
 
@@ -1532,7 +1548,7 @@ class BaseLinearMRParserListener():
             if seqKey in self.__labelToAuthSeq:
                 _chainId, _seqId = self.__labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id']:
-                    return _chainId, _seqId, ps['comp_id'][ps['seq_id'].index(seqId)]
+                    return _chainId, _seqId, ps['comp_id'][ps['auth_seq_id'].index(_seqId)]
                 if seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
                     idx = ps['seq_id'].index(seqKey[1])
                     return _chainId, ps['auth_seq_id'][idx], ps['comp_id'][idx]
@@ -2235,8 +2251,9 @@ class BaseLinearMRParserListener():
                                 chainAssign.add((_refChainId, _seqId, compId, True))
                         asis = True
                     else:
+                        warn_title = 'Unsupported data' if _seqId == 0 and _compId.startswith('AMB') else 'Atom not found'
                         if enableWarning:
-                            self.f.append(f"[Atom not found] {self.getCurrentRestraint()}"
+                            self.f.append(f"[{warn_title}] {self.getCurrentRestraint()}"
                                           f"{_seqId}:{_compId}:{atomId} is not present in the coordinates.")
                     updatePolySeqRst(self.__polySeqRstFailed, self.polySeq[0]['chain_id'] if fixedChainId is None else fixedChainId,
                                      _seqId, compId, _compId)
@@ -6929,7 +6946,7 @@ class BaseLinearMRParserListener():
 
         return dstFunc
 
-    def validateRdcRange(self, weight: float, orientation: int, target_value: Optional[float],
+    def validateRdcRange(self, weight: float, orientation: Optional[int], target_value: Optional[float],
                          lower_limit: Optional[float], upper_limit: Optional[float]
                          ) -> Optional[dict]:
         """ Validate RDC value range.

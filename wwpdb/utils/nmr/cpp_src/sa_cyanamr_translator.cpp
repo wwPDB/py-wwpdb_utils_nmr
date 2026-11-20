@@ -56,6 +56,8 @@ SA_CyanaMRTranslator::~SA_CyanaMRTranslator() {
     Py_XDECREF(Torsion_angle_w_chain_restraintContext_cls);
     Py_XDECREF(Cco_restraintsContext_cls);
     Py_XDECREF(Cco_restraintContext_cls);
+    Py_XDECREF(Pcs_no_param_restraintsContext_cls);
+    Py_XDECREF(Pcs_no_param_restraintContext_cls);
     Py_XDECREF(Ssbond_macroContext_cls);
     Py_XDECREF(Hbond_macroContext_cls);
     Py_XDECREF(Link_statementContext_cls);
@@ -72,6 +74,10 @@ SA_CyanaMRTranslator::~SA_CyanaMRTranslator() {
     Py_XDECREF(Gen_res_numContext_cls);
     Py_XDECREF(Gen_simple_nameContext_cls);
     Py_XDECREF(Gen_atom_nameContext_cls);
+    Py_XDECREF(Number_qcContext_cls);
+    Py_XDECREF(Gen_res_num_qcContext_cls);
+    Py_XDECREF(Gen_simple_name_qcContext_cls);
+    Py_XDECREF(Gen_atom_name_qcContext_cls);
 }
 
 
@@ -345,6 +351,18 @@ antlrcpp::Any SA_CyanaMRTranslator::visitCco_restraint(CyanaMRParser::Cco_restra
     return py_ctx;
 }
 
+antlrcpp::Any SA_CyanaMRTranslator::visitPcs_no_param_restraints(CyanaMRParser::Pcs_no_param_restraintsContext *ctx){
+    if(!Pcs_no_param_restraintsContext_cls) Pcs_no_param_restraintsContext_cls = PyObject_GetAttrString(translator->parser_cls, "Pcs_no_param_restraintsContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Pcs_no_param_restraintsContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_CyanaMRTranslator::visitPcs_no_param_restraint(CyanaMRParser::Pcs_no_param_restraintContext *ctx){
+    if(!Pcs_no_param_restraintContext_cls) Pcs_no_param_restraintContext_cls = PyObject_GetAttrString(translator->parser_cls, "Pcs_no_param_restraintContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Pcs_no_param_restraintContext_cls);
+    return py_ctx;
+}
+
 antlrcpp::Any SA_CyanaMRTranslator::visitSsbond_macro(CyanaMRParser::Ssbond_macroContext *ctx){
     if(!Ssbond_macroContext_cls) Ssbond_macroContext_cls = PyObject_GetAttrString(translator->parser_cls, "Ssbond_macroContext");
     PyObject *py_ctx = translator->convert_ctx(this, ctx, Ssbond_macroContext_cls);
@@ -438,5 +456,29 @@ antlrcpp::Any SA_CyanaMRTranslator::visitGen_simple_name(CyanaMRParser::Gen_simp
 antlrcpp::Any SA_CyanaMRTranslator::visitGen_atom_name(CyanaMRParser::Gen_atom_nameContext *ctx){
     if(!Gen_atom_nameContext_cls) Gen_atom_nameContext_cls = PyObject_GetAttrString(translator->parser_cls, "Gen_atom_nameContext");
     PyObject *py_ctx = translator->convert_ctx(this, ctx, Gen_atom_nameContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_CyanaMRTranslator::visitNumber_qc(CyanaMRParser::Number_qcContext *ctx){
+    if(!Number_qcContext_cls) Number_qcContext_cls = PyObject_GetAttrString(translator->parser_cls, "Number_qcContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Number_qcContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_CyanaMRTranslator::visitGen_res_num_qc(CyanaMRParser::Gen_res_num_qcContext *ctx){
+    if(!Gen_res_num_qcContext_cls) Gen_res_num_qcContext_cls = PyObject_GetAttrString(translator->parser_cls, "Gen_res_num_qcContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Gen_res_num_qcContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_CyanaMRTranslator::visitGen_simple_name_qc(CyanaMRParser::Gen_simple_name_qcContext *ctx){
+    if(!Gen_simple_name_qcContext_cls) Gen_simple_name_qcContext_cls = PyObject_GetAttrString(translator->parser_cls, "Gen_simple_name_qcContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Gen_simple_name_qcContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_CyanaMRTranslator::visitGen_atom_name_qc(CyanaMRParser::Gen_atom_name_qcContext *ctx){
+    if(!Gen_atom_name_qcContext_cls) Gen_atom_name_qcContext_cls = PyObject_GetAttrString(translator->parser_cls, "Gen_atom_name_qcContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Gen_atom_name_qcContext_cls);
     return py_ctx;
 }

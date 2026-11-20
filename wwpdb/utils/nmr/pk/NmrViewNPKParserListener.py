@@ -123,63 +123,69 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Exit a parse tree produced by NmrViewNPKParser#labels.
         """
 
-        labels = self.__labels[self.__cur_label_type]
+        try:
 
-        if self.__cur_label_type == 'label':
+            labels = self.__labels[self.__cur_label_type]
 
-            self.num_of_dim = len(labels)
+            if self.__cur_label_type == 'label':
 
-            for _dim_id, _axis_code in enumerate(labels, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                else:
-                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
+                self.num_of_dim = len(labels)
 
-                cur_spectral_dim['axis_code'] = _axis_code
+                for _dim_id, _axis_code in enumerate(labels, start=1):
+                    if _dim_id not in self.cur_spectral_dim:
+                        cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                    else:
+                        cur_spectral_dim = self.cur_spectral_dim[_dim_id]
 
-                digits = re.findall(r'\d+', _axis_code)
-                for digit in digits:
-                    num = int(digit)
-                    nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
-                    if nuc is not None:
-                        cur_spectral_dim['atom_type'] = nuc
-                        cur_spectral_dim['atom_isotope_number'] = num
-                        break
-                if cur_spectral_dim['atom_type'] is None:
-                    for a in _axis_code:
-                        a = a.upper()
-                        if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                            cur_spectral_dim['atom_type'] = a
-                            cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                    cur_spectral_dim['axis_code'] = _axis_code
+
+                    digits = re.findall(r'\d+', _axis_code)
+                    for digit in digits:
+                        num = int(digit)
+                        nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
+                        if nuc is not None:
+                            cur_spectral_dim['atom_type'] = nuc
+                            cur_spectral_dim['atom_isotope_number'] = num
                             break
+                    if cur_spectral_dim['atom_type'] is None:
+                        for a in _axis_code:
+                            a = a.upper()
+                            if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                cur_spectral_dim['atom_type'] = a
+                                cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                                break
 
-                isotope_number = cur_spectral_dim['atom_isotope_number']
+                    isotope_number = cur_spectral_dim['atom_isotope_number']
 
-                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
-                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
+                    cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
+                        and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
 
-                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
-                    self.acq_dim_id = self.num_of_dim
+                    if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
+                        self.acq_dim_id = self.num_of_dim
 
-                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
+                    cur_spectral_dim['under_sampling_type'] =\
+                        'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
 
-                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+                    self.cur_spectral_dim[_dim_id] = cur_spectral_dim
 
-        elif self.__cur_label_type == 'sw':
+            elif self.__cur_label_type == 'sw':
 
-            for _dim_id, _spectral_width in enumerate(labels, start=1):
-                if _spectral_width not in EMPTY_VALUE:
+                for _dim_id, _spectral_width in enumerate(labels, start=1):
+                    if _spectral_width not in EMPTY_VALUE:
+                        if _dim_id not in self.cur_spectral_dim:
+                            self.cur_spectral_dim[_dim_id] = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                        self.cur_spectral_dim[_dim_id]['sweep_width'] = float(_spectral_width)
+                        self.cur_spectral_dim[_dim_id]['sweep_width_units'] = 'Hz'
+
+            elif self.__cur_label_type == 'sf':
+
+                for _dim_id, _freq in enumerate(labels, start=1):
                     if _dim_id not in self.cur_spectral_dim:
                         self.cur_spectral_dim[_dim_id] = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                    self.cur_spectral_dim[_dim_id]['sweep_width'] = float(_spectral_width)
-                    self.cur_spectral_dim[_dim_id]['sweep_width_units'] = 'Hz'
+                    self.cur_spectral_dim[_dim_id]['spectrometer_frequency'] = float(_freq)
 
-        elif self.__cur_label_type == 'sf':
-
-            for _dim_id, _freq in enumerate(labels, start=1):
-                if _dim_id not in self.cur_spectral_dim:
-                    self.cur_spectral_dim[_dim_id] = copy.copy(SPECTRAL_DIM_TEMPLATE)
-                self.cur_spectral_dim[_dim_id]['spectrometer_frequency'] = float(_freq)
+        except ValueError:
+            pass
 
     def enterPeak_list_2d(self, ctx: NmrViewNPKParser.Peak_list_2dContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by NmrViewNPKParser#peak_list_2d.
@@ -219,43 +225,37 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer(0)))
 
-                index = int(str(ctx.Integer(0)))
+            L1 = str(ctx.Simple_name(0))
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+            # E1 = str(ctx.Simple_name(1))
+            # J1 = self.__jcouplings[0]
+            # U1 = str(ctx.Simple_name(2))
 
-                L1 = str(ctx.Simple_name(0))
-                P1 = self.numberSelection[0]
-                W1 = self.numberSelection[1]
-                B1 = self.numberSelection[2]
-                # E1 = str(ctx.Simple_name(1))
-                # J1 = self.__jcouplings[0]
-                # U1 = str(ctx.Simple_name(2))
+            L2 = str(ctx.Simple_name(3))
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+            # E2 = str(ctx.Simple_name(4))
+            # J2 = self.__jcouplings[1]
+            # U2 = str(ctx.Simple_name(5))
 
-                L2 = str(ctx.Simple_name(3))
-                P2 = self.numberSelection[3]
-                W2 = self.numberSelection[4]
-                B2 = self.numberSelection[5]
-                # E2 = str(ctx.Simple_name(4))
-                # J2 = self.__jcouplings[1]
-                # U2 = str(ctx.Simple_name(5))
-
-                vol = self.originalNumberSelection[6]
-                _int = self.originalNumberSelection[7]
-                # try:
-                #     stat = int(str(ctx.Integer(1)))
-                # except ValueError:
-                #     stat = None
-                if ctx.Simple_name(6):
-                    comment = str(ctx.Simple_name(6))
-                    if comment in EMPTY_VALUE:
-                        comment = None
-                else:
+            vol = self.originalNumberSelection[6]
+            _int = self.originalNumberSelection[7]
+            # try:
+            #     stat = int(str(ctx.Integer(1)))
+            # except ValueError:
+            #     stat = None
+            if ctx.Simple_name(6):
+                comment = str(ctx.Simple_name(6))
+                if comment in EMPTY_VALUE:
                     comment = None
-                # flag0 = int(str(ctx.Integer(2)))
-
-            except (IndexError, ValueError):
-                self.peaks2D -= 1
-                return
+            else:
+                comment = None
+            # flag0 = int(str(ctx.Integer(2)))
 
             if L1 in EMPTY_VALUE:
                 L1 = None
@@ -320,6 +320,9 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     comment if comment is not None or None in (L1, L2)
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2}')
+
+        except (IndexError, ValueError):
+            self.peaks2D -= 1
 
         finally:
             self.numberSelection.clear()
@@ -363,51 +366,45 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer(0)))
 
-                index = int(str(ctx.Integer(0)))
+            L1 = str(ctx.Simple_name(0))
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+            # E1 = str(ctx.Simple_name(1))
+            # J1 = self.__jcouplings[0]
+            # U1 = str(ctx.Simple_name(2))
 
-                L1 = str(ctx.Simple_name(0))
-                P1 = self.numberSelection[0]
-                W1 = self.numberSelection[1]
-                B1 = self.numberSelection[2]
-                # E1 = str(ctx.Simple_name(1))
-                # J1 = self.__jcouplings[0]
-                # U1 = str(ctx.Simple_name(2))
+            L2 = str(ctx.Simple_name(3))
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+            # E2 = str(ctx.Simple_name(4))
+            # J2 = self.__jcouplings[1]
+            # U2 = str(ctx.Simple_name(5))
 
-                L2 = str(ctx.Simple_name(3))
-                P2 = self.numberSelection[3]
-                W2 = self.numberSelection[4]
-                B2 = self.numberSelection[5]
-                # E2 = str(ctx.Simple_name(4))
-                # J2 = self.__jcouplings[1]
-                # U2 = str(ctx.Simple_name(5))
+            L3 = str(ctx.Simple_name(6))
+            P3 = self.numberSelection[6]
+            W3 = self.numberSelection[7]
+            B3 = self.numberSelection[8]
+            # E3 = str(ctx.Simple_name(7))
+            # J3 = self.__jcouplings[2]
+            # U3 = str(ctx.Simple_name(8))
 
-                L3 = str(ctx.Simple_name(6))
-                P3 = self.numberSelection[6]
-                W3 = self.numberSelection[7]
-                B3 = self.numberSelection[8]
-                # E3 = str(ctx.Simple_name(7))
-                # J3 = self.__jcouplings[2]
-                # U3 = str(ctx.Simple_name(8))
-
-                vol = self.originalNumberSelection[9]
-                _int = self.originalNumberSelection[10]
-                # try:
-                #     stat = int(str(ctx.Integer(1)))
-                # except ValueError:
-                #     stat = None
-                if ctx.Simple_name(9):
-                    comment = str(ctx.Simple_name(9))
-                    if comment in EMPTY_VALUE:
-                        comment = None
-                else:
+            vol = self.originalNumberSelection[9]
+            _int = self.originalNumberSelection[10]
+            # try:
+            #     stat = int(str(ctx.Integer(1)))
+            # except ValueError:
+            #     stat = None
+            if ctx.Simple_name(9):
+                comment = str(ctx.Simple_name(9))
+                if comment in EMPTY_VALUE:
                     comment = None
-                # flag0 = int(str(ctx.Integer(2)))
-
-            except (IndexError, ValueError):
-                self.peaks3D -= 1
-                return
+            else:
+                comment = None
+            # flag0 = int(str(ctx.Integer(2)))
 
             if L1 in EMPTY_VALUE:
                 L1 = None
@@ -488,6 +485,9 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3}')
 
+        except (IndexError, ValueError):
+            self.peaks3D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -530,59 +530,53 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer(0)))
 
-                index = int(str(ctx.Integer(0)))
+            L1 = str(ctx.Simple_name(0))
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
+            # E1 = str(ctx.Simple_name(1))
+            # J1 = self.__jcouplings[0]
+            # U1 = str(ctx.Simple_name(2))
 
-                L1 = str(ctx.Simple_name(0))
-                P1 = self.numberSelection[0]
-                W1 = self.numberSelection[1]
-                B1 = self.numberSelection[2]
-                # E1 = str(ctx.Simple_name(1))
-                # J1 = self.__jcouplings[0]
-                # U1 = str(ctx.Simple_name(2))
+            L2 = str(ctx.Simple_name(3))
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
+            # E2 = str(ctx.Simple_name(4))
+            # J2 = self.__jcouplings[1]
+            # U2 = str(ctx.Simple_name(5))
 
-                L2 = str(ctx.Simple_name(3))
-                P2 = self.numberSelection[3]
-                W2 = self.numberSelection[4]
-                B2 = self.numberSelection[5]
-                # E2 = str(ctx.Simple_name(4))
-                # J2 = self.__jcouplings[1]
-                # U2 = str(ctx.Simple_name(5))
+            L3 = str(ctx.Simple_name(6))
+            P3 = self.numberSelection[6]
+            W3 = self.numberSelection[7]
+            B3 = self.numberSelection[8]
+            # E3 = str(ctx.Simple_name(7))
+            # J3 = self.__jcouplings[2]
+            # U3 = str(ctx.Simple_name(8))
 
-                L3 = str(ctx.Simple_name(6))
-                P3 = self.numberSelection[6]
-                W3 = self.numberSelection[7]
-                B3 = self.numberSelection[8]
-                # E3 = str(ctx.Simple_name(7))
-                # J3 = self.__jcouplings[2]
-                # U3 = str(ctx.Simple_name(8))
+            L4 = str(ctx.Simple_name(9))
+            P4 = self.numberSelection[9]
+            W4 = self.numberSelection[10]
+            B4 = self.numberSelection[11]
+            # E4 = str(ctx.Simple_name(10))
+            # J4 = self.__jcouplings[3]
+            # U4 = str(ctx.Simple_name(11))
 
-                L4 = str(ctx.Simple_name(9))
-                P4 = self.numberSelection[9]
-                W4 = self.numberSelection[10]
-                B4 = self.numberSelection[11]
-                # E4 = str(ctx.Simple_name(10))
-                # J4 = self.__jcouplings[3]
-                # U4 = str(ctx.Simple_name(11))
-
-                vol = self.originalNumberSelection[12]
-                _int = self.originalNumberSelection[13]
-                # try:
-                #     stat = int(str(ctx.Integer(1)))
-                # except ValueError:
-                #     stat = None
-                if ctx.Simple_name(12):
-                    comment = str(ctx.Simple_name(12))
-                    if comment in EMPTY_VALUE:
-                        comment = None
-                else:
+            vol = self.originalNumberSelection[12]
+            _int = self.originalNumberSelection[13]
+            # try:
+            #     stat = int(str(ctx.Integer(1)))
+            # except ValueError:
+            #     stat = None
+            if ctx.Simple_name(12):
+                comment = str(ctx.Simple_name(12))
+                if comment in EMPTY_VALUE:
                     comment = None
-                # flag0 = int(str(ctx.Integer(2)))
-
-            except (IndexError, ValueError):
-                self.peaks4D -= 1
-                return
+            else:
+                comment = None
+            # flag0 = int(str(ctx.Integer(2)))
 
             if L1 in EMPTY_VALUE:
                 L1 = None
@@ -678,6 +672,9 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3} {L4}')
 
+        except (IndexError, ValueError):
+            self.peaks4D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -708,37 +705,31 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer(0)))
 
-                index = int(str(ctx.Integer(0)))
+            L1 = str(ctx.Simple_name(0))
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
 
-                L1 = str(ctx.Simple_name(0))
-                P1 = self.numberSelection[0]
-                W1 = self.numberSelection[1]
-                B1 = self.numberSelection[2]
+            L2 = str(ctx.Simple_name(1))
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
 
-                L2 = str(ctx.Simple_name(1))
-                P2 = self.numberSelection[3]
-                W2 = self.numberSelection[4]
-                B2 = self.numberSelection[5]
-
-                vol = self.originalNumberSelection[6]
-                _int = self.originalNumberSelection[7]
-                # try:
-                #     stat = int(str(ctx.Integer(1)))
-                # except ValueError:
-                #     stat = None
-                if ctx.Simple_name(4):
-                    comment = str(ctx.Simple_name(4))
-                    if comment in EMPTY_VALUE:
-                        comment = None
-                else:
+            vol = self.originalNumberSelection[6]
+            _int = self.originalNumberSelection[7]
+            # try:
+            #     stat = int(str(ctx.Integer(1)))
+            # except ValueError:
+            #     stat = None
+            if ctx.Simple_name(4):
+                comment = str(ctx.Simple_name(4))
+                if comment in EMPTY_VALUE:
                     comment = None
-                # flag0 = int(str(ctx.Integer(2)))
-
-            except (IndexError, ValueError):
-                self.peaks2D -= 1
-                return
+            else:
+                comment = None
+            # flag0 = int(str(ctx.Integer(2)))
 
             if L1 in EMPTY_VALUE:
                 L1 = None
@@ -804,6 +795,9 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2}')
 
+        except (IndexError, ValueError):
+            self.peaks2D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -834,42 +828,36 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer(0)))
 
-                index = int(str(ctx.Integer(0)))
+            L1 = str(ctx.Simple_name(0))
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
 
-                L1 = str(ctx.Simple_name(0))
-                P1 = self.numberSelection[0]
-                W1 = self.numberSelection[1]
-                B1 = self.numberSelection[2]
+            L2 = str(ctx.Simple_name(1))
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
 
-                L2 = str(ctx.Simple_name(1))
-                P2 = self.numberSelection[3]
-                W2 = self.numberSelection[4]
-                B2 = self.numberSelection[5]
+            L3 = str(ctx.Simple_name(2))
+            P3 = self.numberSelection[6]
+            W3 = self.numberSelection[7]
+            B3 = self.numberSelection[8]
 
-                L3 = str(ctx.Simple_name(2))
-                P3 = self.numberSelection[6]
-                W3 = self.numberSelection[7]
-                B3 = self.numberSelection[8]
-
-                vol = self.originalNumberSelection[9]
-                _int = self.originalNumberSelection[10]
-                # try:
-                #     stat = int(str(ctx.Integer(1)))
-                # except ValueError:
-                #     stat = None
-                if ctx.Simple_name(3):
-                    comment = str(ctx.Simple_name(3))
-                    if comment in EMPTY_VALUE:
-                        comment = None
-                else:
+            vol = self.originalNumberSelection[9]
+            _int = self.originalNumberSelection[10]
+            # try:
+            #     stat = int(str(ctx.Integer(1)))
+            # except ValueError:
+            #     stat = None
+            if ctx.Simple_name(3):
+                comment = str(ctx.Simple_name(3))
+                if comment in EMPTY_VALUE:
                     comment = None
-                # flag0 = int(str(ctx.Integer(2)))
-
-            except (IndexError, ValueError):
-                self.peaks3D -= 1
-                return
+            else:
+                comment = None
+            # flag0 = int(str(ctx.Integer(2)))
 
             if L1 in EMPTY_VALUE:
                 L1 = None
@@ -950,6 +938,9 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3}')
 
+        except (IndexError, ValueError):
+            self.peaks3D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -980,47 +971,41 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer(0)))
 
-                index = int(str(ctx.Integer(0)))
+            L1 = str(ctx.Simple_name(0))
+            P1 = self.numberSelection[0]
+            W1 = self.numberSelection[1]
+            B1 = self.numberSelection[2]
 
-                L1 = str(ctx.Simple_name(0))
-                P1 = self.numberSelection[0]
-                W1 = self.numberSelection[1]
-                B1 = self.numberSelection[2]
+            L2 = str(ctx.Simple_name(1))
+            P2 = self.numberSelection[3]
+            W2 = self.numberSelection[4]
+            B2 = self.numberSelection[5]
 
-                L2 = str(ctx.Simple_name(1))
-                P2 = self.numberSelection[3]
-                W2 = self.numberSelection[4]
-                B2 = self.numberSelection[5]
+            L3 = str(ctx.Simple_name(2))
+            P3 = self.numberSelection[6]
+            W3 = self.numberSelection[7]
+            B3 = self.numberSelection[8]
 
-                L3 = str(ctx.Simple_name(2))
-                P3 = self.numberSelection[6]
-                W3 = self.numberSelection[7]
-                B3 = self.numberSelection[8]
+            L4 = str(ctx.Simple_name(3))
+            P4 = self.numberSelection[9]
+            W4 = self.numberSelection[10]
+            B4 = self.numberSelection[11]
 
-                L4 = str(ctx.Simple_name(3))
-                P4 = self.numberSelection[9]
-                W4 = self.numberSelection[10]
-                B4 = self.numberSelection[11]
-
-                vol = self.originalNumberSelection[12]
-                _int = self.originalNumberSelection[13]
-                # try:
-                #     stat = int(str(ctx.Integer(1)))
-                # except ValueError:
-                #     stat = None
-                if ctx.Simple_name(4):
-                    comment = str(ctx.Simple_name(4))
-                    if comment in EMPTY_VALUE:
-                        comment = None
-                else:
+            vol = self.originalNumberSelection[12]
+            _int = self.originalNumberSelection[13]
+            # try:
+            #     stat = int(str(ctx.Integer(1)))
+            # except ValueError:
+            #     stat = None
+            if ctx.Simple_name(4):
+                comment = str(ctx.Simple_name(4))
+                if comment in EMPTY_VALUE:
                     comment = None
-                # flag0 = int(str(ctx.Integer(2)))
-
-            except (IndexError, ValueError):
-                self.peaks4D -= 1
-                return
+            else:
+                comment = None
+            # flag0 = int(str(ctx.Integer(2)))
 
             if L1 in EMPTY_VALUE:
                 L1 = None
@@ -1116,6 +1101,9 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3} {L4}')
 
+        except (IndexError, ValueError):
+            self.peaks4D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -1124,16 +1112,21 @@ class NmrViewNPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Enter a parse tree produced by NmrViewNPKParser#label.
         """
 
-        if ctx.Float_LA():
-            self.__labels[self.__cur_label_type].append(float(str(ctx.Float_LA())))
-        elif ctx.Simple_name_LA():
-            self.__labels[self.__cur_label_type].append(str(ctx.Simple_name_LA()))
-        else:
-            value = str(ctx.ENCLOSE_DATA_LA())[1:-1].strip()
-            if self.__cur_label_type == 'label':
-                self.__labels[self.__cur_label_type].append(value)
+        try:
+
+            if ctx.Float_LA():
+                self.__labels[self.__cur_label_type].append(float(str(ctx.Float_LA())))
+            elif ctx.Simple_name_LA():
+                self.__labels[self.__cur_label_type].append(str(ctx.Simple_name_LA()))
             else:
-                self.__labels[self.__cur_label_type].append(float(value))
+                value = str(ctx.ENCLOSE_DATA_LA())[1:-1].strip()
+                if self.__cur_label_type == 'label':
+                    self.__labels[self.__cur_label_type].append(value)
+                else:
+                    self.__labels[self.__cur_label_type].append(float(value))
+
+        except ValueError:
+            pass
 
     def exitLabel(self, ctx: NmrViewNPKParser.LabelContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by NmrViewNPKParser#label.

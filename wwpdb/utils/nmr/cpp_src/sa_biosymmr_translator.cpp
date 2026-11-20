@@ -24,6 +24,8 @@ SA_BiosymMRTranslator::~SA_BiosymMRTranslator() {
     Py_XDECREF(Dihedral_angle_constraintContext_cls);
     Py_XDECREF(Dihedral_angle_wo_w_constraintsContext_cls);
     Py_XDECREF(Dihedral_angle_wo_w_constraintContext_cls);
+    Py_XDECREF(Rdc_restraintsContext_cls);
+    Py_XDECREF(Rdc_restraintContext_cls);
     Py_XDECREF(Chirality_constraintsContext_cls);
     Py_XDECREF(Chirality_constraintContext_cls);
     Py_XDECREF(Prochirality_constraintsContext_cls);
@@ -113,6 +115,18 @@ antlrcpp::Any SA_BiosymMRTranslator::visitDihedral_angle_wo_w_constraints(Biosym
 antlrcpp::Any SA_BiosymMRTranslator::visitDihedral_angle_wo_w_constraint(BiosymMRParser::Dihedral_angle_wo_w_constraintContext *ctx){
     if(!Dihedral_angle_wo_w_constraintContext_cls) Dihedral_angle_wo_w_constraintContext_cls = PyObject_GetAttrString(translator->parser_cls, "Dihedral_angle_wo_w_constraintContext");
     PyObject *py_ctx = translator->convert_ctx(this, ctx, Dihedral_angle_wo_w_constraintContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_BiosymMRTranslator::visitRdc_restraints(BiosymMRParser::Rdc_restraintsContext *ctx){
+    if(!Rdc_restraintsContext_cls) Rdc_restraintsContext_cls = PyObject_GetAttrString(translator->parser_cls, "Rdc_restraintsContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Rdc_restraintsContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_BiosymMRTranslator::visitRdc_restraint(BiosymMRParser::Rdc_restraintContext *ctx){
+    if(!Rdc_restraintContext_cls) Rdc_restraintContext_cls = PyObject_GetAttrString(translator->parser_cls, "Rdc_restraintContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Rdc_restraintContext_cls);
     return py_ctx;
 }
 

@@ -97,6 +97,7 @@ Spectrum:		S P E C T R U M;			// = Integer
 //Weight:		W E I G H T;				// = Real
 Volume:			V O L U M E;				// = Real
 Vol:			V O L;					// = Real
+Hpm1:			H P M '1';				// = Real
 Ppm1:			P P M '1';				// = Real
 Ppm2:			P P M '2';				// = Real
 //Cv:			C V;					// = Integer
@@ -104,7 +105,7 @@ Ppm2:			P P M '2';				// = Real
 /* XPLOR-NIH: Dihedral angle restraints - Syntax
  See also https://nmr.cit.nih.gov/xplor-nih/xplorMan/cdih_syntax.html
 */
-Restraints:		R E S T R? A? I? N? T? S?;		// Dihedral
+Restraints:		R E S T R? A? I? N? T? 'S'?;		// Dihedral
 Dihedral:		D I H E D? R? A? L?;			// Dihedral { dihedral_statement } End
 //Assign:		A S S I G? N?;				// selection selection selection selection Real Real Real Integer
 Nassign:		N A S S I? G? N?;			// = Integer
@@ -693,7 +694,7 @@ fragment DECIMAL:	DEC_DIGIT+;
 fragment H_NAME:	[AaBbCcDdEeGgHhMmNnOoPpQqRrZz*%#+'"0-9];
 fragment NON_H_NAME:	~[AaBbCcDdEeGgHhMmNnOoPpQqRrZz*%#+'"0-9 \t\r\n];
 
-SHARP_COMMENT:		'#'+ (~[Hh] | H (NON_H_NAME | H_NAME NON_H_NAME)) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
+SHARP_COMMENT:		'#'+ (~[Hh] | H (NON_H_NAME | H_NAME NON_H_NAME | H B O N D)) ~[\r\n]* '#'* ~[\r\n]* -> channel(HIDDEN);
 EXCLM_COMMENT:		'!'+ ~[\r\n]* '!'* ~[\r\n]* -> channel(HIDDEN);
 SMCLN_COMMENT:		';'+ ~[\r\n]* ';'* ~[\r\n]* -> channel(HIDDEN);
 
@@ -879,6 +880,7 @@ Integer_CF:		('+' | '-')? DECIMAL;
 Real_CF:		Real;
 Symbol_name_CF:		SYMBOL_NAME;
 Simple_name_CF:		SIMPLE_NAME;
+Double_quote_string_CF:	'"' SIMPLE_NAME '"';
 
 SPACE_CF:		[ \t\r\n]+ -> skip;
 COMMENT_CF:		'{' (COMMENT_CF | .)*? '}' -> channel(HIDDEN);

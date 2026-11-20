@@ -326,6 +326,9 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ in ('?-?', None) else _ass_)
 
+        except ValueError:
+            self.peaks2D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -487,6 +490,9 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ in ('?-?-?', None) else _ass_)
+
+        except ValueError:
+            self.peaks3D -= 1
 
         finally:
             self.numberSelection.clear()
@@ -661,6 +667,9 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ in ('?-?-?-?', None) else _ass_)
 
+        except ValueError:
+            self.peaks4D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -701,351 +710,341 @@ class SparkyRPKParserListener(ParseTreeListener, BasePKParserListener):
 
             if self.num_of_dim == 2:
 
-                try:
+                index = self.peaks2D
+                x_ppm = self.numberSelection[0]
+                y_ppm = self.numberSelection[1]
 
-                    index = self.peaks2D
-                    x_ppm = self.numberSelection[0]
-                    y_ppm = self.numberSelection[1]
+                x_hz = y_hz = None
+                if self.__has_hz:
+                    if len(self.numberSelection) > offset:
+                        x_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_hz = self.numberSelection[offset]
+                        offset += 1
 
-                    x_hz = y_hz = None
-                    if self.__has_hz:
-                        if len(self.numberSelection) > offset:
-                            x_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_hz = self.numberSelection[offset]
-                            offset += 1
+                x_dev = y_dev = None
+                if self.__has_dev:
+                    if len(self.numberSelection) > offset:
+                        x_dev = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_dev = self.numberSelection[offset]
+                        offset += 1
 
-                    x_dev = y_dev = None
-                    if self.__has_dev:
-                        if len(self.numberSelection) > offset:
-                            x_dev = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_dev = self.numberSelection[offset]
-                            offset += 1
-
-                    height = volume = None
-                    found_volume = False
-                    if self.__has_volume and len(self.originalNumberSelection) > offset:
-                        if self.__has_real_vol:
-                            volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
-                            if volume == self.originalNumberSelection[offset]:
-                                found_volume = True
-                                offset += 1
-                        else:
-                            volume = self.originalNumberSelection[offset]
+                height = volume = None
+                found_volume = False
+                if self.__has_volume and len(self.originalNumberSelection) > offset:
+                    if self.__has_real_vol:
+                        volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
+                        if volume == self.originalNumberSelection[offset]:
                             found_volume = True
                             offset += 1
-
-                    if self.__has_rms and found_volume:
+                    else:
+                        volume = self.originalNumberSelection[offset]
+                        found_volume = True
                         offset += 1
 
-                    if self.__has_dummy_height and found_volume:
-                        if not self.__has_height and len(self.originalNumberSelection) > offset:
-                            height = self.originalNumberSelection[offset]
-                            if height in ("0", "1"):
-                                height = None
-                        offset += 1
+                if self.__has_rms and found_volume:
+                    offset += 1
 
-                    if self.__has_height and len(self.originalNumberSelection) > offset:
+                if self.__has_dummy_height and found_volume:
+                    if not self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        if height in ("0", "1"):
+                            height = None
+                    offset += 1
+
+                if self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    offset += 1
+
+                if self.__has_s_n:
+                    offset += 1
+
+                x_lw_hz = y_lw_hz = None
+                if self.__has_lw_hz:
+                    if len(self.numberSelection) > offset:
+                        x_lw_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_lw_hz = self.numberSelection[offset]
                         offset += 1
 
-                    if self.__has_s_n:
-                        offset += 1
+                if not self.hasPolySeq and not self.hasNonPolySeq:
+                    return
 
-                    x_lw_hz = y_lw_hz = None
-                    if self.__has_lw_hz:
-                        if len(self.numberSelection) > offset:
-                            x_lw_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_lw_hz = self.numberSelection[offset]
-                            offset += 1
-
-                    if not self.hasPolySeq and not self.hasNonPolySeq:
-                        return
-
-                    if None in (x_ppm, y_ppm):
-                        self.peaks2D -= 1
-                        return
-
-                    dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_dev, y_dev,
-                                                  None, None,
-                                                  x_hz, y_hz, x_lw_hz, y_lw_hz,
-                                                  height, None, volume, None)
-
-                    if dstFunc is None:
-                        self.peaks2D -= 1
-                        return
-
-                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                    cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-                    cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-
-                    if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
-
-                    if self.createSfDict:
-                        sf = self.getSf()
-
-                        if sf is not None:
-                            sf['id'] = index
-                            sf['index_id'] += 1
-
-                            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                           sf['list_id'], self.entryId, dstFunc,
-                                           None, None, None, details=note)
-                            sf['loop'].add_data(row)
-
-                except IndexError:
+                if None in (x_ppm, y_ppm):
                     self.peaks2D -= 1
                     return
 
+                dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, x_dev, y_dev,
+                                              None, None,
+                                              x_hz, y_hz, x_lw_hz, y_lw_hz,
+                                              height, None, volume, None)
+
+                if dstFunc is None:
+                    self.peaks2D -= 1
+                    return
+
+                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+                cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+                cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
+
+                if self.createSfDict:
+                    sf = self.getSf()
+
+                    if sf is not None:
+                        sf['id'] = index
+                        sf['index_id'] += 1
+
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       None, None, None, details=note)
+                        sf['loop'].add_data(row)
+
             elif self.num_of_dim == 3:
 
-                try:
+                index = self.peaks3D
+                x_ppm = self.numberSelection[0]
+                y_ppm = self.numberSelection[1]
+                z_ppm = self.numberSelection[2]
 
-                    index = self.peaks3D
-                    x_ppm = self.numberSelection[0]
-                    y_ppm = self.numberSelection[1]
-                    z_ppm = self.numberSelection[2]
+                x_hz = y_hz = z_hz = None
+                if self.__has_hz:
+                    if len(self.numberSelection) > offset:
+                        x_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        z_hz = self.numberSelection[offset]
+                        offset += 1
 
-                    x_hz = y_hz = z_hz = None
-                    if self.__has_hz:
-                        if len(self.numberSelection) > offset:
-                            x_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            z_hz = self.numberSelection[offset]
-                            offset += 1
+                x_dev = y_dev = z_dev = None
+                if self.__has_dev:
+                    if len(self.numberSelection) > offset:
+                        x_dev = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_dev = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        z_dev = self.numberSelection[offset]
+                        offset += 1
 
-                    x_dev = y_dev = z_dev = None
-                    if self.__has_dev:
-                        if len(self.numberSelection) > offset:
-                            x_dev = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_dev = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            z_dev = self.numberSelection[offset]
-                            offset += 1
-
-                    height = volume = None
-                    found_volume = False
-                    if self.__has_volume and len(self.originalNumberSelection) > offset:
-                        if self.__has_real_vol:
-                            volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
-                            if volume == self.originalNumberSelection[offset]:
-                                found_volume = True
-                                offset += 1
-                        else:
-                            volume = self.originalNumberSelection[offset]
+                height = volume = None
+                found_volume = False
+                if self.__has_volume and len(self.originalNumberSelection) > offset:
+                    if self.__has_real_vol:
+                        volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
+                        if volume == self.originalNumberSelection[offset]:
                             found_volume = True
                             offset += 1
-
-                    if self.__has_rms and found_volume:
+                    else:
+                        volume = self.originalNumberSelection[offset]
+                        found_volume = True
                         offset += 1
 
-                    if self.__has_dummy_height and found_volume:
-                        if not self.__has_height and len(self.originalNumberSelection) > offset:
-                            height = self.originalNumberSelection[offset]
-                            if height in ("0", "1"):
-                                height = None
-                        offset += 1
+                if self.__has_rms and found_volume:
+                    offset += 1
 
-                    if self.__has_height and len(self.originalNumberSelection) > offset:
+                if self.__has_dummy_height and found_volume:
+                    if not self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        if height in ("0", "1"):
+                            height = None
+                    offset += 1
+
+                if self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    offset += 1
+
+                if self.__has_s_n:
+                    offset += 1
+
+                x_lw_hz = y_lw_hz = z_lw_hz = None
+                if self.__has_lw_hz:
+                    if len(self.numberSelection) > offset:
+                        x_lw_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_lw_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        z_lw_hz = self.numberSelection[offset]
                         offset += 1
 
-                    if self.__has_s_n:
-                        offset += 1
+                if not self.hasPolySeq and not self.hasNonPolySeq:
+                    return
 
-                    x_lw_hz = y_lw_hz = z_lw_hz = None
-                    if self.__has_lw_hz:
-                        if len(self.numberSelection) > offset:
-                            x_lw_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_lw_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            z_lw_hz = self.numberSelection[offset]
-                            offset += 1
-
-                    if not self.hasPolySeq and not self.hasNonPolySeq:
-                        return
-
-                    if None in (x_ppm, y_ppm, z_ppm):
-                        self.peaks3D -= 1
-                        return
-
-                    dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, z_dev,
-                                                  None, None, None,
-                                                  x_hz, y_hz, z_hz, x_lw_hz, y_lw_hz, z_lw_hz,
-                                                  height, None, volume, None)
-
-                    if dstFunc is None:
-                        self.peaks3D -= 1
-                        return
-
-                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                    cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-                    cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-                    cur_spectral_dim[3]['freq_hint'].append(z_ppm)
-
-                    if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
-
-                    if self.createSfDict:
-                        sf = self.getSf()
-
-                        if sf is not None:
-                            sf['id'] = index
-                            sf['index_id'] += 1
-
-                            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                           sf['list_id'], self.entryId, dstFunc,
-                                           None, None, None, details=note)
-                            sf['loop'].add_data(row)
-
-                except IndexError:
+                if None in (x_ppm, y_ppm, z_ppm):
                     self.peaks3D -= 1
                     return
 
+                dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, x_dev, y_dev, z_dev,
+                                              None, None, None,
+                                              x_hz, y_hz, z_hz, x_lw_hz, y_lw_hz, z_lw_hz,
+                                              height, None, volume, None)
+
+                if dstFunc is None:
+                    self.peaks3D -= 1
+                    return
+
+                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+                cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+                cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+                cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
+
+                if self.createSfDict:
+                    sf = self.getSf()
+
+                    if sf is not None:
+                        sf['id'] = index
+                        sf['index_id'] += 1
+
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       None, None, None, details=note)
+                        sf['loop'].add_data(row)
+
             elif self.num_of_dim == 4:
 
-                try:
+                index = self.peaks4D
+                x_ppm = self.numberSelection[0]
+                y_ppm = self.numberSelection[1]
+                z_ppm = self.numberSelection[2]
+                a_ppm = self.numberSelection[3]
 
-                    index = self.peaks4D
-                    x_ppm = self.numberSelection[0]
-                    y_ppm = self.numberSelection[1]
-                    z_ppm = self.numberSelection[2]
-                    a_ppm = self.numberSelection[3]
+                x_hz = y_hz = z_hz = a_hz = None
+                if self.__has_hz:
+                    if len(self.numberSelection) > offset:
+                        x_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        z_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        a_hz = self.numberSelection[offset]
+                        offset += 1
 
-                    x_hz = y_hz = z_hz = a_hz = None
-                    if self.__has_hz:
-                        if len(self.numberSelection) > offset:
-                            x_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            z_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            a_hz = self.numberSelection[offset]
-                            offset += 1
+                x_dev = y_dev = z_dev = a_dev = None
+                if self.__has_dev:
+                    if len(self.numberSelection) > offset:
+                        x_dev = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_dev = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        z_dev = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        a_dev = self.numberSelection[offset]
+                        offset += 1
 
-                    x_dev = y_dev = z_dev = a_dev = None
-                    if self.__has_dev:
-                        if len(self.numberSelection) > offset:
-                            x_dev = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_dev = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            z_dev = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            a_dev = self.numberSelection[offset]
-                            offset += 1
-
-                    height = volume = None
-                    found_volume = False
-                    if self.__has_volume and len(self.originalNumberSelection) > offset:
-                        if self.__has_real_vol:
-                            volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
-                            if volume == self.originalNumberSelection[offset]:
-                                found_volume = True
-                                offset += 1
-                        else:
-                            volume = self.originalNumberSelection[offset]
+                height = volume = None
+                found_volume = False
+                if self.__has_volume and len(self.originalNumberSelection) > offset:
+                    if self.__has_real_vol:
+                        volume = self.__real_vol if self.__has_height else self.originalNumberSelection[offset]
+                        if volume == self.originalNumberSelection[offset]:
                             found_volume = True
                             offset += 1
-
-                    if self.__has_rms and found_volume:
+                    else:
+                        volume = self.originalNumberSelection[offset]
+                        found_volume = True
                         offset += 1
 
-                    if self.__has_dummy_height and found_volume:
-                        if not self.__has_height and len(self.originalNumberSelection) > offset:
-                            height = self.originalNumberSelection[offset]
-                            if height in ("0", "1"):
-                                height = None
-                        offset += 1
+                if self.__has_rms and found_volume:
+                    offset += 1
 
-                    if self.__has_height and len(self.originalNumberSelection) > offset:
+                if self.__has_dummy_height and found_volume:
+                    if not self.__has_height and len(self.originalNumberSelection) > offset:
                         height = self.originalNumberSelection[offset]
+                        if height in ("0", "1"):
+                            height = None
+                    offset += 1
+
+                if self.__has_height and len(self.originalNumberSelection) > offset:
+                    height = self.originalNumberSelection[offset]
+                    offset += 1
+
+                if self.__has_s_n:
+                    offset += 1
+
+                x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
+                if self.__has_lw_hz:
+                    if len(self.numberSelection) > offset:
+                        x_lw_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        y_lw_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        z_lw_hz = self.numberSelection[offset]
+                        offset += 1
+                    if len(self.numberSelection) > offset:
+                        a_lw_hz = self.numberSelection[offset]
                         offset += 1
 
-                    if self.__has_s_n:
-                        offset += 1
+                if not self.hasPolySeq and not self.hasNonPolySeq:
+                    return
 
-                    x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
-                    if self.__has_lw_hz:
-                        if len(self.numberSelection) > offset:
-                            x_lw_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            y_lw_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            z_lw_hz = self.numberSelection[offset]
-                            offset += 1
-                        if len(self.numberSelection) > offset:
-                            a_lw_hz = self.numberSelection[offset]
-                            offset += 1
-
-                    if not self.hasPolySeq and not self.hasNonPolySeq:
-                        return
-
-                    if None in (x_ppm, y_ppm, z_ppm, a_ppm):
-                        self.peaks4D -= 1
-                        return
-
-                    dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_dev, y_dev, z_dev, a_dev,
-                                                  None, None, None, None,
-                                                  x_hz, y_hz, z_hz, a_hz, x_lw_hz, y_lw_hz, z_lw_hz, a_lw_hz,
-                                                  height, None, volume, None)
-
-                    if dstFunc is None:
-                        self.peaks4D -= 1
-                        return
-
-                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                    cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-                    cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-                    cur_spectral_dim[3]['freq_hint'].append(z_ppm)
-                    cur_spectral_dim[4]['freq_hint'].append(a_ppm)
-
-                    if self.debug:
-                        print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
-
-                    if self.createSfDict:
-                        sf = self.getSf()
-
-                        if sf is not None:
-                            sf['id'] = index
-                            sf['index_id'] += 1
-
-                            row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                                           sf['list_id'], self.entryId, dstFunc,
-                                           None, None, None, details=note)
-                            sf['loop'].add_data(row)
-
-                except IndexError:
+                if None in (x_ppm, y_ppm, z_ppm, a_ppm):
                     self.peaks4D -= 1
                     return
+
+                dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, x_dev, y_dev, z_dev, a_dev,
+                                              None, None, None, None,
+                                              x_hz, y_hz, z_hz, a_hz, x_lw_hz, y_lw_hz, z_lw_hz, a_lw_hz,
+                                              height, None, volume, None)
+
+                if dstFunc is None:
+                    self.peaks4D -= 1
+                    return
+
+                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+                cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+                cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+                cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+                cur_spectral_dim[4]['freq_hint'].append(a_ppm)
+
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
+
+                if self.createSfDict:
+                    sf = self.getSf()
+
+                    if sf is not None:
+                        sf['id'] = index
+                        sf['index_id'] += 1
+
+                        row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                       sf['list_id'], self.entryId, dstFunc,
+                                       None, None, None, details=note)
+                        sf['loop'].add_data(row)
+
+        except IndexError:
+            if self.num_of_dim == 2:
+                self.peaks2D -= 1
+            elif self.num_of_dim == 3:
+                self.peaks3D -= 1
+            elif self.num_of_dim == 4:
+                self.peaks4D -= 1
 
         finally:
             self.numberSelection.clear()

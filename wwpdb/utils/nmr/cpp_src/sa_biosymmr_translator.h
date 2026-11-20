@@ -25,6 +25,8 @@ class SA_BiosymMRTranslator : public BiosymMRParserBaseVisitor {
     PyObject *Dihedral_angle_constraintContext_cls = NULL;
     PyObject *Dihedral_angle_wo_w_constraintsContext_cls = NULL;
     PyObject *Dihedral_angle_wo_w_constraintContext_cls = NULL;
+    PyObject *Rdc_restraintsContext_cls = NULL;
+    PyObject *Rdc_restraintContext_cls = NULL;
     PyObject *Chirality_constraintsContext_cls = NULL;
     PyObject *Chirality_constraintContext_cls = NULL;
     PyObject *Prochirality_constraintsContext_cls = NULL;
@@ -65,6 +67,10 @@ class SA_BiosymMRTranslator : public BiosymMRParserBaseVisitor {
     antlrcpp::Any visitDihedral_angle_wo_w_constraints(BiosymMRParser::Dihedral_angle_wo_w_constraintsContext *ctx);
 
     antlrcpp::Any visitDihedral_angle_wo_w_constraint(BiosymMRParser::Dihedral_angle_wo_w_constraintContext *ctx);
+
+    antlrcpp::Any visitRdc_restraints(BiosymMRParser::Rdc_restraintsContext *ctx);
+
+    antlrcpp::Any visitRdc_restraint(BiosymMRParser::Rdc_restraintContext *ctx);
 
     antlrcpp::Any visitChirality_constraints(BiosymMRParser::Chirality_constraintsContext *ctx);
 

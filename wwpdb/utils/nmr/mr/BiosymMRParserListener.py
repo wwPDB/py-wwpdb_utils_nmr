@@ -21,12 +21,14 @@ from antlr4 import ParseTreeListener
 
 try:
     from wwpdb.utils.nmr.NmrDpConstant import (EMPTY_VALUE,
+                                               STD_MON_DICT,
                                                REPRESENTATIVE_MODEL_ID,
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP,
                                                JCOUP_BB_PAIR_CODE,
-                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+                                               ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                               RDC_BB_PAIR_CODE)
     from wwpdb.utils.nmr.nef.NefTranslator import NefTranslator
     from wwpdb.utils.nmr.io.CifReader import CifReader
     from wwpdb.utils.nmr.mr.BiosymMRParser import BiosymMRParser
@@ -46,15 +48,18 @@ try:
                                                        getDistConstraintType,
                                                        getPotentialType,
                                                        getDstFuncForHBond,
-                                                       getDstFuncForSsBond)
+                                                       getDstFuncForSsBond,
+                                                       getRdcCode)
 except ImportError:
     from nmr.NmrDpConstant import (EMPTY_VALUE,
+                                   STD_MON_DICT,
                                    REPRESENTATIVE_MODEL_ID,
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP,
                                    JCOUP_BB_PAIR_CODE,
-                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS)
+                                   ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
+                                   RDC_BB_PAIR_CODE)
     from nmr.nef.NefTranslator import NefTranslator
     from nmr.io.CifReader import CifReader
     from nmr.mr.BiosymMRParser import BiosymMRParser
@@ -74,7 +79,8 @@ except ImportError:
                                            getDistConstraintType,
                                            getPotentialType,
                                            getDstFuncForHBond,
-                                           getDstFuncForSsBond)
+                                           getDstFuncForSsBond,
+                                           getRdcCode)
 
 
 class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
@@ -662,6 +668,26 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                     chainId = self.polySeq[chainId-1]['auth_chain_id']
                 else:
                     chainId = str(chainId)
+
+            # convert BIOSYM specific amino acids
+            if self.hasPolySeq and self.polyPeptide and len(compId) >= 3\
+               and (compId not in STD_MON_DICT or compId in ('ASX', 'GLX')):
+                if compId == 'ASX' and compId not in self.compIdSet and 'ASP' in self.compIdSet:
+                    compId = 'ASP'
+                elif compId == 'GLX' and compId not in self.compIdSet and 'GLU' in self.compIdSet:
+                    compId = 'GLU'
+                else:
+                    compId_ = compId[:3]
+                    for _compId in self.compIdSet:
+                        if _compId.startswith(compId_):
+                            compId = _compId
+                            break
+                    if compId not in STD_MON_DICT:
+                        compId_ = compId[:2]
+                        for _compId in self.compIdSet:
+                            if _compId.startswith(compId_):
+                                compId = _compId
+                                break
 
             return chainId, seqId, compId, atomId
 
@@ -1293,6 +1319,189 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                                  self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
                                  atom1, atom2, atom3, atom4, asis1=asis1, asis2=asis2, asis3=asis3, asis4=asis4)
                     sf['loop'].add_data(row)
+
+        finally:
+            self.numberSelection.clear()
+
+    def enterRdc_restraints(self, ctx: BiosymMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#rdc_restraints.
+        """
+
+        self.cur_subtype = 'rdc'
+
+    # Exit a parse tree produced by BiosymMRParser#rdc_restraints.
+    def exitRdc_restraints(self, ctx: BiosymMRParser.Rdc_restraintsContext):  # pylint: disable=unused-argument
+        """ Exit a parse tree produced by BiosymMRParser#rdc_restraints.
+        """
+
+    def enterRdc_restraint(self, ctx: BiosymMRParser.Rdc_restraintContext):  # pylint: disable=unused-argument
+        """ Enter a parse tree produced by BiosymMRParser#rdc_restraint.
+        """
+
+        self.rdcRestraints += 1
+
+        self.atomSelectionSet.clear()
+
+    # Exit a parse tree produced by BiosymMRParser#rdc_restraints.
+    def exitRdc_restraint(self, ctx: BiosymMRParser.Rdc_restraintContext):
+        """ Exit a parse tree produced by BiosymMRParser#rdc_restraint.
+        """
+
+        try:
+
+            chainId1, seqId1, compId1, atomId1 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
+            chainId2, seqId2, compId2, atomId2 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
+
+            if len(self.numberSelection) == 0 or None in self.numberSelection or None in (atomId1, atomId2):
+                self.rdcRestraints -= 1
+                return
+
+            target = self.numberSelection[0]
+            error = abs(self.numberSelection[1])
+            weight = self.numberSelection[2]
+            orientation = int(self.numberSelection[3])
+
+            if weight < 0.0:
+                self.f.append(f"[Unsupported data] {self.getCurrentRestraint()}"
+                              f"The relative weight value of '{weight}' must not be a negative value.")
+                return
+            if weight == 0.0:
+                self.f.append(f"[Range value warning] {self.getCurrentRestraint()}"
+                              f"The relative weight value of '{weight}' should be a positive value.")
+
+            lower_limit = target - error
+            upper_limit = target + error
+
+            dstFunc = self.validateRdcRange(weight, orientation, target, lower_limit, upper_limit)
+
+            if dstFunc is None:
+                return
+
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            self.retrieveLocalSeqScheme()
+
+            chainAssign1, asis1 = self.assignCoordPolymerSequenceWithChainId(chainId1, seqId1, compId1, atomId1)
+            chainAssign2, asis2 = self.assignCoordPolymerSequenceWithChainId(chainId2, seqId2, compId2, atomId2)
+
+            if 0 in (len(chainAssign1), len(chainAssign2)):
+                return
+
+            self.selectCoordAtoms(chainAssign1, seqId1, compId1, atomId1, False)
+            self.selectCoordAtoms(chainAssign2, seqId2, compId2, atomId2, False)
+
+            if len(self.atomSelectionSet) != 2:
+                return
+
+            try:
+                chain_id_1 = self.atomSelectionSet[0][0]['chain_id']
+                seq_id_1 = self.atomSelectionSet[0][0]['seq_id']
+                comp_id_1 = self.atomSelectionSet[0][0]['comp_id']
+                atom_id_1 = self.atomSelectionSet[0][0]['atom_id']
+
+                chain_id_2 = self.atomSelectionSet[1][0]['chain_id']
+                seq_id_2 = self.atomSelectionSet[1][0]['seq_id']
+                comp_id_2 = self.atomSelectionSet[1][0]['comp_id']
+                atom_id_2 = self.atomSelectionSet[1][0]['atom_id']
+            except IndexError:
+                self.areUniqueCoordAtoms('an RDC')
+                return
+
+            if (atom_id_1[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS) or (atom_id_2[0] not in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS):
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              "Non-magnetic susceptible spin appears in RDC vector; "
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            if chain_id_1 != chain_id_2:
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'identical_auth_chain_id' in ps), None)
+                ps2 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_2 and 'identical_auth_chain_id' in ps), None)
+                if ps1 is None and ps2 is None:
+                    self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                  "Found inter-chain RDC vector; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) > 1:
+                ps1 = next((ps for ps in self.polySeq
+                            if ps['auth_chain_id'] == chain_id_1 and 'gap_in_auth_seq' in ps and ps['gap_in_auth_seq']), None)
+                if ps1 is None:
+                    self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                  "Found inter-residue RDC vector; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif abs(seq_id_1 - seq_id_2) == 1:
+
+                if self.csStat.peptideLike(comp_id_1) and self.csStat.peptideLike(comp_id_2) and\
+                        ((seq_id_1 < seq_id_2 and atom_id_1 == 'C' and atom_id_2 in RDC_BB_PAIR_CODE)
+                         or (seq_id_1 > seq_id_2 and atom_id_1 in RDC_BB_PAIR_CODE and atom_id_2 == 'C')
+                         or (seq_id_1 < seq_id_2 and atom_id_1.startswith('HA') and atom_id_2 == 'H')
+                         or (seq_id_1 > seq_id_2 and atom_id_1 == 'H' and atom_id_2.startswith('HA'))):
+                    pass
+
+                else:
+                    self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                  "Found inter-residue RDC vector; "
+                                  f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                  f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                    return
+
+            elif atom_id_1 == atom_id_2:
+                self.f.append(f"[Invalid data] {self.getCurrentRestraint()}"
+                              "Found zero RDC vector; "
+                              f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                              f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+                return
+
+            elif self.ccU.updateChemCompDict(comp_id_1):  # matches with comp_id in CCD
+
+                if not self.ccU.hasBond(comp_id_1, atom_id_1, atom_id_2):
+
+                    if self.nefT.validate_comp_atom(comp_id_1, atom_id_1) and self.nefT.validate_comp_atom(comp_id_2, atom_id_2):
+                        self.f.append(f"[Anomalous RDC vector] {self.getCurrentRestraint()}"
+                                      "Found an RDC vector over multiple covalent bonds; "
+                                      f"({chain_id_1}:{seq_id_1}:{comp_id_1}:{atom_id_1}, "
+                                      f"{chain_id_2}:{seq_id_2}:{comp_id_2}:{atom_id_2}).")
+
+            combinationId = '.'
+            if self.createSfDict:
+                sf = self.getSf(potentialType=getPotentialType(self.file_type, self.cur_subtype, dstFunc),
+                                rdcCode=getRdcCode([self.atomSelectionSet[0][0], self.atomSelectionSet[1][0]]),
+                                orientationId=orientation)
+                sf['id'] += 1
+                if len(self.atomSelectionSet[0]) > 1 or len(self.atomSelectionSet[1]) > 1:
+                    combinationId = 0
+
+            for atom1, atom2 in itertools.product(self.atomSelectionSet[0],
+                                                  self.atomSelectionSet[1]):
+                atoms = [atom1, atom2]
+                if isIdenticalRestraint(atoms, self.nefT):
+                    continue
+                if isLongRangeRestraint(atoms, self.polySeq if self.gapInAuthSeq else None):
+                    continue
+                if isinstance(combinationId, int):
+                    combinationId += 1
+                if self.debug:
+                    print(f"subtype={self.cur_subtype} id={self.rdcRestraints} "
+                          f"atom1={atom1} atom2={atom2} {dstFunc}")
+                if self.createSfDict and sf is not None:
+                    sf['index_id'] += 1
+                    row = getRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                 combinationId, None, None,
+                                 sf['list_id'], self.entryId, dstFunc,
+                                 self.authToStarSeq, self.authToOrigSeq, self.authToInsCode, self.offsetHolder,
+                                 atom1, atom2, asis1=asis1, asis2=asis2)
+                    sf['loop'].add_data(row)
+
+            if self.createSfDict and sf is not None and isinstance(combinationId, int) and combinationId == 1:
+                sf['loop'].data[-1] = resetCombinationId(self.cur_subtype, sf['loop'].data[-1])
 
         finally:
             self.numberSelection.clear()

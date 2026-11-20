@@ -45,6 +45,10 @@ public:
 
     virtual std::any visitDihedral_angle_wo_w_constraint(BiosymMRParser::Dihedral_angle_wo_w_constraintContext *context) = 0;
 
+    virtual std::any visitRdc_restraints(BiosymMRParser::Rdc_restraintsContext *context) = 0;
+
+    virtual std::any visitRdc_restraint(BiosymMRParser::Rdc_restraintContext *context) = 0;
+
     virtual std::any visitChirality_constraints(BiosymMRParser::Chirality_constraintsContext *context) = 0;
 
     virtual std::any visitChirality_constraint(BiosymMRParser::Chirality_constraintContext *context) = 0;

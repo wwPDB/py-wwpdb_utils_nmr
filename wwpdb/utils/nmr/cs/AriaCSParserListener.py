@@ -340,47 +340,46 @@ class AriaCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by XMLParser#attribute.
         """
 
-        if ctx.Name() and ctx.STRING():
-            name = str(ctx.Name())
-            string = str(ctx.STRING())[1:-1].strip()
+        try:
 
-            if self.__cur_path == '/chemical_shift_list':
-                pass
+            if ctx.Name() and ctx.STRING():
+                name = str(ctx.Name())
+                string = str(ctx.STRING())[1:-1].strip()
 
-            elif self.__cur_path == '/chemical_shift_list/shift_assignment':
+                if self.__cur_path == '/chemical_shift_list':
+                    pass
 
-                if name == 'method':
-                    self.__method = string
+                elif self.__cur_path == '/chemical_shift_list/shift_assignment':
 
-            elif self.__cur_path == '/chemical_shift_list/shift_assignment/spin_system':
-                pass
-                # if name == 'averaging_method':
-                #     self.__averaging_method = string
+                    if name == 'method':
+                        self.__method = string
 
-            elif self.__cur_path == '/chemical_shift_list/shift_assignment/spin_system/atom':
+                elif self.__cur_path == '/chemical_shift_list/shift_assignment/spin_system':
+                    pass
+                    # if name == 'averaging_method':
+                    #     self.__averaging_method = string
 
-                if name == 'segid' and len(string) > 0:
-                    self.__segid = string
+                elif self.__cur_path == '/chemical_shift_list/shift_assignment/spin_system/atom':
 
-                elif name == 'residue' and string.isdigit():
-                    self.__residue = int(string)
+                    if name == 'segid' and len(string) > 0:
+                        self.__segid = string
 
-                elif name == 'name' and len(string) > 0:
-                    self.__name = string
+                    elif name == 'residue' and string.isdigit():
+                        self.__residue = int(string)
 
-            elif self.__cur_path == '/chemical_shift_list/shift_assignment/spin_system/chemical_shift':
+                    elif name == 'name' and len(string) > 0:
+                        self.__name = string
 
-                if name == 'value' and len(string) > 0:
-                    try:
+                elif self.__cur_path == '/chemical_shift_list/shift_assignment/spin_system/chemical_shift':
+
+                    if name == 'value' and len(string) > 0:
                         self.__value = float(string)
-                    except ValueError:
-                        pass
 
-                elif name == 'error' and len(string) > 0:
-                    try:
+                    elif name == 'error' and len(string) > 0:
                         self.__error = abs(float(string))
-                    except ValueError:
-                        pass
+
+        except ValueError:
+            pass
 
     def exitAttribute(self, ctx: XMLParser.AttributeContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by XMLParser#attribute.

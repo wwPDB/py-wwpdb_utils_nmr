@@ -67,6 +67,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitRdc_restraints(BiosymMRParser::Rdc_restraintsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitRdc_restraint(BiosymMRParser::Rdc_restraintContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitChirality_constraints(BiosymMRParser::Chirality_constraintsContext *ctx) override {
     return visitChildren(ctx);
   }

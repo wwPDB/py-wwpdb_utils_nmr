@@ -375,135 +375,140 @@ class AriaPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Enter a parse tree produced by XMLParser#attribute.
         """
 
-        if ctx.Name() and ctx.STRING():
-            name = str(ctx.Name())
-            string = str(ctx.STRING())[1:-1].strip()
+        try:
 
-            if self.__cur_path == '/spectrum':
+            if ctx.Name() and ctx.STRING():
+                name = str(ctx.Name())
+                string = str(ctx.STRING())[1:-1].strip()
 
-                if name == 'name':
-                    self.spectrum_name = string
+                if self.__cur_path == '/spectrum':
 
-            elif self.__cur_path == '/spectrum/peak':
+                    if name == 'name':
+                        self.spectrum_name = string
 
-                if name == 'number':
-                    self.__index = int(string)
+                elif self.__cur_path == '/spectrum/peak':
 
-            elif self.__cur_path == '/spectrum/peak/volume':
+                    if name == 'number':
+                        self.__index = int(string)
 
-                if name == 'value':
-                    self.__volume = string
+                elif self.__cur_path == '/spectrum/peak/volume':
 
-                elif name == 'error' and len(string) > 0:
-                    self.__volume_error = string
+                    if name == 'value':
+                        self.__volume = string
 
-            elif self.__cur_path == '/spectrum/peak/intensity':
+                    elif name == 'error' and len(string) > 0:
+                        self.__volume_error = string
 
-                if name == 'value':
-                    self.__intensity = string
+                elif self.__cur_path == '/spectrum/peak/intensity':
 
-                elif name == 'error' and len(string) > 0:
-                    self.__intensity_error = string
+                    if name == 'value':
+                        self.__intensity = string
 
-            elif self.__cur_path == '/spectrum/peak/proton1/shift' and len(string) > 0:
+                    elif name == 'error' and len(string) > 0:
+                        self.__intensity_error = string
 
-                if string == self.__volume:
-                    self.__volume = None
+                elif self.__cur_path == '/spectrum/peak/proton1/shift' and len(string) > 0:
 
-                if string == self.__intensity:
-                    self.__intensity = None
+                    if string == self.__volume:
+                        self.__volume = None
 
-                if name == 'value':
-                    self.__proton1_ppm = float(string)
+                    if string == self.__intensity:
+                        self.__intensity = None
 
-                elif name == 'error':
-                    self.__proton1_ppm_error = abs(float(string))
+                    if name == 'value':
+                        self.__proton1_ppm = float(string)
 
-            elif self.__cur_path == '/spectrum/peak/proton2/shift' and len(string) > 0:
+                    elif name == 'error':
+                        self.__proton1_ppm_error = abs(float(string))
 
-                if string == self.__volume:
-                    self.__volume = None
+                elif self.__cur_path == '/spectrum/peak/proton2/shift' and len(string) > 0:
 
-                if string == self.__intensity:
-                    self.__intensity = None
+                    if string == self.__volume:
+                        self.__volume = None
 
-                if name == 'value':
-                    self.__proton2_ppm = float(string)
+                    if string == self.__intensity:
+                        self.__intensity = None
 
-                elif name == 'error':
-                    self.__proton2_ppm_error = abs(float(string))
+                    if name == 'value':
+                        self.__proton2_ppm = float(string)
 
-            elif self.__cur_path == '/spectrum/peak/hetero1/shift' and len(string) > 0:
+                    elif name == 'error':
+                        self.__proton2_ppm_error = abs(float(string))
 
-                if string == self.__volume:
-                    self.__volume = None
+                elif self.__cur_path == '/spectrum/peak/hetero1/shift' and len(string) > 0:
 
-                if string == self.__intensity:
-                    self.__intensity = None
+                    if string == self.__volume:
+                        self.__volume = None
 
-                if name == 'value':
-                    self.__hetero1_ppm = float(string)
+                    if string == self.__intensity:
+                        self.__intensity = None
 
-                elif name == 'error':
-                    self.__hetero1_ppm_error = abs(float(string))
+                    if name == 'value':
+                        self.__hetero1_ppm = float(string)
 
-            elif self.__cur_path == '/spectrum/peak/hetero2/shift' and len(string) > 0:
+                    elif name == 'error':
+                        self.__hetero1_ppm_error = abs(float(string))
 
-                if string == self.__volume:
-                    self.__volume = None
+                elif self.__cur_path == '/spectrum/peak/hetero2/shift' and len(string) > 0:
 
-                if string == self.__intensity:
-                    self.__intensity = None
+                    if string == self.__volume:
+                        self.__volume = None
 
-                if name == 'value':
-                    self.__hetero2_ppm = float(string)
+                    if string == self.__intensity:
+                        self.__intensity = None
 
-                elif name == 'error':
-                    self.__hetero2_ppm_error = abs(float(string))
+                    if name == 'value':
+                        self.__hetero2_ppm = float(string)
 
-            elif self.__cur_path == '/spectrum/peak/proton1/assignment/atom' and len(string) > 0:
+                    elif name == 'error':
+                        self.__hetero2_ppm_error = abs(float(string))
 
-                if name == 'segid':
-                    self.__proton1_ass['chain_id'] = string
+                elif self.__cur_path == '/spectrum/peak/proton1/assignment/atom' and len(string) > 0:
 
-                elif name == 'residue':
-                    self.__proton1_ass['seq_id'] = string
+                    if name == 'segid':
+                        self.__proton1_ass['chain_id'] = string
 
-                elif name == 'name':
-                    self.__proton1_ass['atom_id'] = string
+                    elif name == 'residue':
+                        self.__proton1_ass['seq_id'] = string
 
-            elif self.__cur_path == '/spectrum/peak/proton2/assignment/atom' and len(string) > 0:
+                    elif name == 'name':
+                        self.__proton1_ass['atom_id'] = string
 
-                if name == 'segid':
-                    self.__proton2_ass['chain_id'] = string
+                elif self.__cur_path == '/spectrum/peak/proton2/assignment/atom' and len(string) > 0:
 
-                elif name == 'residue':
-                    self.__proton2_ass['seq_id'] = string
+                    if name == 'segid':
+                        self.__proton2_ass['chain_id'] = string
 
-                elif name == 'name':
-                    self.__proton2_ass['atom_id'] = string
+                    elif name == 'residue':
+                        self.__proton2_ass['seq_id'] = string
 
-            elif self.__cur_path == '/spectrum/peak/hetero1/assignment/atom' and len(string) > 0:
+                    elif name == 'name':
+                        self.__proton2_ass['atom_id'] = string
 
-                if name == 'segid':
-                    self.__hetero1_ass['chain_id'] = string
+                elif self.__cur_path == '/spectrum/peak/hetero1/assignment/atom' and len(string) > 0:
 
-                elif name == 'residue':
-                    self.__hetero1_ass['seq_id'] = string
+                    if name == 'segid':
+                        self.__hetero1_ass['chain_id'] = string
 
-                elif name == 'name':
-                    self.__hetero1_ass['atom_id'] = string
+                    elif name == 'residue':
+                        self.__hetero1_ass['seq_id'] = string
 
-            elif self.__cur_path == '/spectrum/peak/hetero2/assignment/atom' and len(string) > 0:
+                    elif name == 'name':
+                        self.__hetero1_ass['atom_id'] = string
 
-                if name == 'segid':
-                    self.__hetero2_ass['chain_id'] = string
+                elif self.__cur_path == '/spectrum/peak/hetero2/assignment/atom' and len(string) > 0:
 
-                elif name == 'residue':
-                    self.__hetero2_ass['seq_id'] = string
+                    if name == 'segid':
+                        self.__hetero2_ass['chain_id'] = string
 
-                elif name == 'name':
-                    self.__hetero2_ass['atom_id'] = string
+                    elif name == 'residue':
+                        self.__hetero2_ass['seq_id'] = string
+
+                    elif name == 'name':
+                        self.__hetero2_ass['atom_id'] = string
+
+        except ValueError:
+            pass
 
     def exitAttribute(self, ctx: XMLParser.AttributeContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by XMLParser#attribute.

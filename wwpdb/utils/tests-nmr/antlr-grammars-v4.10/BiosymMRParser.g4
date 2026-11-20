@@ -26,6 +26,7 @@ biosym_mr:
 	dihedral_angle_restraints |
 	dihedral_angle_constraints |
 	dihedral_angle_wo_w_constraints |
+	rdc_restraints |
 	chirality_constraints |
 	prochirality_constraints |
 	mixing_time |
@@ -98,6 +99,15 @@ dihedral_angle_wo_w_constraints:
 dihedral_angle_wo_w_constraint:
 	Ordinal? Atom_selection Atom_selection Atom_selection Atom_selection
 	number number;						// range for lower bound, upper bound
+
+/* BIOSYM - RDC restraints
+*/
+rdc_restraints:
+	rdc_restraint+;
+
+rdc_restraint:
+	Ordinal? Atom_selection Atom_selection
+	number number number number;
 
 /* BIOSYM - Chirality constraints
  See also https://www.chem.uzh.ch/robinson/felixman/felix-restraints.html

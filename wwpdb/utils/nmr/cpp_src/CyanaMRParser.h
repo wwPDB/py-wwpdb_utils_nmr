@@ -53,13 +53,14 @@ public:
     RuleDistance_w_chain2_restraint = 38, RuleDistance_w_chain3_restraints = 39, 
     RuleDistance_w_chain3_restraint = 40, RuleTorsion_angle_w_chain_restraints = 41, 
     RuleTorsion_angle_w_chain_restraint = 42, RuleCco_restraints = 43, RuleCco_restraint = 44, 
-    RuleSsbond_macro = 45, RuleHbond_macro = 46, RuleLink_statement = 47, 
-    RuleStereoassign_macro = 48, RuleDeclare_variable = 49, RuleSet_variable = 50, 
-    RuleUnset_variable = 51, RulePrint_macro = 52, RuleUnambig_atom_name_mapping = 53, 
-    RuleMapping_list = 54, RuleAmbig_atom_name_mapping = 55, RuleAmbig_list = 56, 
-    RuleNumber = 57, RuleGen_res_num = 58, RuleGen_simple_name = 59, RuleGen_atom_name = 60, 
-    RuleNumber_qc = 61, RuleGen_res_num_qc = 62, RuleGen_simple_name_qc = 63, 
-    RuleGen_atom_name_qc = 64
+    RulePcs_no_param_restraints = 45, RulePcs_no_param_restraint = 46, RuleSsbond_macro = 47, 
+    RuleHbond_macro = 48, RuleLink_statement = 49, RuleStereoassign_macro = 50, 
+    RuleDeclare_variable = 51, RuleSet_variable = 52, RuleUnset_variable = 53, 
+    RulePrint_macro = 54, RuleUnambig_atom_name_mapping = 55, RuleMapping_list = 56, 
+    RuleAmbig_atom_name_mapping = 57, RuleAmbig_list = 58, RuleNumber = 59, 
+    RuleGen_res_num = 60, RuleGen_simple_name = 61, RuleGen_atom_name = 62, 
+    RuleNumber_qc = 63, RuleGen_res_num_qc = 64, RuleGen_simple_name_qc = 65, 
+    RuleGen_atom_name_qc = 66
   };
 
   explicit CyanaMRParser(antlr4::TokenStream *input);
@@ -124,6 +125,8 @@ public:
   class Torsion_angle_w_chain_restraintContext;
   class Cco_restraintsContext;
   class Cco_restraintContext;
+  class Pcs_no_param_restraintsContext;
+  class Pcs_no_param_restraintContext;
   class Ssbond_macroContext;
   class Hbond_macroContext;
   class Link_statementContext;
@@ -196,6 +199,8 @@ public:
     Pcs_restraintsContext* pcs_restraints(size_t i);
     std::vector<Cco_restraintsContext *> cco_restraints();
     Cco_restraintsContext* cco_restraints(size_t i);
+    std::vector<Pcs_no_param_restraintsContext *> pcs_no_param_restraints();
+    Pcs_no_param_restraintsContext* pcs_no_param_restraints(size_t i);
     std::vector<Ssbond_macroContext *> ssbond_macro();
     Ssbond_macroContext* ssbond_macro(size_t i);
     std::vector<Hbond_macroContext *> hbond_macro();
@@ -1002,6 +1007,39 @@ public:
   };
 
   Cco_restraintContext* cco_restraint();
+
+  class  Pcs_no_param_restraintsContext : public antlr4::ParserRuleContext {
+  public:
+    Pcs_no_param_restraintsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    std::vector<Pcs_no_param_restraintContext *> pcs_no_param_restraint();
+    Pcs_no_param_restraintContext* pcs_no_param_restraint(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Pcs_no_param_restraintsContext* pcs_no_param_restraints();
+
+  class  Pcs_no_param_restraintContext : public antlr4::ParserRuleContext {
+  public:
+    Pcs_no_param_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    Gen_res_numContext *gen_res_num();
+    std::vector<Gen_simple_nameContext *> gen_simple_name();
+    Gen_simple_nameContext* gen_simple_name(size_t i);
+    std::vector<NumberContext *> number();
+    NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> Integer();
+    antlr4::tree::TerminalNode* Integer(size_t i);
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Pcs_no_param_restraintContext* pcs_no_param_restraint();
 
   class  Ssbond_macroContext : public antlr4::ParserRuleContext {
   public:

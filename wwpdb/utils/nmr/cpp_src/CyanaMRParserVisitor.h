@@ -109,6 +109,10 @@ public:
 
     virtual std::any visitCco_restraint(CyanaMRParser::Cco_restraintContext *context) = 0;
 
+    virtual std::any visitPcs_no_param_restraints(CyanaMRParser::Pcs_no_param_restraintsContext *context) = 0;
+
+    virtual std::any visitPcs_no_param_restraint(CyanaMRParser::Pcs_no_param_restraintContext *context) = 0;
+
     virtual std::any visitSsbond_macro(CyanaMRParser::Ssbond_macroContext *context) = 0;
 
     virtual std::any visitHbond_macro(CyanaMRParser::Hbond_macroContext *context) = 0;

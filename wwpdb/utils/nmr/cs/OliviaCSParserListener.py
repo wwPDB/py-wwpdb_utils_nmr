@@ -105,21 +105,26 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by OliviaCSParser#residue.
         """
 
-        chain_id = str(ctx.Simple_name(0))
-        comp_id = str(ctx.Simple_name(1))
-        seq_id = int(str(ctx.Integer()))
+        try:
 
-        ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chain_id), None)
+            chain_id = str(ctx.Simple_name(0))
+            comp_id = str(ctx.Simple_name(1))
+            seq_id = int(str(ctx.Integer()))
 
-        if ps is None:
-            self.__polySeq.append({'chain_id': chain_id, 'seq_id': [], 'comp_id': []})
-            ps = self.__polySeq[-1]
-            entity_assembly_id = len(self.__polySeq)
-            self.__entityAssembly[str(entity_assembly_id)] = {'entity_id': entity_assembly_id, 'auth_asym_id': chain_id}
-            self.predictSequenceNumberOffsetByFirstResidue(chain_id, seq_id, comp_id)
+            ps = next((ps for ps in self.__polySeq if ps['chain_id'] == chain_id), None)
 
-        ps['seq_id'].append(seq_id)
-        ps['comp_id'].append(comp_id)
+            if ps is None:
+                self.__polySeq.append({'chain_id': chain_id, 'seq_id': [], 'comp_id': []})
+                ps = self.__polySeq[-1]
+                entity_assembly_id = len(self.__polySeq)
+                self.__entityAssembly[str(entity_assembly_id)] = {'entity_id': entity_assembly_id, 'auth_asym_id': chain_id}
+                self.predictSequenceNumberOffsetByFirstResidue(chain_id, seq_id, comp_id)
+
+            ps['seq_id'].append(seq_id)
+            ps['comp_id'].append(comp_id)
+
+        except ValueError:
+            pass
 
     def exitResidue(self, ctx: OliviaCSParser.ResidueContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by OliviaCSParser#residue.

@@ -94,8 +94,11 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by PippCSParser#residue_list.
         """
 
-        self.__seq_id = int(str(ctx.Integer(0)))
-        self.__comp_id = str(ctx.Simple_name())
+        try:
+            self.__seq_id = int(str(ctx.Integer(0)))
+            self.__comp_id = str(ctx.Simple_name())
+        except ValueError:
+            pass
 
     def exitResidue_list(self, ctx: PippCSParser.Residue_listContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by PippCSParser#residue_list.

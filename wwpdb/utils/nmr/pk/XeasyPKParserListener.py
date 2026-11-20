@@ -88,8 +88,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         """
 
         if ctx.Integer_ND():
-            self.num_of_dim = int(str(ctx.Integer_ND()))
+
+            try:
+                self.num_of_dim = int(str(ctx.Integer_ND()))
+            except ValueError:
+                pass
+
             self.acq_dim_id = 1
+
         self.spectrum_name = None
         self.__index = None
         self.__labels = {}
@@ -130,8 +136,14 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         """
 
         if ctx.Integer_IN():
-            _dim_id = int(str(ctx.Integer_IN()))
+
+            try:
+                _dim_id = int(str(ctx.Integer_IN()))
+            except ValueError:
+                pass
+
             self.num_of_dim = max(self.num_of_dim, _dim_id)
+
         if ctx.Simple_name_IN():
             _axis_code = str(ctx.Simple_name_IN())
             if _axis_code not in EMPTY_VALUE:
@@ -217,7 +229,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-        self.__index = int(str(ctx.Integer(0)))
+        try:
+            self.__index = int(str(ctx.Integer(0)))
+        except ValueError:
+            pass
+
         self.__last_comment = None
         self.__comment_offset = 0
         self.__g.clear()
@@ -327,7 +343,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-        self.__index = int(str(ctx.Integer(0)))
+        try:
+            self.__index = int(str(ctx.Integer(0)))
+        except ValueError:
+            pass
+
         self.__last_comment = None
         self.__comment_offset = 0
         self.__g.clear()
@@ -439,7 +459,11 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         self.atomSelectionSets.clear()
         self.asIsSets.clear()
 
-        self.__index = int(str(ctx.Integer(0)))
+        try:
+            self.__index = int(str(ctx.Integer(0)))
+        except ValueError:
+            pass
+
         self.__last_comment = None
         self.__comment_offset = 0
         self.__g.clear()
@@ -600,37 +624,42 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Exit a parse tree produced by XeasyPKParser#assign.
         """
 
-        index = self.__index
-        if ctx.Simple_name() and ctx.Integer():
-            self.assignmentSelection.append(f'{str(ctx.Integer())} {str(ctx.Simple_name())}')
-        elif ctx.Simple_name():
-            assignment = self.extractPeakAssignment(1, str(ctx.Simple_name()), index)
-            if assignment is None:
-                self.assignmentSelection.append(None)
-            else:
-                factor = assignment[0]
-                self.assignmentSelection.append(factor)
-        else:
-            if ctx.Integer() is None:
-                self.assignmentSelection.append(None)
-            else:
-                ai = int(str(ctx.Integer()))
-                if ai == 0 or self.__atomNumberDict is None or ai not in self.__atomNumberDict:
+        try:
+
+            index = self.__index
+            if ctx.Simple_name() and ctx.Integer():
+                self.assignmentSelection.append(f'{str(ctx.Integer())} {str(ctx.Simple_name())}')
+            elif ctx.Simple_name():
+                assignment = self.extractPeakAssignment(1, str(ctx.Simple_name()), index)
+                if assignment is None:
                     self.assignmentSelection.append(None)
-                    if ai == 0:
-                        pass
-                    elif self.__atomNumberDict is None:
-                        self.__g.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
-                                        "Failed to recognize XEASY atom numbers in the spectral peak list file "
-                                        "because XEASY PROT file is not available.")
-                    elif ai not in self.__atomNumberDict:
-                        self.__g.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
-                                        f"'{ai}' is not defined in the XEASY PROT file.")
                 else:
-                    _factor = copy.copy(self.__atomNumberDict[ai])
-                    _factor['atom_id'] = _factor['auth_atom_id']
-                    del _factor['auth_atom_id']
-                    self.assignmentSelection.append(_factor)
+                    factor = assignment[0]
+                    self.assignmentSelection.append(factor)
+            else:
+                if ctx.Integer() is None:
+                    self.assignmentSelection.append(None)
+                else:
+                    ai = int(str(ctx.Integer()))
+                    if ai == 0 or self.__atomNumberDict is None or ai not in self.__atomNumberDict:
+                        self.assignmentSelection.append(None)
+                        if ai == 0:
+                            pass
+                        elif self.__atomNumberDict is None:
+                            self.__g.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
+                                            "Failed to recognize XEASY atom numbers in the spectral peak list file "
+                                            "because XEASY PROT file is not available.")
+                        elif ai not in self.__atomNumberDict:
+                            self.__g.append(f"[Missing data] {self.getCurrentSpectralPeak(n=index)}"
+                                            f"'{ai}' is not defined in the XEASY PROT file.")
+                    else:
+                        _factor = copy.copy(self.__atomNumberDict[ai])
+                        _factor['atom_id'] = _factor['auth_atom_id']
+                        del _factor['auth_atom_id']
+                        self.assignmentSelection.append(_factor)
+
+        except ValueError:
+            pass
 
     def enterComment(self, ctx: XeasyPKParser.CommentContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by XeasyPKParser#comment.
@@ -658,77 +687,82 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         if self.__last_comment is None:
             return
 
-        __last_comment = self.__last_comment if isinstance(self.__last_comment, str) else str(self.__last_comment)
+        try:
 
-        has_split = False
+            __last_comment = self.__last_comment if isinstance(self.__last_comment, str) else str(self.__last_comment)
 
-        if '/' in __last_comment:
-            for last_comment in __last_comment.split('/'):
-                if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
-                    assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
-                                                             self.__index - 1 if isinstance(self.__index, int) else 1)
-                    if assignments is not None and self.__atomNumberDict is None:
-                        if self.verbose_debug:
-                            print(f'{last_comment!r} -> {assignments}')
-                        if isinstance(self.__comment_offset, int):
-                            for idx, factor in enumerate(assignments, start=self.__comment_offset):
-                                if idx >= len(self.assignmentSelection):
-                                    self.assignmentSelection.append(factor)
-                                elif self.assignmentSelection[idx] is None:
-                                    self.assignmentSelection[idx] = factor
+            has_split = False
+
+            if '/' in __last_comment:
+                for last_comment in __last_comment.split('/'):
+                    if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                        assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
+                                                                 self.__index - 1 if isinstance(self.__index, int) else 1)
+                        if assignments is not None and self.__atomNumberDict is None:
+                            if self.verbose_debug:
+                                print(f'{last_comment!r} -> {assignments}')
+                            if isinstance(self.__comment_offset, int):
+                                for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                                    if idx >= len(self.assignmentSelection):
+                                        self.assignmentSelection.append(factor)
+                                    elif self.assignmentSelection[idx] is None:
+                                        self.assignmentSelection[idx] = factor
+                        self.__comment_offset = len(self.assignmentSelection)
+                        has_split = True
+
+            if not has_split and '|' in __last_comment:
+                for last_comment in __last_comment.split('|'):
+                    if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                        assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
+                                                                 self.__index - 1 if isinstance(self.__index, int) else 1)
+                        if assignments is not None and self.__atomNumberDict is None:
+                            if self.verbose_debug:
+                                print(f'{last_comment!r} -> {assignments}')
+                            if isinstance(self.__comment_offset, int):
+                                for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                                    if idx >= len(self.assignmentSelection):
+                                        self.assignmentSelection.append(factor)
+                                    elif self.assignmentSelection[idx] is None:
+                                        self.assignmentSelection[idx] = factor
+                        self.__comment_offset = len(self.assignmentSelection)
+                        has_split = True
+
+            if not has_split and ',' in __last_comment:
+                for last_comment in __last_comment.split(','):
+                    if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
+                        assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
+                                                                 self.__index - 1 if isinstance(self.__index, int) else 1)
+                        if assignments is not None and self.__atomNumberDict is None:
+                            if self.verbose_debug:
+                                print(f'{last_comment!r} -> {assignments}')
+                            if isinstance(self.__comment_offset, int):
+                                for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                                    if idx >= len(self.assignmentSelection):
+                                        self.assignmentSelection.append(factor)
+                                    elif self.assignmentSelection[idx] is None:
+                                        self.assignmentSelection[idx] = factor
+                        self.__comment_offset = len(self.assignmentSelection)
+                        has_split = True
+
+            if not has_split:
+                assignments = self.extractPeakAssignment(self.num_of_dim, __last_comment,
+                                                         self.__index - 1 if isinstance(self.__index, int) else 1)
+                if assignments is not None and self.__atomNumberDict is None:
+                    if self.verbose_debug:
+                        print(f'{__last_comment!r} -> {assignments}')
+                    if isinstance(self.__comment_offset, int):
+                        for idx, factor in enumerate(assignments, start=self.__comment_offset):
+                            if idx >= len(self.assignmentSelection):
+                                self.assignmentSelection.append(factor)
+                            elif self.assignmentSelection[idx] is None:
+                                self.assignmentSelection[idx] = factor
                     self.__comment_offset = len(self.assignmentSelection)
-                    has_split = True
 
-        if not has_split and '|' in __last_comment:
-            for last_comment in __last_comment.split('|'):
-                if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
-                    assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
-                                                             self.__index - 1 if isinstance(self.__index, int) else 1)
-                    if assignments is not None and self.__atomNumberDict is None:
-                        if self.verbose_debug:
-                            print(f'{last_comment!r} -> {assignments}')
-                        if isinstance(self.__comment_offset, int):
-                            for idx, factor in enumerate(assignments, start=self.__comment_offset):
-                                if idx >= len(self.assignmentSelection):
-                                    self.assignmentSelection.append(factor)
-                                elif self.assignmentSelection[idx] is None:
-                                    self.assignmentSelection[idx] = factor
-                    self.__comment_offset = len(self.assignmentSelection)
-                    has_split = True
+            self.__last_comment = None
+            self.__g.clear()
 
-        if not has_split and ',' in __last_comment:
-            for last_comment in __last_comment.split(','):
-                if len(ASSIGNMENT_SEPARATOR_PAT.sub(' ', last_comment).split()) >= self.num_of_dim:
-                    assignments = self.extractPeakAssignment(self.num_of_dim, last_comment,
-                                                             self.__index - 1 if isinstance(self.__index, int) else 1)
-                    if assignments is not None and self.__atomNumberDict is None:
-                        if self.verbose_debug:
-                            print(f'{last_comment!r} -> {assignments}')
-                        if isinstance(self.__comment_offset, int):
-                            for idx, factor in enumerate(assignments, start=self.__comment_offset):
-                                if idx >= len(self.assignmentSelection):
-                                    self.assignmentSelection.append(factor)
-                                elif self.assignmentSelection[idx] is None:
-                                    self.assignmentSelection[idx] = factor
-                    self.__comment_offset = len(self.assignmentSelection)
-                    has_split = True
-
-        if not has_split:
-            assignments = self.extractPeakAssignment(self.num_of_dim, __last_comment,
-                                                     self.__index - 1 if isinstance(self.__index, int) else 1)
-            if assignments is not None and self.__atomNumberDict is None:
-                if self.verbose_debug:
-                    print(f'{__last_comment!r} -> {assignments}')
-                if isinstance(self.__comment_offset, int):
-                    for idx, factor in enumerate(assignments, start=self.__comment_offset):
-                        if idx >= len(self.assignmentSelection):
-                            self.assignmentSelection.append(factor)
-                        elif self.assignmentSelection[idx] is None:
-                            self.assignmentSelection[idx] = factor
-                self.__comment_offset = len(self.assignmentSelection)
-
-        self.__last_comment = None
-        self.__g.clear()
+        except ValueError:
+            pass
 
     def fillSpectralDimWithLabels(self) -> None:
         """ Fill spectral_dim.
@@ -737,49 +771,54 @@ class XeasyPKParserListener(ParseTreeListener, BasePKParserListener):
         if self.__labels is None or len(self.__labels) == 0:
             return
 
-        for _dim_id, _axis_code in self.__labels.items():
+        try:
 
-            try:
-                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
-            except KeyError:
-                continue
+            for _dim_id, _axis_code in self.__labels.items():
 
-            cur_spectral_dim['axis_code'] = _axis_code
+                try:
+                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
+                except KeyError:
+                    continue
 
-            digits = re.findall(r'\d+', _axis_code)
-            for digit in digits:
-                num = int(digit)
-                nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
-                if nuc is not None:
-                    cur_spectral_dim['atom_type'] = nuc
-                    cur_spectral_dim['atom_isotope_number'] = num
-                    break
-            if cur_spectral_dim['atom_type'] is None:
-                for a in _axis_code:
-                    a = a.upper()
-                    if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                        cur_spectral_dim['atom_type'] = a
-                        cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                cur_spectral_dim['axis_code'] = _axis_code
+
+                digits = re.findall(r'\d+', _axis_code)
+                for digit in digits:
+                    num = int(digit)
+                    nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
+                    if nuc is not None:
+                        cur_spectral_dim['atom_type'] = nuc
+                        cur_spectral_dim['atom_isotope_number'] = num
                         break
+                if cur_spectral_dim['atom_type'] is None:
+                    for a in _axis_code:
+                        a = a.upper()
+                        if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                            cur_spectral_dim['atom_type'] = a
+                            cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                            break
 
-            isotope_number = cur_spectral_dim['atom_isotope_number']
+                isotope_number = cur_spectral_dim['atom_isotope_number']
 
-            cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
-                and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
+                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
+                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
 
-            if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
-                self.acq_dim_id = self.num_of_dim
+                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
+                    self.acq_dim_id = self.num_of_dim
 
-            cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
+                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
 
-        if self.__axis_order is None or len(self.__axis_order) == 0:
-            return
+            if self.__axis_order is None or len(self.__axis_order) == 0:
+                return
 
-        for _dim_id, _axis_order in self.__axis_order.items():
+            for _dim_id, _axis_order in self.__axis_order.items():
 
-            try:
-                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
-            except KeyError:
-                continue
+                try:
+                    cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id][_dim_id]
+                except KeyError:
+                    continue
 
-            cur_spectral_dim['axis_order'] = _axis_order
+                cur_spectral_dim['axis_order'] = _axis_order
+
+        except ValueError:
+            pass

@@ -79,92 +79,98 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         """
 
         def set_spectral_dim(_dim_id):
-            self.num_of_dim = max(self.num_of_dim, _dim_id)
-            if _dim_id not in self.cur_spectral_dim:
-                cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-            else:
-                cur_spectral_dim = self.cur_spectral_dim[_dim_id]
 
-            if ctx.Simple_name_DA():
-                cur_spectral_dim['axis_code'] = axis_code = str(ctx.Simple_name_DA())
-                if axis_code not in EMPTY_VALUE:
-                    digits = re.findall(r'\d+', axis_code)
-                    for digit in digits:
-                        num = int(digit)
-                        nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
-                        if nuc is not None:
-                            cur_spectral_dim['atom_type'] = nuc
-                            cur_spectral_dim['atom_isotope_number'] = num
-                            break
-                    if cur_spectral_dim['atom_type'] is None:
-                        for a in axis_code:
-                            a = a.upper()
-                            if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
-                                cur_spectral_dim['atom_type'] = a
-                                cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+            try:
+
+                self.num_of_dim = max(self.num_of_dim, _dim_id)
+                if _dim_id not in self.cur_spectral_dim:
+                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
+
+                if ctx.Simple_name_DA():
+                    cur_spectral_dim['axis_code'] = axis_code = str(ctx.Simple_name_DA())
+                    if axis_code not in EMPTY_VALUE:
+                        digits = re.findall(r'\d+', axis_code)
+                        for digit in digits:
+                            num = int(digit)
+                            nuc = next((k for k, v in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS.items() if num == v[0]), None)
+                            if nuc is not None:
+                                cur_spectral_dim['atom_type'] = nuc
+                                cur_spectral_dim['atom_isotope_number'] = num
                                 break
+                        if cur_spectral_dim['atom_type'] is None:
+                            for a in axis_code:
+                                a = a.upper()
+                                if a in ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS:
+                                    cur_spectral_dim['atom_type'] = a
+                                    cur_spectral_dim['atom_isotope_number'] = ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS[a][0]
+                                    break
 
-            truncated = False
-            first_point = last_point = None
-            if ctx.Integer_DA(0) and ctx.Integer_DA(1):
-                first_point = int(str(ctx.Integer_DA(0)))
-                last_point = int(str(ctx.Integer_DA(1)))
+                truncated = False
+                first_point = last_point = None
+                if ctx.Integer_DA(0) and ctx.Integer_DA(1):
+                    first_point = int(str(ctx.Integer_DA(0)))
+                    last_point = int(str(ctx.Integer_DA(1)))
 
-                truncated |= first_point != 1
-                log2_last_point = math.log2(float(last_point))
-                round_log2_last_point = int(log2_last_point)
-                truncated |= log2_last_point - round_log2_last_point > 0.001
+                    truncated |= first_point != 1
+                    log2_last_point = math.log2(float(last_point))
+                    round_log2_last_point = int(log2_last_point)
+                    truncated |= log2_last_point - round_log2_last_point > 0.001
 
-            isotope_number = cur_spectral_dim['atom_isotope_number']
+                isotope_number = cur_spectral_dim['atom_isotope_number']
 
-            cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
-                and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
+                cur_spectral_dim['acquisition'] = 'yes' if _dim_id == self.acq_dim_id\
+                    and (isotope_number == 1 or (isotope_number == 13 and self.exptlMethod == 'SOLID-STATE NMR')) else 'no'
 
-            if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
-                self.acq_dim_id = self.num_of_dim
+                if _dim_id == 1 and cur_spectral_dim['acquisition'] == 'no':
+                    self.acq_dim_id = self.num_of_dim
 
-            cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
+                cur_spectral_dim['under_sampling_type'] = 'not observed' if cur_spectral_dim['acquisition'] == 'yes' else 'aliased'
 
-            if ctx.Ppm_value_DA(0) and ctx.Ppm_value_DA(1):
-                row = [str(ctx.Ppm_value_DA(0)).replace('ppm', ''),
-                       str(ctx.Ppm_value_DA(1)).replace('ppm', '')]
+                if ctx.Ppm_value_DA(0) and ctx.Ppm_value_DA(1):
+                    row = [str(ctx.Ppm_value_DA(0)).replace('ppm', ''),
+                           str(ctx.Ppm_value_DA(1)).replace('ppm', '')]
 
-                max_eff_digits = getMaxEffDigits(row)
+                    max_eff_digits = getMaxEffDigits(row)
 
-                first_ppm = float(row[0])
-                last_ppm = float(row[1])
-                cur_spectral_dim['value_first_point'] = first_ppm
-                cur_spectral_dim['center_frequency_offset'] = float(roundString(str((first_ppm + last_ppm) / 2.0),
-                                                                                max_eff_digits))
+                    first_ppm = float(row[0])
+                    last_ppm = float(row[1])
+                    cur_spectral_dim['value_first_point'] = first_ppm
+                    cur_spectral_dim['center_frequency_offset'] = float(roundString(str((first_ppm + last_ppm) / 2.0),
+                                                                                    max_eff_digits))
 
-                if truncated and isotope_number in (1, 13, 15):
-                    _last_point = int(pow(2.0, round_log2_last_point + 1.0))
-                    scale = float(_last_point) / float(last_point - first_point - 1)
-                    center = first_ppm - (first_ppm - last_ppm) * scale / 2
+                    if truncated and isotope_number in (1, 13, 15):
+                        _last_point = int(pow(2.0, round_log2_last_point + 1.0))
+                        scale = float(_last_point) / float(last_point - first_point - 1)
+                        center = first_ppm - (first_ppm - last_ppm) * scale / 2
 
-                    if isotope_number == 1:
-                        if not 4 < center < 6:
-                            __last_point = _last_point + _last_point / 2
-                            _scale = float(__last_point) / float(last_point - first_point - 1)
-                            center = first_ppm - (first_ppm - last_ppm) * _scale / 2
-                            if 4 < center < 6:
-                                scale = _scale
-                            else:
-                                __last_point = _last_point + _last_point
+                        if isotope_number == 1:
+                            if not 4 < center < 6:
+                                __last_point = _last_point + _last_point / 2
                                 _scale = float(__last_point) / float(last_point - first_point - 1)
                                 center = first_ppm - (first_ppm - last_ppm) * _scale / 2
                                 if 4 < center < 6:
                                     scale = _scale
+                                else:
+                                    __last_point = _last_point + _last_point
+                                    _scale = float(__last_point) / float(last_point - first_point - 1)
+                                    center = first_ppm - (first_ppm - last_ppm) * _scale / 2
+                                    if 4 < center < 6:
+                                        scale = _scale
 
-                    cur_spectral_dim['sweep_width'] = float(roundString(str((first_ppm - last_ppm) * scale),
-                                                                        max_eff_digits))
-                else:
-                    cur_spectral_dim['sweep_width'] = float(roundString(str(first_ppm - last_ppm),
-                                                                        max_eff_digits))
+                        cur_spectral_dim['sweep_width'] = float(roundString(str((first_ppm - last_ppm) * scale),
+                                                                            max_eff_digits))
+                    else:
+                        cur_spectral_dim['sweep_width'] = float(roundString(str(first_ppm - last_ppm),
+                                                                            max_eff_digits))
 
-                cur_spectral_dim['sweep_width_units'] = 'ppm'
+                    cur_spectral_dim['sweep_width_units'] = 'ppm'
 
-            self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+
+            except ValueError:
+                pass
 
         if ctx.X_axis_DA():
             set_spectral_dim(1)
@@ -685,30 +691,36 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
         """
 
         def set_spectral_dim(_dim_id):
-            if _dim_id not in self.cur_spectral_dim:
-                cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
-            else:
-                cur_spectral_dim = self.cur_spectral_dim[_dim_id]
 
-            sw = str(ctx.Float_DA(0))
-            sf = str(ctx.Float_DA(1))
-            first_value_point = str(ctx.Float_DA(2))
+            try:
 
-            max_eff_digits = getMaxEffDigits([sf, first_value_point])
+                if _dim_id not in self.cur_spectral_dim:
+                    cur_spectral_dim = copy.copy(SPECTRAL_DIM_TEMPLATE)
+                else:
+                    cur_spectral_dim = self.cur_spectral_dim[_dim_id]
 
-            sw = float(sw)
-            sf = float(sf)
-            first_ppm = float(roundString(str(float(first_value_point) / sf), max_eff_digits))
-            last_ppm = float(roundString(str(first_ppm - sw / sf), max_eff_digits))
-            center_ppm = (first_ppm + last_ppm) / 2.0
+                sw = str(ctx.Float_DA(0))
+                sf = str(ctx.Float_DA(1))
+                first_value_point = str(ctx.Float_DA(2))
 
-            cur_spectral_dim['spectrometer_frequency'] = sf
-            cur_spectral_dim['sweep_width'] = sw
-            cur_spectral_dim['sweep_width_units'] = 'Hz'
-            cur_spectral_dim['value_first_point'] = first_ppm
-            cur_spectral_dim['center_frequency_offset'] = float(roundString(str(center_ppm), max_eff_digits))
+                max_eff_digits = getMaxEffDigits([sf, first_value_point])
 
-            self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+                sw = float(sw)
+                sf = float(sf)
+                first_ppm = float(roundString(str(float(first_value_point) / sf), max_eff_digits))
+                last_ppm = float(roundString(str(first_ppm - sw / sf), max_eff_digits))
+                center_ppm = (first_ppm + last_ppm) / 2.0
+
+                cur_spectral_dim['spectrometer_frequency'] = sf
+                cur_spectral_dim['sweep_width'] = sw
+                cur_spectral_dim['sweep_width_units'] = 'Hz'
+                cur_spectral_dim['value_first_point'] = first_ppm
+                cur_spectral_dim['center_frequency_offset'] = float(roundString(str(center_ppm), max_eff_digits))
+
+                self.cur_spectral_dim[_dim_id] = cur_spectral_dim
+
+            except ValueError:
+                pass
 
         if ctx.X_axis_DA():
             set_spectral_dim(1)

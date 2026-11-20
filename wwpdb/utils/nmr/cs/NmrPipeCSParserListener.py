@@ -71,7 +71,11 @@ class NmrPipeCSParserListener(ParseTreeListener, BaseCSParserListener):
             self.__cur_sequence = ''
 
         if ctx.First_resid():
-            self.__first_seq_id = int(str(ctx.Integer_DA()))
+
+            try:
+                self.__first_seq_id = int(str(ctx.Integer_DA()))
+            except ValueError:
+                pass
 
         if ctx.Sequence():
             i = 0

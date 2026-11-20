@@ -116,15 +116,20 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Enter a parse tree produced by XwinNmrPKParser#dimension.
         """
 
-        if ctx.Integer_ND():
-            self.num_of_dim = int(str(ctx.Integer_ND()))
-            self.initSpectralDim()
+        try:
 
-            if self.spectrum_name is not None:
-                if self.num_of_dim not in self.__spectrum_names:
-                    self.__spectrum_names[self.num_of_dim] = {}
-                if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
-                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+            if ctx.Integer_ND():
+                self.num_of_dim = int(str(ctx.Integer_ND()))
+                self.initSpectralDim()
+
+                if self.spectrum_name is not None:
+                    if self.num_of_dim not in self.__spectrum_names:
+                        self.__spectrum_names[self.num_of_dim] = {}
+                    if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+                        self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+
+        except ValueError:
+            pass
 
     def exitDimension(self, ctx: XwinNmrPKParser.DimensionContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by XwinNmrPKParser#dimension.

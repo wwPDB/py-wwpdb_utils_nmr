@@ -735,11 +735,11 @@ class BaseCSParserListener():
                                                or not all(src_seq_id in seqIdRemap[0] for src_seq_id in seqIdRemapFailed[0]):
                                                 self.reasonsForReParsing['ext_chain_seq_id_remap'] = seqIdRemapFailed
 
-                if self.__createSfDict:
+                if self.__createSfDict and len(self.cur_subtype) > 0:
                     sf = self.getSf()
                     sf['saveframe'].add_loop(sf['loop'])
 
-            elif not self.hasPolySeq and self.__createSfDict:
+            elif not self.hasPolySeq and self.__createSfDict and len(self.cur_subtype) > 0:
                 sf = self.getSf()
                 sf['saveframe'].add_loop(sf['loop'])
 
@@ -2364,7 +2364,7 @@ class BaseCSParserListener():
             if seqKey in self.labelToAuthSeq:
                 _chainId, _seqId = self.labelToAuthSeq[seqKey]
                 if _seqId in ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id']:
-                    return _chainId, _seqId, ps['comp_id'][ps['seq_id'].index(seqId)]
+                    return _chainId, _seqId, ps['comp_id'][ps['auth_seq_id' if 'auth_seq_id' in ps else 'seq_id'].index(_seqId)]
                 if seqKey[1] in ps['seq_id']:  # resolve conflict between label/auth sequence schemes of polymer/non-polymer (2l90)
                     idx = ps['seq_id'].index(seqKey[1])
                     return _chainId, ps['auth_seq_id'][idx], ps['comp_id'][idx]

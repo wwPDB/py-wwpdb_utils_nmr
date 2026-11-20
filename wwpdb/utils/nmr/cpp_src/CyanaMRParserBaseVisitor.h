@@ -195,6 +195,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual std::any visitPcs_no_param_restraints(CyanaMRParser::Pcs_no_param_restraintsContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitPcs_no_param_restraint(CyanaMRParser::Pcs_no_param_restraintContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual std::any visitSsbond_macro(CyanaMRParser::Ssbond_macroContext *ctx) override {
     return visitChildren(ctx);
   }

@@ -57,6 +57,8 @@ class SA_CyanaMRTranslator : public CyanaMRParserBaseVisitor {
     PyObject *Torsion_angle_w_chain_restraintContext_cls = NULL;
     PyObject *Cco_restraintsContext_cls = NULL;
     PyObject *Cco_restraintContext_cls = NULL;
+    PyObject *Pcs_no_param_restraintsContext_cls = NULL;
+    PyObject *Pcs_no_param_restraintContext_cls = NULL;
     PyObject *Ssbond_macroContext_cls = NULL;
     PyObject *Hbond_macroContext_cls = NULL;
     PyObject *Link_statementContext_cls = NULL;
@@ -170,6 +172,10 @@ class SA_CyanaMRTranslator : public CyanaMRParserBaseVisitor {
     antlrcpp::Any visitCco_restraints(CyanaMRParser::Cco_restraintsContext *ctx);
 
     antlrcpp::Any visitCco_restraint(CyanaMRParser::Cco_restraintContext *ctx);
+
+    antlrcpp::Any visitPcs_no_param_restraints(CyanaMRParser::Pcs_no_param_restraintsContext *ctx);
+
+    antlrcpp::Any visitPcs_no_param_restraint(CyanaMRParser::Pcs_no_param_restraintContext *ctx);
 
     antlrcpp::Any visitSsbond_macro(CyanaMRParser::Ssbond_macroContext *ctx);
 

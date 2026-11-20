@@ -104,14 +104,19 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Enter a parse tree produced by SparkySPKParser#spectrum_statement.
         """
 
-        if ctx.Dimension():
-            self.num_of_dim = int(str(ctx.Integer_SP(0)))
-            self.spectrum_name = ' '.join(self.__cur_spectrum_name)
-            self.initSpectralDim()
-            if self.num_of_dim not in self.__spectrum_names:
-                self.__spectrum_names[self.num_of_dim] = {}
-            if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
-                self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+        try:
+
+            if ctx.Dimension():
+                self.num_of_dim = int(str(ctx.Integer_SP(0)))
+                self.spectrum_name = ' '.join(self.__cur_spectrum_name)
+                self.initSpectralDim()
+                if self.num_of_dim not in self.__spectrum_names:
+                    self.__spectrum_names[self.num_of_dim] = {}
+                if self.cur_list_id not in self.__spectrum_names[self.num_of_dim]:
+                    self.__spectrum_names[self.num_of_dim][self.cur_list_id] = self.spectrum_name
+
+        except ValueError:
+            pass
 
     def exitSpectrum_statement(self, ctx: SparkySPKParser.Spectrum_statementContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by SparkySPKParser#spectrum_statement.
@@ -210,37 +215,42 @@ class SparkySPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Enter a parse tree produced by SparkySPKParser#ornament_statement.
         """
 
-        if ctx.Type_OR() and ctx.Peak():
-            if self.num_of_dim == 2:
-                self.peaks2D += 1
-            elif self.num_of_dim == 3:
-                self.peaks3D += 1
-            elif self.num_of_dim == 4:
-                self.peaks4D += 1
-            self.atomSelectionSets.clear()
-            self.asIsSets.clear()
-            self.__cur_id = None
-            self.__cur_height = None
-            self.__cur_lw = None
-            self.__cur_integral = None
-            self.__cur_rs = None
+        try:
 
-        elif ctx.Id():
-            self.__cur_id = int(str(ctx.Integer_OR(0)))
+            if ctx.Type_OR() and ctx.Peak():
+                if self.num_of_dim == 2:
+                    self.peaks2D += 1
+                elif self.num_of_dim == 3:
+                    self.peaks3D += 1
+                elif self.num_of_dim == 4:
+                    self.peaks4D += 1
+                self.atomSelectionSets.clear()
+                self.asIsSets.clear()
+                self.__cur_id = None
+                self.__cur_height = None
+                self.__cur_lw = None
+                self.__cur_integral = None
+                self.__cur_rs = None
 
-        elif ctx.Height():
-            self.__cur_height = str(ctx.Float_OR(0))
-            if float(self.__cur_height) == 0.0 and ctx.Float_OR(1):
-                self.__cur_height = str(ctx.Float_OR(1))
+            elif ctx.Id():
+                self.__cur_id = int(str(ctx.Integer_OR(0)))
 
-        elif ctx.Line_width():
-            self.__cur_lw = [float(str(ctx.Float_OR(col))) for col in range(self.num_of_dim)]
+            elif ctx.Height():
+                self.__cur_height = str(ctx.Float_OR(0))
+                if float(self.__cur_height) == 0.0 and ctx.Float_OR(1):
+                    self.__cur_height = str(ctx.Float_OR(1))
 
-        elif ctx.Integral():
-            self.__cur_integral = str(ctx.Real_OR())
+            elif ctx.Line_width():
+                self.__cur_lw = [float(str(ctx.Float_OR(col))) for col in range(self.num_of_dim)]
 
-        elif ctx.Rs():
-            self.__cur_rs = [str(ctx.Rs_ex(col)).strip('|') for col in range(self.num_of_dim)]
+            elif ctx.Integral():
+                self.__cur_integral = str(ctx.Real_OR())
+
+            elif ctx.Rs():
+                self.__cur_rs = [str(ctx.Rs_ex(col)).strip('|') for col in range(self.num_of_dim)]
+
+        except ValueError:
+            pass
 
     def exitOrnament_statement(self, ctx: SparkySPKParser.Ornament_statementContext):
         """ Exit a parse tree produced by SparkySPKParser#ornament_statement.

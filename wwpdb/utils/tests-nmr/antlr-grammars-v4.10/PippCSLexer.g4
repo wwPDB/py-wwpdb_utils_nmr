@@ -26,6 +26,7 @@ Exp_peak_pick_tbl:	'EXP_PEAK_PICK_TBL' -> pushMode(EXT_TBL_MODE);
 Res_ID:			'RES_ID';
 Res_type:		'RES_TYPE';
 Prev_type:		'PREV_TYPE';
+Cur_type:		'CUR_TYPE';
 Spin_system_ID:		'SPIN_SYSTEM_ID';
 Heterogeneity:		'HETEROGENEITY';
 

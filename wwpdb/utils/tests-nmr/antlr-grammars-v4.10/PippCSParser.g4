@@ -43,10 +43,11 @@ ext_peak_pick_tbl_row:
 residue_list:
 	(Res_ID | Res_ID_) Integer RETURN
 	Res_type Simple_name RETURN
-	(Prev_type Type_pred+ RETURN)?
+	(Prev_type Type_pred* RETURN)?
+	(Cur_type Type_pred* RETURN)?
 	Spin_system_ID Integer RETURN
 	(Heterogeneity Integer RETURN)?
-	shift_list+
+	shift_list*
 	End_res_def (RETURN | EOF);
 
 shift_list:

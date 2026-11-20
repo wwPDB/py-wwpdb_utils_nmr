@@ -56,6 +56,8 @@ SA_CyanaMRTranslator::~SA_CyanaMRTranslator() {
     Py_XDECREF(Torsion_angle_w_chain_restraintContext_cls);
     Py_XDECREF(Cco_restraintsContext_cls);
     Py_XDECREF(Cco_restraintContext_cls);
+    Py_XDECREF(Pcs_no_param_restraintsContext_cls);
+    Py_XDECREF(Pcs_no_param_restraintContext_cls);
     Py_XDECREF(Ssbond_macroContext_cls);
     Py_XDECREF(Hbond_macroContext_cls);
     Py_XDECREF(Link_statementContext_cls);
@@ -346,6 +348,18 @@ antlrcpp::Any SA_CyanaMRTranslator::visitCco_restraints(CyanaMRParser::Cco_restr
 antlrcpp::Any SA_CyanaMRTranslator::visitCco_restraint(CyanaMRParser::Cco_restraintContext *ctx){
     if(!Cco_restraintContext_cls) Cco_restraintContext_cls = PyObject_GetAttrString(translator->parser_cls, "Cco_restraintContext");
     PyObject *py_ctx = translator->convert_ctx(this, ctx, Cco_restraintContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_CyanaMRTranslator::visitPcs_no_param_restraints(CyanaMRParser::Pcs_no_param_restraintsContext *ctx){
+    if(!Pcs_no_param_restraintsContext_cls) Pcs_no_param_restraintsContext_cls = PyObject_GetAttrString(translator->parser_cls, "Pcs_no_param_restraintsContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Pcs_no_param_restraintsContext_cls);
+    return py_ctx;
+}
+
+antlrcpp::Any SA_CyanaMRTranslator::visitPcs_no_param_restraint(CyanaMRParser::Pcs_no_param_restraintContext *ctx){
+    if(!Pcs_no_param_restraintContext_cls) Pcs_no_param_restraintContext_cls = PyObject_GetAttrString(translator->parser_cls, "Pcs_no_param_restraintContext");
+    PyObject *py_ctx = translator->convert_ctx(this, ctx, Pcs_no_param_restraintContext_cls);
     return py_ctx;
 }
 

@@ -168,10 +168,15 @@ class DianaCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Exit a parse tree produced by DianaCSParser#atom_chemical_shift.
         """
 
-        atom_id = str(ctx.Simple_name())
+        try:
 
-        values = [float(str(ctx.Float(0)))]
-        if ctx.Float(1):
-            values.append(float(str(ctx.Float(1))))
+            atom_id = str(ctx.Simple_name())
 
-        self.__atom_cs_dict.append((atom_id, values))
+            values = [float(str(ctx.Float(0)))]
+            if ctx.Float(1):
+                values.append(float(str(ctx.Float(1))))
+
+            self.__atom_cs_dict.append((atom_id, values))
+
+        except ValueError:
+            pass

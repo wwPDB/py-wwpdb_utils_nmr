@@ -56,9 +56,10 @@ void biosymmrparserParserInitialize() {
       "distance_constraint", "distance_wo_w_constraints", "distance_wo_w_constraint", 
       "dihedral_angle_restraints", "dihedral_angle_restraint", "dihedral_angle_constraints", 
       "dihedral_angle_constraint", "dihedral_angle_wo_w_constraints", "dihedral_angle_wo_w_constraint", 
-      "chirality_constraints", "chirality_constraint", "prochirality_constraints", 
-      "prochirality_constraint", "mixing_time", "number", "ins_distance_restraints", 
-      "ins_distance_restraint", "decl_create", "decl_function", "decl_target"
+      "rdc_restraints", "rdc_restraint", "chirality_constraints", "chirality_constraint", 
+      "prochirality_constraints", "prochirality_constraint", "mixing_time", 
+      "number", "ins_distance_restraints", "ins_distance_restraint", "decl_create", 
+      "decl_function", "decl_target"
     },
     std::vector<std::string>{
       "", "", "", "", "", "", "", "", "", "", "", "'+'", "'restraint'", 
@@ -77,96 +78,103 @@ void biosymmrparserParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,34,277,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,34,297,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
   	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,
-  	21,2,22,7,22,2,23,7,23,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,5,0,59,
-  	8,0,10,0,12,0,62,9,0,1,0,1,0,1,1,4,1,67,8,1,11,1,12,1,68,1,2,3,2,72,8,
-  	2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,3,2,83,8,2,1,2,1,2,1,2,5,2,88,8,
-  	2,10,2,12,2,91,9,2,1,3,4,3,94,8,3,11,3,12,3,95,1,4,3,4,99,8,4,1,4,1,4,
-  	1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,5,4,111,8,4,10,4,12,4,114,9,4,1,5,4,5,
-  	117,8,5,11,5,12,5,118,1,6,3,6,122,8,6,1,6,1,6,1,6,1,6,1,6,3,6,129,8,6,
-  	1,6,1,6,1,6,5,6,134,8,6,10,6,12,6,137,9,6,1,7,4,7,140,8,7,11,7,12,7,141,
-  	1,8,3,8,145,8,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,
-  	8,3,8,161,8,8,1,8,1,8,1,8,3,8,166,8,8,1,8,1,8,1,8,3,8,171,8,8,1,9,4,9,
-  	174,8,9,11,9,12,9,175,1,10,3,10,179,8,10,1,10,1,10,1,10,1,10,1,10,1,10,
-  	1,10,1,10,1,10,1,10,1,11,4,11,192,8,11,11,11,12,11,193,1,12,3,12,197,
-  	8,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,13,4,13,207,8,13,11,13,12,13,
-  	208,1,14,3,14,212,8,14,1,14,1,14,1,14,1,15,4,15,218,8,15,11,15,12,15,
-  	219,1,16,3,16,223,8,16,1,16,1,16,1,16,1,16,1,16,1,16,1,17,1,17,1,17,3,
-  	17,234,8,17,5,17,236,8,17,10,17,12,17,239,9,17,1,17,1,17,1,18,1,18,1,
-  	19,1,19,1,20,1,20,1,20,1,20,1,21,1,21,1,21,1,21,1,21,1,21,1,21,1,21,1,
-  	22,1,22,1,22,1,22,1,22,1,22,1,22,3,22,266,8,22,1,22,1,22,1,23,1,23,1,
-  	23,1,23,1,23,1,23,1,23,1,23,0,0,24,0,2,4,6,8,10,12,14,16,18,20,22,24,
-  	26,28,30,32,34,36,38,40,42,44,46,0,5,1,0,28,30,1,0,31,32,1,0,1,3,1,0,
-  	23,24,2,0,18,18,25,25,289,0,60,1,0,0,0,2,66,1,0,0,0,4,71,1,0,0,0,6,93,
-  	1,0,0,0,8,98,1,0,0,0,10,116,1,0,0,0,12,121,1,0,0,0,14,139,1,0,0,0,16,
-  	144,1,0,0,0,18,173,1,0,0,0,20,178,1,0,0,0,22,191,1,0,0,0,24,196,1,0,0,
-  	0,26,206,1,0,0,0,28,211,1,0,0,0,30,217,1,0,0,0,32,222,1,0,0,0,34,230,
-  	1,0,0,0,36,242,1,0,0,0,38,244,1,0,0,0,40,246,1,0,0,0,42,250,1,0,0,0,44,
-  	258,1,0,0,0,46,269,1,0,0,0,48,59,3,2,1,0,49,59,3,6,3,0,50,59,3,10,5,0,
-  	51,59,3,14,7,0,52,59,3,18,9,0,53,59,3,22,11,0,54,59,3,26,13,0,55,59,3,
-  	30,15,0,56,59,3,34,17,0,57,59,3,38,19,0,58,48,1,0,0,0,58,49,1,0,0,0,58,
-  	50,1,0,0,0,58,51,1,0,0,0,58,52,1,0,0,0,58,53,1,0,0,0,58,54,1,0,0,0,58,
-  	55,1,0,0,0,58,56,1,0,0,0,58,57,1,0,0,0,59,62,1,0,0,0,60,58,1,0,0,0,60,
-  	61,1,0,0,0,61,63,1,0,0,0,62,60,1,0,0,0,63,64,5,0,0,1,64,1,1,0,0,0,65,
-  	67,3,4,2,0,66,65,1,0,0,0,67,68,1,0,0,0,68,66,1,0,0,0,68,69,1,0,0,0,69,
-  	3,1,0,0,0,70,72,5,10,0,0,71,70,1,0,0,0,71,72,1,0,0,0,72,73,1,0,0,0,73,
-  	74,5,9,0,0,74,75,5,9,0,0,75,76,3,36,18,0,76,77,3,36,18,0,77,78,3,36,18,
-  	0,78,79,3,36,18,0,79,80,3,36,18,0,80,82,3,36,18,0,81,83,3,36,18,0,82,
-  	81,1,0,0,0,82,83,1,0,0,0,83,89,1,0,0,0,84,85,5,11,0,0,85,86,5,9,0,0,86,
-  	88,5,9,0,0,87,84,1,0,0,0,88,91,1,0,0,0,89,87,1,0,0,0,89,90,1,0,0,0,90,
-  	5,1,0,0,0,91,89,1,0,0,0,92,94,3,8,4,0,93,92,1,0,0,0,94,95,1,0,0,0,95,
-  	93,1,0,0,0,95,96,1,0,0,0,96,7,1,0,0,0,97,99,5,10,0,0,98,97,1,0,0,0,98,
-  	99,1,0,0,0,99,100,1,0,0,0,100,101,5,9,0,0,101,102,5,9,0,0,102,103,3,36,
-  	18,0,103,104,3,36,18,0,104,105,3,36,18,0,105,106,3,36,18,0,106,112,3,
-  	36,18,0,107,108,5,11,0,0,108,109,5,9,0,0,109,111,5,9,0,0,110,107,1,0,
-  	0,0,111,114,1,0,0,0,112,110,1,0,0,0,112,113,1,0,0,0,113,9,1,0,0,0,114,
-  	112,1,0,0,0,115,117,3,12,6,0,116,115,1,0,0,0,117,118,1,0,0,0,118,116,
-  	1,0,0,0,118,119,1,0,0,0,119,11,1,0,0,0,120,122,5,10,0,0,121,120,1,0,0,
-  	0,121,122,1,0,0,0,122,123,1,0,0,0,123,124,5,9,0,0,124,125,5,9,0,0,125,
-  	126,3,36,18,0,126,128,3,36,18,0,127,129,3,36,18,0,128,127,1,0,0,0,128,
-  	129,1,0,0,0,129,135,1,0,0,0,130,131,5,11,0,0,131,132,5,9,0,0,132,134,
-  	5,9,0,0,133,130,1,0,0,0,134,137,1,0,0,0,135,133,1,0,0,0,135,136,1,0,0,
-  	0,136,13,1,0,0,0,137,135,1,0,0,0,138,140,3,16,8,0,139,138,1,0,0,0,140,
-  	141,1,0,0,0,141,139,1,0,0,0,141,142,1,0,0,0,142,15,1,0,0,0,143,145,5,
-  	10,0,0,144,143,1,0,0,0,144,145,1,0,0,0,145,146,1,0,0,0,146,147,5,9,0,
-  	0,147,148,5,9,0,0,148,149,5,9,0,0,149,150,5,9,0,0,150,151,3,36,18,0,151,
-  	152,3,36,18,0,152,153,3,36,18,0,153,154,3,36,18,0,154,155,3,36,18,0,155,
-  	156,3,36,18,0,156,160,3,36,18,0,157,158,3,36,18,0,158,159,3,36,18,0,159,
-  	161,1,0,0,0,160,157,1,0,0,0,160,161,1,0,0,0,161,165,1,0,0,0,162,163,3,
-  	36,18,0,163,164,3,36,18,0,164,166,1,0,0,0,165,162,1,0,0,0,165,166,1,0,
-  	0,0,166,170,1,0,0,0,167,168,3,36,18,0,168,169,3,36,18,0,169,171,1,0,0,
-  	0,170,167,1,0,0,0,170,171,1,0,0,0,171,17,1,0,0,0,172,174,3,20,10,0,173,
-  	172,1,0,0,0,174,175,1,0,0,0,175,173,1,0,0,0,175,176,1,0,0,0,176,19,1,
-  	0,0,0,177,179,5,10,0,0,178,177,1,0,0,0,178,179,1,0,0,0,179,180,1,0,0,
-  	0,180,181,5,9,0,0,181,182,5,9,0,0,182,183,5,9,0,0,183,184,5,9,0,0,184,
-  	185,3,36,18,0,185,186,3,36,18,0,186,187,3,36,18,0,187,188,3,36,18,0,188,
-  	189,3,36,18,0,189,21,1,0,0,0,190,192,3,24,12,0,191,190,1,0,0,0,192,193,
-  	1,0,0,0,193,191,1,0,0,0,193,194,1,0,0,0,194,23,1,0,0,0,195,197,5,10,0,
-  	0,196,195,1,0,0,0,196,197,1,0,0,0,197,198,1,0,0,0,198,199,5,9,0,0,199,
-  	200,5,9,0,0,200,201,5,9,0,0,201,202,5,9,0,0,202,203,3,36,18,0,203,204,
-  	3,36,18,0,204,25,1,0,0,0,205,207,3,28,14,0,206,205,1,0,0,0,207,208,1,
-  	0,0,0,208,206,1,0,0,0,208,209,1,0,0,0,209,27,1,0,0,0,210,212,5,10,0,0,
-  	211,210,1,0,0,0,211,212,1,0,0,0,212,213,1,0,0,0,213,214,5,9,0,0,214,215,
-  	5,8,0,0,215,29,1,0,0,0,216,218,3,32,16,0,217,216,1,0,0,0,218,219,1,0,
-  	0,0,219,217,1,0,0,0,219,220,1,0,0,0,220,31,1,0,0,0,221,223,5,10,0,0,222,
-  	221,1,0,0,0,222,223,1,0,0,0,223,224,1,0,0,0,224,225,5,9,0,0,225,226,5,
-  	9,0,0,226,227,5,9,0,0,227,228,5,9,0,0,228,229,5,9,0,0,229,33,1,0,0,0,
-  	230,237,5,13,0,0,231,233,7,0,0,0,232,234,7,1,0,0,233,232,1,0,0,0,233,
-  	234,1,0,0,0,234,236,1,0,0,0,235,231,1,0,0,0,236,239,1,0,0,0,237,235,1,
-  	0,0,0,237,238,1,0,0,0,238,240,1,0,0,0,239,237,1,0,0,0,240,241,5,34,0,
-  	0,241,35,1,0,0,0,242,243,7,2,0,0,243,37,1,0,0,0,244,245,3,40,20,0,245,
-  	39,1,0,0,0,246,247,3,42,21,0,247,248,3,44,22,0,248,249,3,46,23,0,249,
-  	41,1,0,0,0,250,251,5,12,0,0,251,252,5,19,0,0,252,253,5,18,0,0,253,254,
-  	5,22,0,0,254,255,5,18,0,0,255,256,5,18,0,0,256,257,5,27,0,0,257,43,1,
-  	0,0,0,258,259,5,12,0,0,259,260,5,20,0,0,260,261,5,18,0,0,261,262,7,3,
-  	0,0,262,263,5,18,0,0,263,265,5,18,0,0,264,266,5,18,0,0,265,264,1,0,0,
-  	0,265,266,1,0,0,0,266,267,1,0,0,0,267,268,5,27,0,0,268,45,1,0,0,0,269,
-  	270,5,12,0,0,270,271,5,21,0,0,271,272,5,18,0,0,272,273,7,4,0,0,273,274,
-  	5,18,0,0,274,275,5,27,0,0,275,47,1,0,0,0,29,58,60,68,71,82,89,95,98,112,
-  	118,121,128,135,141,144,160,165,170,175,178,193,196,208,211,219,222,233,
-  	237,265
+  	21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,1,0,1,0,1,0,1,0,1,0,1,0,1,
+  	0,1,0,1,0,1,0,1,0,5,0,64,8,0,10,0,12,0,67,9,0,1,0,1,0,1,1,4,1,72,8,1,
+  	11,1,12,1,73,1,2,3,2,77,8,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,3,2,88,
+  	8,2,1,2,1,2,1,2,5,2,93,8,2,10,2,12,2,96,9,2,1,3,4,3,99,8,3,11,3,12,3,
+  	100,1,4,3,4,104,8,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,5,4,116,8,
+  	4,10,4,12,4,119,9,4,1,5,4,5,122,8,5,11,5,12,5,123,1,6,3,6,127,8,6,1,6,
+  	1,6,1,6,1,6,1,6,3,6,134,8,6,1,6,1,6,1,6,5,6,139,8,6,10,6,12,6,142,9,6,
+  	1,7,4,7,145,8,7,11,7,12,7,146,1,8,3,8,150,8,8,1,8,1,8,1,8,1,8,1,8,1,8,
+  	1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,3,8,166,8,8,1,8,1,8,1,8,3,8,171,8,8,1,
+  	8,1,8,1,8,3,8,176,8,8,1,9,4,9,179,8,9,11,9,12,9,180,1,10,3,10,184,8,10,
+  	1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,11,4,11,197,8,11,
+  	11,11,12,11,198,1,12,3,12,202,8,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,
+  	1,13,4,13,212,8,13,11,13,12,13,213,1,14,3,14,217,8,14,1,14,1,14,1,14,
+  	1,14,1,14,1,14,1,14,1,15,4,15,227,8,15,11,15,12,15,228,1,16,3,16,232,
+  	8,16,1,16,1,16,1,16,1,17,4,17,238,8,17,11,17,12,17,239,1,18,3,18,243,
+  	8,18,1,18,1,18,1,18,1,18,1,18,1,18,1,19,1,19,1,19,3,19,254,8,19,5,19,
+  	256,8,19,10,19,12,19,259,9,19,1,19,1,19,1,20,1,20,1,21,1,21,1,22,1,22,
+  	1,22,1,22,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,24,1,24,1,24,1,24,
+  	1,24,1,24,1,24,3,24,286,8,24,1,24,1,24,1,25,1,25,1,25,1,25,1,25,1,25,
+  	1,25,1,25,0,0,26,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,
+  	38,40,42,44,46,48,50,0,5,1,0,28,30,1,0,31,32,1,0,1,3,1,0,23,24,2,0,18,
+  	18,25,25,310,0,65,1,0,0,0,2,71,1,0,0,0,4,76,1,0,0,0,6,98,1,0,0,0,8,103,
+  	1,0,0,0,10,121,1,0,0,0,12,126,1,0,0,0,14,144,1,0,0,0,16,149,1,0,0,0,18,
+  	178,1,0,0,0,20,183,1,0,0,0,22,196,1,0,0,0,24,201,1,0,0,0,26,211,1,0,0,
+  	0,28,216,1,0,0,0,30,226,1,0,0,0,32,231,1,0,0,0,34,237,1,0,0,0,36,242,
+  	1,0,0,0,38,250,1,0,0,0,40,262,1,0,0,0,42,264,1,0,0,0,44,266,1,0,0,0,46,
+  	270,1,0,0,0,48,278,1,0,0,0,50,289,1,0,0,0,52,64,3,2,1,0,53,64,3,6,3,0,
+  	54,64,3,10,5,0,55,64,3,14,7,0,56,64,3,18,9,0,57,64,3,22,11,0,58,64,3,
+  	26,13,0,59,64,3,30,15,0,60,64,3,34,17,0,61,64,3,38,19,0,62,64,3,42,21,
+  	0,63,52,1,0,0,0,63,53,1,0,0,0,63,54,1,0,0,0,63,55,1,0,0,0,63,56,1,0,0,
+  	0,63,57,1,0,0,0,63,58,1,0,0,0,63,59,1,0,0,0,63,60,1,0,0,0,63,61,1,0,0,
+  	0,63,62,1,0,0,0,64,67,1,0,0,0,65,63,1,0,0,0,65,66,1,0,0,0,66,68,1,0,0,
+  	0,67,65,1,0,0,0,68,69,5,0,0,1,69,1,1,0,0,0,70,72,3,4,2,0,71,70,1,0,0,
+  	0,72,73,1,0,0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,3,1,0,0,0,75,77,5,10,0,
+  	0,76,75,1,0,0,0,76,77,1,0,0,0,77,78,1,0,0,0,78,79,5,9,0,0,79,80,5,9,0,
+  	0,80,81,3,40,20,0,81,82,3,40,20,0,82,83,3,40,20,0,83,84,3,40,20,0,84,
+  	85,3,40,20,0,85,87,3,40,20,0,86,88,3,40,20,0,87,86,1,0,0,0,87,88,1,0,
+  	0,0,88,94,1,0,0,0,89,90,5,11,0,0,90,91,5,9,0,0,91,93,5,9,0,0,92,89,1,
+  	0,0,0,93,96,1,0,0,0,94,92,1,0,0,0,94,95,1,0,0,0,95,5,1,0,0,0,96,94,1,
+  	0,0,0,97,99,3,8,4,0,98,97,1,0,0,0,99,100,1,0,0,0,100,98,1,0,0,0,100,101,
+  	1,0,0,0,101,7,1,0,0,0,102,104,5,10,0,0,103,102,1,0,0,0,103,104,1,0,0,
+  	0,104,105,1,0,0,0,105,106,5,9,0,0,106,107,5,9,0,0,107,108,3,40,20,0,108,
+  	109,3,40,20,0,109,110,3,40,20,0,110,111,3,40,20,0,111,117,3,40,20,0,112,
+  	113,5,11,0,0,113,114,5,9,0,0,114,116,5,9,0,0,115,112,1,0,0,0,116,119,
+  	1,0,0,0,117,115,1,0,0,0,117,118,1,0,0,0,118,9,1,0,0,0,119,117,1,0,0,0,
+  	120,122,3,12,6,0,121,120,1,0,0,0,122,123,1,0,0,0,123,121,1,0,0,0,123,
+  	124,1,0,0,0,124,11,1,0,0,0,125,127,5,10,0,0,126,125,1,0,0,0,126,127,1,
+  	0,0,0,127,128,1,0,0,0,128,129,5,9,0,0,129,130,5,9,0,0,130,131,3,40,20,
+  	0,131,133,3,40,20,0,132,134,3,40,20,0,133,132,1,0,0,0,133,134,1,0,0,0,
+  	134,140,1,0,0,0,135,136,5,11,0,0,136,137,5,9,0,0,137,139,5,9,0,0,138,
+  	135,1,0,0,0,139,142,1,0,0,0,140,138,1,0,0,0,140,141,1,0,0,0,141,13,1,
+  	0,0,0,142,140,1,0,0,0,143,145,3,16,8,0,144,143,1,0,0,0,145,146,1,0,0,
+  	0,146,144,1,0,0,0,146,147,1,0,0,0,147,15,1,0,0,0,148,150,5,10,0,0,149,
+  	148,1,0,0,0,149,150,1,0,0,0,150,151,1,0,0,0,151,152,5,9,0,0,152,153,5,
+  	9,0,0,153,154,5,9,0,0,154,155,5,9,0,0,155,156,3,40,20,0,156,157,3,40,
+  	20,0,157,158,3,40,20,0,158,159,3,40,20,0,159,160,3,40,20,0,160,161,3,
+  	40,20,0,161,165,3,40,20,0,162,163,3,40,20,0,163,164,3,40,20,0,164,166,
+  	1,0,0,0,165,162,1,0,0,0,165,166,1,0,0,0,166,170,1,0,0,0,167,168,3,40,
+  	20,0,168,169,3,40,20,0,169,171,1,0,0,0,170,167,1,0,0,0,170,171,1,0,0,
+  	0,171,175,1,0,0,0,172,173,3,40,20,0,173,174,3,40,20,0,174,176,1,0,0,0,
+  	175,172,1,0,0,0,175,176,1,0,0,0,176,17,1,0,0,0,177,179,3,20,10,0,178,
+  	177,1,0,0,0,179,180,1,0,0,0,180,178,1,0,0,0,180,181,1,0,0,0,181,19,1,
+  	0,0,0,182,184,5,10,0,0,183,182,1,0,0,0,183,184,1,0,0,0,184,185,1,0,0,
+  	0,185,186,5,9,0,0,186,187,5,9,0,0,187,188,5,9,0,0,188,189,5,9,0,0,189,
+  	190,3,40,20,0,190,191,3,40,20,0,191,192,3,40,20,0,192,193,3,40,20,0,193,
+  	194,3,40,20,0,194,21,1,0,0,0,195,197,3,24,12,0,196,195,1,0,0,0,197,198,
+  	1,0,0,0,198,196,1,0,0,0,198,199,1,0,0,0,199,23,1,0,0,0,200,202,5,10,0,
+  	0,201,200,1,0,0,0,201,202,1,0,0,0,202,203,1,0,0,0,203,204,5,9,0,0,204,
+  	205,5,9,0,0,205,206,5,9,0,0,206,207,5,9,0,0,207,208,3,40,20,0,208,209,
+  	3,40,20,0,209,25,1,0,0,0,210,212,3,28,14,0,211,210,1,0,0,0,212,213,1,
+  	0,0,0,213,211,1,0,0,0,213,214,1,0,0,0,214,27,1,0,0,0,215,217,5,10,0,0,
+  	216,215,1,0,0,0,216,217,1,0,0,0,217,218,1,0,0,0,218,219,5,9,0,0,219,220,
+  	5,9,0,0,220,221,3,40,20,0,221,222,3,40,20,0,222,223,3,40,20,0,223,224,
+  	3,40,20,0,224,29,1,0,0,0,225,227,3,32,16,0,226,225,1,0,0,0,227,228,1,
+  	0,0,0,228,226,1,0,0,0,228,229,1,0,0,0,229,31,1,0,0,0,230,232,5,10,0,0,
+  	231,230,1,0,0,0,231,232,1,0,0,0,232,233,1,0,0,0,233,234,5,9,0,0,234,235,
+  	5,8,0,0,235,33,1,0,0,0,236,238,3,36,18,0,237,236,1,0,0,0,238,239,1,0,
+  	0,0,239,237,1,0,0,0,239,240,1,0,0,0,240,35,1,0,0,0,241,243,5,10,0,0,242,
+  	241,1,0,0,0,242,243,1,0,0,0,243,244,1,0,0,0,244,245,5,9,0,0,245,246,5,
+  	9,0,0,246,247,5,9,0,0,247,248,5,9,0,0,248,249,5,9,0,0,249,37,1,0,0,0,
+  	250,257,5,13,0,0,251,253,7,0,0,0,252,254,7,1,0,0,253,252,1,0,0,0,253,
+  	254,1,0,0,0,254,256,1,0,0,0,255,251,1,0,0,0,256,259,1,0,0,0,257,255,1,
+  	0,0,0,257,258,1,0,0,0,258,260,1,0,0,0,259,257,1,0,0,0,260,261,5,34,0,
+  	0,261,39,1,0,0,0,262,263,7,2,0,0,263,41,1,0,0,0,264,265,3,44,22,0,265,
+  	43,1,0,0,0,266,267,3,46,23,0,267,268,3,48,24,0,268,269,3,50,25,0,269,
+  	45,1,0,0,0,270,271,5,12,0,0,271,272,5,19,0,0,272,273,5,18,0,0,273,274,
+  	5,22,0,0,274,275,5,18,0,0,275,276,5,18,0,0,276,277,5,27,0,0,277,47,1,
+  	0,0,0,278,279,5,12,0,0,279,280,5,20,0,0,280,281,5,18,0,0,281,282,7,3,
+  	0,0,282,283,5,18,0,0,283,285,5,18,0,0,284,286,5,18,0,0,285,284,1,0,0,
+  	0,285,286,1,0,0,0,286,287,1,0,0,0,287,288,5,27,0,0,288,49,1,0,0,0,289,
+  	290,5,12,0,0,290,291,5,21,0,0,291,292,5,18,0,0,292,293,7,4,0,0,293,294,
+  	5,18,0,0,294,295,5,27,0,0,295,51,1,0,0,0,31,63,65,73,76,87,94,100,103,
+  	117,123,126,133,140,146,149,165,170,175,180,183,198,201,213,216,228,231,
+  	239,242,253,257,285
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -273,6 +281,14 @@ BiosymMRParser::Dihedral_angle_wo_w_constraintsContext* BiosymMRParser::Biosym_m
   return getRuleContext<BiosymMRParser::Dihedral_angle_wo_w_constraintsContext>(i);
 }
 
+std::vector<BiosymMRParser::Rdc_restraintsContext *> BiosymMRParser::Biosym_mrContext::rdc_restraints() {
+  return getRuleContexts<BiosymMRParser::Rdc_restraintsContext>();
+}
+
+BiosymMRParser::Rdc_restraintsContext* BiosymMRParser::Biosym_mrContext::rdc_restraints(size_t i) {
+  return getRuleContext<BiosymMRParser::Rdc_restraintsContext>(i);
+}
+
 std::vector<BiosymMRParser::Chirality_constraintsContext *> BiosymMRParser::Biosym_mrContext::chirality_constraints() {
   return getRuleContexts<BiosymMRParser::Chirality_constraintsContext>();
 }
@@ -332,70 +348,76 @@ BiosymMRParser::Biosym_mrContext* BiosymMRParser::biosym_mr() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(60);
+    setState(65);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 13824) != 0)) {
-      setState(58);
+      setState(63);
       _errHandler->sync(this);
       switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 0, _ctx)) {
       case 1: {
-        setState(48);
+        setState(52);
         distance_restraints();
         break;
       }
 
       case 2: {
-        setState(49);
+        setState(53);
         distance_constraints();
         break;
       }
 
       case 3: {
-        setState(50);
+        setState(54);
         distance_wo_w_constraints();
         break;
       }
 
       case 4: {
-        setState(51);
+        setState(55);
         dihedral_angle_restraints();
         break;
       }
 
       case 5: {
-        setState(52);
+        setState(56);
         dihedral_angle_constraints();
         break;
       }
 
       case 6: {
-        setState(53);
+        setState(57);
         dihedral_angle_wo_w_constraints();
         break;
       }
 
       case 7: {
-        setState(54);
-        chirality_constraints();
+        setState(58);
+        rdc_restraints();
         break;
       }
 
       case 8: {
-        setState(55);
-        prochirality_constraints();
+        setState(59);
+        chirality_constraints();
         break;
       }
 
       case 9: {
-        setState(56);
-        mixing_time();
+        setState(60);
+        prochirality_constraints();
         break;
       }
 
       case 10: {
-        setState(57);
+        setState(61);
+        mixing_time();
+        break;
+      }
+
+      case 11: {
+        setState(62);
         ins_distance_restraints();
         break;
       }
@@ -403,11 +425,11 @@ BiosymMRParser::Biosym_mrContext* BiosymMRParser::biosym_mr() {
       default:
         break;
       }
-      setState(62);
+      setState(67);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(63);
+    setState(68);
     match(BiosymMRParser::EOF);
    
   }
@@ -461,13 +483,13 @@ BiosymMRParser::Distance_restraintsContext* BiosymMRParser::distance_restraints(
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(66); 
+    setState(71); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(65);
+              setState(70);
               distance_restraint();
               break;
             }
@@ -475,7 +497,7 @@ BiosymMRParser::Distance_restraintsContext* BiosymMRParser::distance_restraints(
       default:
         throw NoViableAltException(this);
       }
-      setState(68); 
+      setState(73); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 2, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -551,50 +573,50 @@ BiosymMRParser::Distance_restraintContext* BiosymMRParser::distance_restraint() 
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(71);
+    setState(76);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(70);
+      setState(75);
       match(BiosymMRParser::Ordinal);
     }
-    setState(73);
-    match(BiosymMRParser::Atom_selection);
-    setState(74);
-    match(BiosymMRParser::Atom_selection);
-    setState(75);
-    number();
-    setState(76);
-    number();
-    setState(77);
-    number();
     setState(78);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(79);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(80);
     number();
+    setState(81);
+    number();
     setState(82);
+    number();
+    setState(83);
+    number();
+    setState(84);
+    number();
+    setState(85);
+    number();
+    setState(87);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 14) != 0)) {
-      setState(81);
+      setState(86);
       number();
     }
-    setState(89);
+    setState(94);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == BiosymMRParser::Or) {
-      setState(84);
+      setState(89);
       match(BiosymMRParser::Or);
-      setState(85);
-      match(BiosymMRParser::Atom_selection);
-      setState(86);
+      setState(90);
       match(BiosymMRParser::Atom_selection);
       setState(91);
+      match(BiosymMRParser::Atom_selection);
+      setState(96);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -650,13 +672,13 @@ BiosymMRParser::Distance_constraintsContext* BiosymMRParser::distance_constraint
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(93); 
+    setState(98); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(92);
+              setState(97);
               distance_constraint();
               break;
             }
@@ -664,7 +686,7 @@ BiosymMRParser::Distance_constraintsContext* BiosymMRParser::distance_constraint
       default:
         throw NoViableAltException(this);
       }
-      setState(95); 
+      setState(100); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 6, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -740,39 +762,39 @@ BiosymMRParser::Distance_constraintContext* BiosymMRParser::distance_constraint(
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(98);
+    setState(103);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(97);
+      setState(102);
       match(BiosymMRParser::Ordinal);
     }
-    setState(100);
-    match(BiosymMRParser::Atom_selection);
-    setState(101);
-    match(BiosymMRParser::Atom_selection);
-    setState(102);
-    number();
-    setState(103);
-    number();
-    setState(104);
-    number();
     setState(105);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(106);
+    match(BiosymMRParser::Atom_selection);
+    setState(107);
     number();
-    setState(112);
+    setState(108);
+    number();
+    setState(109);
+    number();
+    setState(110);
+    number();
+    setState(111);
+    number();
+    setState(117);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == BiosymMRParser::Or) {
-      setState(107);
+      setState(112);
       match(BiosymMRParser::Or);
-      setState(108);
-      match(BiosymMRParser::Atom_selection);
-      setState(109);
+      setState(113);
       match(BiosymMRParser::Atom_selection);
       setState(114);
+      match(BiosymMRParser::Atom_selection);
+      setState(119);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -828,13 +850,13 @@ BiosymMRParser::Distance_wo_w_constraintsContext* BiosymMRParser::distance_wo_w_
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(116); 
+    setState(121); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(115);
+              setState(120);
               distance_wo_w_constraint();
               break;
             }
@@ -842,7 +864,7 @@ BiosymMRParser::Distance_wo_w_constraintsContext* BiosymMRParser::distance_wo_w_
       default:
         throw NoViableAltException(this);
       }
-      setState(118); 
+      setState(123); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 9, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -918,42 +940,42 @@ BiosymMRParser::Distance_wo_w_constraintContext* BiosymMRParser::distance_wo_w_c
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(121);
+    setState(126);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(120);
+      setState(125);
       match(BiosymMRParser::Ordinal);
     }
-    setState(123);
-    match(BiosymMRParser::Atom_selection);
-    setState(124);
-    match(BiosymMRParser::Atom_selection);
-    setState(125);
-    number();
-    setState(126);
-    number();
     setState(128);
+    match(BiosymMRParser::Atom_selection);
+    setState(129);
+    match(BiosymMRParser::Atom_selection);
+    setState(130);
+    number();
+    setState(131);
+    number();
+    setState(133);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 14) != 0)) {
-      setState(127);
+      setState(132);
       number();
     }
-    setState(135);
+    setState(140);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == BiosymMRParser::Or) {
-      setState(130);
+      setState(135);
       match(BiosymMRParser::Or);
-      setState(131);
-      match(BiosymMRParser::Atom_selection);
-      setState(132);
+      setState(136);
       match(BiosymMRParser::Atom_selection);
       setState(137);
+      match(BiosymMRParser::Atom_selection);
+      setState(142);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -1009,13 +1031,13 @@ BiosymMRParser::Dihedral_angle_restraintsContext* BiosymMRParser::dihedral_angle
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(139); 
+    setState(144); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(138);
+              setState(143);
               dihedral_angle_restraint();
               break;
             }
@@ -1023,7 +1045,7 @@ BiosymMRParser::Dihedral_angle_restraintsContext* BiosymMRParser::dihedral_angle
       default:
         throw NoViableAltException(this);
       }
-      setState(141); 
+      setState(146); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 13, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -1091,55 +1113,40 @@ BiosymMRParser::Dihedral_angle_restraintContext* BiosymMRParser::dihedral_angle_
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(144);
+    setState(149);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(143);
+      setState(148);
       match(BiosymMRParser::Ordinal);
     }
-    setState(146);
-    match(BiosymMRParser::Atom_selection);
-    setState(147);
-    match(BiosymMRParser::Atom_selection);
-    setState(148);
-    match(BiosymMRParser::Atom_selection);
-    setState(149);
-    match(BiosymMRParser::Atom_selection);
-    setState(150);
-    number();
     setState(151);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(152);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(153);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(154);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(155);
     number();
     setState(156);
     number();
+    setState(157);
+    number();
+    setState(158);
+    number();
+    setState(159);
+    number();
     setState(160);
-    _errHandler->sync(this);
-
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 15, _ctx)) {
-    case 1: {
-      setState(157);
-      number();
-      setState(158);
-      number();
-      break;
-    }
-
-    default:
-      break;
-    }
+    number();
+    setState(161);
+    number();
     setState(165);
     _errHandler->sync(this);
 
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 16, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 15, _ctx)) {
     case 1: {
       setState(162);
       number();
@@ -1154,12 +1161,27 @@ BiosymMRParser::Dihedral_angle_restraintContext* BiosymMRParser::dihedral_angle_
     setState(170);
     _errHandler->sync(this);
 
-    _la = _input->LA(1);
-    if ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 14) != 0)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 16, _ctx)) {
+    case 1: {
       setState(167);
       number();
       setState(168);
+      number();
+      break;
+    }
+
+    default:
+      break;
+    }
+    setState(175);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if ((((_la & ~ 0x3fULL) == 0) &&
+      ((1ULL << _la) & 14) != 0)) {
+      setState(172);
+      number();
+      setState(173);
       number();
     }
    
@@ -1214,13 +1236,13 @@ BiosymMRParser::Dihedral_angle_constraintsContext* BiosymMRParser::dihedral_angl
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(173); 
+    setState(178); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(172);
+              setState(177);
               dihedral_angle_constraint();
               break;
             }
@@ -1228,7 +1250,7 @@ BiosymMRParser::Dihedral_angle_constraintsContext* BiosymMRParser::dihedral_angl
       default:
         throw NoViableAltException(this);
       }
-      setState(175); 
+      setState(180); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 18, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -1296,31 +1318,31 @@ BiosymMRParser::Dihedral_angle_constraintContext* BiosymMRParser::dihedral_angle
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(178);
+    setState(183);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(177);
+      setState(182);
       match(BiosymMRParser::Ordinal);
     }
-    setState(180);
-    match(BiosymMRParser::Atom_selection);
-    setState(181);
-    match(BiosymMRParser::Atom_selection);
-    setState(182);
-    match(BiosymMRParser::Atom_selection);
-    setState(183);
-    match(BiosymMRParser::Atom_selection);
-    setState(184);
-    number();
     setState(185);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(186);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(187);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(188);
+    match(BiosymMRParser::Atom_selection);
+    setState(189);
+    number();
+    setState(190);
+    number();
+    setState(191);
+    number();
+    setState(192);
+    number();
+    setState(193);
     number();
    
   }
@@ -1374,13 +1396,13 @@ BiosymMRParser::Dihedral_angle_wo_w_constraintsContext* BiosymMRParser::dihedral
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(191); 
+    setState(196); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(190);
+              setState(195);
               dihedral_angle_wo_w_constraint();
               break;
             }
@@ -1388,7 +1410,7 @@ BiosymMRParser::Dihedral_angle_wo_w_constraintsContext* BiosymMRParser::dihedral
       default:
         throw NoViableAltException(this);
       }
-      setState(193); 
+      setState(198); 
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 20, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
@@ -1456,25 +1478,179 @@ BiosymMRParser::Dihedral_angle_wo_w_constraintContext* BiosymMRParser::dihedral_
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(196);
+    setState(201);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(195);
+      setState(200);
       match(BiosymMRParser::Ordinal);
     }
-    setState(198);
-    match(BiosymMRParser::Atom_selection);
-    setState(199);
-    match(BiosymMRParser::Atom_selection);
-    setState(200);
-    match(BiosymMRParser::Atom_selection);
-    setState(201);
-    match(BiosymMRParser::Atom_selection);
-    setState(202);
-    number();
     setState(203);
+    match(BiosymMRParser::Atom_selection);
+    setState(204);
+    match(BiosymMRParser::Atom_selection);
+    setState(205);
+    match(BiosymMRParser::Atom_selection);
+    setState(206);
+    match(BiosymMRParser::Atom_selection);
+    setState(207);
+    number();
+    setState(208);
+    number();
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- Rdc_restraintsContext ------------------------------------------------------------------
+
+BiosymMRParser::Rdc_restraintsContext::Rdc_restraintsContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+std::vector<BiosymMRParser::Rdc_restraintContext *> BiosymMRParser::Rdc_restraintsContext::rdc_restraint() {
+  return getRuleContexts<BiosymMRParser::Rdc_restraintContext>();
+}
+
+BiosymMRParser::Rdc_restraintContext* BiosymMRParser::Rdc_restraintsContext::rdc_restraint(size_t i) {
+  return getRuleContext<BiosymMRParser::Rdc_restraintContext>(i);
+}
+
+
+size_t BiosymMRParser::Rdc_restraintsContext::getRuleIndex() const {
+  return BiosymMRParser::RuleRdc_restraints;
+}
+
+
+std::any BiosymMRParser::Rdc_restraintsContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<BiosymMRParserVisitor*>(visitor))
+    return parserVisitor->visitRdc_restraints(this);
+  else
+    return visitor->visitChildren(this);
+}
+
+BiosymMRParser::Rdc_restraintsContext* BiosymMRParser::rdc_restraints() {
+  Rdc_restraintsContext *_localctx = _tracker.createInstance<Rdc_restraintsContext>(_ctx, getState());
+  enterRule(_localctx, 26, BiosymMRParser::RuleRdc_restraints);
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    size_t alt;
+    enterOuterAlt(_localctx, 1);
+    setState(211); 
+    _errHandler->sync(this);
+    alt = 1;
+    do {
+      switch (alt) {
+        case 1: {
+              setState(210);
+              rdc_restraint();
+              break;
+            }
+
+      default:
+        throw NoViableAltException(this);
+      }
+      setState(213); 
+      _errHandler->sync(this);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 22, _ctx);
+    } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- Rdc_restraintContext ------------------------------------------------------------------
+
+BiosymMRParser::Rdc_restraintContext::Rdc_restraintContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+std::vector<tree::TerminalNode *> BiosymMRParser::Rdc_restraintContext::Atom_selection() {
+  return getTokens(BiosymMRParser::Atom_selection);
+}
+
+tree::TerminalNode* BiosymMRParser::Rdc_restraintContext::Atom_selection(size_t i) {
+  return getToken(BiosymMRParser::Atom_selection, i);
+}
+
+std::vector<BiosymMRParser::NumberContext *> BiosymMRParser::Rdc_restraintContext::number() {
+  return getRuleContexts<BiosymMRParser::NumberContext>();
+}
+
+BiosymMRParser::NumberContext* BiosymMRParser::Rdc_restraintContext::number(size_t i) {
+  return getRuleContext<BiosymMRParser::NumberContext>(i);
+}
+
+tree::TerminalNode* BiosymMRParser::Rdc_restraintContext::Ordinal() {
+  return getToken(BiosymMRParser::Ordinal, 0);
+}
+
+
+size_t BiosymMRParser::Rdc_restraintContext::getRuleIndex() const {
+  return BiosymMRParser::RuleRdc_restraint;
+}
+
+
+std::any BiosymMRParser::Rdc_restraintContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<BiosymMRParserVisitor*>(visitor))
+    return parserVisitor->visitRdc_restraint(this);
+  else
+    return visitor->visitChildren(this);
+}
+
+BiosymMRParser::Rdc_restraintContext* BiosymMRParser::rdc_restraint() {
+  Rdc_restraintContext *_localctx = _tracker.createInstance<Rdc_restraintContext>(_ctx, getState());
+  enterRule(_localctx, 28, BiosymMRParser::RuleRdc_restraint);
+  size_t _la = 0;
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(216);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if (_la == BiosymMRParser::Ordinal) {
+      setState(215);
+      match(BiosymMRParser::Ordinal);
+    }
+    setState(218);
+    match(BiosymMRParser::Atom_selection);
+    setState(219);
+    match(BiosymMRParser::Atom_selection);
+    setState(220);
+    number();
+    setState(221);
+    number();
+    setState(222);
+    number();
+    setState(223);
     number();
    
   }
@@ -1516,7 +1692,7 @@ std::any BiosymMRParser::Chirality_constraintsContext::accept(tree::ParseTreeVis
 
 BiosymMRParser::Chirality_constraintsContext* BiosymMRParser::chirality_constraints() {
   Chirality_constraintsContext *_localctx = _tracker.createInstance<Chirality_constraintsContext>(_ctx, getState());
-  enterRule(_localctx, 26, BiosymMRParser::RuleChirality_constraints);
+  enterRule(_localctx, 30, BiosymMRParser::RuleChirality_constraints);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1528,13 +1704,13 @@ BiosymMRParser::Chirality_constraintsContext* BiosymMRParser::chirality_constrai
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(206); 
+    setState(226); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(205);
+              setState(225);
               chirality_constraint();
               break;
             }
@@ -1542,9 +1718,9 @@ BiosymMRParser::Chirality_constraintsContext* BiosymMRParser::chirality_constrai
       default:
         throw NoViableAltException(this);
       }
-      setState(208); 
+      setState(228); 
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 22, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 24, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
    
   }
@@ -1590,7 +1766,7 @@ std::any BiosymMRParser::Chirality_constraintContext::accept(tree::ParseTreeVisi
 
 BiosymMRParser::Chirality_constraintContext* BiosymMRParser::chirality_constraint() {
   Chirality_constraintContext *_localctx = _tracker.createInstance<Chirality_constraintContext>(_ctx, getState());
-  enterRule(_localctx, 28, BiosymMRParser::RuleChirality_constraint);
+  enterRule(_localctx, 32, BiosymMRParser::RuleChirality_constraint);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1602,17 +1778,17 @@ BiosymMRParser::Chirality_constraintContext* BiosymMRParser::chirality_constrain
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(211);
+    setState(231);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(210);
+      setState(230);
       match(BiosymMRParser::Ordinal);
     }
-    setState(213);
+    setState(233);
     match(BiosymMRParser::Atom_selection);
-    setState(214);
+    setState(234);
     match(BiosymMRParser::Chiral_code);
    
   }
@@ -1654,7 +1830,7 @@ std::any BiosymMRParser::Prochirality_constraintsContext::accept(tree::ParseTree
 
 BiosymMRParser::Prochirality_constraintsContext* BiosymMRParser::prochirality_constraints() {
   Prochirality_constraintsContext *_localctx = _tracker.createInstance<Prochirality_constraintsContext>(_ctx, getState());
-  enterRule(_localctx, 30, BiosymMRParser::RuleProchirality_constraints);
+  enterRule(_localctx, 34, BiosymMRParser::RuleProchirality_constraints);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1666,13 +1842,13 @@ BiosymMRParser::Prochirality_constraintsContext* BiosymMRParser::prochirality_co
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(217); 
+    setState(237); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(216);
+              setState(236);
               prochirality_constraint();
               break;
             }
@@ -1680,9 +1856,9 @@ BiosymMRParser::Prochirality_constraintsContext* BiosymMRParser::prochirality_co
       default:
         throw NoViableAltException(this);
       }
-      setState(219); 
+      setState(239); 
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 24, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 26, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
    
   }
@@ -1728,7 +1904,7 @@ std::any BiosymMRParser::Prochirality_constraintContext::accept(tree::ParseTreeV
 
 BiosymMRParser::Prochirality_constraintContext* BiosymMRParser::prochirality_constraint() {
   Prochirality_constraintContext *_localctx = _tracker.createInstance<Prochirality_constraintContext>(_ctx, getState());
-  enterRule(_localctx, 32, BiosymMRParser::RuleProchirality_constraint);
+  enterRule(_localctx, 36, BiosymMRParser::RuleProchirality_constraint);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1740,23 +1916,23 @@ BiosymMRParser::Prochirality_constraintContext* BiosymMRParser::prochirality_con
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(222);
+    setState(242);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(221);
+      setState(241);
       match(BiosymMRParser::Ordinal);
     }
-    setState(224);
+    setState(244);
     match(BiosymMRParser::Atom_selection);
-    setState(225);
+    setState(245);
     match(BiosymMRParser::Atom_selection);
-    setState(226);
+    setState(246);
     match(BiosymMRParser::Atom_selection);
-    setState(227);
+    setState(247);
     match(BiosymMRParser::Atom_selection);
-    setState(228);
+    setState(248);
     match(BiosymMRParser::Atom_selection);
    
   }
@@ -1838,7 +2014,7 @@ std::any BiosymMRParser::Mixing_timeContext::accept(tree::ParseTreeVisitor *visi
 
 BiosymMRParser::Mixing_timeContext* BiosymMRParser::mixing_time() {
   Mixing_timeContext *_localctx = _tracker.createInstance<Mixing_timeContext>(_ctx, getState());
-  enterRule(_localctx, 34, BiosymMRParser::RuleMixing_time);
+  enterRule(_localctx, 38, BiosymMRParser::RuleMixing_time);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1850,14 +2026,14 @@ BiosymMRParser::Mixing_timeContext* BiosymMRParser::mixing_time() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(230);
+    setState(250);
     match(BiosymMRParser::Mixing_times);
-    setState(237);
+    setState(257);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 1879048192) != 0)) {
-      setState(231);
+      setState(251);
       _la = _input->LA(1);
       if (!((((_la & ~ 0x3fULL) == 0) &&
         ((1ULL << _la) & 1879048192) != 0))) {
@@ -1867,14 +2043,14 @@ BiosymMRParser::Mixing_timeContext* BiosymMRParser::mixing_time() {
         _errHandler->reportMatch(this);
         consume();
       }
-      setState(233);
+      setState(253);
       _errHandler->sync(this);
 
       _la = _input->LA(1);
       if (_la == BiosymMRParser::Comma_MT
 
       || _la == BiosymMRParser::Period_MT) {
-        setState(232);
+        setState(252);
         _la = _input->LA(1);
         if (!(_la == BiosymMRParser::Comma_MT
 
@@ -1886,11 +2062,11 @@ BiosymMRParser::Mixing_timeContext* BiosymMRParser::mixing_time() {
           consume();
         }
       }
-      setState(239);
+      setState(259);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(240);
+    setState(260);
     match(BiosymMRParser::RETURN_MT);
    
   }
@@ -1936,7 +2112,7 @@ std::any BiosymMRParser::NumberContext::accept(tree::ParseTreeVisitor *visitor) 
 
 BiosymMRParser::NumberContext* BiosymMRParser::number() {
   NumberContext *_localctx = _tracker.createInstance<NumberContext>(_ctx, getState());
-  enterRule(_localctx, 36, BiosymMRParser::RuleNumber);
+  enterRule(_localctx, 40, BiosymMRParser::RuleNumber);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1948,7 +2124,7 @@ BiosymMRParser::NumberContext* BiosymMRParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(242);
+    setState(262);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 14) != 0))) {
@@ -1994,7 +2170,7 @@ std::any BiosymMRParser::Ins_distance_restraintsContext::accept(tree::ParseTreeV
 
 BiosymMRParser::Ins_distance_restraintsContext* BiosymMRParser::ins_distance_restraints() {
   Ins_distance_restraintsContext *_localctx = _tracker.createInstance<Ins_distance_restraintsContext>(_ctx, getState());
-  enterRule(_localctx, 38, BiosymMRParser::RuleIns_distance_restraints);
+  enterRule(_localctx, 42, BiosymMRParser::RuleIns_distance_restraints);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2005,7 +2181,7 @@ BiosymMRParser::Ins_distance_restraintsContext* BiosymMRParser::ins_distance_res
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(244);
+    setState(264);
     ins_distance_restraint();
    
   }
@@ -2051,7 +2227,7 @@ std::any BiosymMRParser::Ins_distance_restraintContext::accept(tree::ParseTreeVi
 
 BiosymMRParser::Ins_distance_restraintContext* BiosymMRParser::ins_distance_restraint() {
   Ins_distance_restraintContext *_localctx = _tracker.createInstance<Ins_distance_restraintContext>(_ctx, getState());
-  enterRule(_localctx, 40, BiosymMRParser::RuleIns_distance_restraint);
+  enterRule(_localctx, 44, BiosymMRParser::RuleIns_distance_restraint);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2062,11 +2238,11 @@ BiosymMRParser::Ins_distance_restraintContext* BiosymMRParser::ins_distance_rest
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(246);
+    setState(266);
     decl_create();
-    setState(247);
+    setState(267);
     decl_function();
-    setState(248);
+    setState(268);
     decl_target();
    
   }
@@ -2124,7 +2300,7 @@ std::any BiosymMRParser::Decl_createContext::accept(tree::ParseTreeVisitor *visi
 
 BiosymMRParser::Decl_createContext* BiosymMRParser::decl_create() {
   Decl_createContext *_localctx = _tracker.createInstance<Decl_createContext>(_ctx, getState());
-  enterRule(_localctx, 42, BiosymMRParser::RuleDecl_create);
+  enterRule(_localctx, 46, BiosymMRParser::RuleDecl_create);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2135,19 +2311,19 @@ BiosymMRParser::Decl_createContext* BiosymMRParser::decl_create() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(250);
+    setState(270);
     match(BiosymMRParser::Restraint);
-    setState(251);
+    setState(271);
     match(BiosymMRParser::Create);
-    setState(252);
+    setState(272);
     match(BiosymMRParser::Double_quote_string);
-    setState(253);
+    setState(273);
     match(BiosymMRParser::Distance);
-    setState(254);
+    setState(274);
     match(BiosymMRParser::Double_quote_string);
-    setState(255);
+    setState(275);
     match(BiosymMRParser::Double_quote_string);
-    setState(256);
+    setState(276);
     match(BiosymMRParser::RETURN_II);
    
   }
@@ -2209,7 +2385,7 @@ std::any BiosymMRParser::Decl_functionContext::accept(tree::ParseTreeVisitor *vi
 
 BiosymMRParser::Decl_functionContext* BiosymMRParser::decl_function() {
   Decl_functionContext *_localctx = _tracker.createInstance<Decl_functionContext>(_ctx, getState());
-  enterRule(_localctx, 44, BiosymMRParser::RuleDecl_function);
+  enterRule(_localctx, 48, BiosymMRParser::RuleDecl_function);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2221,13 +2397,13 @@ BiosymMRParser::Decl_functionContext* BiosymMRParser::decl_function() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(258);
+    setState(278);
     match(BiosymMRParser::Restraint);
-    setState(259);
+    setState(279);
     match(BiosymMRParser::Function);
-    setState(260);
+    setState(280);
     match(BiosymMRParser::Double_quote_string);
-    setState(261);
+    setState(281);
     _la = _input->LA(1);
     if (!(_la == BiosymMRParser::Quadratic
 
@@ -2238,19 +2414,19 @@ BiosymMRParser::Decl_functionContext* BiosymMRParser::decl_function() {
       _errHandler->reportMatch(this);
       consume();
     }
-    setState(262);
+    setState(282);
     match(BiosymMRParser::Double_quote_string);
-    setState(263);
+    setState(283);
     match(BiosymMRParser::Double_quote_string);
-    setState(265);
+    setState(285);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Double_quote_string) {
-      setState(264);
+      setState(284);
       match(BiosymMRParser::Double_quote_string);
     }
-    setState(267);
+    setState(287);
     match(BiosymMRParser::RETURN_II);
    
   }
@@ -2308,7 +2484,7 @@ std::any BiosymMRParser::Decl_targetContext::accept(tree::ParseTreeVisitor *visi
 
 BiosymMRParser::Decl_targetContext* BiosymMRParser::decl_target() {
   Decl_targetContext *_localctx = _tracker.createInstance<Decl_targetContext>(_ctx, getState());
-  enterRule(_localctx, 46, BiosymMRParser::RuleDecl_target);
+  enterRule(_localctx, 50, BiosymMRParser::RuleDecl_target);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2320,13 +2496,13 @@ BiosymMRParser::Decl_targetContext* BiosymMRParser::decl_target() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(269);
+    setState(289);
     match(BiosymMRParser::Restraint);
-    setState(270);
+    setState(290);
     match(BiosymMRParser::Target);
-    setState(271);
+    setState(291);
     match(BiosymMRParser::Double_quote_string);
-    setState(272);
+    setState(292);
     _la = _input->LA(1);
     if (!(_la == BiosymMRParser::Double_quote_string
 
@@ -2337,9 +2513,9 @@ BiosymMRParser::Decl_targetContext* BiosymMRParser::decl_target() {
       _errHandler->reportMatch(this);
       consume();
     }
-    setState(273);
+    setState(293);
     match(BiosymMRParser::Double_quote_string);
-    setState(274);
+    setState(294);
     match(BiosymMRParser::RETURN_II);
    
   }

@@ -102,14 +102,8 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks2D
 
-            try:
-
-                P1 = self.positionSelection[0]
-                P2 = self.positionSelection[1]
-
-            except IndexError:
-                self.peaks2D -= 1
-                return
+            P1 = self.positionSelection[0]
+            P2 = self.positionSelection[1]
 
             chain_id1 = str(ctx.Simple_name(0))
             comp_id1 = str(ctx.Simple_name(1))
@@ -188,6 +182,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2}')
 
+        except IndexError:
+            self.peaks2D -= 1
+
         finally:
             self.positionSelection.clear()
             self.numberSelection.clear()
@@ -225,15 +222,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks3D
 
-            try:
-
-                P1 = self.positionSelection[0]
-                P2 = self.positionSelection[1]
-                P3 = self.positionSelection[2]
-
-            except IndexError:
-                self.peaks3D -= 1
-                return
+            P1 = self.positionSelection[0]
+            P2 = self.positionSelection[1]
+            P3 = self.positionSelection[2]
 
             chain_id1 = str(ctx.Simple_name(0))
             comp_id1 = str(ctx.Simple_name(1))
@@ -331,6 +322,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3}')
 
+        except IndexError:
+            self.peaks3D -= 1
+
         finally:
             self.positionSelection.clear()
             self.numberSelection.clear()
@@ -368,16 +362,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks4D
 
-            try:
-
-                P1 = self.positionSelection[0]
-                P2 = self.positionSelection[1]
-                P3 = self.positionSelection[2]
-                P4 = self.positionSelection[3]
-
-            except IndexError:
-                self.peaks4D -= 1
-                return
+            P1 = self.positionSelection[0]
+            P2 = self.positionSelection[1]
+            P3 = self.positionSelection[2]
+            P4 = self.positionSelection[3]
 
             chain_id1 = str(ctx.Simple_name(0))
             comp_id1 = str(ctx.Simple_name(1))
@@ -494,6 +482,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3} {L4}')
 
+        except IndexError:
+            self.peaks4D -= 1
+
         finally:
             self.positionSelection.clear()
             self.numberSelection.clear()
@@ -531,14 +522,8 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks2D
 
-            try:
-
-                P1 = self.positionSelection[0]
-                P2 = self.positionSelection[1]
-
-            except IndexError:
-                self.peaks2D -= 1
-                return
+            P1 = self.positionSelection[0]
+            P2 = self.positionSelection[1]
 
             comp_id1 = str(ctx.Simple_name(0))
             comp_id2 = str(ctx.Simple_name(2))
@@ -615,6 +600,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2}')
 
+        except IndexError:
+            self.peaks2D -= 1
+
         finally:
             self.positionSelection.clear()
             self.numberSelection.clear()
@@ -652,15 +640,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks3D
 
-            try:
-
-                P1 = self.positionSelection[0]
-                P2 = self.positionSelection[1]
-                P3 = self.positionSelection[2]
-
-            except IndexError:
-                self.peaks3D -= 1
-                return
+            P1 = self.positionSelection[0]
+            P2 = self.positionSelection[1]
+            P3 = self.positionSelection[2]
 
             comp_id1 = str(ctx.Simple_name(0))
             comp_id2 = str(ctx.Simple_name(2))
@@ -755,6 +737,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3}')
 
+        except IndexError:
+            self.peaks3D -= 1
+
         finally:
             self.positionSelection.clear()
             self.numberSelection.clear()
@@ -792,16 +777,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
             index = self.peaks4D
 
-            try:
-
-                P1 = self.positionSelection[0]
-                P2 = self.positionSelection[1]
-                P3 = self.positionSelection[2]
-                P4 = self.positionSelection[3]
-
-            except IndexError:
-                self.peaks4D -= 1
-                return
+            P1 = self.positionSelection[0]
+            P2 = self.positionSelection[1]
+            P3 = self.positionSelection[2]
+            P4 = self.positionSelection[3]
 
             comp_id1 = str(ctx.Simple_name(0))
             comp_id2 = str(ctx.Simple_name(2))
@@ -913,6 +892,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     details if details is not None or None in (L1, L2, L3, L4)
                                     or (has_assignments and not has_multiple_assignments)
                                     else f'{L1} {L2} {L3} {L4}')
+
+        except IndexError:
+            self.peaks4D -= 1
 
         finally:
             self.positionSelection.clear()
@@ -1081,16 +1063,10 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
-
-                x_ppm = self.positionSelection[0 if self.__position_order else 1]
-                y_ppm = self.positionSelection[1 if self.__position_order else 0]
-
-            except (IndexError, ValueError):
-                self.peaks2D -= 1
-                return
+            x_ppm = self.positionSelection[0 if self.__position_order else 1]
+            y_ppm = self.positionSelection[1 if self.__position_order else 0]
 
             offset = 0
 
@@ -1186,6 +1162,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     comment if comment is not None or has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks2D -= 1
+
         finally:
             self.positionSelection.clear()
             self.numberSelection.clear()
@@ -1206,17 +1185,11 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
-
-                x_ppm = self.positionSelection[0 if self.__position_order else 2]
-                y_ppm = self.positionSelection[1]
-                z_ppm = self.positionSelection[2 if self.__position_order else 0]
-
-            except (IndexError, ValueError):
-                self.peaks3D -= 1
-                return
+            x_ppm = self.positionSelection[0 if self.__position_order else 2]
+            y_ppm = self.positionSelection[1]
+            z_ppm = self.positionSelection[2 if self.__position_order else 0]
 
             offset = 0
 
@@ -1315,6 +1288,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     comment if comment is not None or has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks3D -= 1
+
         finally:
             self.positionSelection.clear()
             self.numberSelection.clear()
@@ -1335,18 +1311,12 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
 
         try:
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
-
-                x_ppm = self.positionSelection[0 if self.__position_order else 3]
-                y_ppm = self.positionSelection[1 if self.__position_order else 2]
-                z_ppm = self.positionSelection[2 if self.__position_order else 1]
-                a_ppm = self.positionSelection[3 if self.__position_order else 0]
-
-            except (IndexError, ValueError):
-                self.peaks4D -= 1
-                return
+            x_ppm = self.positionSelection[0 if self.__position_order else 3]
+            y_ppm = self.positionSelection[1 if self.__position_order else 2]
+            z_ppm = self.positionSelection[2 if self.__position_order else 1]
+            a_ppm = self.positionSelection[3 if self.__position_order else 0]
 
             offset = 0
 
@@ -1448,6 +1418,9 @@ class BarePKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, asis3, asis4,
                                     f'{ass} -> ',
                                     comment if comment is not None or has_assignments and not has_multiple_assignments else ass)
+
+        except (IndexError, ValueError):
+            self.peaks4D -= 1
 
         finally:
             self.positionSelection.clear()

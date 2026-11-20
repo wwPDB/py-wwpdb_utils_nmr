@@ -158,19 +158,13 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             index = self.chemShifts
 
-            try:
+            chain_id = str(ctx.Simple_name(0))
+            comp_id = str(ctx.Simple_name(1))
+            atom_id = str(ctx.Simple_name(2))
+            seq_id = int(str(ctx.Integer()))
 
-                chain_id = str(ctx.Simple_name(0))
-                comp_id = str(ctx.Simple_name(1))
-                atom_id = str(ctx.Simple_name(2))
-                seq_id = int(str(ctx.Integer()))
-
-                value = self.anySelection[0]
-                val_err = self.anySelection[1]
-
-            except (IndexError, ValueError):
-                self.chemShifts -= 1
-                return
+            value = self.anySelection[0]
+            val_err = self.anySelection[1]
 
             if value is None:
                 self.chemShifts -= 1
@@ -210,6 +204,9 @@ class OliviaCSParserListener(ParseTreeListener, BaseCSParserListener):
 
             self.addCsRow(index, dstFunc, has_assignments, has_multiple_assignments, auth_seq_id_map,
                           f'{L} -> ')
+
+        except (IndexError, ValueError):
+            self.chemShifts -= 1
 
         finally:
             self.anySelection.clear()

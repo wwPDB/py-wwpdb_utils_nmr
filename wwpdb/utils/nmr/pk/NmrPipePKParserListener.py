@@ -222,34 +222,28 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            try:
-
-                index = int(str(ctx.Integer(0)))
-                # x_axis = self.numberSelection[0]
-                # y_axis = self.numberSelection[1]
-                # dx = self.numberSelection[2]
-                # dy = self.numberSelection[3]
-                x_ppm = self.numberSelection[4]
-                y_ppm = self.numberSelection[5]
-                x_hz = self.numberSelection[6]
-                y_hz = self.numberSelection[7]
-                # xw = self.numberSelection[8]
-                # yw = self.numberSelection[9]
-                xw_hz = self.numberSelection[10]
-                yw_hz = self.numberSelection[11]
-                # x1 = int(str(ctx.Integer(1)))
-                # x3 = int(str(ctx.Integer(2)))
-                # y1 = int(str(ctx.Integer(3)))
-                # y3 = int(str(ctx.Integer(4)))
-                height = self.originalNumberSelection[12]
-                dheight = self.originalNumberSelection[13]
-                vol = self.originalNumberSelection[14]
-                # pchi2 = self.originalNumberSelection[15]
-                # type = int(str(ctx.Integer(5)))
-
-            except (IndexError, ValueError):
-                self.peaks2D -= 1
-                return
+            index = int(str(ctx.Integer(0)))
+            # x_axis = self.numberSelection[0]
+            # y_axis = self.numberSelection[1]
+            # dx = self.numberSelection[2]
+            # dy = self.numberSelection[3]
+            x_ppm = self.numberSelection[4]
+            y_ppm = self.numberSelection[5]
+            x_hz = self.numberSelection[6]
+            y_hz = self.numberSelection[7]
+            # xw = self.numberSelection[8]
+            # yw = self.numberSelection[9]
+            xw_hz = self.numberSelection[10]
+            yw_hz = self.numberSelection[11]
+            # x1 = int(str(ctx.Integer(1)))
+            # x3 = int(str(ctx.Integer(2)))
+            # y1 = int(str(ctx.Integer(3)))
+            # y3 = int(str(ctx.Integer(4)))
+            height = self.originalNumberSelection[12]
+            dheight = self.originalNumberSelection[13]
+            vol = self.originalNumberSelection[14]
+            # pchi2 = self.originalNumberSelection[15]
+            # type = int(str(ctx.Integer(5)))
 
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
@@ -334,6 +328,9 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks2D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -371,42 +368,36 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            try:
-
-                index = int(str(ctx.Integer(0)))
-                # x_axis = self.numberSelection[0]
-                # y_axis = self.numberSelection[1]
-                # z_axis = self.numberSelection[2]
-                # dx = self.numberSelection[3]
-                # dy = self.numberSelection[4]
-                # dz = self.numberSelection[5]
-                x_ppm = self.numberSelection[6]
-                y_ppm = self.numberSelection[7]
-                z_ppm = self.numberSelection[8]
-                x_hz = self.numberSelection[9]
-                y_hz = self.numberSelection[10]
-                z_hz = self.numberSelection[11]
-                # xw = self.numberSelection[12]
-                # yw = self.numberSelection[13]
-                # zw = self.numberSelection[14]
-                xw_hz = self.numberSelection[15]
-                yw_hz = self.numberSelection[16]
-                zw_hz = self.numberSelection[17]
-                # x1 = int(str(ctx.Integer(1)))
-                # x3 = int(str(ctx.Integer(2)))
-                # y1 = int(str(ctx.Integer(3)))
-                # y3 = int(str(ctx.Integer(4)))
-                # z1 = int(str(ctx.Integer(5)))
-                # z3 = int(str(ctx.Integer(6)))
-                height = self.originalNumberSelection[18]
-                dheight = self.originalNumberSelection[19]
-                vol = self.originalNumberSelection[20]
-                # pchi2 = self.originalNumberSelection[21]
-                # type = int(str(ctx.Integer(7)))
-
-            except (IndexError, ValueError):
-                self.peaks3D -= 1
-                return
+            index = int(str(ctx.Integer(0)))
+            # x_axis = self.numberSelection[0]
+            # y_axis = self.numberSelection[1]
+            # z_axis = self.numberSelection[2]
+            # dx = self.numberSelection[3]
+            # dy = self.numberSelection[4]
+            # dz = self.numberSelection[5]
+            x_ppm = self.numberSelection[6]
+            y_ppm = self.numberSelection[7]
+            z_ppm = self.numberSelection[8]
+            x_hz = self.numberSelection[9]
+            y_hz = self.numberSelection[10]
+            z_hz = self.numberSelection[11]
+            # xw = self.numberSelection[12]
+            # yw = self.numberSelection[13]
+            # zw = self.numberSelection[14]
+            xw_hz = self.numberSelection[15]
+            yw_hz = self.numberSelection[16]
+            zw_hz = self.numberSelection[17]
+            # x1 = int(str(ctx.Integer(1)))
+            # x3 = int(str(ctx.Integer(2)))
+            # y1 = int(str(ctx.Integer(3)))
+            # y3 = int(str(ctx.Integer(4)))
+            # z1 = int(str(ctx.Integer(5)))
+            # z3 = int(str(ctx.Integer(6)))
+            height = self.originalNumberSelection[18]
+            dheight = self.originalNumberSelection[19]
+            vol = self.originalNumberSelection[20]
+            # pchi2 = self.originalNumberSelection[21]
+            # type = int(str(ctx.Integer(7)))
 
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
@@ -497,6 +488,9 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks3D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -534,50 +528,44 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            try:
-
-                index = int(str(ctx.Integer(0)))
-                # x_axis = self.numberSelection[0]
-                # y_axis = self.numberSelection[1]
-                # z_axis = self.numberSelection[2]
-                # a_axis = self.numberSelection[3]
-                # dx = self.numberSelection[4]
-                # dy = self.numberSelection[5]
-                # dz = self.numberSelection[6]
-                # da = self.numberSelection[7]
-                x_ppm = self.numberSelection[8]
-                y_ppm = self.numberSelection[9]
-                z_ppm = self.numberSelection[10]
-                a_ppm = self.numberSelection[11]
-                x_hz = self.numberSelection[12]
-                y_hz = self.numberSelection[13]
-                z_hz = self.numberSelection[14]
-                a_hz = self.numberSelection[15]
-                # xw = self.numberSelection[16]
-                # yw = self.numberSelection[17]
-                # zw = self.numberSelection[18]
-                # aw = self.numberSelection[19]
-                xw_hz = self.numberSelection[20]
-                yw_hz = self.numberSelection[21]
-                zw_hz = self.numberSelection[22]
-                aw_hz = self.numberSelection[23]
-                # x1 = int(str(ctx.Integer(1)))
-                # x3 = int(str(ctx.Integer(2)))
-                # y1 = int(str(ctx.Integer(3)))
-                # y3 = int(str(ctx.Integer(4)))
-                # z1 = int(str(ctx.Integer(5)))
-                # z3 = int(str(ctx.Integer(6)))
-                # a1 = int(str(ctx.Integer(7)))
-                # a3 = int(str(ctx.Integer(8)))
-                height = self.originalNumberSelection[24]
-                dheight = self.originalNumberSelection[25]
-                vol = self.originalNumberSelection[26]
-                # pchi2 = self.originalNumberSelection[27]
-                # type = int(str(ctx.Integer(9)))
-
-            except (IndexError, ValueError):
-                self.peaks4D -= 1
-                return
+            index = int(str(ctx.Integer(0)))
+            # x_axis = self.numberSelection[0]
+            # y_axis = self.numberSelection[1]
+            # z_axis = self.numberSelection[2]
+            # a_axis = self.numberSelection[3]
+            # dx = self.numberSelection[4]
+            # dy = self.numberSelection[5]
+            # dz = self.numberSelection[6]
+            # da = self.numberSelection[7]
+            x_ppm = self.numberSelection[8]
+            y_ppm = self.numberSelection[9]
+            z_ppm = self.numberSelection[10]
+            a_ppm = self.numberSelection[11]
+            x_hz = self.numberSelection[12]
+            y_hz = self.numberSelection[13]
+            z_hz = self.numberSelection[14]
+            a_hz = self.numberSelection[15]
+            # xw = self.numberSelection[16]
+            # yw = self.numberSelection[17]
+            # zw = self.numberSelection[18]
+            # aw = self.numberSelection[19]
+            xw_hz = self.numberSelection[20]
+            yw_hz = self.numberSelection[21]
+            zw_hz = self.numberSelection[22]
+            aw_hz = self.numberSelection[23]
+            # x1 = int(str(ctx.Integer(1)))
+            # x3 = int(str(ctx.Integer(2)))
+            # y1 = int(str(ctx.Integer(3)))
+            # y3 = int(str(ctx.Integer(4)))
+            # z1 = int(str(ctx.Integer(5)))
+            # z3 = int(str(ctx.Integer(6)))
+            # a1 = int(str(ctx.Integer(7)))
+            # a3 = int(str(ctx.Integer(8)))
+            height = self.originalNumberSelection[24]
+            dheight = self.originalNumberSelection[25]
+            vol = self.originalNumberSelection[26]
+            # pchi2 = self.originalNumberSelection[27]
+            # type = int(str(ctx.Integer(9)))
 
             if ctx.Any_name():
                 ass = str(ctx.Any_name())
@@ -674,6 +662,9 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks4D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -764,16 +755,10 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            try:
-
-                index = int(str(ctx.Integer()))
-                x_ppm = self.numberSelection[0]
-                y_ppm = self.numberSelection[1]
-                height = self.originalNumberSelection[2]
-
-            except (IndexError, ValueError):
-                self.peaks2D -= 1
-                return
+            index = int(str(ctx.Integer()))
+            x_ppm = self.numberSelection[0]
+            y_ppm = self.numberSelection[1]
+            height = self.originalNumberSelection[2]
 
             if len(self.originalNumberSelection) > 3:
                 ass1 = self.originalNumberSelection[3]
@@ -860,6 +845,9 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks2D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -896,17 +884,11 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            try:
-
-                index = int(str(ctx.Integer(0)))
-                x_ppm = self.numberSelection[0]
-                y_ppm = self.numberSelection[1]
-                z_ppm = self.numberSelection[2]
-                height = self.originalNumberSelection[3]
-
-            except (IndexError, ValueError):
-                self.peaks3D -= 1
-                return
+            index = int(str(ctx.Integer(0)))
+            x_ppm = self.numberSelection[0]
+            y_ppm = self.numberSelection[1]
+            z_ppm = self.numberSelection[2]
+            height = self.originalNumberSelection[3]
 
             if len(self.originalNumberSelection) > 4:
                 ass1 = self.originalNumberSelection[4]
@@ -1000,6 +982,9 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks3D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -1036,18 +1021,12 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            try:
-
-                index = int(str(ctx.Integer(0)))
-                x_ppm = self.numberSelection[0]
-                y_ppm = self.numberSelection[1]
-                z_ppm = self.numberSelection[2]
-                a_ppm = self.numberSelection[3]
-                height = self.originalNumberSelection[4]
-
-            except (IndexError, ValueError):
-                self.peaks4D -= 1
-                return
+            index = int(str(ctx.Integer(0)))
+            x_ppm = self.numberSelection[0]
+            y_ppm = self.numberSelection[1]
+            z_ppm = self.numberSelection[2]
+            a_ppm = self.numberSelection[3]
+            height = self.originalNumberSelection[4]
 
             if len(self.originalNumberSelection) > 5:
                 ass1 = self.originalNumberSelection[5]
@@ -1136,6 +1115,9 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks4D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -1177,50 +1159,49 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if ctx.Assignments_PR():
                 ass = str(ctx.Assignments_PR())[1:-1]
 
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (x_ppm, y_ppm):
+                self.peaks2D -= 1
+                return
+
+            dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
+                                          None, None, None, None, height, None, None, None)
+
+            if dstFunc is None:
+                self.peaks2D -= 1
+                return
+
+            if self.num_of_dim != 2:
+                self.num_of_dim = 2
+                self.initSpectralDim()
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+
+            asis1 = asis2 = None
+            has_assignments = has_multiple_assignments = False
+
+            if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
+                assignments = [None] * self.num_of_dim
+                _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+                if _assignments is not None and len(_assignments) == self.num_of_dim:
+                    for idx in range(self.num_of_dim):
+                        assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+                has_assignments, has_multiple_assignments, asis1, asis2 =\
+                    self.checkAssignments2D(index, assignments, dstFunc)
+
+            self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2,
+                                    f'{ass} -> ',
+                                    None if has_assignments and not has_multiple_assignments else ass)
+
         except (IndexError, ValueError):
             self.peaks2D -= 1
-            return
-
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
-
-        if None in (x_ppm, y_ppm):
-            self.peaks2D -= 1
-            return
-
-        dstFunc = self.validatePeak2D(index, x_ppm, y_ppm, None, None, None, None,
-                                      None, None, None, None, height, None, None, None)
-
-        if dstFunc is None:
-            self.peaks2D -= 1
-            return
-
-        if self.num_of_dim != 2:
-            self.num_of_dim = 2
-            self.initSpectralDim()
-
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-
-        asis1 = asis2 = None
-        has_assignments = has_multiple_assignments = False
-
-        if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
-            assignments = [None] * self.num_of_dim
-            _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
-            if _assignments is not None and len(_assignments) == self.num_of_dim:
-                for idx in range(self.num_of_dim):
-                    assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
-
-            has_assignments, has_multiple_assignments, asis1, asis2 =\
-                self.checkAssignments2D(index, assignments, dstFunc)
-
-        self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2,
-                                f'{ass} -> ',
-                                None if has_assignments and not has_multiple_assignments else ass)
 
     def enterPipp_row_peak_list_3d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_3dContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_3d.
@@ -1260,57 +1241,56 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if ctx.Assignments_PR():
                 ass = str(ctx.Assignments_PR())[1:-1]
 
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (x_ppm, y_ppm, z_ppm):
+                self.peaks3D -= 1
+                return
+
+            dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
+                                          None, None, None, None, None, None, height, None, None, None)
+
+            if dstFunc is None:
+                self.peaks3D -= 1
+                return
+
+            if self.num_of_dim != 3:
+                self.num_of_dim = 3
+                self.initSpectralDim()
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+            cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+
+            asis1 = asis2 = asis3 = None
+            has_assignments = has_multiple_assignments = False
+
+            if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
+
+                if self.extractPeakAssignment(self.num_of_dim, ass, index) is not None:
+                    onebondOrder = 0
+                else:
+                    onebondOrder = 1
+
+                assignments = [None] * self.num_of_dim
+                _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+                if _assignments is not None and len(_assignments) == self.num_of_dim:
+                    for idx in range(self.num_of_dim):
+                        assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
+                    self.checkAssignments3D(index, assignments, dstFunc, onebondOrder)
+
+            self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3,
+                                    f'{ass} -> ',
+                                    None if has_assignments and not has_multiple_assignments else ass)
+
         except (IndexError, ValueError):
             self.peaks3D -= 1
-            return
-
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
-
-        if None in (x_ppm, y_ppm, z_ppm):
-            self.peaks3D -= 1
-            return
-
-        dstFunc = self.validatePeak3D(index, x_ppm, y_ppm, z_ppm, None, None, None, None, None, None,
-                                      None, None, None, None, None, None, height, None, None, None)
-
-        if dstFunc is None:
-            self.peaks3D -= 1
-            return
-
-        if self.num_of_dim != 3:
-            self.num_of_dim = 3
-            self.initSpectralDim()
-
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-        cur_spectral_dim[3]['freq_hint'].append(z_ppm)
-
-        asis1 = asis2 = asis3 = None
-        has_assignments = has_multiple_assignments = False
-
-        if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
-
-            if self.extractPeakAssignment(self.num_of_dim, ass, index) is not None:
-                onebondOrder = 0
-            else:
-                onebondOrder = 1
-
-            assignments = [None] * self.num_of_dim
-            _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
-            if _assignments is not None and len(_assignments) == self.num_of_dim:
-                for idx in range(self.num_of_dim):
-                    assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
-
-            has_assignments, has_multiple_assignments, asis1, asis2, asis3 =\
-                self.checkAssignments3D(index, assignments, dstFunc, onebondOrder)
-
-        self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2, asis3,
-                                f'{ass} -> ',
-                                None if has_assignments and not has_multiple_assignments else ass)
 
     def enterPipp_row_peak_list_4d(self, ctx: NmrPipePKParser.Pipp_row_peak_list_4dContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by NmrPipePKParser#pipp_row_peak_list_4d.
@@ -1351,52 +1331,51 @@ class NmrPipePKParserListener(ParseTreeListener, BasePKParserListener):
             if ctx.Assignments_PR():
                 ass = str(ctx.Assignments_PR())[1:-1]
 
+            if not self.hasPolySeq and not self.hasNonPolySeq:
+                return
+
+            if None in (x_ppm, y_ppm, z_ppm, a_ppm):
+                self.peaks4D -= 1
+                return
+
+            dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
+                                          None, None, None, None, None, None, None, None, height, None, None, None)
+
+            if dstFunc is None:
+                self.peaks4D -= 1
+                return
+
+            if self.num_of_dim != 4:
+                self.num_of_dim = 4
+                self.initSpectralDim()
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(x_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(y_ppm)
+            cur_spectral_dim[3]['freq_hint'].append(z_ppm)
+            cur_spectral_dim[4]['freq_hint'].append(a_ppm)
+
+            asis1 = asis2 = asis3 = asis4 = None
+            has_assignments = has_multiple_assignments = False
+
+            if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
+                assignments = [None] * self.num_of_dim
+                _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
+                if _assignments is not None and len(_assignments) == self.num_of_dim:
+                    for idx in range(self.num_of_dim):
+                        assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
+
+                has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
+                    self.checkAssignments4D(index, assignments, dstFunc)
+
+            self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
+                                    asis1, asis2, asis3, asis4,
+                                    f'{ass} -> ',
+                                    None if has_assignments and not has_multiple_assignments else ass)
+
         except (IndexError, ValueError):
             self.peaks4D -= 1
-            return
-
-        if not self.hasPolySeq and not self.hasNonPolySeq:
-            return
-
-        if None in (x_ppm, y_ppm, z_ppm, a_ppm):
-            self.peaks4D -= 1
-            return
-
-        dstFunc = self.validatePeak4D(index, x_ppm, y_ppm, z_ppm, a_ppm, None, None, None, None, None, None, None, None,
-                                      None, None, None, None, None, None, None, None, height, None, None, None)
-
-        if dstFunc is None:
-            self.peaks4D -= 1
-            return
-
-        if self.num_of_dim != 4:
-            self.num_of_dim = 4
-            self.initSpectralDim()
-
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        cur_spectral_dim[1]['freq_hint'].append(x_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(y_ppm)
-        cur_spectral_dim[3]['freq_hint'].append(z_ppm)
-        cur_spectral_dim[4]['freq_hint'].append(a_ppm)
-
-        asis1 = asis2 = asis3 = asis4 = None
-        has_assignments = has_multiple_assignments = False
-
-        if ass is not None and self.reasons is not None and 'onebond_resolved' in self.reasons:
-            assignments = [None] * self.num_of_dim
-            _assignments = self.extractPeakAssignment(self.num_of_dim, ass, index)
-            if _assignments is not None and len(_assignments) == self.num_of_dim:
-                for idx in range(self.num_of_dim):
-                    assignments[idx] = [_assignments[idx]]  # pylint: disable=unsubscriptable-object
-
-            has_assignments, has_multiple_assignments, asis1, asis2, asis3, asis4 =\
-                self.checkAssignments4D(index, assignments, dstFunc)
-
-        self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
-                                asis1, asis2, asis3, asis4,
-                                f'{ass} -> ',
-                                None if has_assignments and not has_multiple_assignments else ass)
 
     def enterNumber(self, ctx: NmrPipePKParser.NumberContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by NmrPipePKParser#number.

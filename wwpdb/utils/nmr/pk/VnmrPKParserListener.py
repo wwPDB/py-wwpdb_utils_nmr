@@ -195,44 +195,38 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
+            offset = 0
 
-                offset = 0
+            ass = comment = None
+            if self.__has_assign and ctx.Double_quote_string(0):
+                ass = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if ass in EMPTY_VALUE:
+                    ass = None
+                offset += 1
 
-                ass = comment = None
-                if self.__has_assign and ctx.Double_quote_string(0):
-                    ass = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if ass in EMPTY_VALUE:
-                        ass = None
-                    offset += 1
+            if self.__has_comment and ctx.Double_quote_string(offset):
+                comment = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if comment in EMPTY_VALUE:
+                    comment = None
 
-                if self.__has_comment and ctx.Double_quote_string(offset):
-                    comment = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if comment in EMPTY_VALUE:
-                        comment = None
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
 
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
+            height = self.originalNumberSelection[0]
 
-                height = self.originalNumberSelection[0]
+            offset = 1
 
-                offset = 1
+            volume = None
+            if self.__has_volume:
+                volume = self.originalNumberSelection[offset]
+                offset += 1
 
-                volume = None
-                if self.__has_volume:
-                    volume = self.originalNumberSelection[offset]
-                    offset += 1
-
-                x_lw_hz = y_lw_hz = None
-                if self.__has_line_width:
-                    x_lw_hz = self.numberSelection[offset]
-                    y_lw_hz = self.numberSelection[offset + 1]
-
-            except (IndexError, ValueError):
-                self.peaks2D -= 1
-                return
+            x_lw_hz = y_lw_hz = None
+            if self.__has_line_width:
+                x_lw_hz = self.numberSelection[offset]
+                y_lw_hz = self.numberSelection[offset + 1]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -294,6 +288,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                     comment if comment is not None or (has_assignments and not has_multiple_assignments)
                                     else ass)
 
+        except (IndexError, ValueError):
+            self.peaks2D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -317,46 +314,40 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
+            offset = 0
 
-                offset = 0
+            ass = comment = None
+            if self.__has_assign and ctx.Double_quote_string(0):
+                ass = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if ass in EMPTY_VALUE:
+                    ass = None
+                offset += 1
 
-                ass = comment = None
-                if self.__has_assign and ctx.Double_quote_string(0):
-                    ass = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if ass in EMPTY_VALUE:
-                        ass = None
-                    offset += 1
+            if self.__has_comment and ctx.Double_quote_string(offset):
+                comment = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if comment in EMPTY_VALUE:
+                    comment = None
 
-                if self.__has_comment and ctx.Double_quote_string(offset):
-                    comment = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if comment in EMPTY_VALUE:
-                        comment = None
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
+            z_ppm = float(str(ctx.Float(2)))
 
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
-                z_ppm = float(str(ctx.Float(2)))
+            height = self.originalNumberSelection[0]
 
-                height = self.originalNumberSelection[0]
+            offset = 1
 
-                offset = 1
+            volume = None
+            if self.__has_volume:
+                volume = self.originalNumberSelection[offset]
+                offset += 1
 
-                volume = None
-                if self.__has_volume:
-                    volume = self.originalNumberSelection[offset]
-                    offset += 1
-
-                x_lw_hz = y_lw_hz = z_lw_hz = None
-                if self.__has_line_width:
-                    x_lw_hz = self.numberSelection[offset]
-                    y_lw_hz = self.numberSelection[offset + 1]
-                    z_lw_hz = self.numberSelection[offset + 2]
-
-            except (IndexError, ValueError):
-                self.peaks3D -= 1
-                return
+            x_lw_hz = y_lw_hz = z_lw_hz = None
+            if self.__has_line_width:
+                x_lw_hz = self.numberSelection[offset]
+                y_lw_hz = self.numberSelection[offset + 1]
+                z_lw_hz = self.numberSelection[offset + 2]
 
             if None in (x_ppm, y_ppm, z_ppm):
                 self.peaks3D -= 1
@@ -416,6 +407,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                     comment if comment is not None or (has_assignments and not has_multiple_assignments)
                                     else ass)
 
+        except (IndexError, ValueError):
+            self.peaks3D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -439,48 +433,42 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
+            offset = 0
 
-                offset = 0
+            ass = comment = None
+            if self.__has_assign and ctx.Double_quote_string(0):
+                ass = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if ass in EMPTY_VALUE:
+                    ass = None
+                offset += 1
 
-                ass = comment = None
-                if self.__has_assign and ctx.Double_quote_string(0):
-                    ass = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if ass in EMPTY_VALUE:
-                        ass = None
-                    offset += 1
+            if self.__has_comment and ctx.Double_quote_string(offset):
+                comment = str(ctx.Double_quote_string(0))[1:-1].strip()
+                if comment in EMPTY_VALUE:
+                    comment = None
 
-                if self.__has_comment and ctx.Double_quote_string(offset):
-                    comment = str(ctx.Double_quote_string(0))[1:-1].strip()
-                    if comment in EMPTY_VALUE:
-                        comment = None
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
+            z_ppm = float(str(ctx.Float(2)))
+            a_ppm = float(str(ctx.Float(3)))
 
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
-                z_ppm = float(str(ctx.Float(2)))
-                a_ppm = float(str(ctx.Float(3)))
+            height = self.originalNumberSelection[0]
 
-                height = self.originalNumberSelection[0]
+            offset = 1
 
-                offset = 1
+            volume = None
+            if self.__has_volume:
+                volume = self.originalNumberSelection[offset]
+                offset += 1
 
-                volume = None
-                if self.__has_volume:
-                    volume = self.originalNumberSelection[offset]
-                    offset += 1
-
-                x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
-                if self.__has_line_width:
-                    x_lw_hz = self.numberSelection[offset]
-                    y_lw_hz = self.numberSelection[offset + 1]
-                    z_lw_hz = self.numberSelection[offset + 2]
-                    a_lw_hz = self.numberSelection[offset + 3]
-
-            except (IndexError, ValueError):
-                self.peaks4D -= 1
-                return
+            x_lw_hz = y_lw_hz = z_lw_hz = a_lw_hz = None
+            if self.__has_line_width:
+                x_lw_hz = self.numberSelection[offset]
+                y_lw_hz = self.numberSelection[offset + 1]
+                z_lw_hz = self.numberSelection[offset + 2]
+                a_lw_hz = self.numberSelection[offset + 3]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -544,6 +532,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                     comment if comment is not None or (has_assignments and not has_multiple_assignments)
                                     else ass)
 
+        except (IndexError, ValueError):
+            self.peaks4D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -592,29 +583,23 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
+            ass = None
+            if self.__has_assign and ctx.Assignment_2d_ex():
+                ass = str(ctx.Assignment_2d_ex())
+                if '?' in ass:
+                    ass = None
 
-                ass = None
-                if self.__has_assign and ctx.Assignment_2d_ex():
-                    ass = str(ctx.Assignment_2d_ex())
-                    if '?' in ass:
-                        ass = None
+            x_ppm = float(str(ctx.Float(0)))
+            x_dev = abs(float(str(ctx.Float(1))))
+            y_ppm = float(str(ctx.Float(2)))
+            y_dev = abs(float(str(ctx.Float(3))))
 
-                x_ppm = float(str(ctx.Float(0)))
-                x_dev = abs(float(str(ctx.Float(1))))
-                y_ppm = float(str(ctx.Float(2)))
-                y_dev = abs(float(str(ctx.Float(3))))
-
-                height = self.originalNumberSelection[0]
-                volume = None
-                if self.__has_volume:
-                    volume = self.originalNumberSelection[1]
-
-            except (IndexError, ValueError):
-                self.peaks2D -= 1
-                return
+            height = self.originalNumberSelection[0]
+            volume = None
+            if self.__has_volume:
+                volume = self.originalNumberSelection[1]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -675,6 +660,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks2D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -703,31 +691,25 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
+            ass = None
+            if self.__has_assign and ctx.Assignment_3d_ex():
+                ass = str(ctx.Assignment_3d_ex())
+                if '?' in ass:
+                    ass = None
 
-                ass = None
-                if self.__has_assign and ctx.Assignment_3d_ex():
-                    ass = str(ctx.Assignment_3d_ex())
-                    if '?' in ass:
-                        ass = None
+            x_ppm = float(str(ctx.Float(0)))
+            x_dev = abs(float(str(ctx.Float(1))))
+            y_ppm = float(str(ctx.Float(2)))
+            y_dev = abs(float(str(ctx.Float(3))))
+            z_ppm = float(str(ctx.Float(4)))
+            z_dev = abs(float(str(ctx.Float(5))))
 
-                x_ppm = float(str(ctx.Float(0)))
-                x_dev = abs(float(str(ctx.Float(1))))
-                y_ppm = float(str(ctx.Float(2)))
-                y_dev = abs(float(str(ctx.Float(3))))
-                z_ppm = float(str(ctx.Float(4)))
-                z_dev = abs(float(str(ctx.Float(5))))
-
-                height = self.originalNumberSelection[0]
-                volume = None
-                if self.__has_volume:
-                    volume = self.originalNumberSelection[1]
-
-            except (IndexError, ValueError):
-                self.peaks3D -= 1
-                return
+            height = self.originalNumberSelection[0]
+            volume = None
+            if self.__has_volume:
+                volume = self.originalNumberSelection[1]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -789,6 +771,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
 
+        except (IndexError, ValueError):
+            self.peaks3D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -817,33 +802,27 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            try:
+            index = int(str(ctx.Integer()))
 
-                index = int(str(ctx.Integer()))
+            ass = None
+            if self.__has_assign and ctx.Assignment_4d_ex():
+                ass = str(ctx.Assignment_4d_ex())
+                if '?' in ass:
+                    ass = None
 
-                ass = None
-                if self.__has_assign and ctx.Assignment_4d_ex():
-                    ass = str(ctx.Assignment_4d_ex())
-                    if '?' in ass:
-                        ass = None
+            x_ppm = float(str(ctx.Float(0)))
+            x_dev = abs(float(str(ctx.Float(1))))
+            y_ppm = float(str(ctx.Float(2)))
+            y_dev = abs(float(str(ctx.Float(3))))
+            z_ppm = float(str(ctx.Float(4)))
+            z_dev = abs(float(str(ctx.Float(5))))
+            a_ppm = float(str(ctx.Float(6)))
+            a_dev = abs(float(str(ctx.Float(7))))
 
-                x_ppm = float(str(ctx.Float(0)))
-                x_dev = abs(float(str(ctx.Float(1))))
-                y_ppm = float(str(ctx.Float(2)))
-                y_dev = abs(float(str(ctx.Float(3))))
-                z_ppm = float(str(ctx.Float(4)))
-                z_dev = abs(float(str(ctx.Float(5))))
-                a_ppm = float(str(ctx.Float(6)))
-                a_dev = abs(float(str(ctx.Float(7))))
-
-                height = self.originalNumberSelection[0]
-                volume = None
-                if self.__has_volume:
-                    volume = self.originalNumberSelection[1]
-
-            except (IndexError, ValueError):
-                self.peaks4D -= 1
-                return
+            height = self.originalNumberSelection[0]
+            volume = None
+            if self.__has_volume:
+                volume = self.originalNumberSelection[1]
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -905,6 +884,9 @@ class VnmrPKParserListener(ParseTreeListener, BasePKParserListener):
                                     asis1, asis2, asis3, asis4,
                                     f'{ass} -> ',
                                     None if has_assignments and not has_multiple_assignments else ass)
+
+        except (IndexError, ValueError):
+            self.peaks4D -= 1
 
         finally:
             self.numberSelection.clear()

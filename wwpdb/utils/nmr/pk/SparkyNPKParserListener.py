@@ -157,14 +157,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if _ass_ == 'A1H-H' and not self.isFirstResidueAla:
                 ass = _ass_ = None
 
-            try:
-
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
-
-            except ValueError:
-                self.peaks2D -= 1
-                return
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
 
             offset = 0
 
@@ -277,6 +271,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ == '?-?' else _ass_)
 
+        except ValueError:
+            self.peaks2D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -310,15 +307,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if _ass_ == 'A1H-H-H' and not self.isFirstResidueAla:
                 ass = _ass_ = None
 
-            try:
-
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
-                z_ppm = float(str(ctx.Float(2)))
-
-            except ValueError:
-                self.peaks3D -= 1
-                return
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
+            z_ppm = float(str(ctx.Float(2)))
 
             offset = 0
 
@@ -441,6 +432,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ == '?-?-?' else _ass_)
 
+        except ValueError:
+            self.peaks3D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -474,16 +468,10 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if _ass_ == 'A1H-H-H-H' and not self.isFirstResidueAla:
                 ass = _ass_ = None
 
-            try:
-
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
-                z_ppm = float(str(ctx.Float(2)))
-                a_ppm = float(str(ctx.Float(3)))
-
-            except ValueError:
-                self.peaks4D -= 1
-                return
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
+            z_ppm = float(str(ctx.Float(2)))
+            a_ppm = float(str(ctx.Float(3)))
 
             offset = 0
 
@@ -616,6 +604,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ == '?-?-?-?' else _ass_)
 
+        except ValueError:
+            self.peaks4D -= 1
+
         finally:
             self.numberSelection.clear()
             self.originalNumberSelection.clear()
@@ -657,14 +648,8 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if _ass_ in ('?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
-            try:
-
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
-
-            except ValueError:
-                self.peaks2D -= 1
-                return
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
 
             if None in (x_ppm, y_ppm):
                 self.peaks2D -= 1
@@ -700,6 +685,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ in ('?-?', None) else _ass_)
+
+        except ValueError:
+            self.peaks2D -= 1
 
         finally:
             self.__noteSelection.clear()
@@ -737,15 +725,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if _ass_ in ('?-?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
-            try:
-
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
-                z_ppm = float(str(ctx.Float(2)))
-
-            except ValueError:
-                self.peaks3D -= 1
-                return
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
+            z_ppm = float(str(ctx.Float(2)))
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -786,6 +768,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ in ('?-?-?', None) else _ass_)
 
+        except ValueError:
+            self.peaks3D -= 1
+
         finally:
             self.__noteSelection.clear()
 
@@ -820,16 +805,10 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
             if _ass_ in ('?-?-?-?', None) and self.__has_note and len(self.__noteSelection) > 0:
                 _ass_ = ' '.join(self.__noteSelection)
 
-            try:
-
-                x_ppm = float(str(ctx.Float(0)))
-                y_ppm = float(str(ctx.Float(1)))
-                z_ppm = float(str(ctx.Float(2)))
-                a_ppm = float(str(ctx.Float(3)))
-
-            except ValueError:
-                self.peaks4D -= 1
-                return
+            x_ppm = float(str(ctx.Float(0)))
+            y_ppm = float(str(ctx.Float(1)))
+            z_ppm = float(str(ctx.Float(2)))
+            a_ppm = float(str(ctx.Float(3)))
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -870,6 +849,9 @@ class SparkyNPKParserListener(ParseTreeListener, BasePKParserListener):
                                     f'{ass} -> ',
                                     None if (has_assignments and not has_multiple_assignments)
                                     or _ass_ in ('?-?-?-?', None) else _ass_)
+
+        except ValueError:
+            self.peaks4D -= 1
 
         finally:
             self.__noteSelection.clear()

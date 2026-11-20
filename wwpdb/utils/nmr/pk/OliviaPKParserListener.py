@@ -281,55 +281,49 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks2D -= 1
                 return
 
-            try:
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                if self.__hz_unit:
-                    if self.__transposed:
-                        x_hz = self.numberSelection[1]
-                        y_hz = self.numberSelection[0]
-                    else:
-                        x_hz = self.numberSelection[0]
-                        y_hz = self.numberSelection[1]
-                    x_ppm = y_ppm = None
-                    max_eff_digits = getMaxEffDigits([str(x_hz), str(y_hz)])
-                    if 'spectrometer_frequency' in cur_spectral_dim[1]:
-                        x_ppm = float(roundString(str(x_hz / cur_spectral_dim[1]['spectrometer_frequency']),
-                                                  max_eff_digits))
-                    if 'spectrometer_frequency' in cur_spectral_dim[2]:
-                        y_ppm = float(roundString(str(y_hz / cur_spectral_dim[2]['spectrometer_frequency']),
-                                                  max_eff_digits))
+            if self.__hz_unit:
+                if self.__transposed:
+                    x_hz = self.numberSelection[1]
+                    y_hz = self.numberSelection[0]
                 else:
-                    if self.__transposed:
-                        x_ppm = self.numberSelection[1]
-                        y_ppm = self.numberSelection[0]
-                    else:
-                        x_ppm = self.numberSelection[0]
-                        y_ppm = self.numberSelection[1]
-                    x_hz = y_hz = None
-                height = self.originalNumberSelection[2]
-                vol = self.originalNumberSelection[3]
-                vol_err = self.originalNumberSelection[4]
+                    x_hz = self.numberSelection[0]
+                    y_hz = self.numberSelection[1]
+                x_ppm = y_ppm = None
+                max_eff_digits = getMaxEffDigits([str(x_hz), str(y_hz)])
+                if 'spectrometer_frequency' in cur_spectral_dim[1]:
+                    x_ppm = float(roundString(str(x_hz / cur_spectral_dim[1]['spectrometer_frequency']),
+                                              max_eff_digits))
+                if 'spectrometer_frequency' in cur_spectral_dim[2]:
+                    y_ppm = float(roundString(str(y_hz / cur_spectral_dim[2]['spectrometer_frequency']),
+                                              max_eff_digits))
+            else:
+                if self.__transposed:
+                    x_ppm = self.numberSelection[1]
+                    y_ppm = self.numberSelection[0]
+                else:
+                    x_ppm = self.numberSelection[0]
+                    y_ppm = self.numberSelection[1]
+                x_hz = y_hz = None
+            height = self.originalNumberSelection[2]
+            vol = self.originalNumberSelection[3]
+            vol_err = self.originalNumberSelection[4]
 
+            assignments = [None] * self.num_of_dim
+
+            for idx in range(self.num_of_dim):
+                chain_id = self.__strings[3 * idx]
+                comp_id = self.__strings[3 * idx + 1]
+                atom_id = self.__strings[3 * idx + 2]
+                seq_id = self.__integers[idx]
+                if chain_id is None or comp_id is None or atom_id is None or seq_id is None:
+                    continue
+                assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
+
+            if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
+                       for a in assignments):
                 assignments = [None] * self.num_of_dim
-
-                for idx in range(self.num_of_dim):
-                    chain_id = self.__strings[3 * idx]
-                    comp_id = self.__strings[3 * idx + 1]
-                    atom_id = self.__strings[3 * idx + 2]
-                    seq_id = self.__integers[idx]
-                    if chain_id is None or comp_id is None or atom_id is None or seq_id is None:
-                        continue
-                    assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
-
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
-                           for a in assignments):
-                    assignments = [None] * self.num_of_dim
-
-            except IndexError:
-                self.peaks2D -= 1
-                return
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -354,6 +348,9 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow2D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2,
                                     '', self.__memo)
+
+        except IndexError:
+            self.peaks2D -= 1
 
         finally:
             self.numberSelection.clear()
@@ -414,62 +411,56 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks3D -= 1
                 return
 
-            try:
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                if self.__hz_unit:
-                    if self.__transposed:
-                        x_hz = self.numberSelection[2]
-                        y_hz = self.numberSelection[1]
-                        z_hz = self.numberSelection[0]
-                    else:
-                        x_hz = self.numberSelection[0]
-                        y_hz = self.numberSelection[1]
-                        z_hz = self.numberSelection[2]
-                    x_ppm = y_ppm = z_ppm = None
-                    max_eff_digits = getMaxEffDigits([str(x_hz), str(y_hz), str(z_hz)])
-                    if 'spectrometer_frequency' in cur_spectral_dim[1]:
-                        x_ppm = float(roundString(str(x_hz / cur_spectral_dim[1]['spectrometer_frequency']),
-                                                  max_eff_digits))
-                    if 'spectrometer_frequency' in cur_spectral_dim[2]:
-                        y_ppm = float(roundString(str(y_hz / cur_spectral_dim[2]['spectrometer_frequency']),
-                                                  max_eff_digits))
-                    if 'spectrometer_frequency' in cur_spectral_dim[3]:
-                        z_ppm = float(roundString(str(z_hz / cur_spectral_dim[3]['spectrometer_frequency']),
-                                                  max_eff_digits))
+            if self.__hz_unit:
+                if self.__transposed:
+                    x_hz = self.numberSelection[2]
+                    y_hz = self.numberSelection[1]
+                    z_hz = self.numberSelection[0]
                 else:
-                    if self.__transposed:
-                        x_ppm = self.numberSelection[2]
-                        y_ppm = self.numberSelection[1]
-                        z_ppm = self.numberSelection[0]
-                    else:
-                        x_ppm = self.numberSelection[0]
-                        y_ppm = self.numberSelection[1]
-                        z_ppm = self.numberSelection[2]
-                    x_hz = y_hz = z_hz = None
-                height = self.originalNumberSelection[3]
-                vol = self.originalNumberSelection[4]
-                vol_err = self.originalNumberSelection[5]
+                    x_hz = self.numberSelection[0]
+                    y_hz = self.numberSelection[1]
+                    z_hz = self.numberSelection[2]
+                x_ppm = y_ppm = z_ppm = None
+                max_eff_digits = getMaxEffDigits([str(x_hz), str(y_hz), str(z_hz)])
+                if 'spectrometer_frequency' in cur_spectral_dim[1]:
+                    x_ppm = float(roundString(str(x_hz / cur_spectral_dim[1]['spectrometer_frequency']),
+                                              max_eff_digits))
+                if 'spectrometer_frequency' in cur_spectral_dim[2]:
+                    y_ppm = float(roundString(str(y_hz / cur_spectral_dim[2]['spectrometer_frequency']),
+                                              max_eff_digits))
+                if 'spectrometer_frequency' in cur_spectral_dim[3]:
+                    z_ppm = float(roundString(str(z_hz / cur_spectral_dim[3]['spectrometer_frequency']),
+                                              max_eff_digits))
+            else:
+                if self.__transposed:
+                    x_ppm = self.numberSelection[2]
+                    y_ppm = self.numberSelection[1]
+                    z_ppm = self.numberSelection[0]
+                else:
+                    x_ppm = self.numberSelection[0]
+                    y_ppm = self.numberSelection[1]
+                    z_ppm = self.numberSelection[2]
+                x_hz = y_hz = z_hz = None
+            height = self.originalNumberSelection[3]
+            vol = self.originalNumberSelection[4]
+            vol_err = self.originalNumberSelection[5]
 
+            assignments = [None] * self.num_of_dim
+
+            for idx in range(self.num_of_dim):
+                chain_id = self.__strings[3 * idx]
+                comp_id = self.__strings[3 * idx + 1]
+                atom_id = self.__strings[3 * idx + 2]
+                seq_id = self.__integers[idx]
+                if chain_id is None or comp_id is None or atom_id is None or seq_id is None:
+                    continue
+                assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
+
+            if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
+                       for a in assignments):
                 assignments = [None] * self.num_of_dim
-
-                for idx in range(self.num_of_dim):
-                    chain_id = self.__strings[3 * idx]
-                    comp_id = self.__strings[3 * idx + 1]
-                    atom_id = self.__strings[3 * idx + 2]
-                    seq_id = self.__integers[idx]
-                    if chain_id is None or comp_id is None or atom_id is None or seq_id is None:
-                        continue
-                    assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
-
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
-                           for a in assignments):
-                    assignments = [None] * self.num_of_dim
-
-            except IndexError:
-                self.peaks3D -= 1
-                return
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -495,6 +486,9 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow3D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3,
                                     '', self.__memo)
+
+        except IndexError:
+            self.peaks3D -= 1
 
         finally:
             self.numberSelection.clear()
@@ -555,69 +549,63 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
                 self.peaks4D -= 1
                 return
 
-            try:
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
 
-                cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-                if self.__hz_unit:
-                    if self.__transposed:
-                        x_hz = self.numberSelection[3]
-                        y_hz = self.numberSelection[2]
-                        z_hz = self.numberSelection[1]
-                        a_hz = self.numberSelection[0]
-                    else:
-                        x_hz = self.numberSelection[0]
-                        y_hz = self.numberSelection[1]
-                        z_hz = self.numberSelection[2]
-                        a_hz = self.numberSelection[3]
-                    x_ppm = y_ppm = z_ppm = a_ppm = None
-                    max_eff_digits = getMaxEffDigits([str(x_hz), str(y_hz), str(z_hz), str(a_hz)])
-                    if 'spectrometer_frequency' in cur_spectral_dim[1]:
-                        x_ppm = float(roundString(str(x_hz / cur_spectral_dim[1]['spectrometer_frequency']),
-                                                  max_eff_digits))
-                    if 'spectrometer_frequency' in cur_spectral_dim[2]:
-                        y_ppm = float(roundString(str(y_hz / cur_spectral_dim[2]['spectrometer_frequency']),
-                                                  max_eff_digits))
-                    if 'spectrometer_frequency' in cur_spectral_dim[3]:
-                        z_ppm = float(roundString(str(z_hz / cur_spectral_dim[3]['spectrometer_frequency']),
-                                                  max_eff_digits))
-                    if 'spectrometer_frequency' in cur_spectral_dim[4]:
-                        a_ppm = float(roundString(str(a_hz / cur_spectral_dim[4]['spectrometer_frequency']),
-                                                  max_eff_digits))
+            if self.__hz_unit:
+                if self.__transposed:
+                    x_hz = self.numberSelection[3]
+                    y_hz = self.numberSelection[2]
+                    z_hz = self.numberSelection[1]
+                    a_hz = self.numberSelection[0]
                 else:
-                    if self.__transposed:
-                        x_ppm = self.numberSelection[3]
-                        y_ppm = self.numberSelection[2]
-                        z_ppm = self.numberSelection[1]
-                        a_ppm = self.numberSelection[0]
-                    else:
-                        x_ppm = self.numberSelection[0]
-                        y_ppm = self.numberSelection[1]
-                        z_ppm = self.numberSelection[2]
-                        a_ppm = self.numberSelection[3]
-                    x_hz = y_hz = z_hz = a_hz = None
-                height = self.originalNumberSelection[4]
-                vol = self.originalNumberSelection[5]
-                vol_err = self.originalNumberSelection[6]
+                    x_hz = self.numberSelection[0]
+                    y_hz = self.numberSelection[1]
+                    z_hz = self.numberSelection[2]
+                    a_hz = self.numberSelection[3]
+                x_ppm = y_ppm = z_ppm = a_ppm = None
+                max_eff_digits = getMaxEffDigits([str(x_hz), str(y_hz), str(z_hz), str(a_hz)])
+                if 'spectrometer_frequency' in cur_spectral_dim[1]:
+                    x_ppm = float(roundString(str(x_hz / cur_spectral_dim[1]['spectrometer_frequency']),
+                                              max_eff_digits))
+                if 'spectrometer_frequency' in cur_spectral_dim[2]:
+                    y_ppm = float(roundString(str(y_hz / cur_spectral_dim[2]['spectrometer_frequency']),
+                                              max_eff_digits))
+                if 'spectrometer_frequency' in cur_spectral_dim[3]:
+                    z_ppm = float(roundString(str(z_hz / cur_spectral_dim[3]['spectrometer_frequency']),
+                                              max_eff_digits))
+                if 'spectrometer_frequency' in cur_spectral_dim[4]:
+                    a_ppm = float(roundString(str(a_hz / cur_spectral_dim[4]['spectrometer_frequency']),
+                                              max_eff_digits))
+            else:
+                if self.__transposed:
+                    x_ppm = self.numberSelection[3]
+                    y_ppm = self.numberSelection[2]
+                    z_ppm = self.numberSelection[1]
+                    a_ppm = self.numberSelection[0]
+                else:
+                    x_ppm = self.numberSelection[0]
+                    y_ppm = self.numberSelection[1]
+                    z_ppm = self.numberSelection[2]
+                    a_ppm = self.numberSelection[3]
+                x_hz = y_hz = z_hz = a_hz = None
+            height = self.originalNumberSelection[4]
+            vol = self.originalNumberSelection[5]
+            vol_err = self.originalNumberSelection[6]
 
+            assignments = [None] * self.num_of_dim
+
+            for idx in range(self.num_of_dim):
+                chain_id = self.__strings[3 * idx]
+                comp_id = self.__strings[3 * idx + 1]
+                atom_id = self.__strings[3 * idx + 2]
+                seq_id = self.__integers[idx]
+                if chain_id is None or comp_id is None or atom_id is None or seq_id is None:
+                    continue
+                assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
+
+            if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
+                       for a in assignments):
                 assignments = [None] * self.num_of_dim
-
-                for idx in range(self.num_of_dim):
-                    chain_id = self.__strings[3 * idx]
-                    comp_id = self.__strings[3 * idx + 1]
-                    atom_id = self.__strings[3 * idx + 2]
-                    seq_id = self.__integers[idx]
-                    if chain_id is None or comp_id is None or atom_id is None or seq_id is None:
-                        continue
-                    assignments[idx] = [{'chain_id': chain_id, 'seq_id': seq_id, 'comp_id': comp_id, 'atom_id': atom_id}]
-
-                if not all(a is not None and len(a) >= 1 and 'seq_id' in a[0] and 'atom_id' in a[0]  # noqa: E501, pylint: disable=unsubscriptable-object,line-too-long
-                           for a in assignments):
-                    assignments = [None] * self.num_of_dim
-
-            except IndexError:
-                self.peaks4D -= 1
-                return
 
             if not self.hasPolySeq and not self.hasNonPolySeq:
                 return
@@ -644,6 +632,9 @@ class OliviaPKParserListener(ParseTreeListener, BasePKParserListener):
             self.addAssignedPkRow4D(index, dstFunc, has_assignments, has_multiple_assignments,
                                     asis1, asis2, asis3, asis4,
                                     '', self.__memo)
+
+        except IndexError:
+            self.peaks4D -= 1
 
         finally:
             self.numberSelection.clear()

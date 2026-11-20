@@ -140,74 +140,75 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Exit a parse tree produced by XwinNmrPKParser#peak_2d.
         """
 
-        if -1 in (self.__f1_ppm_col, self.__f2_ppm_col)\
-           or (self.__intensity_col == -1 and self.__volume_col == -1):
-            self.peaks2D -= 1
-            return
-
         try:
+
+            if -1 in (self.__f1_ppm_col, self.__f2_ppm_col)\
+               or (self.__intensity_col == -1 and self.__volume_col == -1):
+                self.peaks2D -= 1
+                return
+
             index = int(str(ctx.Integer()))
+
+            if ctx.Float(self.__f1_ppm_col):
+                f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))
+            else:
+                self.peaks2D -= 1
+                return
+
+            if ctx.Float(self.__f2_ppm_col):
+                f2_ppm = float(str(ctx.Float(self.__f2_ppm_col)))
+            else:
+                self.peaks2D -= 1
+                return
+
+            intensity = None
+            if self.__intensity_col != -1 and ctx.Float(self.__intensity_col):
+                intensity = float(str(ctx.Float(self.__intensity_col)))
+
+            volume = None
+            if self.__volume_col != -1 and ctx.Float(self.__volume_col):
+                volume = float(str(ctx.Float(self.__volume_col)))
+
+            annotation = None
+            if ctx.Annotation(0):
+                if self.__hasCoord:
+                    annotation = []
+                    i = 0
+                    while ctx.Annotation(i):
+                        annotation.append(str(ctx.Annotation(i)))
+                        i += 1
+                    annotation = ' '.join(annotation)
+
+            dstFunc = self.validatePeak2D(index, f1_ppm, f2_ppm, None, None, None, None,
+                                          None, None, None, None, intensity, None, volume, None)
+
+            if dstFunc is None:
+                self.peaks2D -= 1
+                return
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(f1_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(f2_ppm)
+
+            if self.debug:
+                print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
+
+            if self.createSfDict:
+                sf = self.getSf()
+
+                if sf is not None:
+                    sf['id'] = index
+                    sf['index_id'] += 1
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   None, None, None,
+                                   details=annotation)
+                    sf['loop'].add_data(row)
+
         except ValueError:
             self.peaks2D -= 1
-            return
-
-        if ctx.Float(self.__f1_ppm_col):
-            f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))
-        else:
-            self.peaks2D -= 1
-            return
-
-        if ctx.Float(self.__f2_ppm_col):
-            f2_ppm = float(str(ctx.Float(self.__f2_ppm_col)))
-        else:
-            self.peaks2D -= 1
-            return
-
-        intensity = None
-        if self.__intensity_col != -1 and ctx.Float(self.__intensity_col):
-            intensity = float(str(ctx.Float(self.__intensity_col)))
-
-        volume = None
-        if self.__volume_col != -1 and ctx.Float(self.__volume_col):
-            volume = float(str(ctx.Float(self.__volume_col)))
-
-        annotation = None
-        if ctx.Annotation(0):
-            if self.__hasCoord:
-                annotation = []
-                i = 0
-                while ctx.Annotation(i):
-                    annotation.append(str(ctx.Annotation(i)))
-                    i += 1
-                annotation = ' '.join(annotation)
-
-        dstFunc = self.validatePeak2D(index, f1_ppm, f2_ppm, None, None, None, None,
-                                      None, None, None, None, intensity, None, volume, None)
-
-        if dstFunc is None:
-            self.peaks2D -= 1
-            return
-
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        cur_spectral_dim[1]['freq_hint'].append(f1_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(f2_ppm)
-
-        if self.debug:
-            print(f"subtype={self.cur_subtype} id={self.peaks2D} (index={index}) {dstFunc}")
-
-        if self.createSfDict:
-            sf = self.getSf()
-
-            if sf is not None:
-                sf['id'] = index
-                sf['index_id'] += 1
-
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               None, None, None,
-                               details=annotation)
-                sf['loop'].add_data(row)
 
     def enterPeak_3d(self, ctx: XwinNmrPKParser.Peak_3dContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by XwinNmrPKParser#peak_3d.
@@ -219,81 +220,82 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Exit a parse tree produced by XwinNmrPKParser#peak_3d.
         """
 
-        if -1 in (self.__f1_ppm_col, self.__f2_ppm_col, self.__f3_ppm_col)\
-           or (self.__intensity_col == -1 and self.__volume_col == -1):
-            self.peaks3D -= 1
-            return
-
         try:
+
+            if -1 in (self.__f1_ppm_col, self.__f2_ppm_col, self.__f3_ppm_col)\
+               or (self.__intensity_col == -1 and self.__volume_col == -1):
+                self.peaks3D -= 1
+                return
+
             index = int(str(ctx.Integer()))
+
+            if ctx.Float(self.__f1_ppm_col):
+                f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))
+            else:
+                self.peaks3D -= 1
+                return
+
+            if ctx.Float(self.__f2_ppm_col):
+                f2_ppm = float(str(ctx.Float(self.__f2_ppm_col)))
+            else:
+                self.peaks3D -= 1
+                return
+
+            if ctx.Float(self.__f3_ppm_col):
+                f3_ppm = float(str(ctx.Float(self.__f3_ppm_col)))
+            else:
+                self.peaks3D -= 1
+                return
+
+            intensity = None
+            if self.__intensity_col != -1 and ctx.Float(self.__intensity_col):
+                intensity = float(str(ctx.Float(self.__intensity_col)))
+
+            volume = None
+            if self.__volume_col != -1 and ctx.Float(self.__volume_col):
+                volume = float(str(ctx.Float(self.__volume_col)))
+
+            annotation = None
+            if ctx.Annotation(0):
+                if self.__hasCoord:
+                    annotation = []
+                    i = 0
+                    while ctx.Annotation(i):
+                        annotation.append(str(ctx.Annotation(i)))
+                        i += 1
+                    annotation = ' '.join(annotation)
+
+            dstFunc = self.validatePeak3D(index, f1_ppm, f2_ppm, f3_ppm, None, None, None, None, None, None,
+                                          None, None, None, None, None, None, intensity, None, volume, None)
+
+            if dstFunc is None:
+                self.peaks3D -= 1
+                return
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(f1_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(f2_ppm)
+            cur_spectral_dim[3]['freq_hint'].append(f3_ppm)
+
+            if self.debug:
+                print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
+
+            if self.createSfDict:
+                sf = self.getSf()
+
+                if sf is not None:
+                    sf['id'] = index
+                    sf['index_id'] += 1
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   None, None, None,
+                                   details=annotation)
+                    sf['loop'].add_data(row)
+
         except ValueError:
             self.peaks3D -= 1
-            return
-
-        if ctx.Float(self.__f1_ppm_col):
-            f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))
-        else:
-            self.peaks3D -= 1
-            return
-
-        if ctx.Float(self.__f2_ppm_col):
-            f2_ppm = float(str(ctx.Float(self.__f2_ppm_col)))
-        else:
-            self.peaks3D -= 1
-            return
-
-        if ctx.Float(self.__f3_ppm_col):
-            f3_ppm = float(str(ctx.Float(self.__f3_ppm_col)))
-        else:
-            self.peaks3D -= 1
-            return
-
-        intensity = None
-        if self.__intensity_col != -1 and ctx.Float(self.__intensity_col):
-            intensity = float(str(ctx.Float(self.__intensity_col)))
-
-        volume = None
-        if self.__volume_col != -1 and ctx.Float(self.__volume_col):
-            volume = float(str(ctx.Float(self.__volume_col)))
-
-        annotation = None
-        if ctx.Annotation(0):
-            if self.__hasCoord:
-                annotation = []
-                i = 0
-                while ctx.Annotation(i):
-                    annotation.append(str(ctx.Annotation(i)))
-                    i += 1
-                annotation = ' '.join(annotation)
-
-        dstFunc = self.validatePeak3D(index, f1_ppm, f2_ppm, f3_ppm, None, None, None, None, None, None,
-                                      None, None, None, None, None, None, intensity, None, volume, None)
-
-        if dstFunc is None:
-            self.peaks3D -= 1
-            return
-
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        cur_spectral_dim[1]['freq_hint'].append(f1_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(f2_ppm)
-        cur_spectral_dim[3]['freq_hint'].append(f3_ppm)
-
-        if self.debug:
-            print(f"subtype={self.cur_subtype} id={self.peaks3D} (index={index}) {dstFunc}")
-
-        if self.createSfDict:
-            sf = self.getSf()
-
-            if sf is not None:
-                sf['id'] = index
-                sf['index_id'] += 1
-
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               None, None, None,
-                               details=annotation)
-                sf['loop'].add_data(row)
 
     def enterPeak_4d(self, ctx: XwinNmrPKParser.Peak_4dContext):  # pylint: disable=unused-argument
         """ Enter a parse tree produced by XwinNmrPKParser#peak_4d.
@@ -305,85 +307,86 @@ class XwinNmrPKParserListener(ParseTreeListener, BasePKParserListener):
         """ Exit a parse tree produced by XwinNmrPKParser#peak_4d.
         """
 
-        if -1 in (self.__f1_ppm_col, self.__f2_ppm_col, self.__f3_ppm_col, self.__f4_ppm_col)\
-           or (self.__intensity_col == -1 and self.__volume_col == -1):
-            self.peaks4D -= 1
-            return
-
         try:
+
+            if -1 in (self.__f1_ppm_col, self.__f2_ppm_col, self.__f3_ppm_col, self.__f4_ppm_col)\
+               or (self.__intensity_col == -1 and self.__volume_col == -1):
+                self.peaks4D -= 1
+                return
+
             index = int(str(ctx.Integer()))
+
+            if ctx.Float(self.__f1_ppm_col):
+                f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))
+            else:
+                self.peaks4D -= 1
+                return
+
+            if ctx.Float(self.__f2_ppm_col):
+                f2_ppm = float(str(ctx.Float(self.__f2_ppm_col)))
+            else:
+                self.peaks4D -= 1
+                return
+
+            if ctx.Float(self.__f3_ppm_col):
+                f3_ppm = float(str(ctx.Float(self.__f3_ppm_col)))
+            else:
+                self.peaks4D -= 1
+                return
+
+            if ctx.Float(self.__f4_ppm_col):
+                f4_ppm = float(str(ctx.Float(self.__f4_ppm_col)))
+            else:
+                self.peaks4D -= 1
+                return
+
+            intensity = None
+            if self.__intensity_col != -1 and ctx.Float(self.__intensity_col):
+                intensity = float(str(ctx.Float(self.__intensity_col)))
+
+            volume = None
+            if self.__volume_col != -1 and ctx.Float(self.__volume_col):
+                volume = float(str(ctx.Float(self.__volume_col)))
+
+            annotation = None
+            if ctx.Annotation(0):
+                if self.__hasCoord:
+                    annotation = []
+                    i = 0
+                    while ctx.Annotation(i):
+                        annotation.append(str(ctx.Annotation(i)))
+                        i += 1
+                    annotation = ' '.join(annotation)
+
+            dstFunc = self.validatePeak4D(index, f1_ppm, f2_ppm, f3_ppm, f4_ppm, None, None, None, None, None, None, None, None,
+                                          None, None, None, None, None, None, None, None, intensity, None, volume, None)
+
+            if dstFunc is None:
+                self.peaks4D -= 1
+                return
+
+            cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
+
+            cur_spectral_dim[1]['freq_hint'].append(f1_ppm)
+            cur_spectral_dim[2]['freq_hint'].append(f2_ppm)
+            cur_spectral_dim[3]['freq_hint'].append(f3_ppm)
+            cur_spectral_dim[4]['freq_hint'].append(f4_ppm)
+
+            if self.debug:
+                print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
+
+            if self.createSfDict:
+                sf = self.getSf()
+
+                if sf is not None:
+                    sf['id'] = index
+                    sf['index_id'] += 1
+
+                    row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
+                                   sf['list_id'], self.entryId, dstFunc,
+                                   None, None, None,
+                                   details=annotation)
+                    sf['loop'].add_data(row)
+
         except ValueError:
             self.peaks4D -= 1
-            return
-
-        if ctx.Float(self.__f1_ppm_col):
-            f1_ppm = float(str(ctx.Float(self.__f1_ppm_col)))
-        else:
-            self.peaks4D -= 1
-            return
-
-        if ctx.Float(self.__f2_ppm_col):
-            f2_ppm = float(str(ctx.Float(self.__f2_ppm_col)))
-        else:
-            self.peaks4D -= 1
-            return
-
-        if ctx.Float(self.__f3_ppm_col):
-            f3_ppm = float(str(ctx.Float(self.__f3_ppm_col)))
-        else:
-            self.peaks4D -= 1
-            return
-
-        if ctx.Float(self.__f4_ppm_col):
-            f4_ppm = float(str(ctx.Float(self.__f4_ppm_col)))
-        else:
-            self.peaks4D -= 1
-            return
-
-        intensity = None
-        if self.__intensity_col != -1 and ctx.Float(self.__intensity_col):
-            intensity = float(str(ctx.Float(self.__intensity_col)))
-
-        volume = None
-        if self.__volume_col != -1 and ctx.Float(self.__volume_col):
-            volume = float(str(ctx.Float(self.__volume_col)))
-
-        annotation = None
-        if ctx.Annotation(0):
-            if self.__hasCoord:
-                annotation = []
-                i = 0
-                while ctx.Annotation(i):
-                    annotation.append(str(ctx.Annotation(i)))
-                    i += 1
-                annotation = ' '.join(annotation)
-
-        dstFunc = self.validatePeak4D(index, f1_ppm, f2_ppm, f3_ppm, f4_ppm, None, None, None, None, None, None, None, None,
-                                      None, None, None, None, None, None, None, None, intensity, None, volume, None)
-
-        if dstFunc is None:
-            self.peaks4D -= 1
-            return
-
-        cur_spectral_dim = self.spectral_dim[self.num_of_dim][self.cur_list_id]
-
-        cur_spectral_dim[1]['freq_hint'].append(f1_ppm)
-        cur_spectral_dim[2]['freq_hint'].append(f2_ppm)
-        cur_spectral_dim[3]['freq_hint'].append(f3_ppm)
-        cur_spectral_dim[4]['freq_hint'].append(f4_ppm)
-
-        if self.debug:
-            print(f"subtype={self.cur_subtype} id={self.peaks4D} (index={index}) {dstFunc}")
-
-        if self.createSfDict:
-            sf = self.getSf()
-
-            if sf is not None:
-                sf['id'] = index
-                sf['index_id'] += 1
-
-                row = getPkRow(self.cur_subtype, sf['id'], sf['index_id'],
-                               sf['list_id'], self.entryId, dstFunc,
-                               None, None, None,
-                               details=annotation)
-                sf['loop'].add_data(row)

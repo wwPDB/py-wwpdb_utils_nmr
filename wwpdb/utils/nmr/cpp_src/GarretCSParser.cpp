@@ -52,7 +52,7 @@ void garretcsparserParserInitialize() {
 #endif
   auto staticData = std::make_unique<GarretCSParserStaticData>(
     std::vector<std::string>{
-      "garret_cs", "residue_list", "shift_list", "number"
+      "garret_cs", "residue_list", "res_id", "shift_list", "number"
     },
     std::vector<std::string>{
     },
@@ -62,18 +62,20 @@ void garretcsparserParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,10,42,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,1,0,3,0,10,8,0,1,0,4,0,13,8,
-  	0,11,0,12,0,14,1,0,5,0,18,8,0,10,0,12,0,21,9,0,1,0,1,0,1,1,1,1,1,1,1,
-  	1,4,1,29,8,1,11,1,12,1,30,1,1,1,1,1,2,1,2,1,2,3,2,38,8,2,1,3,1,3,1,3,
-  	0,0,4,0,2,4,6,0,1,2,0,1,2,6,6,42,0,9,1,0,0,0,2,24,1,0,0,0,4,34,1,0,0,
-  	0,6,39,1,0,0,0,8,10,5,8,0,0,9,8,1,0,0,0,9,10,1,0,0,0,10,12,1,0,0,0,11,
-  	13,3,2,1,0,12,11,1,0,0,0,13,14,1,0,0,0,14,12,1,0,0,0,14,15,1,0,0,0,15,
-  	19,1,0,0,0,16,18,5,8,0,0,17,16,1,0,0,0,18,21,1,0,0,0,19,17,1,0,0,0,19,
-  	20,1,0,0,0,20,22,1,0,0,0,21,19,1,0,0,0,22,23,5,0,0,1,23,1,1,0,0,0,24,
-  	25,5,1,0,0,25,26,5,6,0,0,26,28,5,8,0,0,27,29,3,4,2,0,28,27,1,0,0,0,29,
-  	30,1,0,0,0,30,28,1,0,0,0,30,31,1,0,0,0,31,32,1,0,0,0,32,33,5,5,0,0,33,
-  	3,1,0,0,0,34,35,5,6,0,0,35,37,3,6,3,0,36,38,5,8,0,0,37,36,1,0,0,0,37,
-  	38,1,0,0,0,38,5,1,0,0,0,39,40,7,0,0,0,40,7,1,0,0,0,5,9,14,19,30,37
+  	4,1,10,47,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,1,0,3,0,12,8,0,1,0,
+  	4,0,15,8,0,11,0,12,0,16,1,0,5,0,20,8,0,10,0,12,0,23,9,0,1,0,1,0,1,1,1,
+  	1,1,1,1,1,4,1,31,8,1,11,1,12,1,32,1,1,3,1,36,8,1,1,2,1,2,1,3,1,3,1,3,
+  	3,3,43,8,3,1,4,1,4,1,4,0,0,5,0,2,4,6,8,0,2,2,0,1,1,6,6,2,0,1,2,6,6,47,
+  	0,11,1,0,0,0,2,26,1,0,0,0,4,37,1,0,0,0,6,39,1,0,0,0,8,44,1,0,0,0,10,12,
+  	5,8,0,0,11,10,1,0,0,0,11,12,1,0,0,0,12,14,1,0,0,0,13,15,3,2,1,0,14,13,
+  	1,0,0,0,15,16,1,0,0,0,16,14,1,0,0,0,16,17,1,0,0,0,17,21,1,0,0,0,18,20,
+  	5,8,0,0,19,18,1,0,0,0,20,23,1,0,0,0,21,19,1,0,0,0,21,22,1,0,0,0,22,24,
+  	1,0,0,0,23,21,1,0,0,0,24,25,5,0,0,1,25,1,1,0,0,0,26,27,3,4,2,0,27,28,
+  	5,6,0,0,28,30,5,8,0,0,29,31,3,6,3,0,30,29,1,0,0,0,31,32,1,0,0,0,32,30,
+  	1,0,0,0,32,33,1,0,0,0,33,35,1,0,0,0,34,36,5,5,0,0,35,34,1,0,0,0,35,36,
+  	1,0,0,0,36,3,1,0,0,0,37,38,7,0,0,0,38,5,1,0,0,0,39,40,5,6,0,0,40,42,3,
+  	8,4,0,41,43,5,8,0,0,42,41,1,0,0,0,42,43,1,0,0,0,43,7,1,0,0,0,44,45,7,
+  	1,0,0,45,9,1,0,0,0,6,11,16,21,32,35,42
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -175,35 +177,37 @@ GarretCSParser::Garret_csContext* GarretCSParser::garret_cs() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(9);
+    setState(11);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == GarretCSParser::RETURN) {
-      setState(8);
+      setState(10);
       match(GarretCSParser::RETURN);
     }
-    setState(12); 
+    setState(14); 
     _errHandler->sync(this);
     _la = _input->LA(1);
     do {
-      setState(11);
+      setState(13);
       residue_list();
-      setState(14); 
+      setState(16); 
       _errHandler->sync(this);
       _la = _input->LA(1);
-    } while (_la == GarretCSParser::Integer);
-    setState(19);
+    } while (_la == GarretCSParser::Integer
+
+    || _la == GarretCSParser::Simple_name);
+    setState(21);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while (_la == GarretCSParser::RETURN) {
-      setState(16);
+      setState(18);
       match(GarretCSParser::RETURN);
-      setState(21);
+      setState(23);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(22);
+    setState(24);
     match(GarretCSParser::EOF);
    
   }
@@ -222,8 +226,8 @@ GarretCSParser::Residue_listContext::Residue_listContext(ParserRuleContext *pare
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* GarretCSParser::Residue_listContext::Integer() {
-  return getToken(GarretCSParser::Integer, 0);
+GarretCSParser::Res_idContext* GarretCSParser::Residue_listContext::res_id() {
+  return getRuleContext<GarretCSParser::Res_idContext>(0);
 }
 
 tree::TerminalNode* GarretCSParser::Residue_listContext::Simple_name() {
@@ -234,16 +238,16 @@ tree::TerminalNode* GarretCSParser::Residue_listContext::RETURN() {
   return getToken(GarretCSParser::RETURN, 0);
 }
 
-tree::TerminalNode* GarretCSParser::Residue_listContext::SMCLN_COMMENT() {
-  return getToken(GarretCSParser::SMCLN_COMMENT, 0);
-}
-
 std::vector<GarretCSParser::Shift_listContext *> GarretCSParser::Residue_listContext::shift_list() {
   return getRuleContexts<GarretCSParser::Shift_listContext>();
 }
 
 GarretCSParser::Shift_listContext* GarretCSParser::Residue_listContext::shift_list(size_t i) {
   return getRuleContext<GarretCSParser::Shift_listContext>(i);
+}
+
+tree::TerminalNode* GarretCSParser::Residue_listContext::SMCLN_COMMENT() {
+  return getToken(GarretCSParser::SMCLN_COMMENT, 0);
 }
 
 
@@ -272,25 +276,103 @@ GarretCSParser::Residue_listContext* GarretCSParser::residue_list() {
     exitRule();
   });
   try {
+    size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(24);
-    match(GarretCSParser::Integer);
-    setState(25);
-    match(GarretCSParser::Simple_name);
     setState(26);
+    res_id();
+    setState(27);
+    match(GarretCSParser::Simple_name);
+    setState(28);
     match(GarretCSParser::RETURN);
-    setState(28); 
+    setState(30); 
     _errHandler->sync(this);
-    _la = _input->LA(1);
+    alt = 1;
     do {
-      setState(27);
-      shift_list();
-      setState(30); 
+      switch (alt) {
+        case 1: {
+              setState(29);
+              shift_list();
+              break;
+            }
+
+      default:
+        throw NoViableAltException(this);
+      }
+      setState(32); 
       _errHandler->sync(this);
-      _la = _input->LA(1);
-    } while (_la == GarretCSParser::Simple_name);
-    setState(32);
-    match(GarretCSParser::SMCLN_COMMENT);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 3, _ctx);
+    } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
+    setState(35);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if (_la == GarretCSParser::SMCLN_COMMENT) {
+      setState(34);
+      match(GarretCSParser::SMCLN_COMMENT);
+    }
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- Res_idContext ------------------------------------------------------------------
+
+GarretCSParser::Res_idContext::Res_idContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+tree::TerminalNode* GarretCSParser::Res_idContext::Integer() {
+  return getToken(GarretCSParser::Integer, 0);
+}
+
+tree::TerminalNode* GarretCSParser::Res_idContext::Simple_name() {
+  return getToken(GarretCSParser::Simple_name, 0);
+}
+
+
+size_t GarretCSParser::Res_idContext::getRuleIndex() const {
+  return GarretCSParser::RuleRes_id;
+}
+
+
+std::any GarretCSParser::Res_idContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<GarretCSParserVisitor*>(visitor))
+    return parserVisitor->visitRes_id(this);
+  else
+    return visitor->visitChildren(this);
+}
+
+GarretCSParser::Res_idContext* GarretCSParser::res_id() {
+  Res_idContext *_localctx = _tracker.createInstance<Res_idContext>(_ctx, getState());
+  enterRule(_localctx, 4, GarretCSParser::RuleRes_id);
+  size_t _la = 0;
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(37);
+    _la = _input->LA(1);
+    if (!(_la == GarretCSParser::Integer
+
+    || _la == GarretCSParser::Simple_name)) {
+    _errHandler->recoverInline(this);
+    }
+    else {
+      _errHandler->reportMatch(this);
+      consume();
+    }
    
   }
   catch (RecognitionException &e) {
@@ -335,8 +417,7 @@ std::any GarretCSParser::Shift_listContext::accept(tree::ParseTreeVisitor *visit
 
 GarretCSParser::Shift_listContext* GarretCSParser::shift_list() {
   Shift_listContext *_localctx = _tracker.createInstance<Shift_listContext>(_ctx, getState());
-  enterRule(_localctx, 4, GarretCSParser::RuleShift_list);
-  size_t _la = 0;
+  enterRule(_localctx, 6, GarretCSParser::RuleShift_list);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -347,17 +428,22 @@ GarretCSParser::Shift_listContext* GarretCSParser::shift_list() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(34);
+    setState(39);
     match(GarretCSParser::Simple_name);
-    setState(35);
+    setState(40);
     number();
-    setState(37);
+    setState(42);
     _errHandler->sync(this);
 
-    _la = _input->LA(1);
-    if (_la == GarretCSParser::RETURN) {
-      setState(36);
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 5, _ctx)) {
+    case 1: {
+      setState(41);
       match(GarretCSParser::RETURN);
+      break;
+    }
+
+    default:
+      break;
     }
    
   }
@@ -403,7 +489,7 @@ std::any GarretCSParser::NumberContext::accept(tree::ParseTreeVisitor *visitor) 
 
 GarretCSParser::NumberContext* GarretCSParser::number() {
   NumberContext *_localctx = _tracker.createInstance<NumberContext>(_ctx, getState());
-  enterRule(_localctx, 6, GarretCSParser::RuleNumber);
+  enterRule(_localctx, 8, GarretCSParser::RuleNumber);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -415,7 +501,7 @@ GarretCSParser::NumberContext* GarretCSParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(39);
+    setState(44);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 70) != 0))) {

@@ -42,7 +42,7 @@ ext_peak_pick_tbl_row:
 
 residue_list:
 	(Res_ID | Res_ID_) res_id RETURN
-	Res_type res_type RETURN
+	Res_type res_type* RETURN
 	(Prev_type res_type* RETURN)?
 	(Cur_type res_type* RETURN)?
 	Spin_system_ID Integer RETURN

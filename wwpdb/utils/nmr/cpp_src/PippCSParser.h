@@ -137,8 +137,6 @@ public:
     std::vector<antlr4::tree::TerminalNode *> RETURN();
     antlr4::tree::TerminalNode* RETURN(size_t i);
     antlr4::tree::TerminalNode *Res_type();
-    std::vector<Res_typeContext *> res_type();
-    Res_typeContext* res_type(size_t i);
     antlr4::tree::TerminalNode *Spin_system_ID();
     std::vector<antlr4::tree::TerminalNode *> Integer();
     antlr4::tree::TerminalNode* Integer(size_t i);
@@ -146,6 +144,8 @@ public:
     antlr4::tree::TerminalNode *Res_ID();
     antlr4::tree::TerminalNode *Res_ID_();
     antlr4::tree::TerminalNode *EOF();
+    std::vector<Res_typeContext *> res_type();
+    Res_typeContext* res_type(size_t i);
     antlr4::tree::TerminalNode *Prev_type();
     antlr4::tree::TerminalNode *Cur_type();
     antlr4::tree::TerminalNode *Heterogeneity();

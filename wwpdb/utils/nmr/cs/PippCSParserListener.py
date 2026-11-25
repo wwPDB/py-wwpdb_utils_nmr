@@ -97,6 +97,8 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by PippCSParser#residue_list.
         """
 
+        self.__comp_id = '.'
+
     def exitResidue_list(self, ctx: PippCSParser.Residue_listContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by PippCSParser#residue_list.
         """
@@ -141,10 +143,11 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
         """ Enter a parse tree produced by PippCSParser#res_type.
         """
 
-        if ctx.Simple_name():
-            self.__comp_id = str(ctx.Simple_name())
-        else:
-            self.__comp_id = None
+        if self.__comp_id == '.':
+            if ctx.Simple_name():
+                self.__comp_id = str(ctx.Simple_name())
+            else:
+                self.__comp_id = None
 
     def exitRes_type(self, ctx: PippCSParser.Res_typeContext):  # pylint: disable=unused-argument
         """ Exit a parse tree produced by PippCSParser#res_type.
@@ -178,7 +181,7 @@ class PippCSParserListener(ParseTreeListener, BaseCSParserListener):
                 if dstFunc2 is None:
                     return
 
-            if None in (self.__seq_id, self.__comp_id):
+            if None in (self.__seq_id, self.__comp_id) or self.__comp_id == '.':
                 return
 
             auth_seq_id_map = {}

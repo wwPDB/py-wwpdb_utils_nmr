@@ -15,10 +15,12 @@ public:
     Integer = 1, Float = 2, Float_DecimalComma = 3, Real = 4, SHARP_COMMENT = 5, 
     EXCLM_COMMENT = 6, SMCLN_COMMENT = 7, Chiral_code = 8, Atom_selection = 9, 
     Ordinal = 10, Or = 11, Restraint = 12, Mixing_times = 13, SPACE = 14, 
-    ENCLOSE_COMMENT = 15, SECTION_COMMENT = 16, LINE_COMMENT = 17, Double_quote_string = 18, 
-    Create = 19, Function = 20, Target = 21, Distance = 22, Quadratic = 23, 
-    Flat_bottomed = 24, Relative = 25, SPACE_II = 26, RETURN_II = 27, Real_MT = 28, 
-    Float_MT = 29, Integer_MT = 30, And_MR = 31, SPACE_MT = 32, RETURN_MT = 33
+    ENCLOSE_COMMENT = 15, SECTION_COMMENT = 16, LINE_COMMENT = 17, Integer_II = 18, 
+    Float_II = 19, Create = 20, Function = 21, Target = 22, Distance = 23, 
+    Torsion = 24, Quadratic = 25, Flat_bottomed = 26, Relative = 27, Trans = 28, 
+    Simple_name_II = 29, Double_quote_string_II = 30, CONTINUE = 31, SPACE_II = 32, 
+    RETURN_II = 33, Real_MT = 34, Float_MT = 35, Integer_MT = 36, And_MR = 37, 
+    SPACE_MT = 38, RETURN_MT = 39
   };
 
   enum {
@@ -30,8 +32,10 @@ public:
     RuleDihedral_angle_wo_w_constraint = 12, RuleRdc_restraints = 13, RuleRdc_restraint = 14, 
     RuleChirality_constraints = 15, RuleChirality_constraint = 16, RuleProchirality_constraints = 17, 
     RuleProchirality_constraint = 18, RuleMixing_time = 19, RuleNumber = 20, 
-    RuleIns_distance_restraints = 21, RuleIns_distance_restraint = 22, RuleDecl_create = 23, 
-    RuleDecl_function = 24, RuleDecl_target = 25
+    RuleIns_distance_restraints = 21, RuleIns_distance_restraint = 22, RuleIns_dihedral_angle_restraints = 23, 
+    RuleIns_dihedral_angle_restraint = 24, RuleDecl_create_dist = 25, RuleDecl_create_dihed = 26, 
+    RuleDecl_function = 27, RuleDecl_target = 28, RuleIns_rst_id = 29, RuleIns_atom_sel = 30, 
+    RuleIns_num_sel = 31
   };
 
   explicit BiosymMRParser(antlr4::TokenStream *input);
@@ -74,9 +78,15 @@ public:
   class NumberContext;
   class Ins_distance_restraintsContext;
   class Ins_distance_restraintContext;
-  class Decl_createContext;
+  class Ins_dihedral_angle_restraintsContext;
+  class Ins_dihedral_angle_restraintContext;
+  class Decl_create_distContext;
+  class Decl_create_dihedContext;
   class Decl_functionContext;
-  class Decl_targetContext; 
+  class Decl_targetContext;
+  class Ins_rst_idContext;
+  class Ins_atom_selContext;
+  class Ins_num_selContext; 
 
   class  Biosym_mrContext : public antlr4::ParserRuleContext {
   public:
@@ -105,6 +115,8 @@ public:
     Mixing_timeContext* mixing_time(size_t i);
     std::vector<Ins_distance_restraintsContext *> ins_distance_restraints();
     Ins_distance_restraintsContext* ins_distance_restraints(size_t i);
+    std::vector<Ins_dihedral_angle_restraintsContext *> ins_dihedral_angle_restraints();
+    Ins_dihedral_angle_restraintsContext* ins_dihedral_angle_restraints(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -446,7 +458,7 @@ public:
   public:
     Ins_distance_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    Decl_createContext *decl_create();
+    Decl_create_distContext *decl_create_dist();
     Decl_functionContext *decl_function();
     Decl_targetContext *decl_target();
 
@@ -457,15 +469,44 @@ public:
 
   Ins_distance_restraintContext* ins_distance_restraint();
 
-  class  Decl_createContext : public antlr4::ParserRuleContext {
+  class  Ins_dihedral_angle_restraintsContext : public antlr4::ParserRuleContext {
   public:
-    Decl_createContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    Ins_dihedral_angle_restraintsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    Ins_dihedral_angle_restraintContext *ins_dihedral_angle_restraint();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Ins_dihedral_angle_restraintsContext* ins_dihedral_angle_restraints();
+
+  class  Ins_dihedral_angle_restraintContext : public antlr4::ParserRuleContext {
+  public:
+    Ins_dihedral_angle_restraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    Decl_create_dihedContext *decl_create_dihed();
+    Decl_functionContext *decl_function();
+    Decl_targetContext *decl_target();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Ins_dihedral_angle_restraintContext* ins_dihedral_angle_restraint();
+
+  class  Decl_create_distContext : public antlr4::ParserRuleContext {
+  public:
+    Decl_create_distContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Restraint();
     antlr4::tree::TerminalNode *Create();
-    std::vector<antlr4::tree::TerminalNode *> Double_quote_string();
-    antlr4::tree::TerminalNode* Double_quote_string(size_t i);
+    Ins_rst_idContext *ins_rst_id();
     antlr4::tree::TerminalNode *Distance();
+    std::vector<Ins_atom_selContext *> ins_atom_sel();
+    Ins_atom_selContext* ins_atom_sel(size_t i);
     antlr4::tree::TerminalNode *RETURN_II();
 
 
@@ -473,7 +514,26 @@ public:
    
   };
 
-  Decl_createContext* decl_create();
+  Decl_create_distContext* decl_create_dist();
+
+  class  Decl_create_dihedContext : public antlr4::ParserRuleContext {
+  public:
+    Decl_create_dihedContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Restraint();
+    antlr4::tree::TerminalNode *Create();
+    Ins_rst_idContext *ins_rst_id();
+    antlr4::tree::TerminalNode *Torsion();
+    std::vector<Ins_atom_selContext *> ins_atom_sel();
+    Ins_atom_selContext* ins_atom_sel(size_t i);
+    antlr4::tree::TerminalNode *RETURN_II();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Decl_create_dihedContext* decl_create_dihed();
 
   class  Decl_functionContext : public antlr4::ParserRuleContext {
   public:
@@ -481,9 +541,11 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Restraint();
     antlr4::tree::TerminalNode *Function();
-    std::vector<antlr4::tree::TerminalNode *> Double_quote_string();
-    antlr4::tree::TerminalNode* Double_quote_string(size_t i);
+    Ins_rst_idContext *ins_rst_id();
     antlr4::tree::TerminalNode *RETURN_II();
+    std::vector<Ins_num_selContext *> ins_num_sel();
+    Ins_num_selContext* ins_num_sel(size_t i);
+    antlr4::tree::TerminalNode *Trans();
     antlr4::tree::TerminalNode *Quadratic();
     antlr4::tree::TerminalNode *Flat_bottomed();
 
@@ -500,8 +562,9 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Restraint();
     antlr4::tree::TerminalNode *Target();
-    std::vector<antlr4::tree::TerminalNode *> Double_quote_string();
-    antlr4::tree::TerminalNode* Double_quote_string(size_t i);
+    Ins_rst_idContext *ins_rst_id();
+    std::vector<Ins_num_selContext *> ins_num_sel();
+    Ins_num_selContext* ins_num_sel(size_t i);
     antlr4::tree::TerminalNode *RETURN_II();
     antlr4::tree::TerminalNode *Relative();
 
@@ -511,6 +574,50 @@ public:
   };
 
   Decl_targetContext* decl_target();
+
+  class  Ins_rst_idContext : public antlr4::ParserRuleContext {
+  public:
+    Ins_rst_idContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Double_quote_string_II();
+    antlr4::tree::TerminalNode *Simple_name_II();
+    antlr4::tree::TerminalNode *Integer_II();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Ins_rst_idContext* ins_rst_id();
+
+  class  Ins_atom_selContext : public antlr4::ParserRuleContext {
+  public:
+    Ins_atom_selContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Double_quote_string_II();
+    antlr4::tree::TerminalNode *Simple_name_II();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Ins_atom_selContext* ins_atom_sel();
+
+  class  Ins_num_selContext : public antlr4::ParserRuleContext {
+  public:
+    Ins_num_selContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *Double_quote_string_II();
+    antlr4::tree::TerminalNode *Float_II();
+    antlr4::tree::TerminalNode *Integer_II();
+
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  Ins_num_selContext* ins_num_sel();
 
 
   // By default the static state used to implement the parser is lazily initialized during the first

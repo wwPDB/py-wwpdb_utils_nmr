@@ -89,20 +89,28 @@ LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | 
 
 mode INSIGHT_II_MODE;
 
-fragment NAME_CHAR_II:	START_CHAR | '\'' | '-' | '+' | '.' | '"' | '*' | '#' | ':' | '|';
-fragment SIMPLE_NAME_II:	START_CHAR NAME_CHAR_II*;
+fragment START_CHAR_II: ALPHA_NUM | '_' | '*';
+fragment NAME_CHAR_II:  START_CHAR_II | '\'' | '-' | '+' | '.' | '"' | '#' | ':' | '|';
 
-Double_quote_string:	'"' SIMPLE_NAME_II '"';
+Integer_II:		Integer;
+Float_II:		Float;
 
 Create:			'create';
 Function:		'function';
 Target:			'target';
 
 Distance:		'distance';
+Torsion:		'torsion';
 Quadratic:		'quadratic';
 Flat_bottomed:		'flatBottomed';
 
 Relative:		'relative';
+Trans:			'trans';
+
+Simple_name_II:		START_CHAR_II NAME_CHAR_II*;
+Double_quote_string_II:	'"' Simple_name_II '"';
+
+CONTINUE:		'\\' [\r\n]+ -> skip;
 
 SPACE_II:		[ \t]+ -> skip;
 

@@ -15,10 +15,12 @@ public:
     Integer = 1, Float = 2, Float_DecimalComma = 3, Real = 4, SHARP_COMMENT = 5, 
     EXCLM_COMMENT = 6, SMCLN_COMMENT = 7, Chiral_code = 8, Atom_selection = 9, 
     Ordinal = 10, Or = 11, Restraint = 12, Mixing_times = 13, SPACE = 14, 
-    ENCLOSE_COMMENT = 15, SECTION_COMMENT = 16, LINE_COMMENT = 17, Double_quote_string = 18, 
-    Create = 19, Function = 20, Target = 21, Distance = 22, Quadratic = 23, 
-    Flat_bottomed = 24, Relative = 25, SPACE_II = 26, RETURN_II = 27, Real_MT = 28, 
-    Float_MT = 29, Integer_MT = 30, And_MR = 31, SPACE_MT = 32, RETURN_MT = 33
+    ENCLOSE_COMMENT = 15, SECTION_COMMENT = 16, LINE_COMMENT = 17, Integer_II = 18, 
+    Float_II = 19, Create = 20, Function = 21, Target = 22, Distance = 23, 
+    Torsion = 24, Quadratic = 25, Flat_bottomed = 26, Relative = 27, Trans = 28, 
+    Simple_name_II = 29, Double_quote_string_II = 30, CONTINUE = 31, SPACE_II = 32, 
+    RETURN_II = 33, Real_MT = 34, Float_MT = 35, Integer_MT = 36, And_MR = 37, 
+    SPACE_MT = 38, RETURN_MT = 39
   };
 
   enum {

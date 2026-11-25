@@ -30,7 +30,8 @@ biosym_mr:
 	chirality_constraints |
 	prochirality_constraints |
 	mixing_time |
-	ins_distance_restraints
+	ins_distance_restraints |
+	ins_dihedral_angle_restraints
 	)*
 	EOF;
 
@@ -139,13 +140,32 @@ ins_distance_restraints:
 	ins_distance_restraint;
 
 ins_distance_restraint:
-	decl_create decl_function decl_target;
+	decl_create_dist decl_function decl_target;
 
-decl_create:
-	Restraint Create Double_quote_string Distance Double_quote_string Double_quote_string RETURN_II;
+/* Insight II dihedral angle restraint */
+ins_dihedral_angle_restraints:
+	ins_dihedral_angle_restraint;
+
+ins_dihedral_angle_restraint:
+	decl_create_dihed decl_function decl_target?;
+
+decl_create_dist:
+	Restraint Create ins_rst_id Distance ins_atom_sel ins_atom_sel RETURN_II;
+
+decl_create_dihed:
+        Restraint Create ins_rst_id Torsion ins_atom_sel ins_atom_sel ins_atom_sel ins_atom_sel RETURN_II;
 
 decl_function:
-	Restraint Function Double_quote_string (Quadratic | Flat_bottomed) Double_quote_string Double_quote_string Double_quote_string? RETURN_II;
+	Restraint Function ins_rst_id ((Quadratic | Flat_bottomed) ins_num_sel ins_num_sel | Trans ins_num_sel) ins_num_sel? RETURN_II;
 
 decl_target:
-	Restraint Target Double_quote_string (Double_quote_string | Relative) Double_quote_string RETURN_II;
+	Restraint Target ins_rst_id (ins_num_sel | Relative) ins_num_sel RETURN_II;
+
+ins_rst_id:
+	Double_quote_string_II | Simple_name_II | Integer_II;
+
+ins_atom_sel:
+	Double_quote_string_II | Simple_name_II;
+
+ins_num_sel:
+	Double_quote_string_II | Float_II | Integer_II;

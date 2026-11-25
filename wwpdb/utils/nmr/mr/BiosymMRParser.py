@@ -10,109 +10,125 @@ else:
 
 def serializedATN():
     return [
-        4,1,33,294,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,39,338,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
-        7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,1,0,1,0,1,
-        0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,5,0,64,8,0,10,0,12,0,67,9,0,1,
-        0,1,0,1,1,4,1,72,8,1,11,1,12,1,73,1,2,3,2,77,8,2,1,2,1,2,1,2,1,2,
-        1,2,1,2,1,2,1,2,1,2,3,2,88,8,2,1,2,1,2,1,2,5,2,93,8,2,10,2,12,2,
-        96,9,2,1,3,4,3,99,8,3,11,3,12,3,100,1,4,3,4,104,8,4,1,4,1,4,1,4,
-        1,4,1,4,1,4,1,4,1,4,1,4,1,4,5,4,116,8,4,10,4,12,4,119,9,4,1,5,4,
-        5,122,8,5,11,5,12,5,123,1,6,3,6,127,8,6,1,6,1,6,1,6,1,6,1,6,3,6,
-        134,8,6,1,6,1,6,1,6,5,6,139,8,6,10,6,12,6,142,9,6,1,7,4,7,145,8,
-        7,11,7,12,7,146,1,8,3,8,150,8,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,
-        1,8,1,8,1,8,1,8,1,8,1,8,3,8,166,8,8,1,8,1,8,1,8,3,8,171,8,8,1,8,
-        1,8,1,8,3,8,176,8,8,1,9,4,9,179,8,9,11,9,12,9,180,1,10,3,10,184,
-        8,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,3,10,195,8,10,
-        1,11,4,11,198,8,11,11,11,12,11,199,1,12,3,12,203,8,12,1,12,1,12,
-        1,12,1,12,1,12,1,12,1,12,1,13,4,13,213,8,13,11,13,12,13,214,1,14,
-        3,14,218,8,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,15,4,15,228,8,
-        15,11,15,12,15,229,1,16,3,16,233,8,16,1,16,1,16,1,16,1,17,4,17,239,
-        8,17,11,17,12,17,240,1,18,3,18,244,8,18,1,18,1,18,1,18,1,18,1,18,
-        1,18,1,19,1,19,4,19,254,8,19,11,19,12,19,255,1,19,1,19,1,20,1,20,
-        1,21,1,21,1,22,1,22,1,22,1,22,1,23,1,23,1,23,1,23,1,23,1,23,1,23,
-        1,23,1,24,1,24,1,24,1,24,1,24,1,24,1,24,3,24,283,8,24,1,24,1,24,
-        1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,0,0,26,0,2,4,6,8,10,12,14,
-        16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,0,4,1,0,28,
-        30,1,0,1,3,1,0,23,24,2,0,18,18,25,25,307,0,65,1,0,0,0,2,71,1,0,0,
-        0,4,76,1,0,0,0,6,98,1,0,0,0,8,103,1,0,0,0,10,121,1,0,0,0,12,126,
-        1,0,0,0,14,144,1,0,0,0,16,149,1,0,0,0,18,178,1,0,0,0,20,183,1,0,
-        0,0,22,197,1,0,0,0,24,202,1,0,0,0,26,212,1,0,0,0,28,217,1,0,0,0,
-        30,227,1,0,0,0,32,232,1,0,0,0,34,238,1,0,0,0,36,243,1,0,0,0,38,251,
-        1,0,0,0,40,259,1,0,0,0,42,261,1,0,0,0,44,263,1,0,0,0,46,267,1,0,
-        0,0,48,275,1,0,0,0,50,286,1,0,0,0,52,64,3,2,1,0,53,64,3,6,3,0,54,
-        64,3,10,5,0,55,64,3,14,7,0,56,64,3,18,9,0,57,64,3,22,11,0,58,64,
-        3,26,13,0,59,64,3,30,15,0,60,64,3,34,17,0,61,64,3,38,19,0,62,64,
-        3,42,21,0,63,52,1,0,0,0,63,53,1,0,0,0,63,54,1,0,0,0,63,55,1,0,0,
-        0,63,56,1,0,0,0,63,57,1,0,0,0,63,58,1,0,0,0,63,59,1,0,0,0,63,60,
-        1,0,0,0,63,61,1,0,0,0,63,62,1,0,0,0,64,67,1,0,0,0,65,63,1,0,0,0,
-        65,66,1,0,0,0,66,68,1,0,0,0,67,65,1,0,0,0,68,69,5,0,0,1,69,1,1,0,
-        0,0,70,72,3,4,2,0,71,70,1,0,0,0,72,73,1,0,0,0,73,71,1,0,0,0,73,74,
-        1,0,0,0,74,3,1,0,0,0,75,77,5,10,0,0,76,75,1,0,0,0,76,77,1,0,0,0,
-        77,78,1,0,0,0,78,79,5,9,0,0,79,80,5,9,0,0,80,81,3,40,20,0,81,82,
-        3,40,20,0,82,83,3,40,20,0,83,84,3,40,20,0,84,85,3,40,20,0,85,87,
-        3,40,20,0,86,88,3,40,20,0,87,86,1,0,0,0,87,88,1,0,0,0,88,94,1,0,
-        0,0,89,90,5,11,0,0,90,91,5,9,0,0,91,93,5,9,0,0,92,89,1,0,0,0,93,
-        96,1,0,0,0,94,92,1,0,0,0,94,95,1,0,0,0,95,5,1,0,0,0,96,94,1,0,0,
-        0,97,99,3,8,4,0,98,97,1,0,0,0,99,100,1,0,0,0,100,98,1,0,0,0,100,
-        101,1,0,0,0,101,7,1,0,0,0,102,104,5,10,0,0,103,102,1,0,0,0,103,104,
-        1,0,0,0,104,105,1,0,0,0,105,106,5,9,0,0,106,107,5,9,0,0,107,108,
-        3,40,20,0,108,109,3,40,20,0,109,110,3,40,20,0,110,111,3,40,20,0,
-        111,117,3,40,20,0,112,113,5,11,0,0,113,114,5,9,0,0,114,116,5,9,0,
-        0,115,112,1,0,0,0,116,119,1,0,0,0,117,115,1,0,0,0,117,118,1,0,0,
-        0,118,9,1,0,0,0,119,117,1,0,0,0,120,122,3,12,6,0,121,120,1,0,0,0,
-        122,123,1,0,0,0,123,121,1,0,0,0,123,124,1,0,0,0,124,11,1,0,0,0,125,
-        127,5,10,0,0,126,125,1,0,0,0,126,127,1,0,0,0,127,128,1,0,0,0,128,
-        129,5,9,0,0,129,130,5,9,0,0,130,131,3,40,20,0,131,133,3,40,20,0,
-        132,134,3,40,20,0,133,132,1,0,0,0,133,134,1,0,0,0,134,140,1,0,0,
-        0,135,136,5,11,0,0,136,137,5,9,0,0,137,139,5,9,0,0,138,135,1,0,0,
-        0,139,142,1,0,0,0,140,138,1,0,0,0,140,141,1,0,0,0,141,13,1,0,0,0,
-        142,140,1,0,0,0,143,145,3,16,8,0,144,143,1,0,0,0,145,146,1,0,0,0,
-        146,144,1,0,0,0,146,147,1,0,0,0,147,15,1,0,0,0,148,150,5,10,0,0,
-        149,148,1,0,0,0,149,150,1,0,0,0,150,151,1,0,0,0,151,152,5,9,0,0,
-        152,153,5,9,0,0,153,154,5,9,0,0,154,155,5,9,0,0,155,156,3,40,20,
-        0,156,157,3,40,20,0,157,158,3,40,20,0,158,159,3,40,20,0,159,160,
-        3,40,20,0,160,161,3,40,20,0,161,165,3,40,20,0,162,163,3,40,20,0,
-        163,164,3,40,20,0,164,166,1,0,0,0,165,162,1,0,0,0,165,166,1,0,0,
-        0,166,170,1,0,0,0,167,168,3,40,20,0,168,169,3,40,20,0,169,171,1,
-        0,0,0,170,167,1,0,0,0,170,171,1,0,0,0,171,175,1,0,0,0,172,173,3,
-        40,20,0,173,174,3,40,20,0,174,176,1,0,0,0,175,172,1,0,0,0,175,176,
-        1,0,0,0,176,17,1,0,0,0,177,179,3,20,10,0,178,177,1,0,0,0,179,180,
-        1,0,0,0,180,178,1,0,0,0,180,181,1,0,0,0,181,19,1,0,0,0,182,184,5,
-        10,0,0,183,182,1,0,0,0,183,184,1,0,0,0,184,185,1,0,0,0,185,186,5,
-        9,0,0,186,187,5,9,0,0,187,188,5,9,0,0,188,189,5,9,0,0,189,190,3,
-        40,20,0,190,191,3,40,20,0,191,192,3,40,20,0,192,194,3,40,20,0,193,
-        195,3,40,20,0,194,193,1,0,0,0,194,195,1,0,0,0,195,21,1,0,0,0,196,
-        198,3,24,12,0,197,196,1,0,0,0,198,199,1,0,0,0,199,197,1,0,0,0,199,
-        200,1,0,0,0,200,23,1,0,0,0,201,203,5,10,0,0,202,201,1,0,0,0,202,
-        203,1,0,0,0,203,204,1,0,0,0,204,205,5,9,0,0,205,206,5,9,0,0,206,
-        207,5,9,0,0,207,208,5,9,0,0,208,209,3,40,20,0,209,210,3,40,20,0,
-        210,25,1,0,0,0,211,213,3,28,14,0,212,211,1,0,0,0,213,214,1,0,0,0,
-        214,212,1,0,0,0,214,215,1,0,0,0,215,27,1,0,0,0,216,218,5,10,0,0,
-        217,216,1,0,0,0,217,218,1,0,0,0,218,219,1,0,0,0,219,220,5,9,0,0,
-        220,221,5,9,0,0,221,222,3,40,20,0,222,223,3,40,20,0,223,224,3,40,
-        20,0,224,225,3,40,20,0,225,29,1,0,0,0,226,228,3,32,16,0,227,226,
-        1,0,0,0,228,229,1,0,0,0,229,227,1,0,0,0,229,230,1,0,0,0,230,31,1,
-        0,0,0,231,233,5,10,0,0,232,231,1,0,0,0,232,233,1,0,0,0,233,234,1,
-        0,0,0,234,235,5,9,0,0,235,236,5,8,0,0,236,33,1,0,0,0,237,239,3,36,
-        18,0,238,237,1,0,0,0,239,240,1,0,0,0,240,238,1,0,0,0,240,241,1,0,
-        0,0,241,35,1,0,0,0,242,244,5,10,0,0,243,242,1,0,0,0,243,244,1,0,
-        0,0,244,245,1,0,0,0,245,246,5,9,0,0,246,247,5,9,0,0,247,248,5,9,
-        0,0,248,249,5,9,0,0,249,250,5,9,0,0,250,37,1,0,0,0,251,253,5,13,
-        0,0,252,254,7,0,0,0,253,252,1,0,0,0,254,255,1,0,0,0,255,253,1,0,
-        0,0,255,256,1,0,0,0,256,257,1,0,0,0,257,258,5,33,0,0,258,39,1,0,
-        0,0,259,260,7,1,0,0,260,41,1,0,0,0,261,262,3,44,22,0,262,43,1,0,
-        0,0,263,264,3,46,23,0,264,265,3,48,24,0,265,266,3,50,25,0,266,45,
-        1,0,0,0,267,268,5,12,0,0,268,269,5,19,0,0,269,270,5,18,0,0,270,271,
-        5,22,0,0,271,272,5,18,0,0,272,273,5,18,0,0,273,274,5,27,0,0,274,
-        47,1,0,0,0,275,276,5,12,0,0,276,277,5,20,0,0,277,278,5,18,0,0,278,
-        279,7,2,0,0,279,280,5,18,0,0,280,282,5,18,0,0,281,283,5,18,0,0,282,
-        281,1,0,0,0,282,283,1,0,0,0,283,284,1,0,0,0,284,285,5,27,0,0,285,
-        49,1,0,0,0,286,287,5,12,0,0,287,288,5,21,0,0,288,289,5,18,0,0,289,
-        290,7,3,0,0,290,291,5,18,0,0,291,292,5,27,0,0,292,51,1,0,0,0,31,
-        63,65,73,76,87,94,100,103,117,123,126,133,140,146,149,165,170,175,
-        180,183,194,199,202,214,217,229,232,240,243,255,282
+        7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
+        2,27,7,27,2,28,7,28,2,29,7,29,2,30,7,30,2,31,7,31,1,0,1,0,1,0,1,
+        0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,5,0,77,8,0,10,0,12,0,80,9,0,1,
+        0,1,0,1,1,4,1,85,8,1,11,1,12,1,86,1,2,3,2,90,8,2,1,2,1,2,1,2,1,2,
+        1,2,1,2,1,2,1,2,1,2,3,2,101,8,2,1,2,1,2,1,2,5,2,106,8,2,10,2,12,
+        2,109,9,2,1,3,4,3,112,8,3,11,3,12,3,113,1,4,3,4,117,8,4,1,4,1,4,
+        1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,5,4,129,8,4,10,4,12,4,132,9,4,1,
+        5,4,5,135,8,5,11,5,12,5,136,1,6,3,6,140,8,6,1,6,1,6,1,6,1,6,1,6,
+        3,6,147,8,6,1,6,1,6,1,6,5,6,152,8,6,10,6,12,6,155,9,6,1,7,4,7,158,
+        8,7,11,7,12,7,159,1,8,3,8,163,8,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,
+        8,1,8,1,8,1,8,1,8,1,8,1,8,3,8,179,8,8,1,8,1,8,1,8,3,8,184,8,8,1,
+        8,1,8,1,8,3,8,189,8,8,1,9,4,9,192,8,9,11,9,12,9,193,1,10,3,10,197,
+        8,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,3,10,208,8,10,
+        1,11,4,11,211,8,11,11,11,12,11,212,1,12,3,12,216,8,12,1,12,1,12,
+        1,12,1,12,1,12,1,12,1,12,1,13,4,13,226,8,13,11,13,12,13,227,1,14,
+        3,14,231,8,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,15,4,15,241,8,
+        15,11,15,12,15,242,1,16,3,16,246,8,16,1,16,1,16,1,16,1,17,4,17,252,
+        8,17,11,17,12,17,253,1,18,3,18,257,8,18,1,18,1,18,1,18,1,18,1,18,
+        1,18,1,19,1,19,4,19,267,8,19,11,19,12,19,268,1,19,1,19,1,20,1,20,
+        1,21,1,21,1,22,1,22,1,22,1,22,1,23,1,23,1,24,1,24,1,24,3,24,286,
+        8,24,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,26,1,26,1,26,1,26,
+        1,26,1,26,1,26,1,26,1,26,1,26,1,27,1,27,1,27,1,27,1,27,1,27,1,27,
+        1,27,1,27,3,27,315,8,27,1,27,3,27,318,8,27,1,27,1,27,1,28,1,28,1,
+        28,1,28,1,28,3,28,327,8,28,1,28,1,28,1,28,1,29,1,29,1,30,1,30,1,
+        31,1,31,1,31,0,0,32,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,
+        34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,0,6,1,0,34,36,1,0,1,
+        3,1,0,25,26,2,0,18,18,29,30,1,0,29,30,2,0,18,19,30,30,349,0,78,1,
+        0,0,0,2,84,1,0,0,0,4,89,1,0,0,0,6,111,1,0,0,0,8,116,1,0,0,0,10,134,
+        1,0,0,0,12,139,1,0,0,0,14,157,1,0,0,0,16,162,1,0,0,0,18,191,1,0,
+        0,0,20,196,1,0,0,0,22,210,1,0,0,0,24,215,1,0,0,0,26,225,1,0,0,0,
+        28,230,1,0,0,0,30,240,1,0,0,0,32,245,1,0,0,0,34,251,1,0,0,0,36,256,
+        1,0,0,0,38,264,1,0,0,0,40,272,1,0,0,0,42,274,1,0,0,0,44,276,1,0,
+        0,0,46,280,1,0,0,0,48,282,1,0,0,0,50,287,1,0,0,0,52,295,1,0,0,0,
+        54,305,1,0,0,0,56,321,1,0,0,0,58,331,1,0,0,0,60,333,1,0,0,0,62,335,
+        1,0,0,0,64,77,3,2,1,0,65,77,3,6,3,0,66,77,3,10,5,0,67,77,3,14,7,
+        0,68,77,3,18,9,0,69,77,3,22,11,0,70,77,3,26,13,0,71,77,3,30,15,0,
+        72,77,3,34,17,0,73,77,3,38,19,0,74,77,3,42,21,0,75,77,3,46,23,0,
+        76,64,1,0,0,0,76,65,1,0,0,0,76,66,1,0,0,0,76,67,1,0,0,0,76,68,1,
+        0,0,0,76,69,1,0,0,0,76,70,1,0,0,0,76,71,1,0,0,0,76,72,1,0,0,0,76,
+        73,1,0,0,0,76,74,1,0,0,0,76,75,1,0,0,0,77,80,1,0,0,0,78,76,1,0,0,
+        0,78,79,1,0,0,0,79,81,1,0,0,0,80,78,1,0,0,0,81,82,5,0,0,1,82,1,1,
+        0,0,0,83,85,3,4,2,0,84,83,1,0,0,0,85,86,1,0,0,0,86,84,1,0,0,0,86,
+        87,1,0,0,0,87,3,1,0,0,0,88,90,5,10,0,0,89,88,1,0,0,0,89,90,1,0,0,
+        0,90,91,1,0,0,0,91,92,5,9,0,0,92,93,5,9,0,0,93,94,3,40,20,0,94,95,
+        3,40,20,0,95,96,3,40,20,0,96,97,3,40,20,0,97,98,3,40,20,0,98,100,
+        3,40,20,0,99,101,3,40,20,0,100,99,1,0,0,0,100,101,1,0,0,0,101,107,
+        1,0,0,0,102,103,5,11,0,0,103,104,5,9,0,0,104,106,5,9,0,0,105,102,
+        1,0,0,0,106,109,1,0,0,0,107,105,1,0,0,0,107,108,1,0,0,0,108,5,1,
+        0,0,0,109,107,1,0,0,0,110,112,3,8,4,0,111,110,1,0,0,0,112,113,1,
+        0,0,0,113,111,1,0,0,0,113,114,1,0,0,0,114,7,1,0,0,0,115,117,5,10,
+        0,0,116,115,1,0,0,0,116,117,1,0,0,0,117,118,1,0,0,0,118,119,5,9,
+        0,0,119,120,5,9,0,0,120,121,3,40,20,0,121,122,3,40,20,0,122,123,
+        3,40,20,0,123,124,3,40,20,0,124,130,3,40,20,0,125,126,5,11,0,0,126,
+        127,5,9,0,0,127,129,5,9,0,0,128,125,1,0,0,0,129,132,1,0,0,0,130,
+        128,1,0,0,0,130,131,1,0,0,0,131,9,1,0,0,0,132,130,1,0,0,0,133,135,
+        3,12,6,0,134,133,1,0,0,0,135,136,1,0,0,0,136,134,1,0,0,0,136,137,
+        1,0,0,0,137,11,1,0,0,0,138,140,5,10,0,0,139,138,1,0,0,0,139,140,
+        1,0,0,0,140,141,1,0,0,0,141,142,5,9,0,0,142,143,5,9,0,0,143,144,
+        3,40,20,0,144,146,3,40,20,0,145,147,3,40,20,0,146,145,1,0,0,0,146,
+        147,1,0,0,0,147,153,1,0,0,0,148,149,5,11,0,0,149,150,5,9,0,0,150,
+        152,5,9,0,0,151,148,1,0,0,0,152,155,1,0,0,0,153,151,1,0,0,0,153,
+        154,1,0,0,0,154,13,1,0,0,0,155,153,1,0,0,0,156,158,3,16,8,0,157,
+        156,1,0,0,0,158,159,1,0,0,0,159,157,1,0,0,0,159,160,1,0,0,0,160,
+        15,1,0,0,0,161,163,5,10,0,0,162,161,1,0,0,0,162,163,1,0,0,0,163,
+        164,1,0,0,0,164,165,5,9,0,0,165,166,5,9,0,0,166,167,5,9,0,0,167,
+        168,5,9,0,0,168,169,3,40,20,0,169,170,3,40,20,0,170,171,3,40,20,
+        0,171,172,3,40,20,0,172,173,3,40,20,0,173,174,3,40,20,0,174,178,
+        3,40,20,0,175,176,3,40,20,0,176,177,3,40,20,0,177,179,1,0,0,0,178,
+        175,1,0,0,0,178,179,1,0,0,0,179,183,1,0,0,0,180,181,3,40,20,0,181,
+        182,3,40,20,0,182,184,1,0,0,0,183,180,1,0,0,0,183,184,1,0,0,0,184,
+        188,1,0,0,0,185,186,3,40,20,0,186,187,3,40,20,0,187,189,1,0,0,0,
+        188,185,1,0,0,0,188,189,1,0,0,0,189,17,1,0,0,0,190,192,3,20,10,0,
+        191,190,1,0,0,0,192,193,1,0,0,0,193,191,1,0,0,0,193,194,1,0,0,0,
+        194,19,1,0,0,0,195,197,5,10,0,0,196,195,1,0,0,0,196,197,1,0,0,0,
+        197,198,1,0,0,0,198,199,5,9,0,0,199,200,5,9,0,0,200,201,5,9,0,0,
+        201,202,5,9,0,0,202,203,3,40,20,0,203,204,3,40,20,0,204,205,3,40,
+        20,0,205,207,3,40,20,0,206,208,3,40,20,0,207,206,1,0,0,0,207,208,
+        1,0,0,0,208,21,1,0,0,0,209,211,3,24,12,0,210,209,1,0,0,0,211,212,
+        1,0,0,0,212,210,1,0,0,0,212,213,1,0,0,0,213,23,1,0,0,0,214,216,5,
+        10,0,0,215,214,1,0,0,0,215,216,1,0,0,0,216,217,1,0,0,0,217,218,5,
+        9,0,0,218,219,5,9,0,0,219,220,5,9,0,0,220,221,5,9,0,0,221,222,3,
+        40,20,0,222,223,3,40,20,0,223,25,1,0,0,0,224,226,3,28,14,0,225,224,
+        1,0,0,0,226,227,1,0,0,0,227,225,1,0,0,0,227,228,1,0,0,0,228,27,1,
+        0,0,0,229,231,5,10,0,0,230,229,1,0,0,0,230,231,1,0,0,0,231,232,1,
+        0,0,0,232,233,5,9,0,0,233,234,5,9,0,0,234,235,3,40,20,0,235,236,
+        3,40,20,0,236,237,3,40,20,0,237,238,3,40,20,0,238,29,1,0,0,0,239,
+        241,3,32,16,0,240,239,1,0,0,0,241,242,1,0,0,0,242,240,1,0,0,0,242,
+        243,1,0,0,0,243,31,1,0,0,0,244,246,5,10,0,0,245,244,1,0,0,0,245,
+        246,1,0,0,0,246,247,1,0,0,0,247,248,5,9,0,0,248,249,5,8,0,0,249,
+        33,1,0,0,0,250,252,3,36,18,0,251,250,1,0,0,0,252,253,1,0,0,0,253,
+        251,1,0,0,0,253,254,1,0,0,0,254,35,1,0,0,0,255,257,5,10,0,0,256,
+        255,1,0,0,0,256,257,1,0,0,0,257,258,1,0,0,0,258,259,5,9,0,0,259,
+        260,5,9,0,0,260,261,5,9,0,0,261,262,5,9,0,0,262,263,5,9,0,0,263,
+        37,1,0,0,0,264,266,5,13,0,0,265,267,7,0,0,0,266,265,1,0,0,0,267,
+        268,1,0,0,0,268,266,1,0,0,0,268,269,1,0,0,0,269,270,1,0,0,0,270,
+        271,5,39,0,0,271,39,1,0,0,0,272,273,7,1,0,0,273,41,1,0,0,0,274,275,
+        3,44,22,0,275,43,1,0,0,0,276,277,3,50,25,0,277,278,3,54,27,0,278,
+        279,3,56,28,0,279,45,1,0,0,0,280,281,3,48,24,0,281,47,1,0,0,0,282,
+        283,3,52,26,0,283,285,3,54,27,0,284,286,3,56,28,0,285,284,1,0,0,
+        0,285,286,1,0,0,0,286,49,1,0,0,0,287,288,5,12,0,0,288,289,5,20,0,
+        0,289,290,3,58,29,0,290,291,5,23,0,0,291,292,3,60,30,0,292,293,3,
+        60,30,0,293,294,5,33,0,0,294,51,1,0,0,0,295,296,5,12,0,0,296,297,
+        5,20,0,0,297,298,3,58,29,0,298,299,5,24,0,0,299,300,3,60,30,0,300,
+        301,3,60,30,0,301,302,3,60,30,0,302,303,3,60,30,0,303,304,5,33,0,
+        0,304,53,1,0,0,0,305,306,5,12,0,0,306,307,5,21,0,0,307,314,3,58,
+        29,0,308,309,7,2,0,0,309,310,3,62,31,0,310,311,3,62,31,0,311,315,
+        1,0,0,0,312,313,5,28,0,0,313,315,3,62,31,0,314,308,1,0,0,0,314,312,
+        1,0,0,0,315,317,1,0,0,0,316,318,3,62,31,0,317,316,1,0,0,0,317,318,
+        1,0,0,0,318,319,1,0,0,0,319,320,5,33,0,0,320,55,1,0,0,0,321,322,
+        5,12,0,0,322,323,5,22,0,0,323,326,3,58,29,0,324,327,3,62,31,0,325,
+        327,5,27,0,0,326,324,1,0,0,0,326,325,1,0,0,0,327,328,1,0,0,0,328,
+        329,3,62,31,0,329,330,5,33,0,0,330,57,1,0,0,0,331,332,7,3,0,0,332,
+        59,1,0,0,0,333,334,7,4,0,0,334,61,1,0,0,0,335,336,7,5,0,0,336,63,
+        1,0,0,0,34,76,78,86,89,100,107,113,116,130,136,139,146,153,159,162,
+        178,183,188,193,196,207,212,215,227,230,242,245,253,256,268,285,
+        314,317,326
     ]
 
 class BiosymMRParser ( Parser ):
@@ -129,20 +145,23 @@ class BiosymMRParser ( Parser ):
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "'+'", "'restraint'", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "'create'", "'function'", 
-                     "'target'", "'distance'", "'quadratic'", "'flatBottomed'", 
-                     "'relative'", "<INVALID>", "<INVALID>", "<INVALID>", 
-                     "<INVALID>", "<INVALID>", "'and'" ]
+                     "<INVALID>", "<INVALID>", "<INVALID>", "'create'", 
+                     "'function'", "'target'", "'distance'", "'torsion'", 
+                     "'quadratic'", "'flatBottomed'", "'relative'", "'trans'", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "'and'" ]
 
     symbolicNames = [ "<INVALID>", "Integer", "Float", "Float_DecimalComma", 
                       "Real", "SHARP_COMMENT", "EXCLM_COMMENT", "SMCLN_COMMENT", 
                       "Chiral_code", "Atom_selection", "Ordinal", "Or", 
                       "Restraint", "Mixing_times", "SPACE", "ENCLOSE_COMMENT", 
-                      "SECTION_COMMENT", "LINE_COMMENT", "Double_quote_string", 
-                      "Create", "Function", "Target", "Distance", "Quadratic", 
-                      "Flat_bottomed", "Relative", "SPACE_II", "RETURN_II", 
-                      "Real_MT", "Float_MT", "Integer_MT", "And_MR", "SPACE_MT", 
-                      "RETURN_MT" ]
+                      "SECTION_COMMENT", "LINE_COMMENT", "Integer_II", "Float_II", 
+                      "Create", "Function", "Target", "Distance", "Torsion", 
+                      "Quadratic", "Flat_bottomed", "Relative", "Trans", 
+                      "Simple_name_II", "Double_quote_string_II", "CONTINUE", 
+                      "SPACE_II", "RETURN_II", "Real_MT", "Float_MT", "Integer_MT", 
+                      "And_MR", "SPACE_MT", "RETURN_MT" ]
 
     RULE_biosym_mr = 0
     RULE_distance_restraints = 1
@@ -167,9 +186,15 @@ class BiosymMRParser ( Parser ):
     RULE_number = 20
     RULE_ins_distance_restraints = 21
     RULE_ins_distance_restraint = 22
-    RULE_decl_create = 23
-    RULE_decl_function = 24
-    RULE_decl_target = 25
+    RULE_ins_dihedral_angle_restraints = 23
+    RULE_ins_dihedral_angle_restraint = 24
+    RULE_decl_create_dist = 25
+    RULE_decl_create_dihed = 26
+    RULE_decl_function = 27
+    RULE_decl_target = 28
+    RULE_ins_rst_id = 29
+    RULE_ins_atom_sel = 30
+    RULE_ins_num_sel = 31
 
     ruleNames =  [ "biosym_mr", "distance_restraints", "distance_restraint", 
                    "distance_constraints", "distance_constraint", "distance_wo_w_constraints", 
@@ -179,8 +204,10 @@ class BiosymMRParser ( Parser ):
                    "dihedral_angle_wo_w_constraint", "rdc_restraints", "rdc_restraint", 
                    "chirality_constraints", "chirality_constraint", "prochirality_constraints", 
                    "prochirality_constraint", "mixing_time", "number", "ins_distance_restraints", 
-                   "ins_distance_restraint", "decl_create", "decl_function", 
-                   "decl_target" ]
+                   "ins_distance_restraint", "ins_dihedral_angle_restraints", 
+                   "ins_dihedral_angle_restraint", "decl_create_dist", "decl_create_dihed", 
+                   "decl_function", "decl_target", "ins_rst_id", "ins_atom_sel", 
+                   "ins_num_sel" ]
 
     EOF = Token.EOF
     Integer=1
@@ -200,22 +227,28 @@ class BiosymMRParser ( Parser ):
     ENCLOSE_COMMENT=15
     SECTION_COMMENT=16
     LINE_COMMENT=17
-    Double_quote_string=18
-    Create=19
-    Function=20
-    Target=21
-    Distance=22
-    Quadratic=23
-    Flat_bottomed=24
-    Relative=25
-    SPACE_II=26
-    RETURN_II=27
-    Real_MT=28
-    Float_MT=29
-    Integer_MT=30
-    And_MR=31
-    SPACE_MT=32
-    RETURN_MT=33
+    Integer_II=18
+    Float_II=19
+    Create=20
+    Function=21
+    Target=22
+    Distance=23
+    Torsion=24
+    Quadratic=25
+    Flat_bottomed=26
+    Relative=27
+    Trans=28
+    Simple_name_II=29
+    Double_quote_string_II=30
+    CONTINUE=31
+    SPACE_II=32
+    RETURN_II=33
+    Real_MT=34
+    Float_MT=35
+    Integer_MT=36
+    And_MR=37
+    SPACE_MT=38
+    RETURN_MT=39
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -313,6 +346,13 @@ class BiosymMRParser ( Parser ):
                 return self.getTypedRuleContext(BiosymMRParser.Ins_distance_restraintsContext,i)
 
 
+        def ins_dihedral_angle_restraints(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(BiosymMRParser.Ins_dihedral_angle_restraintsContext)
+            else:
+                return self.getTypedRuleContext(BiosymMRParser.Ins_dihedral_angle_restraintsContext,i)
+
+
         def getRuleIndex(self):
             return BiosymMRParser.RULE_biosym_mr
 
@@ -334,74 +374,79 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 65
+            self.state = 78
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & 13824) != 0):
-                self.state = 63
+                self.state = 76
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
                 if la_ == 1:
-                    self.state = 52
+                    self.state = 64
                     self.distance_restraints()
                     pass
 
                 elif la_ == 2:
-                    self.state = 53
+                    self.state = 65
                     self.distance_constraints()
                     pass
 
                 elif la_ == 3:
-                    self.state = 54
+                    self.state = 66
                     self.distance_wo_w_constraints()
                     pass
 
                 elif la_ == 4:
-                    self.state = 55
+                    self.state = 67
                     self.dihedral_angle_restraints()
                     pass
 
                 elif la_ == 5:
-                    self.state = 56
+                    self.state = 68
                     self.dihedral_angle_constraints()
                     pass
 
                 elif la_ == 6:
-                    self.state = 57
+                    self.state = 69
                     self.dihedral_angle_wo_w_constraints()
                     pass
 
                 elif la_ == 7:
-                    self.state = 58
+                    self.state = 70
                     self.rdc_restraints()
                     pass
 
                 elif la_ == 8:
-                    self.state = 59
+                    self.state = 71
                     self.chirality_constraints()
                     pass
 
                 elif la_ == 9:
-                    self.state = 60
+                    self.state = 72
                     self.prochirality_constraints()
                     pass
 
                 elif la_ == 10:
-                    self.state = 61
+                    self.state = 73
                     self.mixing_time()
                     pass
 
                 elif la_ == 11:
-                    self.state = 62
+                    self.state = 74
                     self.ins_distance_restraints()
                     pass
 
+                elif la_ == 12:
+                    self.state = 75
+                    self.ins_dihedral_angle_restraints()
+                    pass
 
-                self.state = 67
+
+                self.state = 80
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 68
+            self.state = 81
             self.match(BiosymMRParser.EOF)
         except RecognitionException as re:
             localctx.exception = re
@@ -446,17 +491,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 2, self.RULE_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 71 
+            self.state = 84 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 70
+                    self.state = 83
                     self.distance_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 73 
+                self.state = 86 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,2,self._ctx)
 
@@ -519,49 +564,49 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 76
+            self.state = 89
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 75
+                self.state = 88
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 78
+            self.state = 91
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 79
+            self.state = 92
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 80
+            self.state = 93
             self.number()
-            self.state = 81
+            self.state = 94
             self.number()
-            self.state = 82
+            self.state = 95
             self.number()
-            self.state = 83
+            self.state = 96
             self.number()
-            self.state = 84
+            self.state = 97
             self.number()
-            self.state = 85
+            self.state = 98
             self.number()
-            self.state = 87
+            self.state = 100
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if (((_la) & ~0x3f) == 0 and ((1 << _la) & 14) != 0):
-                self.state = 86
+                self.state = 99
                 self.number()
 
 
-            self.state = 94
+            self.state = 107
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==11:
-                self.state = 89
+                self.state = 102
                 self.match(BiosymMRParser.Or)
-                self.state = 90
+                self.state = 103
                 self.match(BiosymMRParser.Atom_selection)
-                self.state = 91
+                self.state = 104
                 self.match(BiosymMRParser.Atom_selection)
-                self.state = 96
+                self.state = 109
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -608,17 +653,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 6, self.RULE_distance_constraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 98 
+            self.state = 111 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 97
+                    self.state = 110
                     self.distance_constraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 100 
+                self.state = 113 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
 
@@ -681,39 +726,39 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 103
+            self.state = 116
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 102
+                self.state = 115
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 105
+            self.state = 118
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 106
+            self.state = 119
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 107
+            self.state = 120
             self.number()
-            self.state = 108
+            self.state = 121
             self.number()
-            self.state = 109
+            self.state = 122
             self.number()
-            self.state = 110
+            self.state = 123
             self.number()
-            self.state = 111
+            self.state = 124
             self.number()
-            self.state = 117
+            self.state = 130
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==11:
-                self.state = 112
+                self.state = 125
                 self.match(BiosymMRParser.Or)
-                self.state = 113
+                self.state = 126
                 self.match(BiosymMRParser.Atom_selection)
-                self.state = 114
+                self.state = 127
                 self.match(BiosymMRParser.Atom_selection)
-                self.state = 119
+                self.state = 132
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -760,17 +805,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 10, self.RULE_distance_wo_w_constraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 121 
+            self.state = 134 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 120
+                    self.state = 133
                     self.distance_wo_w_constraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 123 
+                self.state = 136 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,9,self._ctx)
 
@@ -833,41 +878,41 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 126
+            self.state = 139
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 125
+                self.state = 138
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 128
+            self.state = 141
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 129
+            self.state = 142
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 130
+            self.state = 143
             self.number()
-            self.state = 131
+            self.state = 144
             self.number()
-            self.state = 133
+            self.state = 146
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if (((_la) & ~0x3f) == 0 and ((1 << _la) & 14) != 0):
-                self.state = 132
+                self.state = 145
                 self.number()
 
 
-            self.state = 140
+            self.state = 153
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==11:
-                self.state = 135
+                self.state = 148
                 self.match(BiosymMRParser.Or)
-                self.state = 136
+                self.state = 149
                 self.match(BiosymMRParser.Atom_selection)
-                self.state = 137
+                self.state = 150
                 self.match(BiosymMRParser.Atom_selection)
-                self.state = 142
+                self.state = 155
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -914,17 +959,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 14, self.RULE_dihedral_angle_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 144 
+            self.state = 157 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 143
+                    self.state = 156
                     self.dihedral_angle_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 146 
+                self.state = 159 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
 
@@ -981,63 +1026,63 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 149
+            self.state = 162
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 148
+                self.state = 161
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 151
+            self.state = 164
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 152
-            self.match(BiosymMRParser.Atom_selection)
-            self.state = 153
-            self.match(BiosymMRParser.Atom_selection)
-            self.state = 154
-            self.match(BiosymMRParser.Atom_selection)
-            self.state = 155
-            self.number()
-            self.state = 156
-            self.number()
-            self.state = 157
-            self.number()
-            self.state = 158
-            self.number()
-            self.state = 159
-            self.number()
-            self.state = 160
-            self.number()
-            self.state = 161
-            self.number()
             self.state = 165
+            self.match(BiosymMRParser.Atom_selection)
+            self.state = 166
+            self.match(BiosymMRParser.Atom_selection)
+            self.state = 167
+            self.match(BiosymMRParser.Atom_selection)
+            self.state = 168
+            self.number()
+            self.state = 169
+            self.number()
+            self.state = 170
+            self.number()
+            self.state = 171
+            self.number()
+            self.state = 172
+            self.number()
+            self.state = 173
+            self.number()
+            self.state = 174
+            self.number()
+            self.state = 178
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,15,self._ctx)
             if la_ == 1:
-                self.state = 162
+                self.state = 175
                 self.number()
-                self.state = 163
+                self.state = 176
                 self.number()
 
 
-            self.state = 170
+            self.state = 183
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,16,self._ctx)
             if la_ == 1:
-                self.state = 167
+                self.state = 180
                 self.number()
-                self.state = 168
+                self.state = 181
                 self.number()
 
 
-            self.state = 175
+            self.state = 188
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if (((_la) & ~0x3f) == 0 and ((1 << _la) & 14) != 0):
-                self.state = 172
+                self.state = 185
                 self.number()
-                self.state = 173
+                self.state = 186
                 self.number()
 
 
@@ -1084,17 +1129,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 18, self.RULE_dihedral_angle_constraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 178 
+            self.state = 191 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 177
+                    self.state = 190
                     self.dihedral_angle_constraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 180 
+                self.state = 193 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,18,self._ctx)
 
@@ -1151,35 +1196,35 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 183
+            self.state = 196
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 182
+                self.state = 195
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 185
+            self.state = 198
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 186
+            self.state = 199
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 187
+            self.state = 200
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 188
+            self.state = 201
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 189
+            self.state = 202
             self.number()
-            self.state = 190
+            self.state = 203
             self.number()
-            self.state = 191
+            self.state = 204
             self.number()
-            self.state = 192
+            self.state = 205
             self.number()
-            self.state = 194
+            self.state = 207
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if (((_la) & ~0x3f) == 0 and ((1 << _la) & 14) != 0):
-                self.state = 193
+                self.state = 206
                 self.number()
 
 
@@ -1226,17 +1271,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 22, self.RULE_dihedral_angle_wo_w_constraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 197 
+            self.state = 210 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 196
+                    self.state = 209
                     self.dihedral_angle_wo_w_constraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 199 
+                self.state = 212 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,21,self._ctx)
 
@@ -1293,25 +1338,25 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 202
+            self.state = 215
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 201
+                self.state = 214
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 204
+            self.state = 217
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 205
+            self.state = 218
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 206
+            self.state = 219
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 207
+            self.state = 220
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 208
+            self.state = 221
             self.number()
-            self.state = 209
+            self.state = 222
             self.number()
         except RecognitionException as re:
             localctx.exception = re
@@ -1356,17 +1401,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 26, self.RULE_rdc_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 212 
+            self.state = 225 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 211
+                    self.state = 224
                     self.rdc_restraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 214 
+                self.state = 227 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,23,self._ctx)
 
@@ -1423,25 +1468,25 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 217
+            self.state = 230
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 216
+                self.state = 229
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 219
+            self.state = 232
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 220
+            self.state = 233
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 221
+            self.state = 234
             self.number()
-            self.state = 222
+            self.state = 235
             self.number()
-            self.state = 223
+            self.state = 236
             self.number()
-            self.state = 224
+            self.state = 237
             self.number()
         except RecognitionException as re:
             localctx.exception = re
@@ -1486,17 +1531,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 30, self.RULE_chirality_constraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 227 
+            self.state = 240 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 226
+                    self.state = 239
                     self.chirality_constraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 229 
+                self.state = 242 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,25,self._ctx)
 
@@ -1546,17 +1591,17 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 232
+            self.state = 245
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 231
+                self.state = 244
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 234
+            self.state = 247
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 235
+            self.state = 248
             self.match(BiosymMRParser.Chiral_code)
         except RecognitionException as re:
             localctx.exception = re
@@ -1601,17 +1646,17 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 34, self.RULE_prochirality_constraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 238 
+            self.state = 251 
             self._errHandler.sync(self)
             _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
-                    self.state = 237
+                    self.state = 250
                     self.prochirality_constraint()
 
                 else:
                     raise NoViableAltException(self)
-                self.state = 240 
+                self.state = 253 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,27,self._ctx)
 
@@ -1661,23 +1706,23 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 243
+            self.state = 256
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==10:
-                self.state = 242
+                self.state = 255
                 self.match(BiosymMRParser.Ordinal)
 
 
-            self.state = 245
+            self.state = 258
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 246
+            self.state = 259
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 247
+            self.state = 260
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 248
+            self.state = 261
             self.match(BiosymMRParser.Atom_selection)
-            self.state = 249
+            self.state = 262
             self.match(BiosymMRParser.Atom_selection)
         except RecognitionException as re:
             localctx.exception = re
@@ -1740,26 +1785,26 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 251
+            self.state = 264
             self.match(BiosymMRParser.Mixing_times)
-            self.state = 253 
+            self.state = 266 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 252
+                self.state = 265
                 _la = self._input.LA(1)
-                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1879048192) != 0)):
+                if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 120259084288) != 0)):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
                     self.consume()
-                self.state = 255 
+                self.state = 268 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 1879048192) != 0)):
+                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & 120259084288) != 0)):
                     break
 
-            self.state = 257
+            self.state = 270
             self.match(BiosymMRParser.RETURN_MT)
         except RecognitionException as re:
             localctx.exception = re
@@ -1807,7 +1852,7 @@ class BiosymMRParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 259
+            self.state = 272
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 14) != 0)):
                 self._errHandler.recoverInline(self)
@@ -1854,7 +1899,7 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 42, self.RULE_ins_distance_restraints)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 261
+            self.state = 274
             self.ins_distance_restraint()
         except RecognitionException as re:
             localctx.exception = re
@@ -1872,8 +1917,8 @@ class BiosymMRParser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-        def decl_create(self):
-            return self.getTypedRuleContext(BiosymMRParser.Decl_createContext,0)
+        def decl_create_dist(self):
+            return self.getTypedRuleContext(BiosymMRParser.Decl_create_distContext,0)
 
 
         def decl_function(self):
@@ -1904,11 +1949,11 @@ class BiosymMRParser ( Parser ):
         self.enterRule(localctx, 44, self.RULE_ins_distance_restraint)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 263
-            self.decl_create()
-            self.state = 264
+            self.state = 276
+            self.decl_create_dist()
+            self.state = 277
             self.decl_function()
-            self.state = 265
+            self.state = 278
             self.decl_target()
         except RecognitionException as re:
             localctx.exception = re
@@ -1919,7 +1964,109 @@ class BiosymMRParser ( Parser ):
         return localctx
 
 
-    class Decl_createContext(ParserRuleContext):
+    class Ins_dihedral_angle_restraintsContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def ins_dihedral_angle_restraint(self):
+            return self.getTypedRuleContext(BiosymMRParser.Ins_dihedral_angle_restraintContext,0)
+
+
+        def getRuleIndex(self):
+            return BiosymMRParser.RULE_ins_dihedral_angle_restraints
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterIns_dihedral_angle_restraints" ):
+                listener.enterIns_dihedral_angle_restraints(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitIns_dihedral_angle_restraints" ):
+                listener.exitIns_dihedral_angle_restraints(self)
+
+
+
+
+    def ins_dihedral_angle_restraints(self):
+
+        localctx = BiosymMRParser.Ins_dihedral_angle_restraintsContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 46, self.RULE_ins_dihedral_angle_restraints)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 280
+            self.ins_dihedral_angle_restraint()
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Ins_dihedral_angle_restraintContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def decl_create_dihed(self):
+            return self.getTypedRuleContext(BiosymMRParser.Decl_create_dihedContext,0)
+
+
+        def decl_function(self):
+            return self.getTypedRuleContext(BiosymMRParser.Decl_functionContext,0)
+
+
+        def decl_target(self):
+            return self.getTypedRuleContext(BiosymMRParser.Decl_targetContext,0)
+
+
+        def getRuleIndex(self):
+            return BiosymMRParser.RULE_ins_dihedral_angle_restraint
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterIns_dihedral_angle_restraint" ):
+                listener.enterIns_dihedral_angle_restraint(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitIns_dihedral_angle_restraint" ):
+                listener.exitIns_dihedral_angle_restraint(self)
+
+
+
+
+    def ins_dihedral_angle_restraint(self):
+
+        localctx = BiosymMRParser.Ins_dihedral_angle_restraintContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 48, self.RULE_ins_dihedral_angle_restraint)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 282
+            self.decl_create_dihed()
+            self.state = 283
+            self.decl_function()
+            self.state = 285
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,30,self._ctx)
+            if la_ == 1:
+                self.state = 284
+                self.decl_target()
+
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Decl_create_distContext(ParserRuleContext):
         __slots__ = 'parser'
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
@@ -1932,51 +2079,133 @@ class BiosymMRParser ( Parser ):
         def Create(self):
             return self.getToken(BiosymMRParser.Create, 0)
 
-        def Double_quote_string(self, i:int=None):
-            if i is None:
-                return self.getTokens(BiosymMRParser.Double_quote_string)
-            else:
-                return self.getToken(BiosymMRParser.Double_quote_string, i)
+        def ins_rst_id(self):
+            return self.getTypedRuleContext(BiosymMRParser.Ins_rst_idContext,0)
+
 
         def Distance(self):
             return self.getToken(BiosymMRParser.Distance, 0)
+
+        def ins_atom_sel(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(BiosymMRParser.Ins_atom_selContext)
+            else:
+                return self.getTypedRuleContext(BiosymMRParser.Ins_atom_selContext,i)
+
 
         def RETURN_II(self):
             return self.getToken(BiosymMRParser.RETURN_II, 0)
 
         def getRuleIndex(self):
-            return BiosymMRParser.RULE_decl_create
+            return BiosymMRParser.RULE_decl_create_dist
 
         def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterDecl_create" ):
-                listener.enterDecl_create(self)
+            if hasattr( listener, "enterDecl_create_dist" ):
+                listener.enterDecl_create_dist(self)
 
         def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitDecl_create" ):
-                listener.exitDecl_create(self)
+            if hasattr( listener, "exitDecl_create_dist" ):
+                listener.exitDecl_create_dist(self)
 
 
 
 
-    def decl_create(self):
+    def decl_create_dist(self):
 
-        localctx = BiosymMRParser.Decl_createContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 46, self.RULE_decl_create)
+        localctx = BiosymMRParser.Decl_create_distContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 50, self.RULE_decl_create_dist)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 267
+            self.state = 287
             self.match(BiosymMRParser.Restraint)
-            self.state = 268
+            self.state = 288
             self.match(BiosymMRParser.Create)
-            self.state = 269
-            self.match(BiosymMRParser.Double_quote_string)
-            self.state = 270
+            self.state = 289
+            self.ins_rst_id()
+            self.state = 290
             self.match(BiosymMRParser.Distance)
-            self.state = 271
-            self.match(BiosymMRParser.Double_quote_string)
-            self.state = 272
-            self.match(BiosymMRParser.Double_quote_string)
-            self.state = 273
+            self.state = 291
+            self.ins_atom_sel()
+            self.state = 292
+            self.ins_atom_sel()
+            self.state = 293
+            self.match(BiosymMRParser.RETURN_II)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Decl_create_dihedContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Restraint(self):
+            return self.getToken(BiosymMRParser.Restraint, 0)
+
+        def Create(self):
+            return self.getToken(BiosymMRParser.Create, 0)
+
+        def ins_rst_id(self):
+            return self.getTypedRuleContext(BiosymMRParser.Ins_rst_idContext,0)
+
+
+        def Torsion(self):
+            return self.getToken(BiosymMRParser.Torsion, 0)
+
+        def ins_atom_sel(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(BiosymMRParser.Ins_atom_selContext)
+            else:
+                return self.getTypedRuleContext(BiosymMRParser.Ins_atom_selContext,i)
+
+
+        def RETURN_II(self):
+            return self.getToken(BiosymMRParser.RETURN_II, 0)
+
+        def getRuleIndex(self):
+            return BiosymMRParser.RULE_decl_create_dihed
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterDecl_create_dihed" ):
+                listener.enterDecl_create_dihed(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitDecl_create_dihed" ):
+                listener.exitDecl_create_dihed(self)
+
+
+
+
+    def decl_create_dihed(self):
+
+        localctx = BiosymMRParser.Decl_create_dihedContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 52, self.RULE_decl_create_dihed)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 295
+            self.match(BiosymMRParser.Restraint)
+            self.state = 296
+            self.match(BiosymMRParser.Create)
+            self.state = 297
+            self.ins_rst_id()
+            self.state = 298
+            self.match(BiosymMRParser.Torsion)
+            self.state = 299
+            self.ins_atom_sel()
+            self.state = 300
+            self.ins_atom_sel()
+            self.state = 301
+            self.ins_atom_sel()
+            self.state = 302
+            self.ins_atom_sel()
+            self.state = 303
             self.match(BiosymMRParser.RETURN_II)
         except RecognitionException as re:
             localctx.exception = re
@@ -2000,14 +2229,22 @@ class BiosymMRParser ( Parser ):
         def Function(self):
             return self.getToken(BiosymMRParser.Function, 0)
 
-        def Double_quote_string(self, i:int=None):
-            if i is None:
-                return self.getTokens(BiosymMRParser.Double_quote_string)
-            else:
-                return self.getToken(BiosymMRParser.Double_quote_string, i)
+        def ins_rst_id(self):
+            return self.getTypedRuleContext(BiosymMRParser.Ins_rst_idContext,0)
+
 
         def RETURN_II(self):
             return self.getToken(BiosymMRParser.RETURN_II, 0)
+
+        def ins_num_sel(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(BiosymMRParser.Ins_num_selContext)
+            else:
+                return self.getTypedRuleContext(BiosymMRParser.Ins_num_selContext,i)
+
+
+        def Trans(self):
+            return self.getToken(BiosymMRParser.Trans, 0)
 
         def Quadratic(self):
             return self.getToken(BiosymMRParser.Quadratic, 0)
@@ -2032,36 +2269,50 @@ class BiosymMRParser ( Parser ):
     def decl_function(self):
 
         localctx = BiosymMRParser.Decl_functionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 48, self.RULE_decl_function)
+        self.enterRule(localctx, 54, self.RULE_decl_function)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 275
+            self.state = 305
             self.match(BiosymMRParser.Restraint)
-            self.state = 276
+            self.state = 306
             self.match(BiosymMRParser.Function)
-            self.state = 277
-            self.match(BiosymMRParser.Double_quote_string)
-            self.state = 278
-            _la = self._input.LA(1)
-            if not(_la==23 or _la==24):
-                self._errHandler.recoverInline(self)
+            self.state = 307
+            self.ins_rst_id()
+            self.state = 314
+            self._errHandler.sync(self)
+            token = self._input.LA(1)
+            if token in [25, 26]:
+                self.state = 308
+                _la = self._input.LA(1)
+                if not(_la==25 or _la==26):
+                    self._errHandler.recoverInline(self)
+                else:
+                    self._errHandler.reportMatch(self)
+                    self.consume()
+                self.state = 309
+                self.ins_num_sel()
+                self.state = 310
+                self.ins_num_sel()
+                pass
+            elif token in [28]:
+                self.state = 312
+                self.match(BiosymMRParser.Trans)
+                self.state = 313
+                self.ins_num_sel()
+                pass
             else:
-                self._errHandler.reportMatch(self)
-                self.consume()
-            self.state = 279
-            self.match(BiosymMRParser.Double_quote_string)
-            self.state = 280
-            self.match(BiosymMRParser.Double_quote_string)
-            self.state = 282
+                raise NoViableAltException(self)
+
+            self.state = 317
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==18:
-                self.state = 281
-                self.match(BiosymMRParser.Double_quote_string)
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 1074528256) != 0):
+                self.state = 316
+                self.ins_num_sel()
 
 
-            self.state = 284
+            self.state = 319
             self.match(BiosymMRParser.RETURN_II)
         except RecognitionException as re:
             localctx.exception = re
@@ -2085,11 +2336,16 @@ class BiosymMRParser ( Parser ):
         def Target(self):
             return self.getToken(BiosymMRParser.Target, 0)
 
-        def Double_quote_string(self, i:int=None):
+        def ins_rst_id(self):
+            return self.getTypedRuleContext(BiosymMRParser.Ins_rst_idContext,0)
+
+
+        def ins_num_sel(self, i:int=None):
             if i is None:
-                return self.getTokens(BiosymMRParser.Double_quote_string)
+                return self.getTypedRuleContexts(BiosymMRParser.Ins_num_selContext)
             else:
-                return self.getToken(BiosymMRParser.Double_quote_string, i)
+                return self.getTypedRuleContext(BiosymMRParser.Ins_num_selContext,i)
+
 
         def RETURN_II(self):
             return self.getToken(BiosymMRParser.RETURN_II, 0)
@@ -2114,27 +2370,189 @@ class BiosymMRParser ( Parser ):
     def decl_target(self):
 
         localctx = BiosymMRParser.Decl_targetContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 50, self.RULE_decl_target)
+        self.enterRule(localctx, 56, self.RULE_decl_target)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 321
+            self.match(BiosymMRParser.Restraint)
+            self.state = 322
+            self.match(BiosymMRParser.Target)
+            self.state = 323
+            self.ins_rst_id()
+            self.state = 326
+            self._errHandler.sync(self)
+            token = self._input.LA(1)
+            if token in [18, 19, 30]:
+                self.state = 324
+                self.ins_num_sel()
+                pass
+            elif token in [27]:
+                self.state = 325
+                self.match(BiosymMRParser.Relative)
+                pass
+            else:
+                raise NoViableAltException(self)
+
+            self.state = 328
+            self.ins_num_sel()
+            self.state = 329
+            self.match(BiosymMRParser.RETURN_II)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Ins_rst_idContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Double_quote_string_II(self):
+            return self.getToken(BiosymMRParser.Double_quote_string_II, 0)
+
+        def Simple_name_II(self):
+            return self.getToken(BiosymMRParser.Simple_name_II, 0)
+
+        def Integer_II(self):
+            return self.getToken(BiosymMRParser.Integer_II, 0)
+
+        def getRuleIndex(self):
+            return BiosymMRParser.RULE_ins_rst_id
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterIns_rst_id" ):
+                listener.enterIns_rst_id(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitIns_rst_id" ):
+                listener.exitIns_rst_id(self)
+
+
+
+
+    def ins_rst_id(self):
+
+        localctx = BiosymMRParser.Ins_rst_idContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 58, self.RULE_ins_rst_id)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 286
-            self.match(BiosymMRParser.Restraint)
-            self.state = 287
-            self.match(BiosymMRParser.Target)
-            self.state = 288
-            self.match(BiosymMRParser.Double_quote_string)
-            self.state = 289
+            self.state = 331
             _la = self._input.LA(1)
-            if not(_la==18 or _la==25):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1610874880) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
                 self.consume()
-            self.state = 290
-            self.match(BiosymMRParser.Double_quote_string)
-            self.state = 291
-            self.match(BiosymMRParser.RETURN_II)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Ins_atom_selContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Double_quote_string_II(self):
+            return self.getToken(BiosymMRParser.Double_quote_string_II, 0)
+
+        def Simple_name_II(self):
+            return self.getToken(BiosymMRParser.Simple_name_II, 0)
+
+        def getRuleIndex(self):
+            return BiosymMRParser.RULE_ins_atom_sel
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterIns_atom_sel" ):
+                listener.enterIns_atom_sel(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitIns_atom_sel" ):
+                listener.exitIns_atom_sel(self)
+
+
+
+
+    def ins_atom_sel(self):
+
+        localctx = BiosymMRParser.Ins_atom_selContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 60, self.RULE_ins_atom_sel)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 333
+            _la = self._input.LA(1)
+            if not(_la==29 or _la==30):
+                self._errHandler.recoverInline(self)
+            else:
+                self._errHandler.reportMatch(self)
+                self.consume()
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Ins_num_selContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Double_quote_string_II(self):
+            return self.getToken(BiosymMRParser.Double_quote_string_II, 0)
+
+        def Float_II(self):
+            return self.getToken(BiosymMRParser.Float_II, 0)
+
+        def Integer_II(self):
+            return self.getToken(BiosymMRParser.Integer_II, 0)
+
+        def getRuleIndex(self):
+            return BiosymMRParser.RULE_ins_num_sel
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterIns_num_sel" ):
+                listener.enterIns_num_sel(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitIns_num_sel" ):
+                listener.exitIns_num_sel(self)
+
+
+
+
+    def ins_num_sel(self):
+
+        localctx = BiosymMRParser.Ins_num_selContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 62, self.RULE_ins_num_sel)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 335
+            _la = self._input.LA(1)
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 1074528256) != 0)):
+                self._errHandler.recoverInline(self)
+            else:
+                self._errHandler.reportMatch(self)
+                self.consume()
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)

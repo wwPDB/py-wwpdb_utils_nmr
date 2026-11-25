@@ -88,9 +88,8 @@ Real_MT:		Real UNIT_MT?;
 Float_MT:		Float UNIT_MT?;
 Integer_MT:		Integer UNIT_MT?;
 
-Comma_MT:		',';
-Period_MT:		'.';
+And_MR:			'and' -> skip;
 
-SPACE_MT:		[ \t]+ -> skip;
+SPACE_MT:		[ \t,.]+ -> skip;
 
 RETURN_MT:		[\r\n]+ -> popMode;

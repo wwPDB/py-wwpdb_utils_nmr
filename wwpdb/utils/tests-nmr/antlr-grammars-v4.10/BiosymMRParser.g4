@@ -129,7 +129,7 @@ prochirality_constraint:
 
 mixing_time:
 	Mixing_times
-	((Real_MT | Float_MT | Integer_MT) (Comma_MT | Period_MT)?)* RETURN_MT;
+	(Real_MT | Float_MT | Integer_MT)+ RETURN_MT;
 
 /* number expression in restrains */
 number: Float | Float_DecimalComma | Integer;

@@ -18,8 +18,7 @@ public:
     ENCLOSE_COMMENT = 15, SECTION_COMMENT = 16, LINE_COMMENT = 17, Double_quote_string = 18, 
     Create = 19, Function = 20, Target = 21, Distance = 22, Quadratic = 23, 
     Flat_bottomed = 24, Relative = 25, SPACE_II = 26, RETURN_II = 27, Real_MT = 28, 
-    Float_MT = 29, Integer_MT = 30, Comma_MT = 31, Period_MT = 32, SPACE_MT = 33, 
-    RETURN_MT = 34
+    Float_MT = 29, Integer_MT = 30, And_MR = 31, SPACE_MT = 32, RETURN_MT = 33
   };
 
   enum {

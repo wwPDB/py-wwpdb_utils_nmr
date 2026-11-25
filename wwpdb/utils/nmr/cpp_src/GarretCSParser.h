@@ -70,7 +70,6 @@ public:
     antlr4::tree::TerminalNode *RETURN();
     std::vector<Shift_listContext *> shift_list();
     Shift_listContext* shift_list(size_t i);
-    antlr4::tree::TerminalNode *SMCLN_COMMENT();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

@@ -62,20 +62,19 @@ void garretcsparserParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,10,47,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,1,0,3,0,12,8,0,1,0,
+  	4,1,10,44,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,1,0,3,0,12,8,0,1,0,
   	4,0,15,8,0,11,0,12,0,16,1,0,5,0,20,8,0,10,0,12,0,23,9,0,1,0,1,0,1,1,1,
-  	1,1,1,1,1,4,1,31,8,1,11,1,12,1,32,1,1,3,1,36,8,1,1,2,1,2,1,3,1,3,1,3,
-  	3,3,43,8,3,1,4,1,4,1,4,0,0,5,0,2,4,6,8,0,2,2,0,1,1,6,6,2,0,1,2,6,6,47,
-  	0,11,1,0,0,0,2,26,1,0,0,0,4,37,1,0,0,0,6,39,1,0,0,0,8,44,1,0,0,0,10,12,
-  	5,8,0,0,11,10,1,0,0,0,11,12,1,0,0,0,12,14,1,0,0,0,13,15,3,2,1,0,14,13,
-  	1,0,0,0,15,16,1,0,0,0,16,14,1,0,0,0,16,17,1,0,0,0,17,21,1,0,0,0,18,20,
-  	5,8,0,0,19,18,1,0,0,0,20,23,1,0,0,0,21,19,1,0,0,0,21,22,1,0,0,0,22,24,
-  	1,0,0,0,23,21,1,0,0,0,24,25,5,0,0,1,25,1,1,0,0,0,26,27,3,4,2,0,27,28,
-  	5,6,0,0,28,30,5,8,0,0,29,31,3,6,3,0,30,29,1,0,0,0,31,32,1,0,0,0,32,30,
-  	1,0,0,0,32,33,1,0,0,0,33,35,1,0,0,0,34,36,5,5,0,0,35,34,1,0,0,0,35,36,
-  	1,0,0,0,36,3,1,0,0,0,37,38,7,0,0,0,38,5,1,0,0,0,39,40,5,6,0,0,40,42,3,
-  	8,4,0,41,43,5,8,0,0,42,41,1,0,0,0,42,43,1,0,0,0,43,7,1,0,0,0,44,45,7,
-  	1,0,0,45,9,1,0,0,0,6,11,16,21,32,35,42
+  	1,1,1,1,1,4,1,31,8,1,11,1,12,1,32,1,2,1,2,1,3,1,3,1,3,3,3,40,8,3,1,4,
+  	1,4,1,4,0,0,5,0,2,4,6,8,0,2,2,0,1,1,6,6,2,0,1,2,6,6,43,0,11,1,0,0,0,2,
+  	26,1,0,0,0,4,34,1,0,0,0,6,36,1,0,0,0,8,41,1,0,0,0,10,12,5,8,0,0,11,10,
+  	1,0,0,0,11,12,1,0,0,0,12,14,1,0,0,0,13,15,3,2,1,0,14,13,1,0,0,0,15,16,
+  	1,0,0,0,16,14,1,0,0,0,16,17,1,0,0,0,17,21,1,0,0,0,18,20,5,8,0,0,19,18,
+  	1,0,0,0,20,23,1,0,0,0,21,19,1,0,0,0,21,22,1,0,0,0,22,24,1,0,0,0,23,21,
+  	1,0,0,0,24,25,5,0,0,1,25,1,1,0,0,0,26,27,3,4,2,0,27,28,5,6,0,0,28,30,
+  	5,8,0,0,29,31,3,6,3,0,30,29,1,0,0,0,31,32,1,0,0,0,32,30,1,0,0,0,32,33,
+  	1,0,0,0,33,3,1,0,0,0,34,35,7,0,0,0,35,5,1,0,0,0,36,37,5,6,0,0,37,39,3,
+  	8,4,0,38,40,5,8,0,0,39,38,1,0,0,0,39,40,1,0,0,0,40,7,1,0,0,0,41,42,7,
+  	1,0,0,42,9,1,0,0,0,5,11,16,21,32,39
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -246,10 +245,6 @@ GarretCSParser::Shift_listContext* GarretCSParser::Residue_listContext::shift_li
   return getRuleContext<GarretCSParser::Shift_listContext>(i);
 }
 
-tree::TerminalNode* GarretCSParser::Residue_listContext::SMCLN_COMMENT() {
-  return getToken(GarretCSParser::SMCLN_COMMENT, 0);
-}
-
 
 size_t GarretCSParser::Residue_listContext::getRuleIndex() const {
   return GarretCSParser::RuleResidue_list;
@@ -266,7 +261,6 @@ std::any GarretCSParser::Residue_listContext::accept(tree::ParseTreeVisitor *vis
 GarretCSParser::Residue_listContext* GarretCSParser::residue_list() {
   Residue_listContext *_localctx = _tracker.createInstance<Residue_listContext>(_ctx, getState());
   enterRule(_localctx, 2, GarretCSParser::RuleResidue_list);
-  size_t _la = 0;
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -302,14 +296,6 @@ GarretCSParser::Residue_listContext* GarretCSParser::residue_list() {
       _errHandler->sync(this);
       alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 3, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
-    setState(35);
-    _errHandler->sync(this);
-
-    _la = _input->LA(1);
-    if (_la == GarretCSParser::SMCLN_COMMENT) {
-      setState(34);
-      match(GarretCSParser::SMCLN_COMMENT);
-    }
    
   }
   catch (RecognitionException &e) {
@@ -362,7 +348,7 @@ GarretCSParser::Res_idContext* GarretCSParser::res_id() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(37);
+    setState(34);
     _la = _input->LA(1);
     if (!(_la == GarretCSParser::Integer
 
@@ -428,16 +414,16 @@ GarretCSParser::Shift_listContext* GarretCSParser::shift_list() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(39);
+    setState(36);
     match(GarretCSParser::Simple_name);
-    setState(40);
+    setState(37);
     number();
-    setState(42);
+    setState(39);
     _errHandler->sync(this);
 
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 5, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 4, _ctx)) {
     case 1: {
-      setState(41);
+      setState(38);
       match(GarretCSParser::RETURN);
       break;
     }
@@ -501,7 +487,7 @@ GarretCSParser::NumberContext* GarretCSParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(44);
+    setState(41);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 70) != 0))) {

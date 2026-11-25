@@ -26,8 +26,7 @@ garret_cs:
 
 residue_list:
 	res_id Simple_name RETURN
-	shift_list+
-	SMCLN_COMMENT?;
+	shift_list+;
 
 res_id:
 	Integer | Simple_name;

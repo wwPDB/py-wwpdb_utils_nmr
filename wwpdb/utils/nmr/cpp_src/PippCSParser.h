@@ -137,7 +137,8 @@ public:
     std::vector<antlr4::tree::TerminalNode *> RETURN();
     antlr4::tree::TerminalNode* RETURN(size_t i);
     antlr4::tree::TerminalNode *Res_type();
-    Res_typeContext *res_type();
+    std::vector<Res_typeContext *> res_type();
+    Res_typeContext* res_type(size_t i);
     antlr4::tree::TerminalNode *Spin_system_ID();
     std::vector<antlr4::tree::TerminalNode *> Integer();
     antlr4::tree::TerminalNode* Integer(size_t i);
@@ -150,8 +151,6 @@ public:
     antlr4::tree::TerminalNode *Heterogeneity();
     std::vector<Shift_listContext *> shift_list();
     Shift_listContext* shift_list(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> Type_pred();
-    antlr4::tree::TerminalNode* Type_pred(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -179,8 +178,7 @@ public:
     Res_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Simple_name();
-    std::vector<antlr4::tree::TerminalNode *> Type_pred();
-    antlr4::tree::TerminalNode* Type_pred(size_t i);
+    antlr4::tree::TerminalNode *Type_pred();
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

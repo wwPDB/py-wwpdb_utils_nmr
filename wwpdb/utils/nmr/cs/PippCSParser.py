@@ -10,7 +10,7 @@ else:
 
 def serializedATN():
     return [
-        4,1,34,153,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,34,146,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,1,0,3,0,20,8,0,1,0,1,0,5,0,24,8,0,10,0,12,0,27,
         9,0,1,0,1,0,1,1,1,1,1,1,3,1,34,8,1,1,1,1,1,1,1,3,1,39,8,1,1,1,3,
         1,42,8,1,1,1,4,1,45,8,1,11,1,12,1,46,1,2,1,2,1,2,1,2,1,2,1,2,1,2,
@@ -18,51 +18,48 @@ def serializedATN():
         1,4,1,4,1,4,1,4,1,4,5,4,75,8,4,10,4,12,4,78,9,4,1,4,3,4,81,8,4,1,
         4,1,4,5,4,85,8,4,10,4,12,4,88,9,4,1,4,3,4,91,8,4,1,4,1,4,1,4,1,4,
         1,4,1,4,3,4,99,8,4,1,4,5,4,102,8,4,10,4,12,4,105,9,4,1,4,1,4,1,4,
-        1,5,1,5,1,6,1,6,5,6,114,8,6,10,6,12,6,117,9,6,3,6,119,8,6,1,7,1,
-        7,1,7,3,7,124,8,7,1,7,1,7,5,7,128,8,7,10,7,12,7,131,9,7,1,7,3,7,
-        134,8,7,1,7,3,7,137,8,7,1,7,1,7,5,7,141,8,7,10,7,12,7,144,9,7,1,
-        7,3,7,147,8,7,1,7,1,7,1,8,1,8,1,8,0,0,9,0,2,4,6,8,10,12,14,16,0,
-        4,2,0,5,5,24,24,1,1,21,21,2,0,14,14,18,18,1,0,14,15,165,0,19,1,0,
-        0,0,2,33,1,0,0,0,4,48,1,0,0,0,6,60,1,0,0,0,8,66,1,0,0,0,10,109,1,
-        0,0,0,12,118,1,0,0,0,14,120,1,0,0,0,16,150,1,0,0,0,18,20,5,21,0,
-        0,19,18,1,0,0,0,19,20,1,0,0,0,20,25,1,0,0,0,21,24,3,2,1,0,22,24,
-        5,21,0,0,23,21,1,0,0,0,23,22,1,0,0,0,24,27,1,0,0,0,25,23,1,0,0,0,
-        25,26,1,0,0,0,26,28,1,0,0,0,27,25,1,0,0,0,28,29,5,0,0,1,29,1,1,0,
-        0,0,30,31,5,1,0,0,31,32,5,2,0,0,32,34,5,21,0,0,33,30,1,0,0,0,33,
-        34,1,0,0,0,34,38,1,0,0,0,35,36,5,3,0,0,36,37,5,14,0,0,37,39,5,21,
-        0,0,38,35,1,0,0,0,38,39,1,0,0,0,39,41,1,0,0,0,40,42,3,4,2,0,41,40,
-        1,0,0,0,41,42,1,0,0,0,42,44,1,0,0,0,43,45,3,8,4,0,44,43,1,0,0,0,
-        45,46,1,0,0,0,46,44,1,0,0,0,46,47,1,0,0,0,47,3,1,0,0,0,48,49,5,4,
-        0,0,49,50,5,31,0,0,50,51,5,25,0,0,51,52,5,26,0,0,52,53,5,27,0,0,
-        53,54,5,28,0,0,54,56,5,31,0,0,55,57,3,6,3,0,56,55,1,0,0,0,57,58,
-        1,0,0,0,58,56,1,0,0,0,58,59,1,0,0,0,59,5,1,0,0,0,60,61,5,29,0,0,
-        61,62,5,29,0,0,62,63,5,29,0,0,63,64,5,29,0,0,64,65,5,31,0,0,65,7,
-        1,0,0,0,66,67,7,0,0,0,67,68,3,10,5,0,68,69,5,21,0,0,69,70,5,6,0,
-        0,70,71,3,12,6,0,71,80,5,21,0,0,72,76,5,7,0,0,73,75,5,12,0,0,74,
-        73,1,0,0,0,75,78,1,0,0,0,76,74,1,0,0,0,76,77,1,0,0,0,77,79,1,0,0,
-        0,78,76,1,0,0,0,79,81,5,21,0,0,80,72,1,0,0,0,80,81,1,0,0,0,81,90,
-        1,0,0,0,82,86,5,8,0,0,83,85,5,12,0,0,84,83,1,0,0,0,85,88,1,0,0,0,
-        86,84,1,0,0,0,86,87,1,0,0,0,87,89,1,0,0,0,88,86,1,0,0,0,89,91,5,
-        21,0,0,90,82,1,0,0,0,90,91,1,0,0,0,91,92,1,0,0,0,92,93,5,9,0,0,93,
-        94,5,14,0,0,94,98,5,21,0,0,95,96,5,10,0,0,96,97,5,14,0,0,97,99,5,
-        21,0,0,98,95,1,0,0,0,98,99,1,0,0,0,99,103,1,0,0,0,100,102,3,14,7,
-        0,101,100,1,0,0,0,102,105,1,0,0,0,103,101,1,0,0,0,103,104,1,0,0,
-        0,104,106,1,0,0,0,105,103,1,0,0,0,106,107,5,11,0,0,107,108,7,1,0,
-        0,108,9,1,0,0,0,109,110,7,2,0,0,110,11,1,0,0,0,111,119,5,18,0,0,
-        112,114,5,12,0,0,113,112,1,0,0,0,114,117,1,0,0,0,115,113,1,0,0,0,
-        115,116,1,0,0,0,116,119,1,0,0,0,117,115,1,0,0,0,118,111,1,0,0,0,
-        118,115,1,0,0,0,119,13,1,0,0,0,120,121,5,18,0,0,121,123,3,16,8,0,
-        122,124,3,16,8,0,123,122,1,0,0,0,123,124,1,0,0,0,124,133,1,0,0,0,
-        125,129,5,13,0,0,126,128,5,32,0,0,127,126,1,0,0,0,128,131,1,0,0,
-        0,129,127,1,0,0,0,129,130,1,0,0,0,130,132,1,0,0,0,131,129,1,0,0,
-        0,132,134,5,33,0,0,133,125,1,0,0,0,133,134,1,0,0,0,134,136,1,0,0,
-        0,135,137,3,16,8,0,136,135,1,0,0,0,136,137,1,0,0,0,137,146,1,0,0,
-        0,138,142,5,13,0,0,139,141,5,32,0,0,140,139,1,0,0,0,141,144,1,0,
-        0,0,142,140,1,0,0,0,142,143,1,0,0,0,143,145,1,0,0,0,144,142,1,0,
-        0,0,145,147,5,33,0,0,146,138,1,0,0,0,146,147,1,0,0,0,147,148,1,0,
-        0,0,148,149,5,21,0,0,149,15,1,0,0,0,150,151,7,3,0,0,151,17,1,0,0,
-        0,22,19,23,25,33,38,41,46,58,76,80,86,90,98,103,115,118,123,129,
-        133,136,142,146
+        1,5,1,5,1,6,1,6,1,7,1,7,1,7,3,7,117,8,7,1,7,1,7,5,7,121,8,7,10,7,
+        12,7,124,9,7,1,7,3,7,127,8,7,1,7,3,7,130,8,7,1,7,1,7,5,7,134,8,7,
+        10,7,12,7,137,9,7,1,7,3,7,140,8,7,1,7,1,7,1,8,1,8,1,8,0,0,9,0,2,
+        4,6,8,10,12,14,16,0,5,2,0,5,5,24,24,1,1,21,21,2,0,14,14,18,18,2,
+        0,12,12,18,18,1,0,14,15,156,0,19,1,0,0,0,2,33,1,0,0,0,4,48,1,0,0,
+        0,6,60,1,0,0,0,8,66,1,0,0,0,10,109,1,0,0,0,12,111,1,0,0,0,14,113,
+        1,0,0,0,16,143,1,0,0,0,18,20,5,21,0,0,19,18,1,0,0,0,19,20,1,0,0,
+        0,20,25,1,0,0,0,21,24,3,2,1,0,22,24,5,21,0,0,23,21,1,0,0,0,23,22,
+        1,0,0,0,24,27,1,0,0,0,25,23,1,0,0,0,25,26,1,0,0,0,26,28,1,0,0,0,
+        27,25,1,0,0,0,28,29,5,0,0,1,29,1,1,0,0,0,30,31,5,1,0,0,31,32,5,2,
+        0,0,32,34,5,21,0,0,33,30,1,0,0,0,33,34,1,0,0,0,34,38,1,0,0,0,35,
+        36,5,3,0,0,36,37,5,14,0,0,37,39,5,21,0,0,38,35,1,0,0,0,38,39,1,0,
+        0,0,39,41,1,0,0,0,40,42,3,4,2,0,41,40,1,0,0,0,41,42,1,0,0,0,42,44,
+        1,0,0,0,43,45,3,8,4,0,44,43,1,0,0,0,45,46,1,0,0,0,46,44,1,0,0,0,
+        46,47,1,0,0,0,47,3,1,0,0,0,48,49,5,4,0,0,49,50,5,31,0,0,50,51,5,
+        25,0,0,51,52,5,26,0,0,52,53,5,27,0,0,53,54,5,28,0,0,54,56,5,31,0,
+        0,55,57,3,6,3,0,56,55,1,0,0,0,57,58,1,0,0,0,58,56,1,0,0,0,58,59,
+        1,0,0,0,59,5,1,0,0,0,60,61,5,29,0,0,61,62,5,29,0,0,62,63,5,29,0,
+        0,63,64,5,29,0,0,64,65,5,31,0,0,65,7,1,0,0,0,66,67,7,0,0,0,67,68,
+        3,10,5,0,68,69,5,21,0,0,69,70,5,6,0,0,70,71,3,12,6,0,71,80,5,21,
+        0,0,72,76,5,7,0,0,73,75,3,12,6,0,74,73,1,0,0,0,75,78,1,0,0,0,76,
+        74,1,0,0,0,76,77,1,0,0,0,77,79,1,0,0,0,78,76,1,0,0,0,79,81,5,21,
+        0,0,80,72,1,0,0,0,80,81,1,0,0,0,81,90,1,0,0,0,82,86,5,8,0,0,83,85,
+        3,12,6,0,84,83,1,0,0,0,85,88,1,0,0,0,86,84,1,0,0,0,86,87,1,0,0,0,
+        87,89,1,0,0,0,88,86,1,0,0,0,89,91,5,21,0,0,90,82,1,0,0,0,90,91,1,
+        0,0,0,91,92,1,0,0,0,92,93,5,9,0,0,93,94,5,14,0,0,94,98,5,21,0,0,
+        95,96,5,10,0,0,96,97,5,14,0,0,97,99,5,21,0,0,98,95,1,0,0,0,98,99,
+        1,0,0,0,99,103,1,0,0,0,100,102,3,14,7,0,101,100,1,0,0,0,102,105,
+        1,0,0,0,103,101,1,0,0,0,103,104,1,0,0,0,104,106,1,0,0,0,105,103,
+        1,0,0,0,106,107,5,11,0,0,107,108,7,1,0,0,108,9,1,0,0,0,109,110,7,
+        2,0,0,110,11,1,0,0,0,111,112,7,3,0,0,112,13,1,0,0,0,113,114,5,18,
+        0,0,114,116,3,16,8,0,115,117,3,16,8,0,116,115,1,0,0,0,116,117,1,
+        0,0,0,117,126,1,0,0,0,118,122,5,13,0,0,119,121,5,32,0,0,120,119,
+        1,0,0,0,121,124,1,0,0,0,122,120,1,0,0,0,122,123,1,0,0,0,123,125,
+        1,0,0,0,124,122,1,0,0,0,125,127,5,33,0,0,126,118,1,0,0,0,126,127,
+        1,0,0,0,127,129,1,0,0,0,128,130,3,16,8,0,129,128,1,0,0,0,129,130,
+        1,0,0,0,130,139,1,0,0,0,131,135,5,13,0,0,132,134,5,32,0,0,133,132,
+        1,0,0,0,134,137,1,0,0,0,135,133,1,0,0,0,135,136,1,0,0,0,136,138,
+        1,0,0,0,137,135,1,0,0,0,138,140,5,33,0,0,139,131,1,0,0,0,139,140,
+        1,0,0,0,140,141,1,0,0,0,141,142,5,21,0,0,142,15,1,0,0,0,143,144,
+        7,4,0,0,144,17,1,0,0,0,20,19,23,25,33,38,41,46,58,76,80,86,90,98,
+        103,116,122,126,129,135,139
     ]
 
 class PippCSParser ( Parser ):
@@ -516,8 +513,11 @@ class PippCSParser ( Parser ):
         def Res_type(self):
             return self.getToken(PippCSParser.Res_type, 0)
 
-        def res_type(self):
-            return self.getTypedRuleContext(PippCSParser.Res_typeContext,0)
+        def res_type(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(PippCSParser.Res_typeContext)
+            else:
+                return self.getTypedRuleContext(PippCSParser.Res_typeContext,i)
 
 
         def Spin_system_ID(self):
@@ -556,12 +556,6 @@ class PippCSParser ( Parser ):
             else:
                 return self.getTypedRuleContext(PippCSParser.Shift_listContext,i)
 
-
-        def Type_pred(self, i:int=None):
-            if i is None:
-                return self.getTokens(PippCSParser.Type_pred)
-            else:
-                return self.getToken(PippCSParser.Type_pred, i)
 
         def getRuleIndex(self):
             return PippCSParser.RULE_residue_list
@@ -610,9 +604,9 @@ class PippCSParser ( Parser ):
                 self.state = 76
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==12:
+                while _la==12 or _la==18:
                     self.state = 73
-                    self.match(PippCSParser.Type_pred)
+                    self.res_type()
                     self.state = 78
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -630,9 +624,9 @@ class PippCSParser ( Parser ):
                 self.state = 86
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                while _la==12:
+                while _la==12 or _la==18:
                     self.state = 83
-                    self.match(PippCSParser.Type_pred)
+                    self.res_type()
                     self.state = 88
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
@@ -747,11 +741,8 @@ class PippCSParser ( Parser ):
         def Simple_name(self):
             return self.getToken(PippCSParser.Simple_name, 0)
 
-        def Type_pred(self, i:int=None):
-            if i is None:
-                return self.getTokens(PippCSParser.Type_pred)
-            else:
-                return self.getToken(PippCSParser.Type_pred, i)
+        def Type_pred(self):
+            return self.getToken(PippCSParser.Type_pred, 0)
 
         def getRuleIndex(self):
             return PippCSParser.RULE_res_type
@@ -773,30 +764,14 @@ class PippCSParser ( Parser ):
         self.enterRule(localctx, 12, self.RULE_res_type)
         self._la = 0 # Token type
         try:
-            self.state = 118
-            self._errHandler.sync(self)
-            token = self._input.LA(1)
-            if token in [18]:
-                self.enterOuterAlt(localctx, 1)
-                self.state = 111
-                self.match(PippCSParser.Simple_name)
-                pass
-            elif token in [12, 21]:
-                self.enterOuterAlt(localctx, 2)
-                self.state = 115
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                while _la==12:
-                    self.state = 112
-                    self.match(PippCSParser.Type_pred)
-                    self.state = 117
-                    self._errHandler.sync(self)
-                    _la = self._input.LA(1)
-
-                pass
+            self.enterOuterAlt(localctx, 1)
+            self.state = 111
+            _la = self._input.LA(1)
+            if not(_la==12 or _la==18):
+                self._errHandler.recoverInline(self)
             else:
-                raise NoViableAltException(self)
-
+                self._errHandler.reportMatch(self)
+                self.consume()
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -865,67 +840,67 @@ class PippCSParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 120
+            self.state = 113
             self.match(PippCSParser.Simple_name)
-            self.state = 121
+            self.state = 114
             self.number()
-            self.state = 123
+            self.state = 116
+            self._errHandler.sync(self)
+            la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
+            if la_ == 1:
+                self.state = 115
+                self.number()
+
+
+            self.state = 126
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,16,self._ctx)
             if la_ == 1:
-                self.state = 122
-                self.number()
-
-
-            self.state = 133
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,18,self._ctx)
-            if la_ == 1:
-                self.state = 125
+                self.state = 118
                 self.match(PippCSParser.Note_begin)
-                self.state = 129
+                self.state = 122
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==32:
-                    self.state = 126
+                    self.state = 119
                     self.match(PippCSParser.Note)
-                    self.state = 131
+                    self.state = 124
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
-                self.state = 132
+                self.state = 125
                 self.match(PippCSParser.Note_end)
 
 
-            self.state = 136
+            self.state = 129
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==14 or _la==15:
-                self.state = 135
+                self.state = 128
                 self.number()
 
 
-            self.state = 146
+            self.state = 139
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==13:
-                self.state = 138
+                self.state = 131
                 self.match(PippCSParser.Note_begin)
-                self.state = 142
+                self.state = 135
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==32:
-                    self.state = 139
+                    self.state = 132
                     self.match(PippCSParser.Note)
-                    self.state = 144
+                    self.state = 137
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
-                self.state = 145
+                self.state = 138
                 self.match(PippCSParser.Note_end)
 
 
-            self.state = 148
+            self.state = 141
             self.match(PippCSParser.RETURN)
         except RecognitionException as re:
             localctx.exception = re
@@ -970,7 +945,7 @@ class PippCSParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 150
+            self.state = 143
             _la = self._input.LA(1)
             if not(_la==14 or _la==15):
                 self._errHandler.recoverInline(self)

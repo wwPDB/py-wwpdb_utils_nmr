@@ -78,7 +78,7 @@ void biosymmrparserParserInitialize() {
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,34,297,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,34,298,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
   	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,
   	21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,1,0,1,0,1,0,1,0,1,0,1,0,1,
@@ -91,90 +91,90 @@ void biosymmrparserParserInitialize() {
   	1,7,4,7,145,8,7,11,7,12,7,146,1,8,3,8,150,8,8,1,8,1,8,1,8,1,8,1,8,1,8,
   	1,8,1,8,1,8,1,8,1,8,1,8,1,8,1,8,3,8,166,8,8,1,8,1,8,1,8,3,8,171,8,8,1,
   	8,1,8,1,8,3,8,176,8,8,1,9,4,9,179,8,9,11,9,12,9,180,1,10,3,10,184,8,10,
-  	1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,11,4,11,197,8,11,
-  	11,11,12,11,198,1,12,3,12,202,8,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,
-  	1,13,4,13,212,8,13,11,13,12,13,213,1,14,3,14,217,8,14,1,14,1,14,1,14,
-  	1,14,1,14,1,14,1,14,1,15,4,15,227,8,15,11,15,12,15,228,1,16,3,16,232,
-  	8,16,1,16,1,16,1,16,1,17,4,17,238,8,17,11,17,12,17,239,1,18,3,18,243,
-  	8,18,1,18,1,18,1,18,1,18,1,18,1,18,1,19,1,19,1,19,3,19,254,8,19,5,19,
-  	256,8,19,10,19,12,19,259,9,19,1,19,1,19,1,20,1,20,1,21,1,21,1,22,1,22,
-  	1,22,1,22,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,24,1,24,1,24,1,24,
-  	1,24,1,24,1,24,3,24,286,8,24,1,24,1,24,1,25,1,25,1,25,1,25,1,25,1,25,
-  	1,25,1,25,0,0,26,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,
-  	38,40,42,44,46,48,50,0,5,1,0,28,30,1,0,31,32,1,0,1,3,1,0,23,24,2,0,18,
-  	18,25,25,310,0,65,1,0,0,0,2,71,1,0,0,0,4,76,1,0,0,0,6,98,1,0,0,0,8,103,
-  	1,0,0,0,10,121,1,0,0,0,12,126,1,0,0,0,14,144,1,0,0,0,16,149,1,0,0,0,18,
-  	178,1,0,0,0,20,183,1,0,0,0,22,196,1,0,0,0,24,201,1,0,0,0,26,211,1,0,0,
-  	0,28,216,1,0,0,0,30,226,1,0,0,0,32,231,1,0,0,0,34,237,1,0,0,0,36,242,
-  	1,0,0,0,38,250,1,0,0,0,40,262,1,0,0,0,42,264,1,0,0,0,44,266,1,0,0,0,46,
-  	270,1,0,0,0,48,278,1,0,0,0,50,289,1,0,0,0,52,64,3,2,1,0,53,64,3,6,3,0,
-  	54,64,3,10,5,0,55,64,3,14,7,0,56,64,3,18,9,0,57,64,3,22,11,0,58,64,3,
-  	26,13,0,59,64,3,30,15,0,60,64,3,34,17,0,61,64,3,38,19,0,62,64,3,42,21,
-  	0,63,52,1,0,0,0,63,53,1,0,0,0,63,54,1,0,0,0,63,55,1,0,0,0,63,56,1,0,0,
-  	0,63,57,1,0,0,0,63,58,1,0,0,0,63,59,1,0,0,0,63,60,1,0,0,0,63,61,1,0,0,
-  	0,63,62,1,0,0,0,64,67,1,0,0,0,65,63,1,0,0,0,65,66,1,0,0,0,66,68,1,0,0,
-  	0,67,65,1,0,0,0,68,69,5,0,0,1,69,1,1,0,0,0,70,72,3,4,2,0,71,70,1,0,0,
-  	0,72,73,1,0,0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,3,1,0,0,0,75,77,5,10,0,
-  	0,76,75,1,0,0,0,76,77,1,0,0,0,77,78,1,0,0,0,78,79,5,9,0,0,79,80,5,9,0,
-  	0,80,81,3,40,20,0,81,82,3,40,20,0,82,83,3,40,20,0,83,84,3,40,20,0,84,
-  	85,3,40,20,0,85,87,3,40,20,0,86,88,3,40,20,0,87,86,1,0,0,0,87,88,1,0,
-  	0,0,88,94,1,0,0,0,89,90,5,11,0,0,90,91,5,9,0,0,91,93,5,9,0,0,92,89,1,
-  	0,0,0,93,96,1,0,0,0,94,92,1,0,0,0,94,95,1,0,0,0,95,5,1,0,0,0,96,94,1,
-  	0,0,0,97,99,3,8,4,0,98,97,1,0,0,0,99,100,1,0,0,0,100,98,1,0,0,0,100,101,
-  	1,0,0,0,101,7,1,0,0,0,102,104,5,10,0,0,103,102,1,0,0,0,103,104,1,0,0,
-  	0,104,105,1,0,0,0,105,106,5,9,0,0,106,107,5,9,0,0,107,108,3,40,20,0,108,
-  	109,3,40,20,0,109,110,3,40,20,0,110,111,3,40,20,0,111,117,3,40,20,0,112,
-  	113,5,11,0,0,113,114,5,9,0,0,114,116,5,9,0,0,115,112,1,0,0,0,116,119,
-  	1,0,0,0,117,115,1,0,0,0,117,118,1,0,0,0,118,9,1,0,0,0,119,117,1,0,0,0,
-  	120,122,3,12,6,0,121,120,1,0,0,0,122,123,1,0,0,0,123,121,1,0,0,0,123,
-  	124,1,0,0,0,124,11,1,0,0,0,125,127,5,10,0,0,126,125,1,0,0,0,126,127,1,
-  	0,0,0,127,128,1,0,0,0,128,129,5,9,0,0,129,130,5,9,0,0,130,131,3,40,20,
-  	0,131,133,3,40,20,0,132,134,3,40,20,0,133,132,1,0,0,0,133,134,1,0,0,0,
-  	134,140,1,0,0,0,135,136,5,11,0,0,136,137,5,9,0,0,137,139,5,9,0,0,138,
-  	135,1,0,0,0,139,142,1,0,0,0,140,138,1,0,0,0,140,141,1,0,0,0,141,13,1,
-  	0,0,0,142,140,1,0,0,0,143,145,3,16,8,0,144,143,1,0,0,0,145,146,1,0,0,
-  	0,146,144,1,0,0,0,146,147,1,0,0,0,147,15,1,0,0,0,148,150,5,10,0,0,149,
-  	148,1,0,0,0,149,150,1,0,0,0,150,151,1,0,0,0,151,152,5,9,0,0,152,153,5,
-  	9,0,0,153,154,5,9,0,0,154,155,5,9,0,0,155,156,3,40,20,0,156,157,3,40,
-  	20,0,157,158,3,40,20,0,158,159,3,40,20,0,159,160,3,40,20,0,160,161,3,
-  	40,20,0,161,165,3,40,20,0,162,163,3,40,20,0,163,164,3,40,20,0,164,166,
-  	1,0,0,0,165,162,1,0,0,0,165,166,1,0,0,0,166,170,1,0,0,0,167,168,3,40,
-  	20,0,168,169,3,40,20,0,169,171,1,0,0,0,170,167,1,0,0,0,170,171,1,0,0,
-  	0,171,175,1,0,0,0,172,173,3,40,20,0,173,174,3,40,20,0,174,176,1,0,0,0,
-  	175,172,1,0,0,0,175,176,1,0,0,0,176,17,1,0,0,0,177,179,3,20,10,0,178,
+  	1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,1,10,3,10,195,8,10,1,11,4,11,
+  	198,8,11,11,11,12,11,199,1,12,3,12,203,8,12,1,12,1,12,1,12,1,12,1,12,
+  	1,12,1,12,1,13,4,13,213,8,13,11,13,12,13,214,1,14,3,14,218,8,14,1,14,
+  	1,14,1,14,1,14,1,14,1,14,1,14,1,15,4,15,228,8,15,11,15,12,15,229,1,16,
+  	3,16,233,8,16,1,16,1,16,1,16,1,17,4,17,239,8,17,11,17,12,17,240,1,18,
+  	3,18,244,8,18,1,18,1,18,1,18,1,18,1,18,1,18,1,19,1,19,1,19,3,19,255,8,
+  	19,5,19,257,8,19,10,19,12,19,260,9,19,1,19,1,19,1,20,1,20,1,21,1,21,1,
+  	22,1,22,1,22,1,22,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,24,1,24,1,
+  	24,1,24,1,24,1,24,1,24,3,24,287,8,24,1,24,1,24,1,25,1,25,1,25,1,25,1,
+  	25,1,25,1,25,1,25,0,0,26,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,
+  	34,36,38,40,42,44,46,48,50,0,5,1,0,28,30,1,0,31,32,1,0,1,3,1,0,23,24,
+  	2,0,18,18,25,25,312,0,65,1,0,0,0,2,71,1,0,0,0,4,76,1,0,0,0,6,98,1,0,0,
+  	0,8,103,1,0,0,0,10,121,1,0,0,0,12,126,1,0,0,0,14,144,1,0,0,0,16,149,1,
+  	0,0,0,18,178,1,0,0,0,20,183,1,0,0,0,22,197,1,0,0,0,24,202,1,0,0,0,26,
+  	212,1,0,0,0,28,217,1,0,0,0,30,227,1,0,0,0,32,232,1,0,0,0,34,238,1,0,0,
+  	0,36,243,1,0,0,0,38,251,1,0,0,0,40,263,1,0,0,0,42,265,1,0,0,0,44,267,
+  	1,0,0,0,46,271,1,0,0,0,48,279,1,0,0,0,50,290,1,0,0,0,52,64,3,2,1,0,53,
+  	64,3,6,3,0,54,64,3,10,5,0,55,64,3,14,7,0,56,64,3,18,9,0,57,64,3,22,11,
+  	0,58,64,3,26,13,0,59,64,3,30,15,0,60,64,3,34,17,0,61,64,3,38,19,0,62,
+  	64,3,42,21,0,63,52,1,0,0,0,63,53,1,0,0,0,63,54,1,0,0,0,63,55,1,0,0,0,
+  	63,56,1,0,0,0,63,57,1,0,0,0,63,58,1,0,0,0,63,59,1,0,0,0,63,60,1,0,0,0,
+  	63,61,1,0,0,0,63,62,1,0,0,0,64,67,1,0,0,0,65,63,1,0,0,0,65,66,1,0,0,0,
+  	66,68,1,0,0,0,67,65,1,0,0,0,68,69,5,0,0,1,69,1,1,0,0,0,70,72,3,4,2,0,
+  	71,70,1,0,0,0,72,73,1,0,0,0,73,71,1,0,0,0,73,74,1,0,0,0,74,3,1,0,0,0,
+  	75,77,5,10,0,0,76,75,1,0,0,0,76,77,1,0,0,0,77,78,1,0,0,0,78,79,5,9,0,
+  	0,79,80,5,9,0,0,80,81,3,40,20,0,81,82,3,40,20,0,82,83,3,40,20,0,83,84,
+  	3,40,20,0,84,85,3,40,20,0,85,87,3,40,20,0,86,88,3,40,20,0,87,86,1,0,0,
+  	0,87,88,1,0,0,0,88,94,1,0,0,0,89,90,5,11,0,0,90,91,5,9,0,0,91,93,5,9,
+  	0,0,92,89,1,0,0,0,93,96,1,0,0,0,94,92,1,0,0,0,94,95,1,0,0,0,95,5,1,0,
+  	0,0,96,94,1,0,0,0,97,99,3,8,4,0,98,97,1,0,0,0,99,100,1,0,0,0,100,98,1,
+  	0,0,0,100,101,1,0,0,0,101,7,1,0,0,0,102,104,5,10,0,0,103,102,1,0,0,0,
+  	103,104,1,0,0,0,104,105,1,0,0,0,105,106,5,9,0,0,106,107,5,9,0,0,107,108,
+  	3,40,20,0,108,109,3,40,20,0,109,110,3,40,20,0,110,111,3,40,20,0,111,117,
+  	3,40,20,0,112,113,5,11,0,0,113,114,5,9,0,0,114,116,5,9,0,0,115,112,1,
+  	0,0,0,116,119,1,0,0,0,117,115,1,0,0,0,117,118,1,0,0,0,118,9,1,0,0,0,119,
+  	117,1,0,0,0,120,122,3,12,6,0,121,120,1,0,0,0,122,123,1,0,0,0,123,121,
+  	1,0,0,0,123,124,1,0,0,0,124,11,1,0,0,0,125,127,5,10,0,0,126,125,1,0,0,
+  	0,126,127,1,0,0,0,127,128,1,0,0,0,128,129,5,9,0,0,129,130,5,9,0,0,130,
+  	131,3,40,20,0,131,133,3,40,20,0,132,134,3,40,20,0,133,132,1,0,0,0,133,
+  	134,1,0,0,0,134,140,1,0,0,0,135,136,5,11,0,0,136,137,5,9,0,0,137,139,
+  	5,9,0,0,138,135,1,0,0,0,139,142,1,0,0,0,140,138,1,0,0,0,140,141,1,0,0,
+  	0,141,13,1,0,0,0,142,140,1,0,0,0,143,145,3,16,8,0,144,143,1,0,0,0,145,
+  	146,1,0,0,0,146,144,1,0,0,0,146,147,1,0,0,0,147,15,1,0,0,0,148,150,5,
+  	10,0,0,149,148,1,0,0,0,149,150,1,0,0,0,150,151,1,0,0,0,151,152,5,9,0,
+  	0,152,153,5,9,0,0,153,154,5,9,0,0,154,155,5,9,0,0,155,156,3,40,20,0,156,
+  	157,3,40,20,0,157,158,3,40,20,0,158,159,3,40,20,0,159,160,3,40,20,0,160,
+  	161,3,40,20,0,161,165,3,40,20,0,162,163,3,40,20,0,163,164,3,40,20,0,164,
+  	166,1,0,0,0,165,162,1,0,0,0,165,166,1,0,0,0,166,170,1,0,0,0,167,168,3,
+  	40,20,0,168,169,3,40,20,0,169,171,1,0,0,0,170,167,1,0,0,0,170,171,1,0,
+  	0,0,171,175,1,0,0,0,172,173,3,40,20,0,173,174,3,40,20,0,174,176,1,0,0,
+  	0,175,172,1,0,0,0,175,176,1,0,0,0,176,17,1,0,0,0,177,179,3,20,10,0,178,
   	177,1,0,0,0,179,180,1,0,0,0,180,178,1,0,0,0,180,181,1,0,0,0,181,19,1,
   	0,0,0,182,184,5,10,0,0,183,182,1,0,0,0,183,184,1,0,0,0,184,185,1,0,0,
   	0,185,186,5,9,0,0,186,187,5,9,0,0,187,188,5,9,0,0,188,189,5,9,0,0,189,
-  	190,3,40,20,0,190,191,3,40,20,0,191,192,3,40,20,0,192,193,3,40,20,0,193,
-  	194,3,40,20,0,194,21,1,0,0,0,195,197,3,24,12,0,196,195,1,0,0,0,197,198,
-  	1,0,0,0,198,196,1,0,0,0,198,199,1,0,0,0,199,23,1,0,0,0,200,202,5,10,0,
-  	0,201,200,1,0,0,0,201,202,1,0,0,0,202,203,1,0,0,0,203,204,5,9,0,0,204,
-  	205,5,9,0,0,205,206,5,9,0,0,206,207,5,9,0,0,207,208,3,40,20,0,208,209,
-  	3,40,20,0,209,25,1,0,0,0,210,212,3,28,14,0,211,210,1,0,0,0,212,213,1,
-  	0,0,0,213,211,1,0,0,0,213,214,1,0,0,0,214,27,1,0,0,0,215,217,5,10,0,0,
-  	216,215,1,0,0,0,216,217,1,0,0,0,217,218,1,0,0,0,218,219,5,9,0,0,219,220,
-  	5,9,0,0,220,221,3,40,20,0,221,222,3,40,20,0,222,223,3,40,20,0,223,224,
-  	3,40,20,0,224,29,1,0,0,0,225,227,3,32,16,0,226,225,1,0,0,0,227,228,1,
-  	0,0,0,228,226,1,0,0,0,228,229,1,0,0,0,229,31,1,0,0,0,230,232,5,10,0,0,
-  	231,230,1,0,0,0,231,232,1,0,0,0,232,233,1,0,0,0,233,234,5,9,0,0,234,235,
-  	5,8,0,0,235,33,1,0,0,0,236,238,3,36,18,0,237,236,1,0,0,0,238,239,1,0,
-  	0,0,239,237,1,0,0,0,239,240,1,0,0,0,240,35,1,0,0,0,241,243,5,10,0,0,242,
-  	241,1,0,0,0,242,243,1,0,0,0,243,244,1,0,0,0,244,245,5,9,0,0,245,246,5,
-  	9,0,0,246,247,5,9,0,0,247,248,5,9,0,0,248,249,5,9,0,0,249,37,1,0,0,0,
-  	250,257,5,13,0,0,251,253,7,0,0,0,252,254,7,1,0,0,253,252,1,0,0,0,253,
-  	254,1,0,0,0,254,256,1,0,0,0,255,251,1,0,0,0,256,259,1,0,0,0,257,255,1,
-  	0,0,0,257,258,1,0,0,0,258,260,1,0,0,0,259,257,1,0,0,0,260,261,5,34,0,
-  	0,261,39,1,0,0,0,262,263,7,2,0,0,263,41,1,0,0,0,264,265,3,44,22,0,265,
-  	43,1,0,0,0,266,267,3,46,23,0,267,268,3,48,24,0,268,269,3,50,25,0,269,
-  	45,1,0,0,0,270,271,5,12,0,0,271,272,5,19,0,0,272,273,5,18,0,0,273,274,
-  	5,22,0,0,274,275,5,18,0,0,275,276,5,18,0,0,276,277,5,27,0,0,277,47,1,
-  	0,0,0,278,279,5,12,0,0,279,280,5,20,0,0,280,281,5,18,0,0,281,282,7,3,
-  	0,0,282,283,5,18,0,0,283,285,5,18,0,0,284,286,5,18,0,0,285,284,1,0,0,
-  	0,285,286,1,0,0,0,286,287,1,0,0,0,287,288,5,27,0,0,288,49,1,0,0,0,289,
-  	290,5,12,0,0,290,291,5,21,0,0,291,292,5,18,0,0,292,293,7,4,0,0,293,294,
-  	5,18,0,0,294,295,5,27,0,0,295,51,1,0,0,0,31,63,65,73,76,87,94,100,103,
-  	117,123,126,133,140,146,149,165,170,175,180,183,198,201,213,216,228,231,
-  	239,242,253,257,285
+  	190,3,40,20,0,190,191,3,40,20,0,191,192,3,40,20,0,192,194,3,40,20,0,193,
+  	195,3,40,20,0,194,193,1,0,0,0,194,195,1,0,0,0,195,21,1,0,0,0,196,198,
+  	3,24,12,0,197,196,1,0,0,0,198,199,1,0,0,0,199,197,1,0,0,0,199,200,1,0,
+  	0,0,200,23,1,0,0,0,201,203,5,10,0,0,202,201,1,0,0,0,202,203,1,0,0,0,203,
+  	204,1,0,0,0,204,205,5,9,0,0,205,206,5,9,0,0,206,207,5,9,0,0,207,208,5,
+  	9,0,0,208,209,3,40,20,0,209,210,3,40,20,0,210,25,1,0,0,0,211,213,3,28,
+  	14,0,212,211,1,0,0,0,213,214,1,0,0,0,214,212,1,0,0,0,214,215,1,0,0,0,
+  	215,27,1,0,0,0,216,218,5,10,0,0,217,216,1,0,0,0,217,218,1,0,0,0,218,219,
+  	1,0,0,0,219,220,5,9,0,0,220,221,5,9,0,0,221,222,3,40,20,0,222,223,3,40,
+  	20,0,223,224,3,40,20,0,224,225,3,40,20,0,225,29,1,0,0,0,226,228,3,32,
+  	16,0,227,226,1,0,0,0,228,229,1,0,0,0,229,227,1,0,0,0,229,230,1,0,0,0,
+  	230,31,1,0,0,0,231,233,5,10,0,0,232,231,1,0,0,0,232,233,1,0,0,0,233,234,
+  	1,0,0,0,234,235,5,9,0,0,235,236,5,8,0,0,236,33,1,0,0,0,237,239,3,36,18,
+  	0,238,237,1,0,0,0,239,240,1,0,0,0,240,238,1,0,0,0,240,241,1,0,0,0,241,
+  	35,1,0,0,0,242,244,5,10,0,0,243,242,1,0,0,0,243,244,1,0,0,0,244,245,1,
+  	0,0,0,245,246,5,9,0,0,246,247,5,9,0,0,247,248,5,9,0,0,248,249,5,9,0,0,
+  	249,250,5,9,0,0,250,37,1,0,0,0,251,258,5,13,0,0,252,254,7,0,0,0,253,255,
+  	7,1,0,0,254,253,1,0,0,0,254,255,1,0,0,0,255,257,1,0,0,0,256,252,1,0,0,
+  	0,257,260,1,0,0,0,258,256,1,0,0,0,258,259,1,0,0,0,259,261,1,0,0,0,260,
+  	258,1,0,0,0,261,262,5,34,0,0,262,39,1,0,0,0,263,264,7,2,0,0,264,41,1,
+  	0,0,0,265,266,3,44,22,0,266,43,1,0,0,0,267,268,3,46,23,0,268,269,3,48,
+  	24,0,269,270,3,50,25,0,270,45,1,0,0,0,271,272,5,12,0,0,272,273,5,19,0,
+  	0,273,274,5,18,0,0,274,275,5,22,0,0,275,276,5,18,0,0,276,277,5,18,0,0,
+  	277,278,5,27,0,0,278,47,1,0,0,0,279,280,5,12,0,0,280,281,5,20,0,0,281,
+  	282,5,18,0,0,282,283,7,3,0,0,283,284,5,18,0,0,284,286,5,18,0,0,285,287,
+  	5,18,0,0,286,285,1,0,0,0,286,287,1,0,0,0,287,288,1,0,0,0,288,289,5,27,
+  	0,0,289,49,1,0,0,0,290,291,5,12,0,0,291,292,5,21,0,0,292,293,5,18,0,0,
+  	293,294,7,4,0,0,294,295,5,18,0,0,295,296,5,27,0,0,296,51,1,0,0,0,32,63,
+  	65,73,76,87,94,100,103,117,123,126,133,140,146,149,165,170,175,180,183,
+  	194,199,202,214,217,229,232,240,243,254,258,286
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -1342,8 +1342,15 @@ BiosymMRParser::Dihedral_angle_constraintContext* BiosymMRParser::dihedral_angle
     number();
     setState(192);
     number();
-    setState(193);
-    number();
+    setState(194);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if ((((_la & ~ 0x3fULL) == 0) &&
+      ((1ULL << _la) & 14) != 0)) {
+      setState(193);
+      number();
+    }
    
   }
   catch (RecognitionException &e) {
@@ -1396,13 +1403,13 @@ BiosymMRParser::Dihedral_angle_wo_w_constraintsContext* BiosymMRParser::dihedral
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(196); 
+    setState(197); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(195);
+              setState(196);
               dihedral_angle_wo_w_constraint();
               break;
             }
@@ -1410,9 +1417,9 @@ BiosymMRParser::Dihedral_angle_wo_w_constraintsContext* BiosymMRParser::dihedral
       default:
         throw NoViableAltException(this);
       }
-      setState(198); 
+      setState(199); 
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 20, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 21, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
    
   }
@@ -1478,16 +1485,14 @@ BiosymMRParser::Dihedral_angle_wo_w_constraintContext* BiosymMRParser::dihedral_
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(201);
+    setState(202);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(200);
+      setState(201);
       match(BiosymMRParser::Ordinal);
     }
-    setState(203);
-    match(BiosymMRParser::Atom_selection);
     setState(204);
     match(BiosymMRParser::Atom_selection);
     setState(205);
@@ -1495,8 +1500,10 @@ BiosymMRParser::Dihedral_angle_wo_w_constraintContext* BiosymMRParser::dihedral_
     setState(206);
     match(BiosymMRParser::Atom_selection);
     setState(207);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(208);
+    number();
+    setState(209);
     number();
    
   }
@@ -1550,13 +1557,13 @@ BiosymMRParser::Rdc_restraintsContext* BiosymMRParser::rdc_restraints() {
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(211); 
+    setState(212); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(210);
+              setState(211);
               rdc_restraint();
               break;
             }
@@ -1564,9 +1571,9 @@ BiosymMRParser::Rdc_restraintsContext* BiosymMRParser::rdc_restraints() {
       default:
         throw NoViableAltException(this);
       }
-      setState(213); 
+      setState(214); 
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 22, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 23, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
    
   }
@@ -1632,25 +1639,25 @@ BiosymMRParser::Rdc_restraintContext* BiosymMRParser::rdc_restraint() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(216);
+    setState(217);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(215);
+      setState(216);
       match(BiosymMRParser::Ordinal);
     }
-    setState(218);
-    match(BiosymMRParser::Atom_selection);
     setState(219);
     match(BiosymMRParser::Atom_selection);
     setState(220);
-    number();
+    match(BiosymMRParser::Atom_selection);
     setState(221);
     number();
     setState(222);
     number();
     setState(223);
+    number();
+    setState(224);
     number();
    
   }
@@ -1704,13 +1711,13 @@ BiosymMRParser::Chirality_constraintsContext* BiosymMRParser::chirality_constrai
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(226); 
+    setState(227); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(225);
+              setState(226);
               chirality_constraint();
               break;
             }
@@ -1718,9 +1725,9 @@ BiosymMRParser::Chirality_constraintsContext* BiosymMRParser::chirality_constrai
       default:
         throw NoViableAltException(this);
       }
-      setState(228); 
+      setState(229); 
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 24, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 25, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
    
   }
@@ -1778,17 +1785,17 @@ BiosymMRParser::Chirality_constraintContext* BiosymMRParser::chirality_constrain
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(231);
+    setState(232);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(230);
+      setState(231);
       match(BiosymMRParser::Ordinal);
     }
-    setState(233);
-    match(BiosymMRParser::Atom_selection);
     setState(234);
+    match(BiosymMRParser::Atom_selection);
+    setState(235);
     match(BiosymMRParser::Chiral_code);
    
   }
@@ -1842,13 +1849,13 @@ BiosymMRParser::Prochirality_constraintsContext* BiosymMRParser::prochirality_co
   try {
     size_t alt;
     enterOuterAlt(_localctx, 1);
-    setState(237); 
+    setState(238); 
     _errHandler->sync(this);
     alt = 1;
     do {
       switch (alt) {
         case 1: {
-              setState(236);
+              setState(237);
               prochirality_constraint();
               break;
             }
@@ -1856,9 +1863,9 @@ BiosymMRParser::Prochirality_constraintsContext* BiosymMRParser::prochirality_co
       default:
         throw NoViableAltException(this);
       }
-      setState(239); 
+      setState(240); 
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 26, _ctx);
+      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 27, _ctx);
     } while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER);
    
   }
@@ -1916,16 +1923,14 @@ BiosymMRParser::Prochirality_constraintContext* BiosymMRParser::prochirality_con
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(242);
+    setState(243);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Ordinal) {
-      setState(241);
+      setState(242);
       match(BiosymMRParser::Ordinal);
     }
-    setState(244);
-    match(BiosymMRParser::Atom_selection);
     setState(245);
     match(BiosymMRParser::Atom_selection);
     setState(246);
@@ -1933,6 +1938,8 @@ BiosymMRParser::Prochirality_constraintContext* BiosymMRParser::prochirality_con
     setState(247);
     match(BiosymMRParser::Atom_selection);
     setState(248);
+    match(BiosymMRParser::Atom_selection);
+    setState(249);
     match(BiosymMRParser::Atom_selection);
    
   }
@@ -2026,14 +2033,14 @@ BiosymMRParser::Mixing_timeContext* BiosymMRParser::mixing_time() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(250);
+    setState(251);
     match(BiosymMRParser::Mixing_times);
-    setState(257);
+    setState(258);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 1879048192) != 0)) {
-      setState(251);
+      setState(252);
       _la = _input->LA(1);
       if (!((((_la & ~ 0x3fULL) == 0) &&
         ((1ULL << _la) & 1879048192) != 0))) {
@@ -2043,14 +2050,14 @@ BiosymMRParser::Mixing_timeContext* BiosymMRParser::mixing_time() {
         _errHandler->reportMatch(this);
         consume();
       }
-      setState(253);
+      setState(254);
       _errHandler->sync(this);
 
       _la = _input->LA(1);
       if (_la == BiosymMRParser::Comma_MT
 
       || _la == BiosymMRParser::Period_MT) {
-        setState(252);
+        setState(253);
         _la = _input->LA(1);
         if (!(_la == BiosymMRParser::Comma_MT
 
@@ -2062,11 +2069,11 @@ BiosymMRParser::Mixing_timeContext* BiosymMRParser::mixing_time() {
           consume();
         }
       }
-      setState(259);
+      setState(260);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(260);
+    setState(261);
     match(BiosymMRParser::RETURN_MT);
    
   }
@@ -2124,7 +2131,7 @@ BiosymMRParser::NumberContext* BiosymMRParser::number() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(262);
+    setState(263);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
       ((1ULL << _la) & 14) != 0))) {
@@ -2181,7 +2188,7 @@ BiosymMRParser::Ins_distance_restraintsContext* BiosymMRParser::ins_distance_res
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(264);
+    setState(265);
     ins_distance_restraint();
    
   }
@@ -2238,11 +2245,11 @@ BiosymMRParser::Ins_distance_restraintContext* BiosymMRParser::ins_distance_rest
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(266);
-    decl_create();
     setState(267);
-    decl_function();
+    decl_create();
     setState(268);
+    decl_function();
+    setState(269);
     decl_target();
    
   }
@@ -2311,19 +2318,19 @@ BiosymMRParser::Decl_createContext* BiosymMRParser::decl_create() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(270);
-    match(BiosymMRParser::Restraint);
     setState(271);
-    match(BiosymMRParser::Create);
+    match(BiosymMRParser::Restraint);
     setState(272);
-    match(BiosymMRParser::Double_quote_string);
+    match(BiosymMRParser::Create);
     setState(273);
-    match(BiosymMRParser::Distance);
-    setState(274);
     match(BiosymMRParser::Double_quote_string);
+    setState(274);
+    match(BiosymMRParser::Distance);
     setState(275);
     match(BiosymMRParser::Double_quote_string);
     setState(276);
+    match(BiosymMRParser::Double_quote_string);
+    setState(277);
     match(BiosymMRParser::RETURN_II);
    
   }
@@ -2397,13 +2404,13 @@ BiosymMRParser::Decl_functionContext* BiosymMRParser::decl_function() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(278);
-    match(BiosymMRParser::Restraint);
     setState(279);
-    match(BiosymMRParser::Function);
+    match(BiosymMRParser::Restraint);
     setState(280);
-    match(BiosymMRParser::Double_quote_string);
+    match(BiosymMRParser::Function);
     setState(281);
+    match(BiosymMRParser::Double_quote_string);
+    setState(282);
     _la = _input->LA(1);
     if (!(_la == BiosymMRParser::Quadratic
 
@@ -2414,19 +2421,19 @@ BiosymMRParser::Decl_functionContext* BiosymMRParser::decl_function() {
       _errHandler->reportMatch(this);
       consume();
     }
-    setState(282);
-    match(BiosymMRParser::Double_quote_string);
     setState(283);
     match(BiosymMRParser::Double_quote_string);
-    setState(285);
+    setState(284);
+    match(BiosymMRParser::Double_quote_string);
+    setState(286);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == BiosymMRParser::Double_quote_string) {
-      setState(284);
+      setState(285);
       match(BiosymMRParser::Double_quote_string);
     }
-    setState(287);
+    setState(288);
     match(BiosymMRParser::RETURN_II);
    
   }
@@ -2496,13 +2503,13 @@ BiosymMRParser::Decl_targetContext* BiosymMRParser::decl_target() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(289);
-    match(BiosymMRParser::Restraint);
     setState(290);
-    match(BiosymMRParser::Target);
+    match(BiosymMRParser::Restraint);
     setState(291);
-    match(BiosymMRParser::Double_quote_string);
+    match(BiosymMRParser::Target);
     setState(292);
+    match(BiosymMRParser::Double_quote_string);
+    setState(293);
     _la = _input->LA(1);
     if (!(_la == BiosymMRParser::Double_quote_string
 
@@ -2513,9 +2520,9 @@ BiosymMRParser::Decl_targetContext* BiosymMRParser::decl_target() {
       _errHandler->reportMatch(this);
       consume();
     }
-    setState(293);
-    match(BiosymMRParser::Double_quote_string);
     setState(294);
+    match(BiosymMRParser::Double_quote_string);
+    setState(295);
     match(BiosymMRParser::RETURN_II);
    
   }

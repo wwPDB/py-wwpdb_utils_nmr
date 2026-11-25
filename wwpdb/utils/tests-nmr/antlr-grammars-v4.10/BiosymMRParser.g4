@@ -89,7 +89,7 @@ dihedral_angle_constraints:
 dihedral_angle_constraint:
 	Ordinal? Atom_selection Atom_selection Atom_selection Atom_selection
 	number number						// range for lower bound, upper bound
-	number number number;					// weights for lower bound, upper bound, maximum penalty
+	number number number?;					// weights for lower bound, upper bound, maximum penalty
 
 /* BIOSYM - Dihedral angle constraints
 */

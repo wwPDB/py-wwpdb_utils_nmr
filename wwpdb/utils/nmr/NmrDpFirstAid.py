@@ -1275,13 +1275,20 @@ class NmrDpFirstAid:
 
             else:
 
-                for sf in self.__reg.star_data[file_list_id].get_saveframes_by_category(sf_category):
-                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+                # https://github.com/yokochi47/bmrb-extract/issues/123
+
+                for sf in self.__reg.star_data[file_list_id].frame_list:
 
                     if not any(True for loop in sf.loops if loop.category == lp_category):
                         continue
 
-                    self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf, sf_framecode, lp_category)
+                    set_sf_tag(sf, 'Sf_category', sf_category)
+
+                    sf_framecode = get_first_sf_tag(sf, 'Sf_framecode')
+                    if len(sf_framecode) == 0:
+                        set_sf_tag(sf, 'Sf_framecode', sf.name)
+
+                    self.__rescueImmatureStr__(file_name, file_type, content_subtype, sf, sf.name, lp_category)
 
         return True
 

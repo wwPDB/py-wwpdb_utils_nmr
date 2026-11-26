@@ -54,7 +54,9 @@ Restraint:		'restraint' -> pushMode(INSIGHT_II_MODE);
 
 Mixing_times:		'#mixing_times' [\r\n]+ -> pushMode(MIXING_TIME_MODE);
 
-SPACE:			[ \t\r\n]+ -> skip;
+SPACE:			[ \t]+ -> skip;
+RETURN:			[\r\n]+;
+
 ENCLOSE_COMMENT:	'{' (ENCLOSE_COMMENT | .)*? '}' -> channel(HIDDEN);
 SECTION_COMMENT:	('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ' '* [\r\n]+ -> channel(HIDDEN);
 LINE_COMMENT:		('#' | '!' | ';' | '\\' | '&' | '/' '/'+ | '*' '*'+ | '-' '-'+ | '+' '+'+ | '=' '='+ | 'REMARK' 'S'?) ~[\r\n]* -> channel(HIDDEN);

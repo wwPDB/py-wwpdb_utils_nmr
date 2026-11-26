@@ -26,6 +26,8 @@ try:
                                                REPRESENTATIVE_ALT_ID,
                                                DIST_AMBIG_LOW,
                                                DIST_AMBIG_UP,
+                                               ANGLE_ERROR_MIN,
+                                               ANGLE_ERROR_MAX,
                                                JCOUP_BB_PAIR_CODE,
                                                ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                                RDC_BB_PAIR_CODE)
@@ -57,6 +59,8 @@ except ImportError:
                                    REPRESENTATIVE_ALT_ID,
                                    DIST_AMBIG_LOW,
                                    DIST_AMBIG_UP,
+                                   ANGLE_ERROR_MIN,
+                                   ANGLE_ERROR_MAX,
                                    JCOUP_BB_PAIR_CODE,
                                    ISOTOPE_NUMBERS_OF_NMR_OBS_NUCS,
                                    RDC_BB_PAIR_CODE)
@@ -733,7 +737,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.dihedRestraints -= 1
                 self.cur_subtype = 'jcoup'
                 self.jcoupRestraints += 1
-                self.exitCoupling_restraint(ctx)
+                self.exitCoupling_restraint(str(ctx.Atom_selection(0)), str(ctx.Atom_selection(1)),
+                                            str(ctx.Atom_selection(2)), str(ctx.Atom_selection(3)))
                 return
 
             # cco = self.numberSelection[0]
@@ -977,7 +982,8 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
                 self.dihedRestraints -= 1
                 self.cur_subtype = 'jcoup'
                 self.jcoupRestraints += 1
-                self.exitCoupling_restraint(ctx)
+                self.exitCoupling_restraint(str(ctx.Atom_selection(0)), str(ctx.Atom_selection(1)),
+                                            str(ctx.Atom_selection(2)), str(ctx.Atom_selection(3)))
                 return
 
             target_value = None
@@ -1150,6 +1156,7 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         if len(self.numberSelection) < 5:
             return False
+
         coup = self.numberSelection[0]
         if 0 < coup < 20.0:
             pass
@@ -1159,18 +1166,18 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
         low = self.numberSelection[1]
         up = self.numberSelection[2]
 
-        if -360.0 < low < up < 360.0:
+        if ANGLE_ERROR_MIN < low < up < ANGLE_ERROR_MAX:
             pass
         else:
-            return False
+            return True
 
         low2 = self.numberSelection[3]
         up2 = self.numberSelection[4]
 
-        if -360.0 < low2 < up2 < 360.0:
+        if ANGLE_ERROR_MIN < low2 < up2 < ANGLE_ERROR_MAX:
             pass
         else:
-            return False
+            return True
 
         avr = (low + up) / 2.0
         avr2 = (low2 + up2) / 2.0
@@ -1180,16 +1187,16 @@ class BiosymMRParserListener(ParseTreeListener, BaseLinearMRParserListener):
 
         return True
 
-    def exitCoupling_restraint(self, ctx: BiosymMRParser.Dihedral_angle_constraintContext):
+    def exitCoupling_restraint(self, atom_sel1: str, atom_sel2: str, atom_sel3: str, atom_sel4: str):
         """ Delegated function for J-coupling restraint
         """
 
         try:
 
-            chainId1, seqId1, compId1, atomId1 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(0)))
-            chainId2, seqId2, compId2, atomId2 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(1)))
-            chainId3, seqId3, compId3, atomId3 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(2)))
-            chainId4, seqId4, compId4, atomId4 = self.__splitAtomSelectionExpr(str(ctx.Atom_selection(3)))
+            chainId1, seqId1, compId1, atomId1 = self.__splitAtomSelectionExpr(atom_sel1)
+            chainId2, seqId2, compId2, atomId2 = self.__splitAtomSelectionExpr(atom_sel2)
+            chainId3, seqId3, compId3, atomId3 = self.__splitAtomSelectionExpr(atom_sel3)
+            chainId4, seqId4, compId4, atomId4 = self.__splitAtomSelectionExpr(atom_sel4)
 
             if len(self.numberSelection) == 0 or None in self.numberSelection or None in (atomId1, atomId2, atomId3, atomId4):
                 self.jcoupRestraints -= 1

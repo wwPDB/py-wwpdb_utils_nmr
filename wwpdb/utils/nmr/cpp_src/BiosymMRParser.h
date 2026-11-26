@@ -15,12 +15,12 @@ public:
     Integer = 1, Float = 2, Float_DecimalComma = 3, Real = 4, SHARP_COMMENT = 5, 
     EXCLM_COMMENT = 6, SMCLN_COMMENT = 7, Chiral_code = 8, Atom_selection = 9, 
     Ordinal = 10, Or = 11, Restraint = 12, Mixing_times = 13, SPACE = 14, 
-    ENCLOSE_COMMENT = 15, SECTION_COMMENT = 16, LINE_COMMENT = 17, Integer_II = 18, 
-    Float_II = 19, Create = 20, Function = 21, Target = 22, Distance = 23, 
-    Torsion = 24, Quadratic = 25, Flat_bottomed = 26, Relative = 27, Trans = 28, 
-    Simple_name_II = 29, Double_quote_string_II = 30, CONTINUE = 31, SPACE_II = 32, 
-    RETURN_II = 33, Real_MT = 34, Float_MT = 35, Integer_MT = 36, And_MR = 37, 
-    SPACE_MT = 38, RETURN_MT = 39
+    RETURN = 15, ENCLOSE_COMMENT = 16, SECTION_COMMENT = 17, LINE_COMMENT = 18, 
+    Integer_II = 19, Float_II = 20, Create = 21, Function = 22, Target = 23, 
+    Distance = 24, Torsion = 25, Quadratic = 26, Flat_bottomed = 27, Relative = 28, 
+    Trans = 29, Simple_name_II = 30, Double_quote_string_II = 31, CONTINUE = 32, 
+    SPACE_II = 33, RETURN_II = 34, Real_MT = 35, Float_MT = 36, Integer_MT = 37, 
+    And_MR = 38, SPACE_MT = 39, RETURN_MT = 40
   };
 
   enum {
@@ -93,6 +93,8 @@ public:
     Biosym_mrContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EOF();
+    std::vector<antlr4::tree::TerminalNode *> RETURN();
+    antlr4::tree::TerminalNode* RETURN(size_t i);
     std::vector<Distance_restraintsContext *> distance_restraints();
     Distance_restraintsContext* distance_restraints(size_t i);
     std::vector<Distance_constraintsContext *> distance_constraints();
@@ -147,6 +149,8 @@ public:
     antlr4::tree::TerminalNode* Atom_selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> RETURN();
+    antlr4::tree::TerminalNode* RETURN(size_t i);
     antlr4::tree::TerminalNode *Ordinal();
     std::vector<antlr4::tree::TerminalNode *> Or();
     antlr4::tree::TerminalNode* Or(size_t i);
@@ -180,6 +184,8 @@ public:
     antlr4::tree::TerminalNode* Atom_selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> RETURN();
+    antlr4::tree::TerminalNode* RETURN(size_t i);
     antlr4::tree::TerminalNode *Ordinal();
     std::vector<antlr4::tree::TerminalNode *> Or();
     antlr4::tree::TerminalNode* Or(size_t i);
@@ -213,6 +219,8 @@ public:
     antlr4::tree::TerminalNode* Atom_selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> RETURN();
+    antlr4::tree::TerminalNode* RETURN(size_t i);
     antlr4::tree::TerminalNode *Ordinal();
     std::vector<antlr4::tree::TerminalNode *> Or();
     antlr4::tree::TerminalNode* Or(size_t i);
@@ -246,6 +254,7 @@ public:
     antlr4::tree::TerminalNode* Atom_selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    antlr4::tree::TerminalNode *RETURN();
     antlr4::tree::TerminalNode *Ordinal();
 
 
@@ -277,6 +286,7 @@ public:
     antlr4::tree::TerminalNode* Atom_selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    antlr4::tree::TerminalNode *RETURN();
     antlr4::tree::TerminalNode *Ordinal();
 
 
@@ -308,6 +318,7 @@ public:
     antlr4::tree::TerminalNode* Atom_selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    antlr4::tree::TerminalNode *RETURN();
     antlr4::tree::TerminalNode *Ordinal();
 
 
@@ -339,6 +350,7 @@ public:
     antlr4::tree::TerminalNode* Atom_selection(size_t i);
     std::vector<NumberContext *> number();
     NumberContext* number(size_t i);
+    antlr4::tree::TerminalNode *RETURN();
     antlr4::tree::TerminalNode *Ordinal();
 
 
@@ -368,6 +380,7 @@ public:
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *Atom_selection();
     antlr4::tree::TerminalNode *Chiral_code();
+    antlr4::tree::TerminalNode *RETURN();
     antlr4::tree::TerminalNode *Ordinal();
 
 
@@ -397,6 +410,7 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> Atom_selection();
     antlr4::tree::TerminalNode* Atom_selection(size_t i);
+    antlr4::tree::TerminalNode *RETURN();
     antlr4::tree::TerminalNode *Ordinal();
 
 

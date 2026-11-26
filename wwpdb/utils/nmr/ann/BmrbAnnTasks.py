@@ -677,6 +677,12 @@ class BmrbAnnTasks:
                         cs_ref_id = 1
                         set_sf_tag(sf, 'Chem_shift_reference_ID', cs_ref_id)
 
+                # https://github.com/yokochi47/bmrb-extract/issues/127
+                if self.__reg.conversion_server:
+                    cs_ref_label = get_first_sf_tag(sf, 'Chem_shift_reference_label', '?')
+                    if cs_ref_label == '?':
+                        set_sf_tag(sf, 'Chem_shift_reference_ID', '?')
+
                 smpl_cond_list_id = get_first_sf_tag(sf, 'Sample_condition_list_ID')
                 if not isinstance(smpl_cond_list_id, int):
                     if len(smpl_cond_list_id) == 0 or smpl_cond_list_id in EMPTY_VALUE or not smpl_cond_list_id.isdigit():
@@ -694,6 +700,12 @@ class BmrbAnnTasks:
                     else:
                         smpl_cond_list_id = 1
                         set_sf_tag(sf, 'Sample_condition_list_ID', smpl_cond_list_id)
+
+                # https://github.com/yokochi47/bmrb-extract/issues/127
+                if self.__reg.conversion_server:
+                    smpl_cond_list_label = get_first_sf_tag(sf, 'Sample_condition_list_label', '?')
+                    if smpl_cond_list_label == '?':
+                        set_sf_tag(sf, 'Sample_condition_list_ID', '?')
 
                 exp_list_sf_category = 'experiment_list'
 

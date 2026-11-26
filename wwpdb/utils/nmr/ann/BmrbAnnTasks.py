@@ -16,6 +16,7 @@ __version__ = "1.2.0"
 
 import copy
 import itertools
+import os
 import re
 from operator import itemgetter
 from typing import Optional
@@ -327,9 +328,11 @@ class BmrbAnnTasks:
 
                     input_source_dic = input_source.get()
 
-                    file_name = input_source_dic['file_name']
+                    file_name = os.path.basename(input_source_dic['file_name'])\
+                        if input_source_dic['file_name'] is not None else None
                     file_type = input_source_dic['file_type']
-                    original_file_name = input_source_dic['original_file_name']
+                    original_file_name = os.path.basename(input_source_dic['original_file_name'])\
+                        if input_source_dic['original_file_name'] is not None else None
                     content_type = input_source_dic['content_type']
                     content_subtype = input_source_dic['content_subtype']
 
@@ -414,9 +417,11 @@ class BmrbAnnTasks:
 
                             input_source_dic = input_source.get()
 
-                            file_name = input_source_dic['file_name']
+                            file_name = os.path.basename(input_source_dic['file_name'])\
+                                if input_source_dic['file_name'] is not None else None
                             file_type = input_source_dic['file_type']
-                            original_file_name = input_source_dic['original_file_name']
+                            original_file_name = os.path.basename(input_source_dic['original_file_name'])\
+                                if input_source_dic['original_file_name'] is not None else None
                             content_type = input_source_dic['content_type']
                             content_subtype = input_source_dic['content_subtype']
 

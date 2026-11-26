@@ -2720,8 +2720,10 @@ class NmrDpRemediationCsLoop(NmrDpRemediationBase):
                         if not resolved:
 
                             entity_id = None
-                            if (self._reg.combined_mode or (self._reg.bmrb_only and self._reg.internal_mode))\
-                               and entity_id_col != -1:
+                            if entity_id_col != -1\
+                               and (self._reg.combined_mode
+                                    or (self._reg.bmrb_only and self._reg.internal_mode)
+                                    or self._reg.conversion_server):  # https://github.com/yokochi47/bmrb-extract/issues/126
                                 try:
                                     entity_id = int(row[entity_id_col])
                                 except (ValueError, TypeError):
